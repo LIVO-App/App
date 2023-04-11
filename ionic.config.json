@@ -1,0 +1,7 @@
+{
+  "name": "LIVOApp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}
