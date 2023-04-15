@@ -4,11 +4,39 @@ import { RouteRecordRaw } from 'vue-router';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '',
-    redirect: '/folder/Inbox'
+    redirect: '/learning_blocks' //Sistemare in base a role
   },
   {
-    path: '/folder/:id',
-    component: () => import ('../views/FolderPage.vue')
+    path: '/learning_blocks',
+    component: () => import ('../views/LearningBlocks.vue')
+  },
+  {
+    path: '/curriculum',
+    component: () => import ('../views/NotImplemented.vue')
+  },
+  {
+    path: '/openbadges',
+    component: () => import ('../views/NotImplemented.vue')
+  },
+  {
+    path: '/citizenship_report',
+    component: () => import ('../views/NotImplemented.vue')
+  },
+  {
+    path: '/settings',
+    component: () => import ('../views/NotImplemented.vue')
+  },
+  {
+    path: '/info',
+    component: () => import ('../views/NotImplemented.vue')
+  },
+  {
+    path: '/project_courses',
+    component: () => import ('../views/NotImplemented.vue')
+  },
+  {
+    path: '/course_propose',
+    component: () => import ('../views/NotImplemented.vue')
   }
 ]
 
