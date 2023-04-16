@@ -8,10 +8,10 @@
               <ion-img :src="image" alt="LIVO Campus Logo" style="height: 90px;"></ion-img>
             </ion-list-header>
 
-            <ion-menu-toggle auto-hide="false" v-for="(p, i) in menu[role]" :key="i">
-              <ion-item @click="selectedIndex = i" router-direction="root" :router-link="p.url" lines="none" detail="false" class="hydrated" :class="{ selected: selectedIndex === i }">
+            <ion-menu-toggle auto-hide="false" v-for="(p, i) in menu[store.state.role]" :key="i">
+              <ion-item @click="store.state.menuIndex = i" router-direction="root" :router-link="p.url" lines="none" detail="false" class="hydrated" :class="{ selected: store.state.menuIndex === i }">
                 <ion-icon aria-hidden="true" slot="start" :ios="p.iosIcon" :md="p.mdIcon"></ion-icon>
-                <ion-label>{{ p.title[language] }}</ion-label>
+                <ion-label>{{ p.title[store.state.language] }}</ion-label>
               </ion-item>
             </ion-menu-toggle>
           </ion-list>
@@ -37,147 +37,20 @@ import {
   IonRouterOutlet,
   IonSplitPane,
 } from '@ionic/vue';
-import { ref, computed } from 'vue';
-import {
-  addCircleOutline,
-  addCircleSharp,
-  briefcaseOutline,
-  briefcaseSharp,
-  clipboardOutline,
-  clipboardSharp,
-  easelOutline,
-  easelSharp,
-  informationCircleOutline,
-  informationCircleSharp,
-  ribbonOutline,
-  ribbonSharp,
-  schoolOutline,
-  schoolSharp,
-  settingsOutline,
-  settingsSharp,
-} from 'ionicons/icons';
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 
-//Types
-type MenuTitle = {
-  [key: string]: string
-}
-type MenuItem = {
-  title: MenuTitle,
-  url: string,
-  iosIcon: any,
-  mdIcon: any
-};
-type Menu = {
-  [key: string]: MenuItem[]
-};
+import { Menu } from "./types";
 
-//Data
 const image = computed(() => require("./assets/Logo_LIVO_Campus_POS_RGB.png"))
-const selectedIndex = ref(0);
-const language = "italian";
-const role = "student";
-const menu: Menu = {
-  "student": [
-    {
-      title: {
-        italian: "Blocchi di apprendimento",
-        english: "Learning blocks"
-      },
-      url: '/learning_blocks',
-      iosIcon: easelOutline,
-      mdIcon: easelSharp,
-    },
-    {
-      title: {
-        italian: "Curriculum",
-        english: "Curriculum"
-      },
-      url: '/curriculum',
-      iosIcon: schoolOutline,
-      mdIcon: schoolSharp,
-    },
-    {
-      title: {
-        italian: "ObenBadge",
-        english: "OpenBadges"
-      },
-      url: '/openbadges',
-      iosIcon: ribbonOutline,
-      mdIcon: ribbonSharp,
-    },
-    {
-      title: {
-        italian: "Cittadinanza attiva",
-        english: "Citizenship report"
-      },
-      url: '/citizenship_report',
-      iosIcon: clipboardOutline,
-      mdIcon: clipboardSharp,
-    },
-    {
-      title: {
-        italian: "Impostazioni",
-        english: "Settings"
-      },
-      url: '/settings',
-      iosIcon: settingsOutline,
-      mdIcon: settingsSharp,
-    },
-    {
-      title: {
-        italian: "Info",
-        english: "Info"
-      },
-      url: '/info',
-      iosIcon: informationCircleOutline,
-      mdIcon: informationCircleSharp,
-    }
-  ],
-  "teacher": [
-    {
-      title: {
-        italian: "Corsi progetto",
-        english: "Project courses"
-      },
-      url: '/project_courses',
-      iosIcon: briefcaseOutline,
-      mdIcon: briefcaseSharp,
-    },
-    {
-      title: {
-        italian: "Proposta corso",
-        english: "Course propose"
-      },
-      url: '/course_propose',
-      iosIcon: addCircleOutline,
-      mdIcon: addCircleSharp,
-    },
-    {
-      title: {
-        italian: "Impostazioni",
-        english: "Settings"
-      },
-      url: '/settings',
-      iosIcon: settingsOutline,
-      mdIcon: settingsSharp,
-    },
-    {
-      title: {
-        italian: "Info",
-        english: "Info"
-      },
-      url: '/info',
-      iosIcon: informationCircleOutline,
-      mdIcon: informationCircleSharp,
-    }
-  ],
-  "admin": []
-};
+
+const store = useStore();
+const menu : Menu = store.state.menu;
 
 //Set menu index
 const path = window.location.pathname;
 if (path !== undefined) {
-  selectedIndex.value = menu[role].findIndex((page) => page.url === path);
+  store.state.menuIndex = menu[store.state.role].findIndex((page) => page.url === path);
 }
 </script>
 
