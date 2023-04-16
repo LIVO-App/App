@@ -1,20 +1,9 @@
 <template>
   <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-menu-button color="primary"></ion-menu-button>
-        </ion-buttons>
-        <ion-title>{{ $route.params.id }}</ion-title>
-      </ion-toolbar>
-    </ion-header>
+    <outer-header :title="store.state.menu[store.state.role][store.state.menuIndex].title[store.state.language]" />
 
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">{{ $route.params.id }}</ion-title>
-        </ion-toolbar>
-      </ion-header>
+      <inner-header :title="store.state.menu[store.state.role][store.state.menuIndex].title[store.state.language]" />
 
       <div id="container">
         <strong class="capitalize">{{ $route.params.id }}</strong>
@@ -25,7 +14,10 @@
 </template>
 
 <script setup lang="ts">
-import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar, IonCol, IonGrid, IonRow } from '@ionic/vue';
+import { useStore } from 'vuex';
+
+const store = useStore();
 </script>
 
 <style scoped>
