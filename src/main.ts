@@ -6,6 +6,7 @@ import { IonicVue } from '@ionic/vue';
 
 import OuterHeader from "./components/OuterHeader.vue";
 import InnerHeader from "./components/InnerHeader.vue";
+import LearningBlocksCards from "./components/LearningBlocksCards.vue";
 import ListCard from "./components/ListCard.vue";
 import ItemCard from "./components/itemCard.vue";
 
@@ -57,6 +58,7 @@ const app = createApp(App)
   .provide("$axios",$axios)
   .component("OuterHeader",OuterHeader)
   .component("InnerHeader",InnerHeader)
+  .component("LearningBlocksCards",LearningBlocksCards)
   .component("ListCard",ListCard)
   .component("ItemCard",ItemCard);
   
