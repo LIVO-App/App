@@ -121,7 +121,11 @@ export const store = createStore({
             },
             menuIndex: 0,
             language: "italian",
-            role: "student"
+            user: {
+                id: 1,
+                username: "Student1",
+                user: "student",
+            }
         }
     }
 });

@@ -8,9 +8,9 @@
               <ion-img :src="image" alt="LIVO Campus Logo" style="height: 90px;"></ion-img>
             </ion-list-header>
 
-            <ion-menu-toggle auto-hide="false" v-for="(p, i) in menu[store.state.role]" :key="i">
-              <ion-item @click="store.state.menuIndex = i" router-direction="root" :router-link="p.url" lines="none" detail="false" class="hydrated" :class="{ selected: store.state.menuIndex === i }">
-                <ion-icon aria-hidden="true" slot="start" :ios="p.iosIcon" :md="p.mdIcon"></ion-icon>
+            <ion-menu-toggle :auto-hide="false" v-for="(p, i) in menu[store.state.user.user]" :key="i">
+              <ion-item @click="store.state.menuIndex = i" router-direction="root" :router-link="p.url" lines="none" :detail="false" class="hydrated" :class="{ selected: store.state.menuIndex === i }">
+                <ion-icon aria-hidden="true" class="ion-padding-end" :ios="p.iosIcon" :md="p.mdIcon"></ion-icon>
                 <ion-label>{{ p.title[store.state.language] }}</ion-label>
               </ion-item>
             </ion-menu-toggle>
@@ -50,7 +50,7 @@ const menu : Menu = store.state.menu;
 //Set menu index
 const path = window.location.pathname;
 if (path !== undefined) {
-  store.state.menuIndex = menu[store.state.role].findIndex((page) => page.url === path);
+  store.state.menuIndex = menu[store.state.user.user].findIndex((page) => page.url === path);
 }
 </script>
 

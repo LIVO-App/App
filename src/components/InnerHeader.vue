@@ -8,6 +8,7 @@
 </template>
 
 <script setup lang="ts">
+import { IonHeader,IonToolbar,IonTitle } from "@ionic/vue";
 
 const props = defineProps(["title","subtitle"]);
 
