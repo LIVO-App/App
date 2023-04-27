@@ -9,6 +9,7 @@ import InnerHeader from "./components/InnerHeader.vue";
 import LearningBlocksCards from "./components/LearningBlocksCards.vue";
 import ListCard from "./components/ListCard.vue";
 import ItemCard from "./components/itemCard.vue";
+import LoadingComponent from "./components/LoadingComponent.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -60,7 +61,8 @@ const app = createApp(App)
   .component("InnerHeader",InnerHeader)
   .component("LearningBlocksCards",LearningBlocksCards)
   .component("ListCard",ListCard)
-  .component("ItemCard",ItemCard);
+  .component("ItemCard",ItemCard)
+  .component("LoadingComponent",LoadingComponent);
   
 router.isReady().then(() => {
   app.mount('#app');

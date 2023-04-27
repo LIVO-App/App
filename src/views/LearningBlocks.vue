@@ -10,7 +10,7 @@
           <learning-blocks-cards />
         </template>
         <template #fallback>
-          <div>Loading...</div>
+          <loading-component />
         </template>
       </suspense>
     </ion-content>
