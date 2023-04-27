@@ -1,20 +1,26 @@
+type Language = "italian" | "english";
+
 type MenuTitle = {
     [key: string]: string
-}
+};
+
 type MenuItem = {
     title: MenuTitle,
     url: string,
     iosIcon: any,
     mdIcon: any
 };
+
 type Menu = {
     [key: string]: MenuItem[]
 };
+
 type BaseElement = {
     [key: string]: string
 }
+
 type ResponseItem<T> = {
-    origin: string,
+    path: string,
     single: boolean,
     query: {
         [key: string]: string
@@ -56,4 +62,64 @@ type CardElements = {
     url: string
 }
 
-export { Menu, MenuItem, MenuTitle, BaseElement, OrdinaryClass, LearningBlock, CardElements }
+enum LearningBlockStatus {
+    FUTURE,
+    UPCOMING,
+    CURRENT,
+    COMPLETED,
+}
+
+type LearningArea = {
+    id: string,
+    credits: number
+} & {
+    [key in keyof string as `${Language}_title`]: string
+} & {
+    [key in keyof string as `${Language}_description`]: string | null
+}
+
+type CourseBase = {
+    id: number,
+    credits: number,
+    learning_area_ref: ResponseItem<{
+        id: string
+    }>
+} & {
+    [key in keyof string as `${Language}_title`]: string
+} & {
+    [key in keyof string as `${Language}_displayed_name`]: string | null
+}
+
+type CourseSummary = CourseBase & {
+    pending: boolean
+}
+
+type Course = CourseBase & {
+    creation_date: string,
+    up_hours: number,
+    learning_area_ita: string,
+    learning_area_eng: string,
+    growth_area_ita: string,
+    growth_area_eng: string,
+    min_students: number,
+    max_students: number,
+    proposer_teacher_ref: ResponseItem<{
+        id: number
+    }>,
+    teacher_name: string,
+    teacher_surname: string,
+    certifying_admin_ref: ResponseItem<{
+        id: number
+    }>,
+    admin_name: string,
+    admin_surname: string,
+    admin_confirmation: string
+} & {
+    [key in keyof string as `${Language}_expected_learning_results`]: string
+} & {
+    [key in keyof string as `${Language}_criterions`]: string
+} & {
+    [key in keyof string as `${Language}_activities`]: string
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, OrdinaryClass, LearningBlock, CardElements, LearningBlockStatus, LearningArea, CourseSummary, Course }

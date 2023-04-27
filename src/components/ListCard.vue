@@ -32,6 +32,7 @@ import { IonCard,IonCardHeader,IonCardTitle,IonCardSubtitle,IonCardContent,IonLi
 import { PropType } from "vue";
 import { useStore } from "vuex";
 import { BaseElement, CardElements } from "../types";
+import { getCompleteSchoolYear } from "../utils";
 
 const store = useStore();
 
@@ -57,10 +58,6 @@ const props = defineProps({
         required: true
     }
 });
-
-function getCompleteSchoolYear(year: number) {
-    return year + " - " + (year + 1);
-}
 </script>
 
 
