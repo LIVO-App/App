@@ -14,12 +14,12 @@
 </template>
 
 <script setup lang="ts">
-import { Language, BaseElement, CardElements, CourseSummary, LearningArea, LearningBlockStatus, OrdinaryClass, LearningBlock } from '@/types';
+import { Language, BaseElement, CardElements, CourseSummary, LearningArea, LearningBlockStatus, OrdinaryClass, LearningBlock, ElementsList } from '@/types';
 import { IonGrid, IonRow, IonCol } from "@ionic/vue"
 import { inject, reactive } from 'vue';
 import { useStore,Store } from 'vuex';
 import type {AxiosInstance} from 'axios';
-import { getCurrentSchoolYear, getLearningBlockStatus } from '@/utils'
+import { getCompleteBlockDescription, getCurrentSchoolYear, getLearningBlockStatus, getRagneString } from '@/utils'
 
 async function getDividedCourseList($axios: AxiosInstance, language: Language, user_id: string, block: LearningBlock, learning_areas: LearningArea[]) {
   const courses : CourseSummary[] = (await $axios.get("/v1/courses?student_id=" + user_id + "&block_id=" + block.id)).data.data;
@@ -48,9 +48,7 @@ async function getDividedCourseList($axios: AxiosInstance, language: Language, u
 const $axios : AxiosInstance | undefined = inject("$axios");
 const store = useStore();
 
-const elements : {
-  [key: string]: BaseElement
-} = {
+const elements : ElementsList = {
   current: {
     "italian": "Corrente",
     "english": "Current"
@@ -66,7 +64,15 @@ const elements : {
   completed: {
     "italian": "Completati",
     "english": "Completed"
-  }
+  },
+  constraints: {
+    "italian": "Vincoli crediti",
+    "english": "Credits constraints"
+  },
+  block: {
+    "italian": "Blocco",
+    "english": "Block"
+  },
 }
 const dateOptions = {
   year: "numeric",
@@ -126,8 +132,8 @@ if ($axios != undefined) {
           tmp_element = {
             id: block.id,
             group: oc.school_year,
-            title: "Blocco " + block.number,
-            subtitle: (new Date(block.start)).toLocaleDateString("en-GB") + " - " + (new Date(block.end)).toLocaleDateString("en-GB"),
+            title: elements.block + " " + block.number,
+            subtitle: getRagneString(new Date(block.start),new Date(block.end)),
             content: "",
             url: "learning_blocks/" + block.id
           };
@@ -145,25 +151,7 @@ if ($axios != undefined) {
 
         switch (learningBlockStatus) {
           case LearningBlockStatus.FUTURE:
-            tmp_element = {
-              id: block.id,
-              group: current_school_year,
-              title: "Blocco " + block.number,
-              subtitle: startDate.toLocaleDateString("en-GB") + " - " + endDate.toLocaleDateString("en-GB"),
-              content: "<label>Vincoli crediti:</label><ul>",
-              url: "learning_blocks/" + block.id
-            };
-            learning_areas = await $axios.get("/v1/learning_areas?all_data=true&credits=true&block_id=" + block.id)
-              .then(response => response.data.data)
-              .catch(() => []);
-              
-            for (const area of learning_areas) {
-              courses = await $axios.get("/v1/courses?student_id=" + store.state.user.id + "&block_id=" + block.id + "&area_id=\"" + area.id + "\"")
-                .then(response => response.data.data)
-                .catch(() => []);
-              tmp_element.content += "<li>" + area[`${store.state.language as Language}_title`] + ": " + courses.reduce((pv, cv) => pv + cv.credits, 0) + "/" + area.credits + "</li>";
-            }
-            tmp_element.content += "</ul>";
+            tmp_element = await getCompleteBlockDescription(block,elements.constraints,$axios,store);
             if (learning_blocks.future[''] == null){
               learning_blocks.future[''] = [tmp_element];
             } else {
@@ -175,7 +163,7 @@ if ($axios != undefined) {
               id: block.id,
               group: current_school_year,
               title: "Blocco " + block.number,
-              subtitle: startDate.toLocaleDateString("en-GB") + " - " + endDate.toLocaleDateString("en-GB"),
+              subtitle: getRagneString(startDate,endDate),
               content: "",
               url: "learning_blocks/" + block.id
             };
@@ -187,7 +175,7 @@ if ($axios != undefined) {
               id: block.id,
               group: current_school_year,
               title: "Blocco " + block.number,
-              subtitle: startDate.toLocaleDateString("en-GB") + " - " + endDate.toLocaleDateString("en-GB"),
+              subtitle: getRagneString(startDate,endDate),
               content: "",
               url: "learning_blocks/" + block.id
             };
@@ -199,7 +187,7 @@ if ($axios != undefined) {
               id: block.id,
               group: current_school_year,
               title: "Blocco " + block.number,
-              subtitle: startDate.toLocaleDateString("en-GB") + " - " + endDate.toLocaleDateString("en-GB"),
+              subtitle: getRagneString(startDate,endDate),
               content: "",
               url: "learning_blocks/" + block.id
             };

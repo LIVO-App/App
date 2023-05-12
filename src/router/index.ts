@@ -11,6 +11,10 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import ('../views/LearningBlocks.vue')
   },
   {
+    path: '/learning_blocks/:id',
+    component: () => import ('../views/StudentCourses.vue')
+  },
+  {
     path: '/curriculum',
     component: () => import ('../views/NotImplemented.vue')
   },

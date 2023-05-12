@@ -16,7 +16,11 @@ type Menu = {
 };
 
 type BaseElement = {
-    [key: string]: string
+    [key: string]: string //Mettere [key in keyof string as Language]
+}
+
+type ElementsList = {
+    [key: string]: BaseElement
 }
 
 type ResponseItem<T> = {
@@ -91,7 +95,7 @@ type CourseBase = {
 }
 
 type CourseSummary = CourseBase & {
-    pending: boolean
+    pending: string
 }
 
 type Course = CourseBase & {
@@ -122,4 +126,4 @@ type Course = CourseBase & {
     [key in keyof string as `${Language}_activities`]: string
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, OrdinaryClass, LearningBlock, CardElements, LearningBlockStatus, LearningArea, CourseSummary, Course }
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlock, CardElements, LearningBlockStatus, LearningArea, CourseSummary, Course }
