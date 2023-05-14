@@ -31,7 +31,7 @@
 import { IonCard,IonCardHeader,IonCardTitle,IonCardSubtitle,IonCardContent,IonList,IonItemGroup,IonItemDivider,IonLabel,IonItem } from "@ionic/vue";
 import { PropType } from "vue";
 import { useStore } from "vuex";
-import { BaseElement, CardElements, ElementsList, Language } from "../types";
+import { CardElements, ElementsList, Language } from "../types";
 import { getCompleteSchoolYear } from "../utils";
 
 const store = useStore();

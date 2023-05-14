@@ -2,83 +2,29 @@
     <ion-grid><!-- v-if="learning_blocks.loaded">-->
         <ion-row>
             <ion-col size="12" size-md="6">
-                <list-card :title="elements.current[store.state.language]" :cards="learning_blocks.current" />
-                <list-card :title="elements.future[store.state.language]" :cards="learning_blocks.future" />
+                <list-card :title="elements[language].current" :cards="learning_blocks.current" />
+                <list-card :title="elements[language].future" :cards="learning_blocks.future" />
             </ion-col>
             <ion-col size="12" size-md="6">
-                <list-card :title="elements.upcoming[store.state.language]" :cards="learning_blocks.upcoming" />
-                <list-card :title="elements.completed[store.state.language]" :cards="learning_blocks.completed" />
+                <list-card :title="elements[language].upcoming" :cards="learning_blocks.upcoming" />
+                <list-card :title="elements[language].completed" :cards="learning_blocks.completed" />
             </ion-col>
         </ion-row>
     </ion-grid>
 </template>
 
 <script setup lang="ts">
-import { Language, BaseElement, CardElements, CourseSummary, LearningArea, LearningBlockStatus, OrdinaryClass, LearningBlock, ElementsList } from '@/types';
+import { Language, CardElements, LearningBlockStatus, OrdinaryClass, LearningBlock, ElementsList } from '@/types';
 import { IonGrid, IonRow, IonCol } from "@ionic/vue"
 import { inject, reactive } from 'vue';
-import { useStore,Store } from 'vuex';
+import { useStore } from 'vuex';
 import type {AxiosInstance} from 'axios';
-import { getCompleteBlockDescription, getCurrentSchoolYear, getLearningBlockStatus, getRagneString } from '@/utils'
-
-async function getDividedCourseList($axios: AxiosInstance, language: Language, user_id: string, block: LearningBlock, learning_areas: LearningArea[]) {
-  const courses : CourseSummary[] = (await $axios.get("/v1/courses?student_id=" + user_id + "&block_id=" + block.id)).data.data;
-  let tmp_learning_area_id : string,
-      tmp_learning_area : LearningArea | undefined,
-      i : number,
-      course_list = "";
-  while (courses.length > 0) {
-    tmp_learning_area_id = (courses[0].learning_area_ref.data as {id: string}).id;
-    tmp_learning_area = learning_areas.find(area => area.id == tmp_learning_area_id);
-    course_list += "<label>" + (tmp_learning_area != undefined ? tmp_learning_area[`${language}_title`] : "") + ":</label><br /><ul>";
-    i = 0;
-    while (i < courses.length) {
-      if ((courses[i].learning_area_ref.data as {id: string}).id == tmp_learning_area_id) {
-        course_list += "<li>" + courses[i][`${language}_title`] + "</li>";
-        courses.splice(i,1);
-      } else {
-        i++;
-      }
-    }
-  }
-
-  return course_list;
-}
+import { getCurrentSchoolYear } from '@/utils'
 
 const $axios : AxiosInstance | undefined = inject("$axios");
 const store = useStore();
-
-const elements : ElementsList = {
-  current: {
-    "italian": "Corrente",
-    "english": "Current"
-  },
-  future: {
-    "italian": "Futuri",
-    "english": "Future"
-  },
-  upcoming: {
-    "italian": "Imminente",
-    "english": "Upcoming"
-  },
-  completed: {
-    "italian": "Completati",
-    "english": "Completed"
-  },
-  constraints: {
-    "italian": "Vincoli crediti",
-    "english": "Credits constraints"
-  },
-  block: {
-    "italian": "Blocco",
-    "english": "Block"
-  },
-}
-const dateOptions = {
-  year: "numeric",
-  month: "2-digits",
-  day: "2-digits"
-}
+const language : Language = store.state.language;
+const elements : ElementsList = store.state.elements;
 const learning_blocks : {
     current: {
         [key: string]: CardElements[]
@@ -101,14 +47,11 @@ const learning_blocks : {
 
 const promises : Promise<any>[] = [];
 const today = new Date();
-let startDate : Date, endDate : Date, tenDaysBefore : Date,
-  learningBlockStatus : LearningBlockStatus,
-  learning_areas : LearningArea[],
-  ordinary_classes : OrdinaryClass[],
+let ordinary_classes : OrdinaryClass[],
   current_class : OrdinaryClass | undefined,
   current_school_year : number,
   tmp_element : CardElements,
-  courses : CourseSummary[];
+  learning_block : LearningBlock;
 if ($axios != undefined) {
   ordinary_classes = await $axios.get("/v1/ordinary_classes?student_id=" + store.state.user.id)
     .then(response => response.data.data);/* = [{
@@ -124,34 +67,22 @@ if ($axios != undefined) {
   current_class = ordinary_classes.shift();
   current_school_year = current_class != undefined ? current_class.school_year : getCurrentSchoolYear();
   if (current_class != undefined) {
-    learning_areas = await $axios.get("/v1/learning_areas?all_data=true").then(response => response.data.data);
     for (const oc of ordinary_classes) {
       promises.push($axios.get("/v1/learning_blocks?school_year=" + oc.school_year).then(async (response) => {
         learning_blocks.completed[oc.school_year] = [];
         for (const block of response.data.data) {
-          tmp_element = {
-            id: block.id,
-            group: oc.school_year,
-            title: elements.block + " " + block.number,
-            subtitle: getRagneString(new Date(block.start),new Date(block.end)),
-            content: "",
-            url: "learning_blocks/" + block.id
-          };
-          learning_blocks.completed[oc.school_year].push(tmp_element);
+          learning_block = new LearningBlock(block)
+          learning_blocks.completed[oc.school_year].push(await learning_block.toCard($axios,store,today));
         }
       }).catch(() => console.error("Learning blocks not retrieved")));
     }
     promises.push($axios.get("/v1/learning_blocks?school_year=" + current_school_year).then(async (response) => {
       for (const block of response.data.data) {
-        startDate = new Date(block.start);
-        endDate = new Date(block.end);
-        tenDaysBefore = new Date(startDate);
-        tenDaysBefore.setDate(tenDaysBefore.getDate() - 10);
-        learningBlockStatus = getLearningBlockStatus(block,today);
-
-        switch (learningBlockStatus) {
+        learning_block = new LearningBlock(block);
+        tmp_element = await learning_block.toCard($axios,store,today);
+        
+        switch (learning_block.getStatus(today)) {
           case LearningBlockStatus.FUTURE:
-            tmp_element = await getCompleteBlockDescription(block,elements.constraints,$axios,store);
             if (learning_blocks.future[''] == null){
               learning_blocks.future[''] = [tmp_element];
             } else {
@@ -159,38 +90,12 @@ if ($axios != undefined) {
             }
             break;
           case LearningBlockStatus.UPCOMING:
-            tmp_element = {
-              id: block.id,
-              group: current_school_year,
-              title: "Blocco " + block.number,
-              subtitle: getRagneString(startDate,endDate),
-              content: "",
-              url: "learning_blocks/" + block.id
-            };
-            tmp_element.content = await getDividedCourseList($axios,store.state.language as Language,store.state.user.id,block,learning_areas);
             learning_blocks.upcoming[''] = [tmp_element];
             break;
           case LearningBlockStatus.CURRENT:
-            tmp_element = {
-              id: block.id,
-              group: current_school_year,
-              title: "Blocco " + block.number,
-              subtitle: getRagneString(startDate,endDate),
-              content: "",
-              url: "learning_blocks/" + block.id
-            };
-            tmp_element.content = await getDividedCourseList($axios,store.state.language as Language,store.state.user.id,block,learning_areas);
             learning_blocks.current[''] = [tmp_element];
             break;
           case LearningBlockStatus.COMPLETED:
-            tmp_element = {
-              id: block.id,
-              group: current_school_year,
-              title: "Blocco " + block.number,
-              subtitle: getRagneString(startDate,endDate),
-              content: "",
-              url: "learning_blocks/" + block.id
-            };
             if (learning_blocks.completed[block.school_year] == undefined) {
               learning_blocks.completed[block.school_year] = [tmp_element];
             } else {
