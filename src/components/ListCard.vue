@@ -8,7 +8,7 @@
         <ion-list>
             <template v-if="Object.keys(props.cards).length === 0">
                 <ion-item>
-                    <ion-label class="ion-text-wrap ion-text-center">{{ elements.noCards[store.state.language] }}</ion-label>
+                    <ion-label class="ion-text-wrap ion-text-center">{{ elements[language].noCards }}</ion-label>
                 </ion-item>
             </template>
             <template v-else-if="props.cards[''] != undefined">
@@ -31,19 +31,13 @@
 import { IonCard,IonCardHeader,IonCardTitle,IonCardSubtitle,IonCardContent,IonList,IonItemGroup,IonItemDivider,IonLabel,IonItem } from "@ionic/vue";
 import { PropType } from "vue";
 import { useStore } from "vuex";
-import { BaseElement, CardElements } from "../types";
+import { BaseElement, CardElements, ElementsList, Language } from "../types";
 import { getCompleteSchoolYear } from "../utils";
 
 const store = useStore();
 
-const elements  : {
-  [key: string]: BaseElement
-} = {
-    noCards: {
-        "italian": "Nessun blocco di apprendimento",
-        "english": "No learning blocks"
-    }
-}
+const language : Language = store.state.language;
+const elements : ElementsList = store.state.elements;
 
 const props = defineProps({
     "title": {

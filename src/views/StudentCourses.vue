@@ -1,9 +1,9 @@
 <template>
   <ion-page>
-    <outer-header :subtitle="elements.subtitle[store.state.language]" /> <!--:title="store.state.menu[store.state.user.user][store.state.menuIndex].title[store.state.language]" />-->
+    <outer-header :subtitle="elements[language].subtitle" /> <!--:title="store.state.menu[store.state.user.user][store.state.menuIndex].title[store.state.language]" />-->
 
     <ion-content :fullscreen="true">
-      <inner-header :subtitle="elements.subtitle[store.state.language]" /> <!--:title="store.state.menu[store.state.user.user][store.state.menuIndex].title[store.state.language]" />-->
+      <inner-header :subtitle="elements[language].subtitle" /> <!--:title="store.state.menu[store.state.user.user][store.state.menuIndex].title[store.state.language]" />-->
 
       <suspense>
         <template #default>
@@ -42,19 +42,11 @@ function getCorrectArea(area: LearningArea) {
     return area[`${store.state.language as Language}_title`];
 }
 
-const elements : ElementsList = {
-    subtitle: {
-        "italian": "Corsi",
-        "english": "Courses"
-    },
-    learning_area: {
-        "italian": "Area di apprendimento",
-        "english": "Learning area"
-    }
-}
-
 const store = useStore();
 const $route = useRoute();
+
+const language : Language = store.state.language
+const elements : ElementsList = store.state.elements;
 
 </script>
 

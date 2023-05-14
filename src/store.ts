@@ -121,6 +121,30 @@ export const store = createStore({
             },
             menuIndex: 0,
             language: "italian",
+            elements: {
+                "italian": {
+                    constraints: "Vincoli crediti",
+                    block: "Blocco",
+                    current: "Corrente",
+                    future: "Futuri",
+                    upcoming: "Imminente",
+                    completed: "Completati",
+                    noCards: "Nessun blocco di apprendimento",
+                    courses: "Corsi",
+                    learning_area: "Area di apprendimento",
+                },
+                "english": {
+                    constraints: "Credits constraints",
+                    block: "Block",
+                    current: "Current",
+                    future: "Future",
+                    upcoming: "Upcoming",
+                    completed: "Completed",
+                    noCards: "No learning blocks",
+                    courses: "Courses",
+                    learning_area: "Learning area",
+                }
+            },
             user: {
                 id: 1,
                 username: "Student1",

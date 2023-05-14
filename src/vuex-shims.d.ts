@@ -1,13 +1,14 @@
 import { ComponentCustomProperties } from "vue";
 import { Store } from "vuex";
-import { Menu } from "./types";
+import { ElementsList, Language, Menu } from "./types";
 
 declare module '@vue/runtime-core' {
   //Declare your own store states
   interface State {
     menu: Menu,
     menuIndex: number,
-    language: string,
+    language: Language,
+    elements: ElementsList
     role: string
   }
 
