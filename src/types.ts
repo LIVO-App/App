@@ -11,8 +11,7 @@ type MenuTitle = {
 type MenuItem = {
     title: MenuTitle,
     url: string,
-    iosIcon: any,
-    mdIcon: any
+    iconRef: string
 };
 
 type Menu = {
@@ -55,13 +54,48 @@ type OrdinaryClass = {
     }>
 }
 
-type CardElements = {
+class Enrollment {
+    private _enrollment: string
+    private _editable: boolean
+    constructor(pending : string, learning_block : LearningBlock, reference : Date) {
+        this._enrollment = pending;
+        this._editable = learning_block.getStatus(reference) == LearningBlockStatus.FUTURE;
+        console.log(learning_block.getStatus(reference),this._editable);
+        
+    }
+    get enrollment() : Date | boolean {
+        if (this._enrollment === "true") {
+            return true;
+        } else if (this._enrollment === "false") {
+            return false;
+        } else {
+            return new Date(this._enrollment);
+        }
+    }
+    get editable() : boolean {
+        return this._editable;
+    }
+    isPending() : boolean {
+        return this._enrollment !== "true" && this._enrollment !== "false";
+    }
+}
+
+interface CardElements {
     id: string,
     group: any,
+    url?: string
+}
+
+interface GeneralCardElements extends CardElements {
     title: string,
     subtitle: string,
+    content: string
+}
+
+interface CourseCardElements extends CardElements {
+    credits: number,
     content: string,
-    url: string
+    enrollment: Enrollment
 }
 
 enum LearningBlockStatus {
@@ -92,7 +126,7 @@ type CourseBase = {
     [key in keyof string as `${Language}_displayed_name`]: string | null
 }
 
-type CourseSummary = CourseBase & {
+type CourseSummaryProps = CourseBase & {
     pending: string
 }
 
@@ -122,6 +156,42 @@ type Course = CourseBase & {
     [key in keyof string as `${Language}_criterions`]: string
 } & {
     [key in keyof string as `${Language}_activities`]: string
+}
+
+class CourseSummary implements CourseSummaryProps {
+    id : number;
+    credits : number;
+    learning_area_ref : ResponseItem<{
+        id: string
+    }>;
+    pending : string;
+    italian_title : string;
+    english_title : string;
+    italian_displayed_name : string | null;
+    english_displayed_name : string | null;
+
+    constructor(courseObj : CourseSummaryProps) {
+        this.id = courseObj.id;
+        this.credits = courseObj.credits;
+        this.learning_area_ref = courseObj.learning_area_ref;
+        this.pending = courseObj.pending;
+        this.italian_title = courseObj.italian_title;
+        this.english_title = courseObj.english_title;
+        this.italian_displayed_name = courseObj.italian_displayed_name;
+        this.english_displayed_name = courseObj.english_displayed_name;
+    }
+
+    toCard(store : Store<any>, learning_block : LearningBlock, reference : Date, path? : string) : CourseCardElements {
+        const language : Language = store.state.language;
+        return {
+            id: "" + this.id,
+            group: "",
+            credits: this.credits,
+            content: this[`${language}_title`],
+            enrollment: new Enrollment(this.pending,learning_block,reference),
+            url: path != undefined ? path : undefined
+        }
+    }
 }
 
 interface LearningBlockProps {
@@ -201,7 +271,7 @@ class LearningBlock implements LearningBlockProps {
         
         for (const area of learning_areas) {
             courses = await $axios.get("/v1/courses?student_id=" + store.state.user.id + "&block_id=" + this.id + "&area_id=" + area.id)
-                .then(response => response.data.data)
+                .then(response => (response.data.data as CourseSummaryProps[]).map(x => new CourseSummary(x)))
                 .catch(() => []);
             block_list += (put_courses_list ? "<label>" : "<li>") + area[`${store.state.language as Language}_title`] + ": " + (put_credits ? courses.filter(course => course.pending == "true").reduce((pv, cv) => pv + cv.credits, 0) + "/" + area.credits : "") + (put_courses_list ? "</label>" : "</li>");
             if (put_courses_list) {
@@ -217,13 +287,13 @@ class LearningBlock implements LearningBlockProps {
         return block_list;
     }
 
-    async toCard($axios : AxiosInstance, store : Store<any>, reference : Date, credits? : boolean, courses_list? : boolean) : Promise<CardElements> {
+    async toCard($axios : AxiosInstance, store : Store<any>, reference : Date, credits? : boolean, courses_list? : boolean) : Promise<GeneralCardElements> {
         
         const language = store.state.language;
         const elements = store.state.elements;
         const status = this.getStatus(reference);
         const put_credits = credits ?? status == LearningBlockStatus.FUTURE;
-        const tmp_element : CardElements = {
+        const tmp_element : GeneralCardElements = {
             id: "" + this.id,
             group: this.school_year,
             title: elements[language].block + " " + this.number,
@@ -237,4 +307,17 @@ class LearningBlock implements LearningBlockProps {
     }
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, CardElements, LearningBlockStatus, LearningArea, CourseSummary, Course }
+type IconAlternatives = {
+    ios: string,
+    md: string
+}
+
+type IconsList = {
+    [key : string]: IconAlternatives
+}
+
+type CardsList = {
+    [key : string]: CardElements[]
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseSummary, IconAlternatives, IconsList, CardsList }

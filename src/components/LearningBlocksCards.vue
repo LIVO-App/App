@@ -2,19 +2,19 @@
     <ion-grid><!-- v-if="learning_blocks.loaded">-->
         <ion-row>
             <ion-col size="12" size-md="6">
-                <list-card :title="elements[language].current" :cards="learning_blocks.current" />
-                <list-card :title="elements[language].future" :cards="learning_blocks.future" />
+                <list-card :title="elements[language].current" :emptiness_message="elements[language].noBlocks" :cards="learning_blocks.current" />
+                <list-card :title="elements[language].future" :emptiness_message="elements[language].noBlocks" :cards="learning_blocks.future" />
             </ion-col>
             <ion-col size="12" size-md="6">
-                <list-card :title="elements[language].upcoming" :cards="learning_blocks.upcoming" />
-                <list-card :title="elements[language].completed" :cards="learning_blocks.completed" />
+                <list-card :title="elements[language].upcoming" :emptiness_message="elements[language].noBlocks" :cards="learning_blocks.upcoming" />
+                <list-card :title="elements[language].completed" :emptiness_message="elements[language].noBlocks" :cards="learning_blocks.completed" />
             </ion-col>
         </ion-row>
     </ion-grid>
 </template>
 
 <script setup lang="ts">
-import { Language, CardElements, LearningBlockStatus, OrdinaryClass, LearningBlock, ElementsList } from '@/types';
+import { Language, GeneralCardElements, LearningBlockStatus, OrdinaryClass, LearningBlock, ElementsList } from '@/types';
 import { IonGrid, IonRow, IonCol } from "@ionic/vue"
 import { inject, reactive } from 'vue';
 import { useStore } from 'vuex';
@@ -27,16 +27,16 @@ const language : Language = store.state.language;
 const elements : ElementsList = store.state.elements;
 const learning_blocks : {
     current: {
-        [key: string]: CardElements[]
+        [key: string]: GeneralCardElements[]
     },
     future: {
-        [key: string]: CardElements[]
+        [key: string]: GeneralCardElements[]
     },
     upcoming: {
-        [key: string]: CardElements[]
+        [key: string]: GeneralCardElements[]
     },
     completed: {
-        [key: number]: CardElements[]
+        [key: number]: GeneralCardElements[]
     }
 } = reactive({  
     "current": {},
@@ -50,7 +50,7 @@ const today = new Date();
 let ordinary_classes : OrdinaryClass[],
   current_class : OrdinaryClass | undefined,
   current_school_year : number,
-  tmp_element : CardElements,
+  tmp_element : GeneralCardElements,
   learning_block : LearningBlock;
 if ($axios != undefined) {
   ordinary_classes = await $axios.get("/v1/ordinary_classes?student_id=" + store.state.user.id)

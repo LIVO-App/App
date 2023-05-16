@@ -7,47 +7,26 @@
 
       <suspense>
         <template #default>
-          <block-description :id="$route.params.id" />
+          <courses-selection-list />
         </template>
         <template #fallback>
           <loading-component />
         </template>
       </suspense>
-      
-      <!--<ion-select>
-        <ion-select-option v-for="area in props.learning_areas" :value="area.id" :key="area.id">
-          {{ getCorrectArea(area) }}
-        </ion-select-option>
-      </ion-select>-->
-      <!--<suspense>
-        <template #default>
-          <learning-blocks-cards />
-        </template>
-        <template #fallback>
-          <loading-component />
-        </template>
-      </suspense>-->
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
 import { Language } from '@/types';
-import { ElementsList, LearningArea } from '@/types';
-import { IonContent, IonPage, IonSelect, IonSelectOption } from '@ionic/vue';
-import { useRoute } from 'vue-router';
+import { ElementsList } from '@/types';
+import { IonContent, IonPage } from '@ionic/vue';
 import { useStore } from 'vuex';
 
-function getCorrectArea(area: LearningArea) {
-    return area[`${store.state.language as Language}_title`];
-}
-
 const store = useStore();
-const $route = useRoute();
 
 const language : Language = store.state.language
 const elements : ElementsList = store.state.elements;
-
 </script>
 
 <style>

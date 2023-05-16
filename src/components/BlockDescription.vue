@@ -1,19 +1,26 @@
 <template>
-    <div>
-        <ion-icon @click="$router.go(-1)" aria-hidden="true" class="ion-padding-end" :ios="arrow_icon.ios" :md="arrow_icon.md"></ion-icon> <!--Da sistemare-->
-        <ion-title>{{ head_content.title }}</ion-title>
-        <ion-text>{{ head_content.subtitle }}</ion-text>
-    </div>
-    <div class="ion-padding">
-        <div v-html="head_content.content"></div>
-    </div>
+    <ion-grid>
+        <ion-row>
+            <ion-col>
+                <ion-icon @click="$router.go(-1)" aria-hidden="true" class="ion-padding-end" :ios="icons['arrow_back'].ios" :md="icons['arrow_back'].md"></ion-icon> <!--Da sistemare-->
+                <ion-title>{{ head_content.title }}</ion-title>
+            </ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-text>{{ head_content.subtitle }}</ion-text>
+        </ion-row>
+        <ion-row>
+            <div class="ion-padding">
+                <div v-html="head_content.content"></div>
+            </div>
+        </ion-row>
+    </ion-grid>
 </template>
 
 <script setup lang="ts">
-import { LearningBlock } from "@/types";
-import { IonIcon, IonTitle, IonText } from "@ionic/vue";
+import { IconsList, LearningBlock } from "@/types";
+import { IonGrid, IonRow, IonCol, IonIcon, IonTitle, IonText } from "@ionic/vue";
 import { AxiosInstance } from "axios";
-import { arrowBackOutline, arrowBackSharp } from "ionicons/icons";
 import { inject } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
@@ -27,10 +34,7 @@ const props = defineProps({
         required: true
     }
 });
-const arrow_icon = {
-    ios: arrowBackOutline,
-    md: arrowBackSharp
-};
+const icons : IconsList = store.state.icons;
 const head_content = {
     title: "",
     subtitle: "",

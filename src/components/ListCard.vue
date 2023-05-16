@@ -1,6 +1,6 @@
 <template>
   <ion-card>
-    <ion-card-header color="primary">
+    <ion-card-header color="primary" v-if="props.title != undefined && props.title != ''">
         <ion-card-title color="tertiary" class="ion-text-center">{{ props.title }}</ion-card-title>
         <ion-card-subtitle color="tertiary" class="ion-text-center">{{ props.subtitle }}</ion-card-subtitle>
     </ion-card-header>
@@ -8,18 +8,24 @@
         <ion-list>
             <template v-if="Object.keys(props.cards).length === 0">
                 <ion-item>
-                    <ion-label class="ion-text-wrap ion-text-center">{{ elements[language].noCards }}</ion-label>
+                    <ion-label class="ion-text-wrap ion-text-center">{{ props.emptiness_message }}</ion-label>
                 </ion-item>
             </template>
             <template v-else-if="props.cards[''] != undefined">
-                <item-card v-for="learning_block in props.cards['']" :key="'card-' + learning_block.id" :title="learning_block.title" :subtitle="learning_block.subtitle" :content="learning_block.content" :url="learning_block.url" />
+                <template v-for="card in props.cards['']">
+                    <item-card v-if="isGeneral(card)" :key="'card-general-' + card.id" :title="card.title" :subtitle="card.subtitle" :content="card.content" :url="card.url" />
+                    <course-card v-else-if="isCourse(card)" :key="'card-course-' + card.id" :credits="card.credits" :content="card.content" :enrollment="card.enrollment" :url="card.url" />
+                </template>
             </template>
             <template v-else>
-                <ion-item-group v-for="(learning_blocks, key) in props.cards" :key="'group-' + key">
+                <ion-item-group v-for="(card_list, key) in props.cards" :key="'group-' + key">
                     <ion-item-divider color="light">
                         <ion-label class="ion-padding-end item-text-wrap">{{ getCompleteSchoolYear(typeof key === "string" ? parseInt(key) : key) }}</ion-label>
                     </ion-item-divider>
-                    <item-card v-for="block in learning_blocks" :key="block.id" :title="block.title" :subtitle="block.subtitle" :content="block.content" :url="block.url" />
+                    <template v-for="card in card_list">
+                        <item-card v-if="isGeneral(card)" :key="'card-general-' + card.id" :title="card.title" :subtitle="card.subtitle" :content="card.content" :url="card.url" />
+                        <course-card v-else-if="isCourse(card)" :key="'card-course-' + card.id" :credits="card.credits" :content="card.content" :enrollment="card.enrollment" :url="card.url" />
+                    </template>
                 </ion-item-group>
             </template>
         </ion-list>
@@ -30,21 +36,16 @@
 <script setup lang="ts">
 import { IonCard,IonCardHeader,IonCardTitle,IonCardSubtitle,IonCardContent,IonList,IonItemGroup,IonItemDivider,IonLabel,IonItem } from "@ionic/vue";
 import { PropType } from "vue";
-import { useStore } from "vuex";
-import { CardElements, ElementsList, Language } from "../types";
-import { getCompleteSchoolYear } from "../utils";
-
-const store = useStore();
-
-const language : Language = store.state.language;
-const elements : ElementsList = store.state.elements;
+import { CardElements } from "../types";
+import { getCompleteSchoolYear, isGeneral, isCourse } from "../utils";
 
 const props = defineProps({
-    "title": {
+    "title": String,
+    "subtitle": String,
+    "emptiness_message": {
         type: String,
         required: true
     },
-    "subtitle": String,
     "cards": {
         type: Object as PropType<{
             [key: string]: CardElements[]

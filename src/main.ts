@@ -11,6 +11,9 @@ import ListCard from "./components/ListCard.vue";
 import ItemCard from "./components/itemCard.vue";
 import LoadingComponent from "./components/LoadingComponent.vue";
 import BlockDescription from "./components/BlockDescription.vue";
+import CoursesSelectionList from "./components/CoursesSelectionList.vue";
+import CustomSelect from "./components/CustomSelect.vue";
+import CourseCard from "./components/CourseCard.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -64,7 +67,10 @@ const app = createApp(App)
   .component("ListCard",ListCard)
   .component("ItemCard",ItemCard)
   .component("LoadingComponent",LoadingComponent)
-  .component("BlockDescription",BlockDescription);
+  .component("BlockDescription",BlockDescription)
+  .component("CoursesSelectionList",CoursesSelectionList)
+  .component("CustomSelect",CustomSelect)
+  .component("CourseCard",CourseCard);
   
 router.isReady().then(() => {
   app.mount('#app');
