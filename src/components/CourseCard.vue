@@ -19,7 +19,13 @@
                             </ion-text>
                         </ion-col>
                         <ion-col v-if="button" size="auto" style="border-left: 1px solid black;"> <!--Sistemare colore-->
-                            <ion-button fill="clear">
+                            <ion-button fill="clear" @click="() => {
+                                    store.state.request = {
+                                        url: url,
+                                        method: enrollment.getChangingMethod(),
+                                    };
+                                    $emit('execute_link');
+                                }">
                                 <ion-icon v-if="enrollment.enrollment === false" :ios="icons['add'].ios" :md="icons['add'].md"></ion-icon>
                                 <ion-icon v-else :ios="icons['close'].ios" :md="icons['close'].md"></ion-icon>
                             </ion-button>
@@ -33,7 +39,6 @@
 
 <script setup lang="ts">
 import { ElementsList, Enrollment, IconsList, Language } from "@/types";
-import { executeLink } from "@/utils";
 import { IonItem,IonCard,IonCardContent,IonGrid,IonRow,IonCol,IonText,IonButton,IonIcon } from "@ionic/vue";
 import { AxiosInstance } from "axios";
 import { inject } from "vue";
@@ -61,7 +66,8 @@ const props = defineProps({
     },
     "url": String
 });
-const button = props.enrollment.editable && props.url != undefined && props.url != '';
+defineEmits(["execute_link"])
+const button = props.url != undefined && props.url != '';
 </script>
 
 <style>

@@ -1,4 +1,4 @@
-import { AxiosInstance } from "axios";
+import { AxiosInstance, Method } from "axios";
 import { Store } from "vuex";
 import { getRagneString } from "./utils";
 
@@ -60,8 +60,6 @@ class Enrollment {
     constructor(pending : string, learning_block : LearningBlock, reference : Date) {
         this._enrollment = pending;
         this._editable = learning_block.getStatus(reference) == LearningBlockStatus.FUTURE;
-        console.log(learning_block.getStatus(reference),this._editable);
-        
     }
     get enrollment() : Date | boolean {
         if (this._enrollment === "true") {
@@ -72,27 +70,37 @@ class Enrollment {
             return new Date(this._enrollment);
         }
     }
+    set enrollment(enrollment : Date | boolean) {
+        if (enrollment instanceof Date) {
+            this._enrollment = enrollment.toISOString();
+        } else {
+            this._enrollment = enrollment ? "true" : "false";
+        }
+    }
     get editable() : boolean {
         return this._editable;
     }
     isPending() : boolean {
         return this._enrollment !== "true" && this._enrollment !== "false";
     }
+    getChangingMethod() : Method {
+        return this.enrollment === true ? "delete" : "post";
+    }
 }
 
-interface CardElements {
+type CardElements = {
     id: string,
     group: any,
     url?: string
 }
 
-interface GeneralCardElements extends CardElements {
+type GeneralCardElements = CardElements & {
     title: string,
     subtitle: string,
     content: string
 }
 
-interface CourseCardElements extends CardElements {
+type CourseCardElements = CardElements & {
     credits: number,
     content: string,
     enrollment: Enrollment
@@ -194,7 +202,7 @@ class CourseSummary implements CourseSummaryProps {
     }
 }
 
-interface LearningBlockProps {
+type LearningBlockProps = {
     id: number;
     number: number;
     school_year: number;

@@ -200,7 +200,8 @@ export const store = createStore({
                 id: 1,
                 username: "Student1",
                 user: "student",
-            }
+            },
+            request: {}
         }
     }
 });

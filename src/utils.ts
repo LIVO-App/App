@@ -1,5 +1,6 @@
-import { AxiosInstance } from "axios";
+import { AxiosInstance, Method } from "axios";
 import { GeneralCardElements, CardElements, CourseCardElements } from "./types";
+import { Store } from "vuex";
 
 function getCompleteSchoolYear(year: number) {
     return year + " - " + (year + 1);
@@ -22,11 +23,33 @@ function isCourse(card : CardElements) : card is CourseCardElements {
     return "credits" in card;
 }
 
-async function executeLink($axios : AxiosInstance | undefined, url : string | undefined,success = () => new Event("reload"), fail = (err : string) => new Event(err)) /*: Promise<Event>*/ {
-    /*return $axios != undefined && url != undefined ? $axios.get(url)
-        .then(success)
-        .catch(fail) : new Promise(() => new Event("Axios or url not defined"));*/
-    return new Promise(() => new Event("reload"));
+async function executeLink(store : Store<any>, $axios : AxiosInstance | undefined, success = (response : any) => response, fail = (err : string) => err, url? : string | undefined, method? : Method) {
+    const toExecute = url ?? store.state.request.url;
+    const howExecute = method ?? store.state.request.method;
+    console.log(toExecute,howExecute);
+    let request;
+    if ($axios != undefined && toExecute != undefined) {
+        switch (howExecute) {
+            case "get":
+                request = $axios.get(toExecute);
+                break;
+            case "post":
+                request = $axios.post(toExecute);
+                break;
+            case "put":
+                request = $axios.put(toExecute);
+                break;
+            case "delete":
+                request = $axios.delete(toExecute);
+                break;
+            default:
+                return new Promise(() => "Method not defined");
+        }
+        return request.then(success)
+            .catch(fail);
+    } else {
+        return new Promise(() => "Axios or url not defined");
+    }
 }
 
 export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink }

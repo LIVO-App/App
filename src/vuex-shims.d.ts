@@ -1,6 +1,7 @@
 import { ComponentCustomProperties } from "vue";
 import { Store } from "vuex";
 import { ElementsList, IconAlternatives, IconsList, Language, Menu } from "./types";
+import { Method } from "axios";
 
 declare module '@vue/runtime-core' {
   //Declare your own store states
@@ -10,7 +11,15 @@ declare module '@vue/runtime-core' {
     icons: IconsList,
     language: Language,
     elements: ElementsList
-    role: string
+    user: {
+      id: number,
+      username: string,
+      user: string
+    },
+    request: {
+      url: string,
+      method: Method
+    }
   }
 
   interface ComponentCustomProperties {

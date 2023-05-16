@@ -9,12 +9,13 @@
             </template>
         </suspense>
         <custom-select v-model="selected_area" :learning_areas="learning_areas" />
-        <list-card :key="trigger" :emptiness_message="elements[language].noCourses" v-model:cards="courses" />
+        <list-card :key="trigger" @execute_link="executeLink(store,$axios,reload)" :emptiness_message="elements[language].noCourses" v-model:cards="courses" />
     </div>
 </template>
 
 <script setup lang="ts">
 import { CardsList, CourseCardElements, CourseSummary, CourseSummaryProps, ElementsList, Language, LearningArea, LearningBlock } from '@/types';
+import { executeLink } from '@/utils';
 import { AxiosInstance } from 'axios';
 import { inject, Ref, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -28,14 +29,33 @@ const elements : ElementsList = store.state.elements;
 const user_id : string = store.state.user.id;
 const learning_block_id = $route.params.id;
 
-let learning_areas : LearningArea[] = [];
+function updateCourses(courses : CardsList, learning_block_id : number, value : Date | boolean) {
+
+    const pos = courses[""].findIndex(c => c.id == "" + learning_block_id);
+    const requestArray = courses[""][pos].url?.split("?") ?? [];
+    const pathArray = requestArray[0].split("/");
+    pathArray?.pop();
+    
+    (courses[""][pos] as CourseCardElements).enrollment.enrollment = value;
+    courses[""][pos].url = pathArray.join("/") + (value === false ? "/inscribe?" : "/unscribe?") + requestArray[1];
+}
+
 const all_courses : {
     [key : string]: CourseCardElements[]
 } = {};
 const promises = [];
 const courses : CardsList = {};
+const trigger = ref(0);
+const reload = (response : any) => {
+    const requestArray = store.state.request.url.split("?");
+    const pathArray = requestArray[0].split("/");
+    const queryArray = requestArray[1].split("&");
+    updateCourses(courses,queryArray[0].split("=")[1],pathArray[pathArray.length -1] == "unscribe" ? false : (response.data ?? true));
+    trigger.value++;
+};
+
+let learning_areas : LearningArea[] = [];
 let selected_area : Ref<string>;
-let trigger = ref(0);
 let learning_block : LearningBlock | undefined;
 
 if ($axios != undefined) {
@@ -51,7 +71,11 @@ if ($axios != undefined) {
             promises.push($axios.get("/v1/courses?student_id=" + user_id + "&block_id=" + learning_block_id + "&area_id=" + learning_area.id)
                 .then(response => all_courses[learning_area.id] = (response.data.data as CourseSummaryProps[])
                     .map(x => (new CourseSummary(x))
-                        .toCard(store,(learning_block as LearningBlock),new Date(),"courses/" + x.id + "/" + (x.pending === "true" ? "unscribe" : "inscribe"))))
+                        .toCard(
+                            store,
+                            (learning_block as LearningBlock),
+                            new Date(),
+                            "/v1/students/" + user_id + "/" + (x.pending === "true" ? "unscribe" : "inscribe") + "?course_id=" + x.id + "&block_id=" + learning_block_id)))
                 .catch(() => all_courses[learning_area.id] = []));
         }
         await Promise.all(promises);
