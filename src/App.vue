@@ -10,7 +10,7 @@
 
             <ion-menu-toggle :auto-hide="false" v-for="(p, i) in menu[store.state.user.user]" :key="i">
               <ion-item @click="store.state.menuIndex = i" router-direction="root" :router-link="p.url" lines="none" :detail="false" class="hydrated" :class="{ selected: store.state.menuIndex === i }">
-                <ion-icon aria-hidden="true" class="ion-padding-end" :ios="p.iosIcon" :md="p.mdIcon"></ion-icon>
+                <ion-icon aria-hidden="true" class="ion-padding-end" :ios="icons[p.iconRef].ios" :md="icons[p.iconRef].md"></ion-icon>
                 <ion-label>{{ p.title[store.state.language] }}</ion-label>
               </ion-item>
             </ion-menu-toggle>
@@ -46,11 +46,13 @@ const image = computed(() => require("./assets/Logo_LIVO_Campus_POS_RGB.png"))
 
 const store = useStore();
 const menu : Menu = store.state.menu;
+const icons = store.state.icons;
 
 //Set menu index
-const path = window.location.pathname;
+let path = window.location.pathname;
 if (path !== undefined) {
-  store.state.menuIndex = menu[store.state.user.user].findIndex((page) => page.url === path);
+  path = path.split("/")[1];
+  store.state.menuIndex = menu[store.state.user.user].findIndex((page) => page.url.split("/")[1] === path);
 }
 </script>
 

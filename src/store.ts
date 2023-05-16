@@ -3,10 +3,15 @@ import { createStore } from "vuex";
 import {
     addCircleOutline,
     addCircleSharp,
+    addOutline,
+    addSharp,
+    arrowBackOutline,
+    arrowBackSharp,
     briefcaseOutline,
     briefcaseSharp,
     clipboardOutline,
     clipboardSharp,
+    closeOutline,
     easelOutline,
     easelSharp,
     informationCircleOutline,
@@ -30,8 +35,7 @@ export const store = createStore({
                         english: "Learning blocks"
                     },
                     url: '/learning_blocks',
-                    iosIcon: easelOutline,
-                    mdIcon: easelSharp,
+                    iconRef: "easel"
                 },
                 {
                     title: {
@@ -39,8 +43,7 @@ export const store = createStore({
                         english: "Curriculum"
                     },
                     url: '/curriculum',
-                    iosIcon: schoolOutline,
-                    mdIcon: schoolSharp,
+                    iconRef: "school"
                 },
                 {
                     title: {
@@ -48,8 +51,7 @@ export const store = createStore({
                         english: "OpenBadges"
                     },
                     url: '/openbadges',
-                    iosIcon: ribbonOutline,
-                    mdIcon: ribbonSharp,
+                    iconRef: "ribbon"
                 },
                 {
                     title: {
@@ -57,8 +59,7 @@ export const store = createStore({
                         english: "Citizenship report"
                     },
                     url: '/citizenship_report',
-                    iosIcon: clipboardOutline,
-                    mdIcon: clipboardSharp,
+                    iconRef: "clipboard"
                 },
                 {
                     title: {
@@ -66,8 +67,7 @@ export const store = createStore({
                         english: "Settings"
                     },
                     url: '/settings',
-                    iosIcon: settingsOutline,
-                    mdIcon: settingsSharp,
+                    iconRef: "settings"
                 },
                 {
                     title: {
@@ -75,8 +75,7 @@ export const store = createStore({
                         english: "Info"
                     },
                     url: '/info',
-                    iosIcon: informationCircleOutline,
-                    mdIcon: informationCircleSharp,
+                    iconRef: "information_circle"
                 }
             ],
             "teacher": [
@@ -86,8 +85,7 @@ export const store = createStore({
                         english: "Project courses"
                     },
                     url: '/project_courses',
-                    iosIcon: briefcaseOutline,
-                    mdIcon: briefcaseSharp,
+                    iconRef: "brief_case"
                 },
                 {
                     title: {
@@ -95,8 +93,7 @@ export const store = createStore({
                         english: "Course propose"
                     },
                     url: '/course_propose',
-                    iosIcon: addCircleOutline,
-                    mdIcon: addCircleSharp,
+                    iconRef: "add_circle"
                 },
                 {
                     title: {
@@ -104,8 +101,7 @@ export const store = createStore({
                         english: "Settings"
                     },
                     url: '/settings',
-                    iosIcon: settingsOutline,
-                    mdIcon: settingsSharp,
+                    iconRef: "settings"
                 },
                 {
                     title: {
@@ -113,13 +109,58 @@ export const store = createStore({
                         english: "Info"
                     },
                     url: '/info',
-                    iosIcon: informationCircleOutline,
-                    mdIcon: informationCircleSharp,
+                    iconRef: "information_circle"
                 }
             ],
             "admin": []
             },
             menuIndex: 0,
+            icons: {
+                easel: {
+                    ios: easelOutline,
+                    md: easelSharp,
+                },
+                school: {
+                    ios: schoolOutline,
+                    md: schoolSharp,
+                },
+                ribbon: {
+                    ios: ribbonOutline,
+                    md: ribbonSharp,
+                },
+                clipboard: {
+                    ios: clipboardOutline,
+                    md: clipboardSharp,
+                },
+                settings: {
+                    ios: settingsOutline,
+                    md: settingsSharp,
+                },
+                information_circle: {
+                    ios: informationCircleOutline,
+                    md: informationCircleSharp,
+                },
+                brief_case: {
+                    ios: briefcaseOutline,
+                    md: briefcaseSharp,
+                },
+                add_circle: {
+                    ios: addCircleOutline,
+                    md: addCircleSharp,
+                },
+                arrow_back: {
+                    ios: arrowBackOutline,
+                    md: arrowBackSharp
+                },
+                add: {
+                    ios: addOutline,
+                    md: addSharp
+                },
+                close: {
+                    ios: closeOutline,
+                    md: closeOutline
+                }
+            },
             language: "italian",
             elements: {
                 "italian": {
@@ -129,9 +170,14 @@ export const store = createStore({
                     future: "Futuri",
                     upcoming: "Imminente",
                     completed: "Completati",
-                    noCards: "Nessun blocco di apprendimento",
+                    noBlocks: "Nessun blocco di apprendimento",
                     courses: "Corsi",
                     learning_area: "Area di apprendimento",
+                    noCourses: "Nessun corso",
+                    credits: "Crediti",
+                    pending: "In attesa",
+                    enrolled: "Iscritto",
+                    not_enrolled: "Non iscritto"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -140,9 +186,14 @@ export const store = createStore({
                     future: "Future",
                     upcoming: "Upcoming",
                     completed: "Completed",
-                    noCards: "No learning blocks",
+                    noBLocks: "No learning blocks",
                     courses: "Courses",
                     learning_area: "Learning area",
+                    noCourses: "No courses",
+                    credits: "Credits",
+                    pending: "Pending",
+                    enrolled: "Enrolled",
+                    not_enrolled: "Not enrolled"
                 }
             },
             user: {
