@@ -1,9 +1,11 @@
 <template>
     <ion-grid>
         <ion-row>
-            <ion-col>
+            <ion-col size="auto">
                 <ion-icon @click="$router.go(-1)" aria-hidden="true" class="ion-padding-end" :ios="icons['arrow_back'].ios" :md="icons['arrow_back'].md"></ion-icon> <!--Da sistemare-->
-                <ion-title>{{ head_content.title }}</ion-title>
+            </ion-col>
+            <ion-col>
+                <ion-title style="wid">{{ head_content.title }}</ion-title>
             </ion-col>
         </ion-row>
         <ion-row>
