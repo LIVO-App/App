@@ -67,7 +67,7 @@ const props = defineProps({
     "url": String
 });
 defineEmits(["execute_link"])
-const button = props.url != undefined && props.url != '';
+const button = props.enrollment.editable && props.url != undefined && props.url != '';
 </script>
 
 <style>
