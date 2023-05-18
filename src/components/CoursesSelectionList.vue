@@ -8,7 +8,7 @@
                 <loading-component />
             </template>
         </suspense>
-        <custom-select v-model="selected_area" :learning_areas="learning_areas" />
+        <custom-select v-model="selected_area" :list="learning_areas" :label="learning_area + ':'" :aria_label="learning_area" :placeholder="placeholder" :getCompleteName="getCorrectName" />
         <list-card :key="trigger" @execute_link="changeEnrollment($axios,remainingCredits,selected_area)" :emptiness_message="elements[language].noCourses" v-model:cards="courses" />
     </div>
 </template>
@@ -21,21 +21,13 @@ import { inject, Ref, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 
-const store = useStore();
-const $axios : AxiosInstance | undefined = inject("$axios");
-const $route = useRoute();
-const language : Language = store.state.language
-const elements : ElementsList = store.state.elements;
-const user_id : string = store.state.user.id;
-const learning_block_id = $route.params.id;
-
 function updateCourses(courses : CardsList, learning_block_id : number, value : Date | boolean) {
 
     const course = courses[""].find(c => c.id == "" + learning_block_id) as CourseCardElements;
     const requestArray = course.url?.split("?") ?? ["",""];
     const pathArray = requestArray[0].split("/");
     pathArray?.pop();
-    
+
     course.enrollment.enrollment = value;
     course.url = pathArray.join("/") + (value === false ? "/inscribe?" : "/unscribe?") + requestArray[1];
 }
@@ -57,11 +49,19 @@ async function changeEnrollment($axios : AxiosInstance | undefined, remainingCre
     };
 
     if ($axios != undefined && (unscribe || remainingCredits[selected_area] >= course.credits)) {
-        executeLink(store,$axios,reload);
+        executeLink($axios,store,reload);
     } else {
         //Vedere se fare qualcosa
     }
 }
+
+const store = useStore();
+const $axios : AxiosInstance | undefined = inject("$axios");
+const $route = useRoute();
+const language : Language = store.state.language
+const elements : ElementsList = store.state.elements;
+const user_id : string = store.state.user.id;
+const learning_block_id = $route.params.id;
 
 const all_courses : {
     [key : string]: CourseCardElements[]
@@ -72,6 +72,9 @@ const trigger = ref(0);
 const remainingCredits : {
     [key : string]: number
 } = {};
+const getCorrectName = (option: LearningArea) => option[`${language}_title`];
+const learning_area = elements[language].learning_area;
+const placeholder = elements[language].select + (language == "italian" ? " l'" : " the ") + learning_area;
 
 let learning_areas : LearningArea[] = [];
 let selected_area : Ref<string>;
@@ -85,7 +88,7 @@ if ($axios != undefined) {
         learning_areas = await $axios.get("/v1/learning_areas?all_data=true&credits=true&block_id=" + learning_block_id)
             .then(response => response.data.data)
             .catch(() => []);
-        selected_area = ref(learning_areas[1].id);
+        selected_area = ref(learning_areas[0].id);
         for (const learning_area of learning_areas) {
             promises.push($axios.get("/v1/courses?student_id=" + user_id + "&block_id=" + learning_block_id + "&area_id=" + learning_area.id)
                 .then(response => {

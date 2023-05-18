@@ -177,7 +177,8 @@ export const store = createStore({
                     credits: "Crediti",
                     pending: "In attesa",
                     enrolled: "Iscritto",
-                    not_enrolled: "Non iscritto"
+                    not_enrolled: "Non iscritto",
+                    select: "Seleziona"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -193,7 +194,8 @@ export const store = createStore({
                     credits: "Credits",
                     pending: "Pending",
                     enrolled: "Enrolled",
-                    not_enrolled: "Not enrolled"
+                    not_enrolled: "Not enrolled",
+                    select: "Select"
                 }
             },
             user: {
