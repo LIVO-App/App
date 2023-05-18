@@ -25,7 +25,7 @@ const props = defineProps({
     "placeholder": String,
     "getCompleteName": {
         type: Function,
-        default: (option: any) => String
+        default: (option: any) => option.id
     }
 });
 defineEmits(["update:selected_option"]);
