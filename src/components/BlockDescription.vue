@@ -46,7 +46,7 @@ const head_content = {
 if ($axios != undefined) {
     await $axios.get("/v1/learning_blocks/" + props.id)
         .then(async (response) => {
-            const learning_block_card = await (new LearningBlock(response.data.data)).toCard($axios,store,new Date(),true,false);
+            const learning_block_card = await (new LearningBlock(response.data.data)).toCard($axios,store,true,false);
             head_content.title = learning_block_card.title;
             head_content.subtitle = learning_block_card.subtitle;
             head_content.content = learning_block_card.content;

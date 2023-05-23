@@ -57,7 +57,7 @@ type OrdinaryClass = {
 class Enrollment {
     private _enrollment: string
     private _editable: boolean
-    constructor(pending : string, learning_block : LearningBlock, reference : Date, open_enrollment = false) {
+    constructor(pending : string, learning_block : LearningBlock, reference = new Date(), open_enrollment = false) {
         this._enrollment = pending;
         this._editable = learning_block.getStatus(reference) == LearningBlockStatus.FUTURE && open_enrollment;
     }
@@ -189,7 +189,7 @@ class CourseSummary implements CourseSummaryProps {
         this.english_displayed_name = courseObj.english_displayed_name;
     }
 
-    toCard(store : Store<any>, learning_block : LearningBlock, reference : Date, path? : string, open_enrollment = false) : CourseCardElements {
+    toCard(store : Store<any>, learning_block : LearningBlock, path? : string, open_enrollment = false, reference = new Date()) : CourseCardElements {
         const language : Language = store.state.language;
         return {
             id: "" + this.id,
@@ -227,7 +227,7 @@ class LearningBlock implements LearningBlockProps {
         this.end = blockObj.end;
     }
 
-    getStatus(reference : Date) { // future [TDB] upcoming [SD] current [ED] completed
+    getStatus(reference = new Date()) { // future [TDB] upcoming [SD] current [ED] completed
         const startDate = new Date(this.start);
         const endDate = new Date(this.end);
         const tenDaysBefore = new Date(startDate);
@@ -264,7 +264,7 @@ class LearningBlock implements LearningBlockProps {
         return course_list;
     }*/
 
-    async getBlockList($axios : AxiosInstance, store : Store<any>, reference : Date, credits? : boolean, courses_list? : boolean) : Promise<string> {
+    async getBlockList($axios : AxiosInstance, store : Store<any>, reference = new Date(), credits? : boolean, courses_list? : boolean) : Promise<string> {
     
         const language : Language = store.state.language;
         const status = this.getStatus(reference);
@@ -296,7 +296,7 @@ class LearningBlock implements LearningBlockProps {
         return block_list;
     }
 
-    async toCard($axios : AxiosInstance, store : Store<any>, reference : Date, credits? : boolean, courses_list? : boolean) : Promise<GeneralCardElements> {
+    async toCard($axios : AxiosInstance, store : Store<any>, credits? : boolean, courses_list? : boolean, reference = new Date()) : Promise<GeneralCardElements> {
         
         const language = store.state.language;
         const elements = store.state.elements;

@@ -106,9 +106,8 @@ if ($axios != undefined) {
                             .toCard(
                                 store,
                                 (learning_block as LearningBlock),
-                                new Date(),
                                 "/v1/students/" + user_id + "/" + (x.pending === "true" ? "unscribe" : "inscribe") + "?course_id=" + x.id + "&block_id=" + learning_block_id,
-                                learning_block?.getStatus(new Date()) == LearningBlockStatus.FUTURE && (learning_block_position == 0 || learning_blocks[learning_block_position - 1]?.getStatus(new Date()) == LearningBlockStatus.CURRENT)));
+                                learning_block?.getStatus() == LearningBlockStatus.FUTURE && (learning_block_position == 0 || learning_blocks[learning_block_position - 1]?.getStatus() == LearningBlockStatus.CURRENT)));
                 })
                 .catch(() => all_courses[learning_area.id] = []));
                 
