@@ -180,7 +180,10 @@ export const store = createStore({
                     not_enrolled: "Non iscritto",
                     select: "Seleziona",
                     open_enrollment: "Iscrizioni aperte",
-                    planned: "Pianificati"
+                    planned: "Pianificati",
+                    error: "Errore",
+                    maximumCreditsError: "Crediti massimi raggiunti",
+                    ok: "Ok"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -199,7 +202,10 @@ export const store = createStore({
                     not_enrolled: "Not enrolled",
                     select: "Select",
                     open_enrollment: "Open enrollment",
-                    planned: "Planned"
+                    planned: "Planned",
+                    error: "Error",
+                    maximumCreditsError: "Maximum credits reached",
+                    ok: "Ok"
                 }
             },
             user: {

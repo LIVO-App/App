@@ -1,5 +1,12 @@
 <template>
     <div class="ion-padding-horizontal">
+        <ion-alert
+            :is-open="openAlert"
+            :header="elements[language].error"
+            :message="elements[language].maximumCreditsError"
+            :buttons="alertButtons"
+            @didDismiss="setAlertStatus(false)"
+        ></ion-alert>
         <suspense>
             <template #default>
                 <block-description :key="trigger" :id="$route.params.id" />
@@ -9,30 +16,20 @@
             </template>
         </suspense>
         <custom-select v-model="selected_area" :list="learning_areas" :label="learning_area + ':'" :aria_label="learning_area" :placeholder="placeholder" :getCompleteName="getCorrectName" />
-        <list-card :key="trigger" @execute_link="changeEnrollment($axios,remainingCredits,selected_area)" :emptiness_message="elements[language].noCourses" v-model:cards_list="courses" />
+        <list-card :key="trigger" @execute_link="changeEnrollment($axios,store,courses,remainingCredits,selected_area)" :emptiness_message="elements[language].noCourses" v-model:cards_list="courses" />
     </div>
 </template>
 
 <script setup lang="ts">
 import { CardsList, CourseCardElements, CourseSummary, CourseSummaryProps, ElementsList, Language, LearningArea, LearningBlock, LearningBlockStatus, OrderedCardsList } from '@/types';
-import { executeLink } from '@/utils';
+import { executeLink, updateCourses } from '@/utils';
+import { IonAlert } from '@ionic/vue';
 import { AxiosInstance } from 'axios';
 import { inject, Ref, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { useStore } from 'vuex';
+import { Store, useStore } from 'vuex';
 
-function updateCourses(courses : OrderedCardsList, learning_block_id : number, value : Date | boolean) {
-
-    const course = courses.cards[""].find(c => c.id == "" + learning_block_id) as CourseCardElements;
-    const requestArray = course.url?.split("?") ?? ["",""];
-    const pathArray = requestArray[0].split("/");
-    pathArray?.pop();
-
-    course.enrollment.enrollment = value;
-    course.url = pathArray.join("/") + (value === false ? "/inscribe?" : "/unscribe?") + requestArray[1];
-}
-
-async function changeEnrollment($axios : AxiosInstance | undefined, remainingCredits : {[key : string]: number}, selected_area : string) {
+const changeEnrollment = ($axios : AxiosInstance | undefined, store : Store<any>, courses : OrderedCardsList, remainingCredits : {[key : string]: number}, selected_area : string) => {
 
     const requestArray = store.state.request.url.split("?");
     const pathArray = requestArray[0].split("/");
@@ -48,12 +45,20 @@ async function changeEnrollment($axios : AxiosInstance | undefined, remainingCre
         trigger.value++;
     };
 
-    if ($axios != undefined && (unscribe || remainingCredits[selected_area] >= course.credits)) {
-        executeLink($axios,undefined,reload,err => err,undefined,store);
+    if ($axios != undefined) {
+        if (unscribe || remainingCredits[selected_area] >= course.credits) {
+            executeLink($axios,undefined,reload,err => err,undefined,store);
+        } else {
+            return new Promise(() => setAlertStatus(true));
+        }
     } else {
-        //Vedere se fare qualcosa
+        console.error("Connection failed");
     }
 }
+const getCorrectName = (option: LearningArea) => option[`${language}_title`];
+const setAlertStatus = (state: boolean) => {
+    openAlert.value = state;
+};
 
 const store = useStore();
 const $axios : AxiosInstance | undefined = inject("$axios");
@@ -73,9 +78,10 @@ const trigger = ref(0);
 const remainingCredits : {
     [key : string]: number
 } = {};
-const getCorrectName = (option: LearningArea) => option[`${language}_title`];
 const learning_area = elements[language].learning_area;
 const placeholder = elements[language].select + (language == "italian" ? " l'" : " the ") + learning_area;
+const alertButtons = [elements[language].ok];
+const openAlert = ref(false);
 
 let learning_areas : LearningArea[] = [];
 let selected_area : Ref<string>;
