@@ -81,9 +81,9 @@ const learning_area = getCurrentElement(store,"learning_area");
 const placeholder = getCurrentElement(store,"select") + (language == "italian" ? " l'" : " the ") + learning_area;
 const alertButtons = [getCurrentElement(store,"ok")];
 const openAlert = ref(false);
+const selected_area = ref("");
 
 let learning_areas : LearningArea[] = [];
-let selected_area : Ref<string>;
 let learning_blocks : LearningBlock[];
 let learning_block : LearningBlock | undefined;
 let learning_block_position : number;
@@ -99,7 +99,7 @@ if ($axios != undefined) {
         learning_areas = await executeLink($axios,"/v1/learning_areas?all_data=true&credits=true&block_id=" + learning_block_id,
             response => response.data.data,
             () => []);
-        selected_area = ref(learning_areas[0].id);
+        selected_area.value = learning_areas.length > 0 ? learning_areas[0].id : "";
         for (const learning_area of learning_areas) {
             promises.push(executeLink($axios,"/v1/courses?student_id=" + user_id + "&block_id=" + learning_block_id + "&area_id=" + learning_area.id,
                 response => {
@@ -117,9 +117,9 @@ if ($axios != undefined) {
                 
         }
         await Promise.all(promises);
-        courses.cards[""] = all_courses[selected_area.value];
+        courses.cards[""] = all_courses[selected_area.value] ?? [];
         watch(selected_area,n => {
-            courses.cards[""] = all_courses[n];
+            courses.cards[""] = all_courses[n] ?? [];
             trigger.value++;
         })
     }
