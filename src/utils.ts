@@ -23,9 +23,9 @@ function isCourse(card : CardElements) : card is CourseCardElements {
     return "credits" in card;
 }
 
-async function executeLink($axios : AxiosInstance | undefined, store? : Store<any>, success = (response : any) => response, fail = (err : string) => err, url? : string | undefined, method? : Method) {
+async function executeLink($axios : AxiosInstance | undefined, store? : Store<any>, success = (response : any) => response, fail : (err: string) => any = (err : string) => err, url? : string | undefined, method? : Method) {
     const toExecute = url ?? store?.state.request.url;
-    const howExecute = method ?? store?.state.request.method;
+    const howExecute = method ?? store?.state.request.method ?? "get";
     let request;
     if ($axios != undefined && toExecute != undefined) {
         switch (howExecute) {

@@ -6,25 +6,35 @@
     </ion-card-header>
     <ion-card-content style="overflow-y: auto;">
         <ion-list>
-            <template v-if="Object.keys(props.cards).length === 0">
+            <template v-if="Object.keys(props.cards_list.cards).length === 0">
                 <ion-item>
                     <ion-label class="ion-text-wrap ion-text-center">{{ props.emptiness_message }}</ion-label>
                 </ion-item>
             </template>
-            <template v-else-if="props.cards[''] != undefined">
-                <template v-for="card in props.cards['']">
-                    <item-card v-if="isGeneral(card)" :key="'card-general-' + card.id" :title="card.title" :subtitle="card.subtitle" :content="card.content" :url="card.url" />
-                    <course-card v-else-if="isCourse(card)" @execute_link="$emit('execute_link')" :key="'card-course-' + card.id" :credits="card.credits" :content="card.content" :enrollment="card.enrollment" :url="card.url" />
+            <template v-else-if="props.cards_list.cards[''] != undefined">
+                <ion-item v-if="props.cards_list.cards[''].length === 0">
+                    <ion-label class="ion-text-wrap ion-text-center">{{ props.emptiness_message }}</ion-label>
+                </ion-item>
+                <template v-else>
+                    <template v-for="card in props.cards_list.cards['']">
+                        <item-card v-if="isGeneral(card)" :key="'card-general-' + card.id" :title="card.title" :subtitle="card.subtitle" :content="card.content" :url="card.url" />
+                        <course-card v-else-if="isCourse(card)" @execute_link="$emit('execute_link')" :key="'card-course-' + card.id" :credits="card.credits" :content="card.content" :enrollment="card.enrollment" :url="card.url" />
+                    </template>
                 </template>
             </template>
             <template v-else>
-                <ion-item-group v-for="(card_list, key) in props.cards" :key="'group-' + key">
+                <ion-item-group v-for="ordered_cards in props.cards_list.order" :key="'group-' + ordered_cards.key">
                     <ion-item-divider color="light">
-                        <ion-label class="ion-padding-end item-text-wrap">{{ getCompleteSchoolYear(typeof key === "string" ? parseInt(key) : key) }}</ion-label>
+                        <ion-label class="ion-padding-end item-text-wrap">{{ ordered_cards.title }}</ion-label>
                     </ion-item-divider>
-                    <template v-for="card in card_list">
-                        <item-card v-if="isGeneral(card)" :key="'card-general-' + card.id" :title="card.title" :subtitle="card.subtitle" :content="card.content" :url="card.url" />
-                        <course-card v-else-if="isCourse(card)" :key="'card-course-' + card.id" :credits="card.credits" :content="card.content" :enrollment="card.enrollment" :url="card.url" />
+                    <ion-item v-if="props.cards_list.cards[ordered_cards.key].length === 0">
+                        <ion-label class="ion-text-wrap ion-text-center">{{ props.emptiness_message }}</ion-label>
+                    </ion-item>
+                    <template v-else>
+                        <template v-for="card in props.cards_list.cards[ordered_cards.key]">
+                            <item-card v-if="isGeneral(card)" :key="'card-general-' + card.id" :title="card.title" :subtitle="card.subtitle" :content="card.content" :url="card.url" />
+                            <course-card v-else-if="isCourse(card)" :key="'card-course-' + card.id" :credits="card.credits" :content="card.content" :enrollment="card.enrollment" :url="card.url" />
+                        </template>
                     </template>
                 </ion-item-group>
             </template>
@@ -36,8 +46,8 @@
 <script setup lang="ts">
 import { IonCard,IonCardHeader,IonCardTitle,IonCardSubtitle,IonCardContent,IonList,IonItemGroup,IonItemDivider,IonLabel,IonItem } from "@ionic/vue";
 import { PropType } from "vue";
-import { CardElements } from "../types";
-import { getCompleteSchoolYear, isGeneral, isCourse } from "../utils";
+import { OrderedCardsList } from "../types";
+import { isGeneral, isCourse } from "../utils";
 
 const props = defineProps({
     "title": String,
@@ -46,14 +56,12 @@ const props = defineProps({
         type: String,
         required: true
     },
-    "cards": {
-        type: Object as PropType<{
-            [key: string]: CardElements[]
-        }>,
+    "cards_list": {
+        type: Object as PropType<OrderedCardsList>,
         required: true
     }
 });
-defineEmits(["execute_link"])
+defineEmits(["execute_link"]);
 </script>
 
 

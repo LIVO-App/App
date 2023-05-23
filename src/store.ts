@@ -178,7 +178,9 @@ export const store = createStore({
                     pending: "In attesa",
                     enrolled: "Iscritto",
                     not_enrolled: "Non iscritto",
-                    select: "Seleziona"
+                    select: "Seleziona",
+                    open_enrollment: "Iscrizioni aperte",
+                    planned: "Pianificati"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -187,7 +189,7 @@ export const store = createStore({
                     future: "Future",
                     upcoming: "Upcoming",
                     completed: "Completed",
-                    noBLocks: "No learning blocks",
+                    noBlocks: "No learning blocks",
                     courses: "Courses",
                     learning_area: "Learning area",
                     noCourses: "No courses",
@@ -195,7 +197,9 @@ export const store = createStore({
                     pending: "Pending",
                     enrolled: "Enrolled",
                     not_enrolled: "Not enrolled",
-                    select: "Select"
+                    select: "Select",
+                    open_enrollment: "Open enrollment",
+                    planned: "Planned"
                 }
             },
             user: {

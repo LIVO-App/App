@@ -57,9 +57,9 @@ type OrdinaryClass = {
 class Enrollment {
     private _enrollment: string
     private _editable: boolean
-    constructor(pending : string, learning_block : LearningBlock, reference : Date) {
+    constructor(pending : string, learning_block : LearningBlock, reference : Date, open_enrollment = false) {
         this._enrollment = pending;
-        this._editable = learning_block.getStatus(reference) == LearningBlockStatus.FUTURE;
+        this._editable = learning_block.getStatus(reference) == LearningBlockStatus.FUTURE && open_enrollment;
     }
     get enrollment() : Date | boolean {
         if (this._enrollment === "true") {
@@ -189,16 +189,17 @@ class CourseSummary implements CourseSummaryProps {
         this.english_displayed_name = courseObj.english_displayed_name;
     }
 
-    toCard(store : Store<any>, learning_block : LearningBlock, reference : Date, path? : string) : CourseCardElements {
+    toCard(store : Store<any>, learning_block : LearningBlock, reference : Date, path? : string, open_enrollment = false) : CourseCardElements {
         const language : Language = store.state.language;
         return {
             id: "" + this.id,
             group: "",
             credits: this.credits,
             content: this[`${language}_title`],
-            enrollment: new Enrollment(this.pending,learning_block,reference),
-            url: path != undefined ? path : undefined
+            enrollment: new Enrollment(this.pending,learning_block,reference,open_enrollment),
+            url: path
         }
+        
     }
 }
 
@@ -324,8 +325,18 @@ type IconsList = {
     [key : string]: IconAlternatives
 }
 
-type CardsList = {
-    [key : string]: CardElements[]
+type Role = "" | "student" | "teacher" | "admin";
+
+type CardsList<T = CardElements> = {
+    [key : string | number]: T[]
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseSummary, IconAlternatives, IconsList, CardsList }
+type OrderedCardsList<T = CardElements> = {
+    order: {
+        key: string | number,
+        title: string | number
+    }[],
+    cards: CardsList<T>
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, Course, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseSummary, IconAlternatives, IconsList, CardsList, Role, OrderedCardsList }
