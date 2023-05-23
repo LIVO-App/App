@@ -1,6 +1,6 @@
 import { AxiosInstance, Method } from "axios";
 import { Store } from "vuex";
-import { getRagneString } from "./utils";
+import { executeLink, getRagneString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -274,14 +274,14 @@ class LearningBlock implements LearningBlockProps {
         let courses : CourseSummary[];
         let block_list = put_courses_list ? "" : "<ul>";
     
-        const learning_areas = await $axios.get("/v1/learning_areas?all_data=true&block_id=" + this.id + "&credits=" + put_credits)
-            .then(response => response.data.data)
-            .catch(() => []);
+        const learning_areas = await executeLink($axios,"/v1/learning_areas?all_data=true&block_id=" + this.id + "&credits=" + put_credits,
+            response => response.data.data,
+            () => [])
         
         for (const area of learning_areas) {
-            courses = await $axios.get("/v1/courses?student_id=" + store.state.user.id + "&block_id=" + this.id + "&area_id=" + area.id)
-                .then(response => (response.data.data as CourseSummaryProps[]).map(x => new CourseSummary(x)))
-                .catch(() => []);
+            courses = await executeLink($axios,"/v1/courses?student_id=" + store.state.user.id + "&block_id=" + this.id + "&area_id=" + area.id,
+                response => (response.data.data as CourseSummaryProps[]).map(x => new CourseSummary(x)),
+                () => [])
             block_list += (put_courses_list ? "<label>" : "<li>") + area[`${store.state.language as Language}_title`] + ": " + (put_credits ? courses.filter(course => course.pending == "true").reduce((pv, cv) => pv + cv.credits, 0) + "/" + area.credits : "") + (put_courses_list ? "</label>" : "</li>");
             if (put_courses_list) {
                 block_list += courses.length > 0 ? "<ul>" : "<br />";

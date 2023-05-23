@@ -49,7 +49,7 @@ async function changeEnrollment($axios : AxiosInstance | undefined, remainingCre
     };
 
     if ($axios != undefined && (unscribe || remainingCredits[selected_area] >= course.credits)) {
-        executeLink($axios,store,reload);
+        executeLink($axios,undefined,reload,err => err,undefined,store);
     } else {
         //Vedere se fare qualcosa
     }
@@ -84,21 +84,20 @@ let learning_block : LearningBlock | undefined;
 let learning_block_position : number;
 
 if ($axios != undefined) {
-    learning_blocks = await executeLink($axios,store,response => response.data.data.map((a : any) => new LearningBlock(a)),() => [],"/v1/learning_blocks?year_of=" + learning_block_id);
-    /*learning_block = await $axios.get("/v1/learning_blocks/" + learning_block_id)
-        .then(response => new LearningBlock(response.data.data))
-        .catch(() => undefined);*/
+    learning_blocks = await executeLink($axios,"/v1/learning_blocks?year_of=" + learning_block_id,
+        response => response.data.data.map((a : any) => new LearningBlock(a)),
+        () => []);
     learning_block_position = learning_blocks.findIndex(a => a.id == parseInt(learning_block_id));
     learning_block = learning_blocks[learning_block_position];
     
     if (learning_block != undefined) {
-        learning_areas = await $axios.get("/v1/learning_areas?all_data=true&credits=true&block_id=" + learning_block_id)
-            .then(response => response.data.data)
-            .catch(() => []);
+        learning_areas = await executeLink($axios,"/v1/learning_areas?all_data=true&credits=true&block_id=" + learning_block_id,
+            response => response.data.data,
+            () => []);
         selected_area = ref(learning_areas[0].id);
         for (const learning_area of learning_areas) {
-            promises.push($axios.get("/v1/courses?student_id=" + user_id + "&block_id=" + learning_block_id + "&area_id=" + learning_area.id)
-                .then(response => {
+            promises.push(executeLink($axios,"/v1/courses?student_id=" + user_id + "&block_id=" + learning_block_id + "&area_id=" + learning_area.id,
+                response => {
                     const tmp_courses : CourseSummaryProps[] = response.data.data;
                     remainingCredits[learning_area.id] = tmp_courses.reduce((a,b) => b.pending === "true" ? a - b.credits : a,learning_area.credits);
                     all_courses[learning_area.id] = tmp_courses
@@ -108,8 +107,8 @@ if ($axios != undefined) {
                                 (learning_block as LearningBlock),
                                 "/v1/students/" + user_id + "/" + (x.pending === "true" ? "unscribe" : "inscribe") + "?course_id=" + x.id + "&block_id=" + learning_block_id,
                                 learning_block?.getStatus() == LearningBlockStatus.FUTURE && (learning_block_position == 0 || learning_blocks[learning_block_position - 1]?.getStatus() == LearningBlockStatus.CURRENT)));
-                })
-                .catch(() => all_courses[learning_area.id] = []));
+                },
+                () => all_courses[learning_area.id] = []));
                 
         }
         await Promise.all(promises);

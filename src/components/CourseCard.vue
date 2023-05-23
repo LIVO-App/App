@@ -40,12 +40,9 @@
 <script setup lang="ts">
 import { ElementsList, Enrollment, IconsList, Language } from "@/types";
 import { IonItem,IonCard,IonCardContent,IonGrid,IonRow,IonCol,IonText,IonButton,IonIcon } from "@ionic/vue";
-import { AxiosInstance } from "axios";
-import { inject } from "vue";
 import { useStore } from "vuex";
 
 const store = useStore();
-const $axios : AxiosInstance | undefined = inject("$axios");
 
 const language : Language = store.state.language;
 const elements : ElementsList = store.state.elements;

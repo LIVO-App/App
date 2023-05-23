@@ -21,6 +21,7 @@
 
 <script setup lang="ts">
 import { IconsList, LearningBlock } from "@/types";
+import { executeLink } from "@/utils";
 import { IonGrid, IonRow, IonCol, IonIcon, IonTitle, IonText } from "@ionic/vue";
 import { AxiosInstance } from "axios";
 import { inject } from "vue";
@@ -44,15 +45,12 @@ const head_content = {
 };
 
 if ($axios != undefined) {
-    await $axios.get("/v1/learning_blocks/" + props.id)
-        .then(async (response) => {
+    await executeLink($axios,"/v1/learning_blocks/" + props.id,
+        async (response) => {
             const learning_block_card = await (new LearningBlock(response.data.data)).toCard($axios,store,true,false);
             head_content.title = learning_block_card.title;
             head_content.subtitle = learning_block_card.subtitle;
             head_content.content = learning_block_card.content;
-        })
-        .catch((error) => {
-            console.log(error);
         });
 } else {
     console.error("Connection failed");
