@@ -1,5 +1,5 @@
 import { AxiosInstance, Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, OrderedCardsList } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, OrderedCardsList, Language, ElementsList } from "./types";
 import { Store } from "vuex";
 
 function getCompleteSchoolYear(year: number) {
@@ -68,4 +68,12 @@ function updateCourses(courses : OrderedCardsList, learning_block_id : number, v
     course.url = pathArray.join("/") + (value === false ? "/inscribe?" : "/unscribe?") + requestArray[1];
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, updateCourses }
+function getCurrentElement(store : Store<any>, key : string) {
+    
+    const language : Language = store.state.language;
+    const elements : ElementsList = store.state.elements;
+
+    return elements[language][key];
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, updateCourses, getCurrentElement }

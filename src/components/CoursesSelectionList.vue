@@ -2,8 +2,8 @@
     <div class="ion-padding-horizontal">
         <ion-alert
             :is-open="openAlert"
-            :header="elements[language].error"
-            :message="elements[language].maximumCreditsError"
+            :header="getCurrentElement(store,'error')"
+            :message="getCurrentElement(store,'maximumCreditsError')"
             :buttons="alertButtons"
             @didDismiss="setAlertStatus(false)"
         ></ion-alert>
@@ -16,13 +16,13 @@
             </template>
         </suspense>
         <custom-select v-model="selected_area" :list="learning_areas" :label="learning_area + ':'" :aria_label="learning_area" :placeholder="placeholder" :getCompleteName="getCorrectName" />
-        <list-card :key="trigger" @execute_link="changeEnrollment($axios,store,courses,remainingCredits,selected_area)" :emptiness_message="elements[language].noCourses" v-model:cards_list="courses" />
+        <list-card :key="trigger" @execute_link="changeEnrollment($axios,store,courses,remainingCredits,selected_area)" :emptiness_message="getCurrentElement(store,'noCourses')" v-model:cards_list="courses" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { CardsList, CourseCardElements, CourseSummary, CourseSummaryProps, ElementsList, Language, LearningArea, LearningBlock, LearningBlockStatus, OrderedCardsList } from '@/types';
-import { executeLink, updateCourses } from '@/utils';
+import { CardsList, CourseCardElements, CourseSummary, CourseSummaryProps, Language, LearningArea, LearningBlock, LearningBlockStatus, OrderedCardsList } from '@/types';
+import { executeLink, getCurrentElement, updateCourses } from '@/utils';
 import { IonAlert } from '@ionic/vue';
 import { AxiosInstance } from 'axios';
 import { inject, Ref, ref, watch } from 'vue';
@@ -63,8 +63,7 @@ const setAlertStatus = (state: boolean) => {
 const store = useStore();
 const $axios : AxiosInstance | undefined = inject("$axios");
 const $route = useRoute();
-const language : Language = store.state.language
-const elements : ElementsList = store.state.elements;
+const language : Language = store.state.language;
 const user_id : string = store.state.user.id;
 const learning_block_id : string = $route.params.id as string;
 
@@ -78,9 +77,9 @@ const trigger = ref(0);
 const remainingCredits : {
     [key : string]: number
 } = {};
-const learning_area = elements[language].learning_area;
-const placeholder = elements[language].select + (language == "italian" ? " l'" : " the ") + learning_area;
-const alertButtons = [elements[language].ok];
+const learning_area = getCurrentElement(store,"learning_area");
+const placeholder = getCurrentElement(store,"select") + (language == "italian" ? " l'" : " the ") + learning_area;
+const alertButtons = [getCurrentElement(store,"ok")];
 const openAlert = ref(false);
 
 let learning_areas : LearningArea[] = [];

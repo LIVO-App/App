@@ -1,6 +1,6 @@
 import { AxiosInstance, Method } from "axios";
 import { Store } from "vuex";
-import { executeLink, getRagneString } from "./utils";
+import { executeLink, getCurrentElement, getRagneString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -298,17 +298,15 @@ class LearningBlock implements LearningBlockProps {
 
     async toCard($axios : AxiosInstance, store : Store<any>, credits? : boolean, courses_list? : boolean, reference = new Date()) : Promise<GeneralCardElements> {
         
-        const language = store.state.language;
-        const elements = store.state.elements;
         const status = this.getStatus(reference);
         const put_credits = credits ?? status == LearningBlockStatus.FUTURE;
         const tmp_element : GeneralCardElements = {
             id: "" + this.id,
             group: this.school_year,
-            title: elements[language].block + " " + this.number,
+            title: getCurrentElement(store,"block") + " " + this.number,
             subtitle: getRagneString(new Date(this.start),new Date(this.end)),
             content: status == LearningBlockStatus.COMPLETED ? "" : 
-                (put_credits ? "<label>" + elements[language].constraints + ":</label>" : "") + (await this.getBlockList($axios, store, reference,credits,courses_list)),
+                (put_credits ? "<label>" + getCurrentElement(store,"constraints") + ":</label>" : "") + (await this.getBlockList($axios, store, reference,credits,courses_list)),
             url: "learning_blocks/" + this.id
         };
         

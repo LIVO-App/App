@@ -2,29 +2,28 @@
     <ion-grid><!-- v-if="learning_blocks.loaded">-->
         <ion-row>
             <ion-col size="12" size-md="6">
-                <list-card :title="elements[language].current" :emptiness_message="elements[language].noBlocks" :cards_list="learning_blocks.current" />
-                <list-card :title="elements[language].future" :emptiness_message="elements[language].noBlocks" :cards_list="learning_blocks.future" />
+                <list-card :title="getCurrentElement(store,'current')" :emptiness_message="noBlocks" :cards_list="learning_blocks.current" />
+                <list-card :title="getCurrentElement(store,'future')" :emptiness_message="noBlocks" :cards_list="learning_blocks.future" />
             </ion-col>
             <ion-col size="12" size-md="6">
-                <list-card :title="elements[language].upcoming" :emptiness_message="elements[language].noBlocks" :cards_list="learning_blocks.upcoming" />
-                <list-card :title="elements[language].completed" :emptiness_message="elements[language].noBlocks" :cards_list="learning_blocks.completed" />
+                <list-card :title="getCurrentElement(store,'upcoming')" :emptiness_message="noBlocks" :cards_list="learning_blocks.upcoming" />
+                <list-card :title="getCurrentElement(store,'completed')" :emptiness_message="noBlocks" :cards_list="learning_blocks.completed" />
             </ion-col>
         </ion-row>
     </ion-grid>
 </template>
 
 <script setup lang="ts">
-import { Language, GeneralCardElements, LearningBlockStatus, OrdinaryClass, LearningBlock, ElementsList, OrderedCardsList } from '@/types';
+import { GeneralCardElements, LearningBlockStatus, OrdinaryClass, LearningBlock, OrderedCardsList } from '@/types';
 import { IonGrid, IonRow, IonCol } from "@ionic/vue"
 import { inject, reactive } from 'vue';
 import { useStore } from 'vuex';
 import type {AxiosInstance} from 'axios';
-import { executeLink, getCurrentSchoolYear } from '@/utils'
+import { executeLink, getCurrentElement, getCurrentSchoolYear } from '@/utils'
 
 const $axios : AxiosInstance | undefined = inject("$axios");
 const store = useStore();
-const language : Language = store.state.language;
-const elements : ElementsList = store.state.elements;
+
 const learning_blocks : {
     current: OrderedCardsList<GeneralCardElements>,
     future: OrderedCardsList<GeneralCardElements>,
@@ -48,13 +47,15 @@ const learning_blocks : {
     cards: {}
   }
 });
-
 const promises : Promise<any>[] = [];
+const noBlocks = getCurrentElement(store,'noBlocks');
+
 let ordinary_classes : OrdinaryClass[],
   current_class : OrdinaryClass | undefined,
   current_school_year : number,
   tmp_element : GeneralCardElements | undefined,
   learning_block : LearningBlock;
+
 if ($axios != undefined) {
   ordinary_classes = await executeLink($axios,"/v1/ordinary_classes?student_id=" + store.state.user.id,
     response => response.data.data);/* = [{
@@ -120,10 +121,10 @@ if ($axios != undefined) {
         });
         learning_blocks.future.order = learning_blocks.future.order.concat({
           key: "open_enrollment",
-          title: elements[language].open_enrollment
+          title: getCurrentElement(store,'open_enrollment')
         },{
           key: "planned",
-          title: elements[language].planned
+          title: getCurrentElement(store,'planned')
         });
         tmp_element = learning_blocks.future.cards["planned"].shift();
         learning_blocks.future.cards["open_enrollment"] = tmp_element != undefined ? [tmp_element] : [];

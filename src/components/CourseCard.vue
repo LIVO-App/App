@@ -5,7 +5,7 @@
                 <ion-grid>
                     <ion-row>
                         <ion-col size="auto" style="border-right: 1px solid black;"> <!--Sistemare colore-->
-                            <ion-text>{{ elements[language].credits + ": " + props.credits }}</ion-text>
+                            <ion-text>{{ getCurrentElement(store,"credits") + ": " + props.credits }}</ion-text>
                         </ion-col>
                         <ion-col>
                             <div v-html="content" style="width: fit-content;"></div>
@@ -13,9 +13,9 @@
                         <ion-col size="auto">
                             <ion-text :color="enrollment.isPending() ? 'waring'
                                                                             : (props.enrollment.enrollment === true ? 'success' : 'danger')">
-                                {{ props.enrollment.isPending() ? elements[language].pending
-                                                                : (props.enrollment.enrollment === true ? elements[language].enrolled
-                                                                                                        : elements[language].not_enrolled) }}
+                                {{ props.enrollment.isPending() ? getCurrentElement(store,"pending")
+                                                                : (props.enrollment.enrollment === true ? getCurrentElement(store,"enrolled")
+                                                                                                        : getCurrentElement(store,"not_enrolled")) }}
                             </ion-text>
                         </ion-col>
                         <ion-col v-if="button" size="auto" style="border-left: 1px solid black;"> <!--Sistemare colore-->
@@ -38,14 +38,12 @@
 </template>
 
 <script setup lang="ts">
-import { ElementsList, Enrollment, IconsList, Language } from "@/types";
+import { Enrollment, IconsList } from "@/types";
+import { getCurrentElement } from "@/utils";
 import { IonItem,IonCard,IonCardContent,IonGrid,IonRow,IonCol,IonText,IonButton,IonIcon } from "@ionic/vue";
 import { useStore } from "vuex";
 
 const store = useStore();
-
-const language : Language = store.state.language;
-const elements : ElementsList = store.state.elements;
 const icons : IconsList = store.state.icons;
 
 const props = defineProps({
