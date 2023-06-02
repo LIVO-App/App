@@ -122,7 +122,7 @@ type LearningArea = {
     [key in keyof string as `${Language}_description`]: string | null
 }
 
-type CourseBase = {
+type CourseBaseProps = {
     id: number,
     credits: number,
     learning_area_ref: ResponseItem<{
@@ -134,11 +134,17 @@ type CourseBase = {
     [key in keyof string as `${Language}_displayed_name`]: string | null
 }
 
-type CourseSummaryProps = CourseBase & {
+type CourseSummaryProps = CourseBaseProps & {
+    section?: string,
     pending: string
 }
 
-type Course = CourseBase & {
+type CurriculumCourseProps = CourseBaseProps & {
+    section: string,
+    final_grade: Grade | null,
+}
+
+type Course = CourseBaseProps & {
     creation_date: string,
     up_hours: number,
     learning_area_ita: string,
@@ -166,31 +172,42 @@ type Course = CourseBase & {
     [key in keyof string as `${Language}_activities`]: string
 }
 
-class CourseSummary implements CourseSummaryProps {
+class CourseBase implements CourseBaseProps {
     id : number;
     credits : number;
     learning_area_ref : ResponseItem<{
         id: string
     }>;
-    pending : string;
     italian_title : string;
     english_title : string;
     italian_displayed_name : string | null;
     english_displayed_name : string | null;
 
-    constructor(courseObj : CourseSummaryProps) {
+    constructor(courseObj : CourseBaseProps) {
         this.id = courseObj.id;
         this.credits = courseObj.credits;
         this.learning_area_ref = courseObj.learning_area_ref;
-        this.pending = courseObj.pending;
         this.italian_title = courseObj.italian_title;
         this.english_title = courseObj.english_title;
         this.italian_displayed_name = courseObj.italian_displayed_name;
         this.english_displayed_name = courseObj.english_displayed_name;
     }
+}
+
+class CourseSummary extends CourseBase implements CourseSummaryProps {
+
+    section?: string | undefined;
+    pending: string;
+
+    constructor(courseObj : CourseSummaryProps) {
+        super(courseObj);
+        this.section = courseObj.section;
+        this.pending = courseObj.pending;
+    }
 
     toCard(store : Store<any>, learning_block : LearningBlock, path? : string, open_enrollment = false, reference = new Date()) : CourseCardElements {
         const language : Language = store.state.language;
+        const status = learning_block.getStatus(reference);
         return {
             id: "" + this.id,
             group: "",
@@ -199,7 +216,80 @@ class CourseSummary implements CourseSummaryProps {
             enrollment: new Enrollment(this.pending,learning_block,reference,open_enrollment),
             url: path
         }
+    }
+}
+
+class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
+    
+    section: string;
+    final_grade: Grade | null;
+
+    constructor(courseObj : CurriculumCourseProps) {
+        super(courseObj);
+        this.section = courseObj.section;
+        this.final_grade = courseObj.final_grade;
+    }
+
+    /*concatGrades(grades : Grade[]) {
         
+        let finalPos : number;
+
+        if (grades.length > 0) {
+            finalPos = grades.findIndex((grade) => grade.final);
+            if (finalPos >= 0) {
+                this.final_grade = grades.splice(finalPos,1);
+            }
+        }
+        this.intermediate_grades = this.intermediate_grades.concat(grades);
+    }*/
+
+    toCard(store : Store<any>, learning_block : LearningBlock, path? : string) : GeneralCardElements {
+        const language : Language = store.state.language;
+        return {
+            id: "" + this.id,
+            title: "",
+            subtitle: "",
+            group: "",
+            content: this[`${language}_title`],
+            url: path
+        }
+    }
+
+    toTableRow(store : Store<any>, block_id : number) : CustomElement[] {
+        const language : Language = store.state.language;
+        const icons : IconsList = store.state.icons;
+        return [
+            {
+                id: this.id + "_title",
+                type: "html",
+                content: this[`${language}_title`]
+            },{
+                id: this.id + "_section",
+                type: "string",
+                content: this.section
+            },{
+                id: this.id + "_credits",
+                type: "string",
+                content: "" + this.credits
+            },{
+                id: this.id + "_learning_area",
+                type: "string",
+                content: (this.learning_area_ref.data as {id:string}).id
+            },{
+                id: this.id + "_intermediate_gardes",
+                type: "icon",
+                content: {
+                    url: "/v1/students/:id/grades?course_id=" + this.id + "&block_id=" + block_id,
+                    method: "post",
+                    icon: icons["document_text"]
+                }
+            },{
+                id: this.id + "_final_grade",
+                type: "string",
+                content: this.final_grade != null ? "" + this.final_grade : "-"
+            }
+        ];
+
     }
 }
 
@@ -286,7 +376,9 @@ class LearningBlock implements LearningBlockProps {
             if (put_courses_list) {
                 block_list += courses.length > 0 ? "<ul>" : "<br />";
                 for (const course of courses) {
-                    block_list += "<li>" + course[`${language}_title`] + "</li>"; //Aggiungere sezione
+                    if (course.pending == "true") {
+                        block_list += "<li>" + course[`${language}_title`] + (status == LearningBlockStatus.CURRENT || status == LearningBlockStatus.UPCOMING ? " - " + getCurrentElement(store,"section") + " " + course.section : "") + "</li>"; //Aggiungere sezione
+                    }
                 }
                 block_list += courses.length > 0 ? "</ul>" : "";
             }
@@ -323,6 +415,12 @@ type IconsList = {
     [key : string]: IconAlternatives
 }
 
+type SimpleUrlIcon = {
+    url: string,
+    method: Method,
+    icon: IconAlternatives
+}
+
 type Role = "" | "student" | "teacher" | "admin";
 
 type CardsList<T = CardElements> = {
@@ -337,4 +435,18 @@ type OrderedCardsList<T = CardElements> = {
     cards: CardsList<T>
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, Course, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseSummary, IconAlternatives, IconsList, CardsList, Role, OrderedCardsList }
+type ElementType = "string" | "html" | "icon";
+
+type CustomElement = {
+    id: string,
+    type: ElementType,
+    content: string | SimpleUrlIcon
+}
+
+type Grade = {
+    value: number,
+    description: string,
+    final: boolean
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, Course, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, IconAlternatives, IconsList, SimpleUrlIcon, CardsList, Role, OrderedCardsList, CustomElement }

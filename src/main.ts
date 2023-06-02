@@ -15,6 +15,8 @@ import CoursesSelectionList from "./components/CoursesSelectionList.vue";
 import CustomSelect from "./components/CustomSelect.vue";
 import CourseCard from "./components/CourseCard.vue";
 import CurriculumList from "./components/CurriculumList.vue";
+import IonicElement from "./components/IonicElement.vue";
+import IonicTable from "./components/IonicTable.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -74,7 +76,9 @@ const app = createApp(App)
   .component("CoursesSelectionList",CoursesSelectionList)
   .component("CustomSelect",CustomSelect)
   .component("CourseCard",CourseCard)
-  .component("CurriculumList",CurriculumList);
+  .component("CurriculumList",CurriculumList)
+  .component("IonicElement",IonicElement)
+  .component("IonicTable",IonicTable);
   
 router.isReady().then(() => {
   app.mount('#app');

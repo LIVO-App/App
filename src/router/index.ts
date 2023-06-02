@@ -16,7 +16,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/curriculum',
-    component: () => import ('../views/StudenntCurriculum.vue')
+    component: () => import ('../views/StudentCurriculum.vue')
   },
   {
     path: '/openbadges',

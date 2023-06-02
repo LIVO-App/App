@@ -12,6 +12,9 @@ import {
     clipboardOutline,
     clipboardSharp,
     closeOutline,
+    closeSharp,
+    documentTextOutline,
+    documentTextSharp,
     easelOutline,
     easelSharp,
     informationCircleOutline,
@@ -158,7 +161,11 @@ export const store = createStore({
                 },
                 close: {
                     ios: closeOutline,
-                    md: closeOutline
+                    md: closeSharp
+                },
+                document_text: {
+                    ios: documentTextOutline,
+                    md: documentTextSharp
                 }
             },
             language: "italian",
@@ -171,6 +178,7 @@ export const store = createStore({
                     upcoming: "Imminente",
                     completed: "Completati",
                     noBlocks: "Nessun blocco di apprendimento",
+                    course: "Corso",
                     courses: "Corsi",
                     learning_area: "Area di apprendimento",
                     noCourses: "Nessun corso",
@@ -183,7 +191,12 @@ export const store = createStore({
                     planned: "Pianificati",
                     error: "Errore",
                     maximumCreditsError: "Crediti massimi raggiunti",
-                    ok: "Ok"
+                    ok: "Ok",
+                    school_year: "Anno scolastico",
+                    school_year_choice: "Scegli un anno scolastico",
+                    section: "Sezione",
+                    intermediate_grades: "Valutazioni intermedie",
+                    final_grade: "Valutazione finale"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -193,6 +206,7 @@ export const store = createStore({
                     upcoming: "Upcoming",
                     completed: "Completed",
                     noBlocks: "No learning blocks",
+                    course: "Course",
                     courses: "Courses",
                     learning_area: "Learning area",
                     noCourses: "No courses",
@@ -205,7 +219,12 @@ export const store = createStore({
                     planned: "Planned",
                     error: "Error",
                     maximumCreditsError: "Maximum credits reached",
-                    ok: "Ok"
+                    ok: "Ok",
+                    school_year: "School year",
+                    school_year_choice: "Choose a school year",
+                    section: "Section",
+                    intermediate_grades: "Intermediate grades",
+                    final_grade: "Final grade"
                 }
             },
             user: {
