@@ -25,7 +25,7 @@ import { CardsList, CourseCardElements, CourseSummary, CourseSummaryProps, Langu
 import { executeLink, getCurrentElement, updateCourses } from '@/utils';
 import { IonAlert } from '@ionic/vue';
 import { AxiosInstance } from 'axios';
-import { inject, Ref, ref, watch } from 'vue';
+import { inject, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { Store, useStore } from 'vuex';
 
@@ -47,7 +47,7 @@ const changeEnrollment = ($axios : AxiosInstance | undefined, store : Store<any>
 
     if ($axios != undefined) {
         if (unscribe || remainingCredits[selected_area] >= course.credits) {
-            executeLink($axios,undefined,reload,err => err,undefined,store);
+            executeLink($axios,undefined,reload,err => err,undefined,undefined,store);
         } else {
             return new Promise(() => setAlertStatus(true));
         }
@@ -114,7 +114,6 @@ if ($axios != undefined) {
                                 learning_block?.getStatus() == LearningBlockStatus.FUTURE && (learning_block_position == 0 || learning_blocks[learning_block_position - 1]?.getStatus() == LearningBlockStatus.CURRENT)));
                 },
                 () => all_courses[learning_area.id] = []));
-                
         }
         await Promise.all(promises);
         courses.cards[""] = all_courses[selected_area.value] ?? [];

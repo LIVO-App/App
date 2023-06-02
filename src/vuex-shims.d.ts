@@ -18,7 +18,8 @@ declare module '@vue/runtime-core' {
     },
     request: {
       url: string,
-      method: Method
+      method: Method,
+      body?: Object
     }
   }
 

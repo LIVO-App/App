@@ -23,7 +23,7 @@ function isCourse(card : CardElements) : card is CourseCardElements {
     return "credits" in card;
 }
 
-async function executeLink($axios : AxiosInstance | undefined, url? : string | undefined, success = (response : any) => response, fail : (err: string) => any = (err : string) => err, method? : Method, store? : Store<any>) {
+async function executeLink($axios : AxiosInstance | undefined, url? : string | undefined, success = (response : any) => response, fail : (err: string) => any = (err : string) => err, method? : Method, body?: {[key: string] : any}, store? : Store<any>) {
     
     const toExecute = url ?? store?.state.request.url;
     const howExecute = method ?? store?.state.request.method ?? "get";
@@ -36,10 +36,10 @@ async function executeLink($axios : AxiosInstance | undefined, url? : string | u
                 request = $axios.get(toExecute);
                 break;
             case "post":
-                request = $axios.post(toExecute);
+                request = $axios.post(toExecute,body);
                 break;
             case "put":
-                request = $axios.put(toExecute);
+                request = $axios.put(toExecute,body);
                 break;
             case "delete":
                 request = $axios.delete(toExecute);
