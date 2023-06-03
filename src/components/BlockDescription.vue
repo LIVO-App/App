@@ -13,14 +13,14 @@
         </ion-row>
         <ion-row>
             <div class="ion-padding">
-                <div v-html="head_content.content"></div>
+                <ionic-element v-for="element in head_content.content" :key="element.id" :element="element"></ionic-element>
             </div>
         </ion-row>
     </ion-grid>
 </template>
 
 <script setup lang="ts">
-import { IconsList, LearningBlock } from "@/types";
+import { CustomElement, GeneralCardElements, IconsList, LearningBlock } from "@/types";
 import { executeLink } from "@/utils";
 import { IonGrid, IonRow, IonCol, IonIcon, IonTitle, IonText } from "@ionic/vue";
 import { AxiosInstance } from "axios";
@@ -38,19 +38,12 @@ const props = defineProps({
     }
 });
 const icons : IconsList = store.state.icons;
-const head_content = {
-    title: "",
-    subtitle: "",
-    content: ""
-};
+let head_content : GeneralCardElements;
 
 if ($axios != undefined) {
     await executeLink($axios,"/v1/learning_blocks/" + props.id,
         async (response) => {
-            const learning_block_card = await (new LearningBlock(response.data.data)).toCard($axios,store,true,false);
-            head_content.title = learning_block_card.title;
-            head_content.subtitle = learning_block_card.subtitle;
-            head_content.content = learning_block_card.content;
+            head_content = await (new LearningBlock(response.data.data)).toCard($axios,store,true,false);
         });
 } else {
     console.error("Connection failed");

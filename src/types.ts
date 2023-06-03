@@ -95,9 +95,9 @@ type CardElements = {
 }
 
 type GeneralCardElements = CardElements & {
-    title: string,
-    subtitle: string,
-    content: string
+    title?: string,
+    subtitle?: string,
+    content: CustomElement[]
 }
 
 type CourseCardElements = CardElements & {
@@ -247,10 +247,12 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
         const language : Language = store.state.language;
         return {
             id: "" + this.id,
-            title: "",
-            subtitle: "",
             group: "",
-            content: this[`${language}_title`],
+            content: [{
+                id: this.id + "_title",
+                type: "html",
+                content: this[`${language}_title`]
+            }],
             url: path
         }
     }
@@ -397,8 +399,12 @@ class LearningBlock implements LearningBlockProps {
             group: this.school_year,
             title: getCurrentElement(store,"block") + " " + this.number,
             subtitle: getRagneString(new Date(this.start),new Date(this.end)),
-            content: status == LearningBlockStatus.COMPLETED ? "" : 
-                (put_credits ? "<label>" + getCurrentElement(store,"constraints") + ":</label>" : "") + (await this.getBlockList($axios, store, reference,credits,courses_list)),
+            content: [{
+                id: "b" + this.id,
+                type: "html",
+                content: status == LearningBlockStatus.COMPLETED ? "" : 
+                    (put_credits ? "<label>" + getCurrentElement(store,"constraints") + ":</label>" : "") + (await this.getBlockList($axios, store, reference,credits,courses_list))
+            }],
             url: "learning_blocks/" + this.id
         };
         
