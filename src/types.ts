@@ -84,7 +84,7 @@ class Enrollment {
         return this._enrollment !== "true" && this._enrollment !== "false";
     }
     getChangingMethod() : Method {
-        return this.enrollment === true ? "delete" : "post";
+        return this.enrollment ? "delete" : "post";
     }
 }
 
@@ -243,7 +243,7 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
         this.intermediate_grades = this.intermediate_grades.concat(grades);
     }*/
 
-    toCard(store : Store<any>, learning_block : LearningBlock, path? : string) : GeneralCardElements {
+    toCard(store : Store<any>, path? : string) : GeneralCardElements {
         const language : Language = store.state.language;
         return {
             id: "" + this.id,

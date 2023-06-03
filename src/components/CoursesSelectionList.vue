@@ -40,8 +40,14 @@ const changeEnrollment = ($axios : AxiosInstance | undefined, store : Store<any>
     const course = courses.cards[""].find(c => c.id == "" + learning_block_id) as CourseCardElements;
 
     const reload = (response : any) => {
-        updateCourses(courses,learning_block_id, unscribe ? false : (response.data ?? true));
-        remainingCredits[selected_area] += (unscribe ? 1 : -1) * course.credits;
+
+        const pendingDate = new Date(response.data.data ?? "no date");
+        const isPending = !isNaN(pendingDate.getTime());
+
+        updateCourses(courses,learning_block_id, isPending ? pendingDate : (unscribe ? false : (response.data ?? true)));
+        if (!isPending) {
+            remainingCredits[selected_area] += (unscribe ? 1 : -1) * course.credits;
+        }
         trigger.value++;
     };
 
@@ -110,7 +116,7 @@ if ($axios != undefined) {
                             .toCard(
                                 store,
                                 (learning_block as LearningBlock),
-                                "/v1/students/" + user_id + "/" + (x.pending === "true" ? "unscribe" : "inscribe") + "?course_id=" + x.id + "&block_id=" + learning_block_id,
+                                "/v1/students/" + user_id + "/" + (x.pending !== "false" ? "unscribe" : "inscribe") + "?course_id=" + x.id + "&block_id=" + learning_block_id,
                                 learning_block?.getStatus() == LearningBlockStatus.FUTURE && (learning_block_position == 0 || learning_blocks[learning_block_position - 1]?.getStatus() == LearningBlockStatus.CURRENT)));
                 },
                 () => all_courses[learning_area.id] = []));

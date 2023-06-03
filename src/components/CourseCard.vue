@@ -11,14 +11,14 @@
                             <div v-html="content" style="width: fit-content;"></div>
                         </ion-col>
                         <ion-col size="auto">
-                            <ion-text :color="enrollment.isPending() ? 'waring'
+                            <ion-text :color="enrollment.isPending() ? 'warning'
                                                                             : (props.enrollment.enrollment === true ? 'success' : 'danger')">
                                 {{ props.enrollment.isPending() ? getCurrentElement(store,"pending")
                                                                 : (props.enrollment.enrollment === true ? getCurrentElement(store,"enrolled")
                                                                                                         : getCurrentElement(store,"not_enrolled")) }}
                             </ion-text>
                         </ion-col>
-                        <ion-col v-if="button" size="auto" style="border-left: 1px solid black;"> <!--Sistemare colore-->
+                        <ion-col v-if="button" size="auto" style="border-left: 1px solid var(--ion-color-dark);">
                             <ion-button fill="clear" @click="() => {
                                     store.state.request = {
                                         url: url,
