@@ -20,7 +20,8 @@ declare module '@vue/runtime-core' {
       url: string,
       method: Method,
       body?: Object
-    }
+    },
+    event: string
   }
 
   interface ComponentCustomProperties {

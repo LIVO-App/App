@@ -20,7 +20,7 @@
 import { CustomElement } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 
-const props = defineProps({
+defineProps({
     data: {
         type: Array<Array<CustomElement>>,
         required: true

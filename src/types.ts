@@ -208,7 +208,6 @@ class CourseSummary extends CourseBase implements CourseSummaryProps {
 
     toCard(store : Store<any>, learning_block : LearningBlock, path? : string, method? : Method, open_enrollment = false, reference = new Date()) : CourseCardElements {
         const language : Language = store.state.language;
-        const status = learning_block.getStatus(reference);
         const tmp_enrollment = new Enrollment(this.pending,learning_block,reference,open_enrollment);
         return {
             id: "" + this.id,
@@ -288,6 +287,7 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
             },{
                 id: this.id + "_intermediate_gardes",
                 type: "icon",
+                linkType: "request",
                 content: {
                     url: "/v1/students/:id/grades?course_id=" + this.id + "&block_id=" + block_id,
                     method: "post",
@@ -430,10 +430,27 @@ type IconsList = {
     [key : string]: IconAlternatives
 }
 
-type SimpleUrlIcon = {
+type RequestParameters = {
     url: string,
     method: Method,
+}
+
+type RequestIcon = RequestParameters & {
     icon: IconAlternatives
+}
+
+type EventIcon = {
+    event: string,
+    icon: IconAlternatives
+}
+
+type RequestString = RequestParameters & {
+    text: string
+}
+
+type EventString = {
+    event: string,
+    text: string
 }
 
 type Role = "" | "student" | "teacher" | "admin";
@@ -452,10 +469,13 @@ type OrderedCardsList<T = CardElements> = {
 
 type ElementType = "string" | "html" | "icon";
 
+type LinkType = "request" | "event"
+
 type CustomElement = {
     id: string,
     type: ElementType,
-    content: string | SimpleUrlIcon
+    linkType?: LinkType,
+    content: string | IconAlternatives | RequestIcon | EventIcon | RequestString | EventString
 }
 
 type Grade = {
@@ -464,4 +484,4 @@ type Grade = {
     final: boolean
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, Course, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, IconAlternatives, IconsList, SimpleUrlIcon, CardsList, Role, OrderedCardsList, CustomElement }
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, Course, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement }

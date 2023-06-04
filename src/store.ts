@@ -232,7 +232,8 @@ export const store = createStore({
                 username: "Student1",
                 user: "student",
             },
-            request: {}
+            request: {},
+            event: ""
         }
     }
 });
