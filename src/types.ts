@@ -1,6 +1,6 @@
 import { AxiosInstance, Method } from "axios";
 import { Store } from "vuex";
-import { executeLink, getCurrentElement, getRagneString } from "./utils";
+import { executeLink, getCurrentElement, getIcon, getRagneString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -266,7 +266,6 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
 
     toTableRow(store : Store<any>, block_id : number) : CustomElement[] {
         const language : Language = store.state.language;
-        const icons : IconsList = store.state.icons;
         return [
             {
                 id: this.id + "_title",
@@ -291,7 +290,7 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
                 content: {
                     url: "/v1/students/:id/grades?course_id=" + this.id + "&block_id=" + block_id,
                     method: "post",
-                    icon: icons["document_text"]
+                    icon: getIcon(store,"document_text")
                 }
             },{
                 id: this.id + "_final_grade",

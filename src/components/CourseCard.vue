@@ -26,8 +26,8 @@
                                     };
                                     $emit('execute_link');
                                 }">
-                                <ion-icon v-if="enrollment.enrollment === false" :ios="icons['add'].ios" :md="icons['add'].md"></ion-icon>
-                                <ion-icon v-else :ios="icons['close'].ios" :md="icons['close'].md"></ion-icon>
+                                <ion-icon v-if="enrollment.enrollment === false" :ios="getIcon(store,'add').ios" :md="getIcon(store,'add').md"></ion-icon>
+                                <ion-icon v-else :ios="getIcon(store,'close').ios" :md="getIcon(store,'close').md"></ion-icon>
                             </ion-button>
                         </ion-col>
                     </ion-row>
@@ -39,14 +39,13 @@
 
 <script setup lang="ts">
 import { Enrollment, IconsList } from "@/types";
-import { getCurrentElement } from "@/utils";
+import { getCurrentElement, getIcon } from "@/utils";
 import { IonItem,IonCard,IonCardContent,IonGrid,IonRow,IonCol,IonText,IonButton,IonIcon } from "@ionic/vue";
 import { Method } from "axios";
 import { PropType } from "vue";
 import { useStore } from "vuex";
 
 const store = useStore();
-const icons : IconsList = store.state.icons;
 
 const props = defineProps({
     "credits": {

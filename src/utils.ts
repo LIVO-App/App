@@ -1,5 +1,5 @@
 import { AxiosInstance, Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, OrderedCardsList, Language, ElementsList } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, OrderedCardsList, Language, ElementsList, IconsList } from "./types";
 import { Store } from "vuex";
 
 function getCompleteSchoolYear(year: number) {
@@ -77,4 +77,11 @@ function getCurrentElement(store : Store<any>, key : string) {
     return elements[language][key];
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, updateCourses, getCurrentElement }
+function getIcon(store : Store<any>, key : string) {
+    
+    const icons : IconsList = store.state.icons;
+
+    return icons[key];
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, updateCourses, getCurrentElement, getIcon }

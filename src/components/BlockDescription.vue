@@ -2,7 +2,7 @@
     <ion-grid>
         <ion-row>
             <ion-col size="auto">
-                <ion-icon @click="$router.go(-1)" aria-hidden="true" class="ion-padding-end" :ios="icons['arrow_back'].ios" :md="icons['arrow_back'].md"></ion-icon> <!--Da sistemare-->
+                <ion-icon @click="$router.go(-1)" aria-hidden="true" class="ion-padding-end" :ios="getIcon(store,'arrow_back').ios" :md="getIcon(store,'arrow_back').md"></ion-icon> <!--Da sistemare-->
             </ion-col>
             <ion-col>
                 <ion-title style="wid">{{ head_content.title }}</ion-title>
@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { GeneralCardElements, IconsList, LearningBlock } from "@/types";
-import { executeLink } from "@/utils";
+import { executeLink, getIcon } from "@/utils";
 import { IonGrid, IonRow, IonCol, IonIcon, IonTitle, IonText } from "@ionic/vue";
 import { AxiosInstance } from "axios";
 import { inject } from "vue";
@@ -37,7 +37,6 @@ const props = defineProps({
         required: true
     }
 });
-const icons : IconsList = store.state.icons;
 let head_content : GeneralCardElements;
 
 if ($axios != undefined) {
