@@ -91,7 +91,8 @@ class Enrollment {
 type CardElements = {
     id: string,
     group: any,
-    url?: string
+    url?: string,
+    method?: Method
 }
 
 type GeneralCardElements = CardElements & {
@@ -205,16 +206,22 @@ class CourseSummary extends CourseBase implements CourseSummaryProps {
         this.pending = courseObj.pending;
     }
 
-    toCard(store : Store<any>, learning_block : LearningBlock, path? : string, open_enrollment = false, reference = new Date()) : CourseCardElements {
+    toCard(store : Store<any>, learning_block : LearningBlock, path? : string, method? : Method, open_enrollment = false, reference = new Date()) : CourseCardElements {
         const language : Language = store.state.language;
         const status = learning_block.getStatus(reference);
+        const tmp_enrollment = new Enrollment(this.pending,learning_block,reference,open_enrollment);
         return {
             id: "" + this.id,
             group: "",
             credits: this.credits,
             content: this[`${language}_title`],
-            enrollment: new Enrollment(this.pending,learning_block,reference,open_enrollment),
-            url: path
+            enrollment: tmp_enrollment,
+            url: path,
+            method: path != undefined ? 
+                        (tmp_enrollment.editable ? 
+                            (method ?? tmp_enrollment.getChangingMethod())
+                            : (method ?? "get"))
+                        : undefined
         }
     }
 }
@@ -243,7 +250,7 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
         this.intermediate_grades = this.intermediate_grades.concat(grades);
     }*/
 
-    toCard(store : Store<any>, path? : string) : GeneralCardElements {
+    toCard(store : Store<any>, path? : string, method? : Method) : GeneralCardElements {
         const language : Language = store.state.language;
         return {
             id: "" + this.id,
@@ -253,7 +260,8 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
                 type: "html",
                 content: this[`${language}_title`]
             }],
-            url: path
+            url: path,
+            method: path != undefined ? (method ?? "get") : undefined
         }
     }
 
@@ -400,12 +408,13 @@ class LearningBlock implements LearningBlockProps {
             title: getCurrentElement(store,"block") + " " + this.number,
             subtitle: getRagneString(new Date(this.start),new Date(this.end)),
             content: [{
-                id: "b" + this.id,
+                id: "" + this.id,
                 type: "html",
                 content: status == LearningBlockStatus.COMPLETED ? "" : 
                     (put_credits ? "<label>" + getCurrentElement(store,"constraints") + ":</label>" : "") + (await this.getBlockList($axios, store, reference,credits,courses_list))
             }],
-            url: "learning_blocks/" + this.id
+            url: "learning_blocks/" + this.id,
+            method: "get"
         };
         
         return tmp_element;

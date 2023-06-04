@@ -112,12 +112,16 @@ if ($axios != undefined) {
                     const tmp_courses : CourseSummaryProps[] = response.data.data;
                     remainingCredits[learning_area.id] = tmp_courses.reduce((a,b) => b.pending === "true" ? a - b.credits : a,learning_area.credits);
                     all_courses[learning_area.id] = tmp_courses
-                        .map(x => (new CourseSummary(x))
+                        .map(x => {
+                            const open_enrollment = learning_block?.getStatus() == LearningBlockStatus.FUTURE && (learning_block_position == 0 || learning_blocks[learning_block_position - 1]?.getStatus() == LearningBlockStatus.CURRENT);
+                            return (new CourseSummary(x))
                             .toCard(
                                 store,
                                 (learning_block as LearningBlock),
-                                "/v1/students/" + user_id + "/" + (x.pending !== "false" ? "unscribe" : "inscribe") + "?course_id=" + x.id + "&block_id=" + learning_block_id,
-                                learning_block?.getStatus() == LearningBlockStatus.FUTURE && (learning_block_position == 0 || learning_blocks[learning_block_position - 1]?.getStatus() == LearningBlockStatus.CURRENT)));
+                                open_enrollment ? "/v1/students/" + user_id + "/" + (x.pending !== "false" ? "unscribe" : "inscribe") + "?course_id=" + x.id + "&block_id=" + learning_block_id : undefined,
+                                undefined,
+                                open_enrollment)
+                        });
                 },
                 () => all_courses[learning_area.id] = []));
         }

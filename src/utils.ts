@@ -66,6 +66,7 @@ function updateCourses(courses : OrderedCardsList, learning_block_id : number, v
 
     course.enrollment.enrollment = value;
     course.url = pathArray.join("/") + (value === false ? "/inscribe?" : "/unscribe?") + requestArray[1];
+    course.method = course.enrollment.getChangingMethod();
 }
 
 function getCurrentElement(store : Store<any>, key : string) {

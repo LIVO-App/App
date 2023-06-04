@@ -22,7 +22,7 @@
                             <ion-button fill="clear" @click="() => {
                                     store.state.request = {
                                         url: url,
-                                        method: enrollment.getChangingMethod(),
+                                        method: method,
                                     };
                                     $emit('execute_link');
                                 }">
@@ -41,6 +41,8 @@
 import { Enrollment, IconsList } from "@/types";
 import { getCurrentElement } from "@/utils";
 import { IonItem,IonCard,IonCardContent,IonGrid,IonRow,IonCol,IonText,IonButton,IonIcon } from "@ionic/vue";
+import { Method } from "axios";
+import { PropType } from "vue";
 import { useStore } from "vuex";
 
 const store = useStore();
@@ -59,7 +61,8 @@ const props = defineProps({
         type: Enrollment,
         required: true
     },
-    "url": String
+    "url": String,
+    "method": String as PropType<Method>
 });
 defineEmits(["execute_link"]);
 const button = props.enrollment.editable && props.url != undefined && props.url != '';
