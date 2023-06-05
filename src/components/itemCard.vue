@@ -14,7 +14,7 @@
                 <ion-card-subtitle v-if="subtitle != undefined">{{ subtitle }}</ion-card-subtitle>
             </ion-card-header>
             <ion-card-content>
-                <ionic-element v-for="element in content" :key="element.id" :element="element"></ionic-element>
+                <ionic-element v-for="element in content" :key="element.id" :element="element" @execute_link="$emit('execute_link');" @signal_event="$emit('signal_event');"></ionic-element>
             </ion-card-content>
         </ion-card>
     </ion-item>
@@ -42,7 +42,7 @@ const props = defineProps({
     "url": String,
     "method": String as PropType<Method>
 });
-defineEmits(["execute_link"]);
+defineEmits(["execute_link","signal_event"]);
 const button = props.url != undefined && props.url != "";
 const isGet = button && props.method == "get";
 </script>

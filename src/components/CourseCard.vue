@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { Enrollment, IconsList } from "@/types";
+import { Enrollment } from "@/types";
 import { getCurrentElement, getIcon } from "@/utils";
 import { IonItem,IonCard,IonCardContent,IonGrid,IonRow,IonCol,IonText,IonButton,IonIcon } from "@ionic/vue";
 import { Method } from "axios";

@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { GeneralCardElements, IconsList, LearningBlock } from "@/types";
+import { GeneralCardElements, LearningBlock } from "@/types";
 import { executeLink, getIcon } from "@/utils";
 import { IonGrid, IonRow, IonCol, IonIcon, IonTitle, IonText } from "@ionic/vue";
 import { AxiosInstance } from "axios";

@@ -10,7 +10,7 @@
                 <ionic-element :key="first_col[index].id" :element="first_col[index]"></ionic-element>
             </ion-col>
             <ion-col v-for="(cell,i) in row" :key="cell.id" :size="'' + column_sizes[i]" class="col">
-                <ionic-element :key="cell.id" :element="cell" @execute_link="$emit('execute_link')"></ionic-element>
+                <ionic-element :key="cell.id" :element="cell" @execute_link="$emit('execute_link')" @signal_event="$emit('signal_event')"></ionic-element>
             </ion-col>
         </ion-row>
     </ion-grid>
@@ -37,7 +37,7 @@ defineProps({
     }
 });
 
-defineEmits(["execute_link"]);
+defineEmits(["execute_link","signal_event"]);
 </script>
 
 <style>

@@ -264,7 +264,7 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
         }
     }
 
-    toTableRow(store : Store<any>, block_id : number) : CustomElement[] {
+    toTableRow(store : Store<any>, block_id : number, student_id : number, teacher_id? : number) : CustomElement[] {
         const language : Language = store.state.language;
         return [
             {
@@ -286,10 +286,15 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
             },{
                 id: this.id + "_intermediate_gardes",
                 type: "icon",
-                linkType: "request",
+                linkType: "event",
                 content: {
-                    url: "/v1/students/:id/grades?course_id=" + this.id + "&block_id=" + block_id,
-                    method: "post",
+                    event: "intermediate_grades",
+                    data: {
+                        course_id: this.id,
+                        block_id: block_id,
+                        student_id: student_id,
+                        teacher_id: teacher_id
+                    },
                     icon: getIcon(store,"document_text")
                 }
             },{
@@ -434,12 +439,18 @@ type RequestParameters = {
     method: Method,
 }
 
+type EventParameters = {
+    event: string,
+    data?: {
+        [key : string]: any
+    }
+}
+
 type RequestIcon = RequestParameters & {
     icon: IconAlternatives
 }
 
-type EventIcon = {
-    event: string,
+type EventIcon = EventParameters & {
     icon: IconAlternatives
 }
 
@@ -447,8 +458,7 @@ type RequestString = RequestParameters & {
     text: string
 }
 
-type EventString = {
-    event: string,
+type EventString = EventParameters & {
     text: string
 }
 
@@ -466,7 +476,7 @@ type OrderedCardsList<T = CardElements> = {
     cards: CardsList<T>
 }
 
-type ElementType = "string" | "html" | "icon";
+type ElementType = "string" | "html" | "icon" | "title";
 
 type LinkType = "request" | "event"
 
@@ -483,4 +493,11 @@ type Grade = {
     final: boolean
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, Course, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement }
+type GradesParameters = {
+    course_id: number,
+    block_id: number,
+    student_id: number,
+    teacher_id?: number,
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, Course, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradesParameters }

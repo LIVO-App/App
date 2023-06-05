@@ -21,7 +21,12 @@ declare module '@vue/runtime-core' {
       method: Method,
       body?: Object
     },
-    event: string
+    event: {
+      name: string,
+      data: {
+        [key: string]: any
+      }
+    }
   }
 
   interface ComponentCustomProperties {

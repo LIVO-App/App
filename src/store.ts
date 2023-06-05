@@ -233,7 +233,7 @@ export const store = createStore({
                 user: "student",
             },
             request: {},
-            event: ""
+            event: {}
         }
     }
 });

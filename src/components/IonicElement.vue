@@ -2,7 +2,8 @@
     <template v-if="element.linkType == undefined || element.type == 'html'">
         <ion-label v-if="element.type == 'string'">{{ element.content }}</ion-label>
         <div v-if="element.type == 'html'" v-html="element.content"></div>
-        <ion-icon :ios="castIconAlternatives(element.content).ios" :md="castIconAlternatives(element.content).md"></ion-icon>
+        <ion-icon v-else-if="element.type == 'icon'" :ios="castIconAlternatives(element.content).ios" :md="castIconAlternatives(element.content).md"></ion-icon>
+        <ion-title v-else-if="element.type == 'title'">{{ element.content }}</ion-title>
     </template>
     <template v-else>
         <ion-button v-if="element.type == 'icon'" fill="clear" @click="() => {
@@ -13,7 +14,11 @@
                 };
                 $emit('execute_link');
             } else if (element.linkType == 'event') {
-                store.state.event = castEventIcon(props.element.content).event;
+                store.state.event = {
+                    name: castEventIcon(props.element.content).event,
+                    data: castEventIcon(props.element.content).data
+                }
+                $emit('signal_event');
             }
         }">
             <ion-icon :ios="castRequestIcon(element.content).icon.ios" :md="castRequestIcon(element.content).icon.md"></ion-icon>
@@ -26,7 +31,11 @@
                 };
                 $emit('execute_link');
             } else if (element.linkType == 'event') {
-                store.state.event = castEventString(props.element.content).event;
+                store.state.event = {
+                    name: castEventString(props.element.content).event,
+                    data: castEventString(props.element.content).data
+                };
+                $emit('signal_event');
             }
         }">
             {{ element.content }}
@@ -36,7 +45,7 @@
 
 <script setup lang="ts">
 import { RequestIcon,CustomElement, EventString, EventIcon, IconAlternatives, RequestString } from "@/types";
-import { IonButton, IonLabel, IonIcon } from "@ionic/vue";
+import { IonButton, IonLabel, IonIcon, IonTitle } from "@ionic/vue";
 import { PropType } from "vue";
 import { useStore } from "vuex";
 

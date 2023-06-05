@@ -17,7 +17,7 @@
                 </ion-item>
                 <template v-else>
                     <template v-for="card in props.cards_list.cards['']">
-                        <item-card v-if="isGeneral(card)" :key="'card-general-' + card.id" :title="card.title" :subtitle="card.subtitle" :content="card.content" :url="card.url" :method="card.method" />
+                        <item-card v-if="isGeneral(card)" @execute_link="$emit('execute_link')" @signal_event="$emit('signal_event')" :key="'card-general-' + card.id" :title="card.title" :subtitle="card.subtitle" :content="card.content" :url="card.url" :method="card.method" />
                         <course-card v-else-if="isCourse(card)" @execute_link="$emit('execute_link')" :key="'card-course-' + card.id" :credits="card.credits" :content="card.content" :enrollment="card.enrollment" :url="card.url" :method="card.method" />
                     </template>
                 </template>
@@ -32,7 +32,7 @@
                     </ion-item>
                     <template v-else>
                         <template v-for="card in props.cards_list.cards[ordered_cards.key]">
-                            <item-card v-if="isGeneral(card)" :key="'card-general-' + card.id" :title="card.title" :subtitle="card.subtitle" :content="card.content" :url="card.url" :method="card.method" />
+                            <item-card v-if="isGeneral(card)" @execute_link="$emit('execute_link')" @signal_event="$emit('signal_event')" :key="'card-general-' + card.id" :title="card.title" :subtitle="card.subtitle" :content="card.content" :url="card.url" :method="card.method" />
                             <course-card v-else-if="isCourse(card)" :key="'card-course-' + card.id" :credits="card.credits" :content="card.content" :enrollment="card.enrollment" :url="card.url" :method="card.method" />
                         </template>
                     </template>
@@ -61,7 +61,7 @@ const props = defineProps({
         required: true
     }
 });
-defineEmits(["execute_link"]);
+defineEmits(["execute_link","signal_event"]);
 </script>
 
 
