@@ -3,7 +3,7 @@
         <ion-label v-if="element.type == 'string'">{{ element.content }}</ion-label>
         <div v-if="element.type == 'html'" v-html="element.content"></div>
         <ion-icon v-else-if="element.type == 'icon'" :ios="castIconAlternatives(element.content).ios" :md="castIconAlternatives(element.content).md"></ion-icon>
-        <ion-title v-else-if="element.type == 'title'">{{ element.content }}</ion-title>
+        <ion-label v-else-if="element.type == 'title'"><h2>{{ element.content }}</h2></ion-label>
     </template>
     <template v-else>
         <ion-button v-if="element.type == 'icon'" fill="clear" @click="() => {

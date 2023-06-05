@@ -196,7 +196,12 @@ export const store = createStore({
                     school_year_choice: "Scegli un anno scolastico",
                     section: "Sezione",
                     intermediate_grades: "Valutazioni intermedie",
-                    final_grade: "Valutazione finale"
+                    final_grade: "Valutazione finale",
+                    description: "Descrizione",
+                    date: "Data",
+                    evaluation: "Valutazione",
+                    arithmetic_mean: "Media aritmetica",
+                    no_grades: "Nessun voto registrato"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -224,7 +229,12 @@ export const store = createStore({
                     school_year_choice: "Choose a school year",
                     section: "Section",
                     intermediate_grades: "Intermediate grades",
-                    final_grade: "Final grade"
+                    final_grade: "Final grade",
+                    description: "Description",
+                    date: "Date",
+                    evaluation: "Evaluation",
+                    arithmetic_mean: "Arithmetic mean",
+                    no_grades: "No grades recorded"
                 }
             },
             user: {

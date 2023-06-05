@@ -5,7 +5,7 @@
                 <ionic-element :key="cell.id" :element="cell"></ionic-element>
             </ion-col>
         </ion-row>
-        <ion-row v-for="(row,index) in data" :key="index" class="row ion-text-center">
+        <ion-row v-for="(row,index) in data" :key="index" class="row ion-text-center cell_primary">
             <ion-col v-if="first_col != undefined" :size="'' + column_sizes[0]" class="col header">
                 <ionic-element :key="first_col[index].id" :element="first_col[index]"></ionic-element>
             </ion-col>
@@ -41,6 +41,10 @@ defineEmits(["execute_link","signal_event"]);
 </script>
 
 <style>
+.cell_primary {
+    color: var(--ion-color-primary);
+}
+
 .header .col {
     background-color: var(--ion-color-primary);
     color: var(--ion-color-tertiary);

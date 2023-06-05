@@ -1,5 +1,15 @@
 <template>
     <div class="ion-padding-horizontal">
+        <ion-modal id="grades_manages" :is-open="grades_open" @didDismiss="closeModal()">
+            <suspense>
+                <template #default>
+                    <grades-manager :title="grades_title" :parameters="grades_parameters" @close="closeModal()"></grades-manager>
+                </template>
+                <template #fallback>
+                    <loading-component />
+                </template>
+            </suspense>
+        </ion-modal>
         <custom-select
             v-model="selected_year"
             :list="school_years"
@@ -9,7 +19,7 @@
         ></custom-select>
         <suspense>
           <template #default>
-            <ionic-table :data="tableData" :first_row="firstRow" :column_sizes="column_sizes" @execute_link="getIntermediateGrades()"></ionic-table>
+            <ionic-table :data="tableData" :first_row="firstRow" :column_sizes="column_sizes" @signal_event="getIntermediateGrades(store)"></ionic-table>
           </template>
           <template #fallback>
             <loading-component />
@@ -19,17 +29,23 @@
 </template>
 
 <script setup lang="ts">
-import { CurriculumCourse, CustomElement } from "@/types";
+import { CurriculumCourse, CustomElement, GradesParameters } from "@/types";
 import { executeLink, getCurrentElement } from "@/utils";
+import { IonModal } from "@ionic/vue";
 import { AxiosInstance } from "axios";
 import { inject, ref, Ref } from "vue";
-import { useStore } from "vuex";
+import { Store, useStore } from "vuex";
 
-const getIntermediateGrades = () => console.log(store.state.request);
+const getIntermediateGrades = (store : Store<any>) => {
+    grades_title = store.state.event.data.title;
+    grades_parameters = store.state.event.data.parameters;
+    grades_open.value = true;
+}
+const closeModal = () => grades_open.value = false;
 
 const store = useStore();
 const $axios : AxiosInstance | undefined = inject("$axios");
-const user_id : string = store.state.user.id;
+const user_id : number = store.state.user.id;
 
 const correspondences : {
     [key : number]: number[]
@@ -60,12 +76,15 @@ const firstRow : CustomElement[] = [{
     type: "string",
     content: getCurrentElement(store,"final_grade")
 }];
-const column_sizes = [4,1,1,2,2,2]
+const column_sizes = [4,1,1,2,2,2];
+const grades_open = ref(false);
 
 let school_years : any[] = [];
 let selected_year : Ref<any>;
 let courses : CurriculumCourse[];
 //let courses_id : number[] = [];
+let grades_title : string;
+let grades_parameters : GradesParameters;
 
 if ($axios != undefined) {
     school_years = await executeLink($axios,"/v1/ordinary_classes?descending=true&student_id=" + user_id,
@@ -101,12 +120,15 @@ if ($axios != undefined) {
         });
     for (const course of courses) {
         if (correspondences[course.id].length > 0) {
-            tableData.push(course.toTableRow(store,correspondences[course.id][correspondences[course.id].length-1]));
+            tableData.push(course.toTableRow(store,correspondences[course.id][correspondences[course.id].length-1],user_id));
         }
     }
 }
 </script>
 
 <style>
-
+ion-modal#grades_manages {
+    --width: fit-content;
+    --height: fit-content;
+}
 </style>

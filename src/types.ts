@@ -1,6 +1,6 @@
 import { AxiosInstance, Method } from "axios";
 import { Store } from "vuex";
-import { executeLink, getCurrentElement, getIcon, getRagneString } from "./utils";
+import { executeLink, getCurrentElement, getIcon, getRagneString, hashCode } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -142,7 +142,7 @@ type CourseSummaryProps = CourseBaseProps & {
 
 type CurriculumCourseProps = CourseBaseProps & {
     section: string,
-    final_grade: Grade | null,
+    final_grade: GradeProps | null,
 }
 
 type Course = CourseBaseProps & {
@@ -228,7 +228,7 @@ class CourseSummary extends CourseBase implements CourseSummaryProps {
 class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
     
     section: string;
-    final_grade: Grade | null;
+    final_grade: GradeProps | null;
 
     constructor(courseObj : CurriculumCourseProps) {
         super(courseObj);
@@ -249,7 +249,7 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
         this.intermediate_grades = this.intermediate_grades.concat(grades);
     }*/
 
-    toCard(store : Store<any>, path? : string, method? : Method) : GeneralCardElements {
+    toCard(store : Store<any>, path? : string, method? : Method) : GeneralCardElements { //Da sistemare
         const language : Language = store.state.language;
         return {
             id: "" + this.id,
@@ -290,10 +290,13 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
                 content: {
                     event: "intermediate_grades",
                     data: {
-                        course_id: this.id,
-                        block_id: block_id,
-                        student_id: student_id,
-                        teacher_id: teacher_id
+                        title: this[`${language}_title`],
+                        parameters: {
+                            course_id: this.id,
+                            block_id: block_id,
+                            student_id: student_id,
+                            teacher_id: teacher_id
+                        }
                     },
                     icon: getIcon(store,"document_text")
                 }
@@ -487,10 +490,62 @@ type CustomElement = {
     content: string | IconAlternatives | RequestIcon | EventIcon | RequestString | EventString
 }
 
-type Grade = {
-    value: number,
-    description: string,
+type GradeProps = {
+    publication: Date,
+    grade: number,
     final: boolean
+} & {
+    [key in keyof string as `${Language}_description`]: string
+}
+
+class Grade implements GradeProps {
+    
+    id: number;
+    publication: Date;
+    grade: number;
+    italian_description: string;
+    english_description: string;
+    final: boolean;
+
+    constructor(props : GradeProps) {
+        this.publication = new Date(props.publication);
+        this.grade = props.grade;
+        this.italian_description = props.italian_description;
+        this.english_description = props.english_description;
+        this.final = props.final;
+        
+        this.id = hashCode(this.publication.toISOString());
+    }
+
+    toCard(store : Store<any>, path? : string, method? : Method) : GeneralCardElements { //Da sistemare
+        const language : Language = store.state.language;
+        return {
+            id: "" + this.id,
+            group: "",
+            content: [{
+                id: this.id + "_description",
+                type: "html",
+                content: this[`${language}_description`]
+            }]
+        }
+    }
+
+    toTableRow(store : Store<any>) : CustomElement[] {
+        const language : Language = store.state.language;
+        return [{
+            id: this.id + "_description",
+            type: "html",
+            content: this[`${language}_description`]
+        },{
+            id: this.id + "_pubblication",
+            type: "string",
+            content: this.publication.toLocaleDateString("en-GB")
+        },{
+            id: this.id + "_value",
+            type: "string",
+            content: "" + this.grade
+        }]
+    }
 }
 
 type GradesParameters = {
@@ -500,4 +555,4 @@ type GradesParameters = {
     teacher_id?: number,
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, Course, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradesParameters }
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, Course, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters }
