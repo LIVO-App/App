@@ -38,7 +38,7 @@
                 $emit('signal_event');
             }
         }">
-            {{ element.content }}
+            {{ castEventString(element.content).text }}
         </ion-label>
     </template>
 </template>

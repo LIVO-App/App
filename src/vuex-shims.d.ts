@@ -26,7 +26,8 @@ declare module '@vue/runtime-core' {
       data: {
         [key: string]: any
       }
-    }
+    },
+    hours_per_credit: number
   }
 
   interface ComponentCustomProperties {

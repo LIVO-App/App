@@ -1,9 +1,19 @@
 <template>
     <div class="ion-padding-horizontal">
-        <ion-modal id="grades_manages" :is-open="grades_open" @didDismiss="closeModal()">
+        <ion-modal id="grades_manages" :is-open="grades_open" @didDismiss="closeModal('grades')">
             <suspense>
                 <template #default>
-                    <grades-manager :title="grades_title" :parameters="grades_parameters" @close="closeModal()"></grades-manager>
+                    <grades-manager :title="grades_title" :parameters="grades_parameters" @close="closeModal('grades')"></grades-manager>
+                </template>
+                <template #fallback>
+                    <loading-component />
+                </template>
+            </suspense>
+        </ion-modal>
+        <ion-modal :is-open="description_open" @didDismiss="closeModal('course_details')">
+            <suspense>
+                <template #default>
+                    <course-description :title="description_title" :course_id="description_course_id" @close="closeModal('course_details')"></course-description>
                 </template>
                 <template #fallback>
                     <loading-component />
@@ -19,7 +29,7 @@
         ></custom-select>
         <suspense>
           <template #default>
-            <ionic-table :data="tableData" :first_row="firstRow" :column_sizes="column_sizes" @signal_event="getIntermediateGrades(store)"></ionic-table>
+            <ionic-table :data="tableData" :first_row="firstRow" :column_sizes="column_sizes" @signal_event="SetupModalAndOpen(store)"></ionic-table>
           </template>
           <template #fallback>
             <loading-component />
@@ -36,12 +46,32 @@ import { AxiosInstance } from "axios";
 import { inject, ref, Ref } from "vue";
 import { Store, useStore } from "vuex";
 
-const getIntermediateGrades = (store : Store<any>) => {
-    grades_title = store.state.event.data.title;
-    grades_parameters = store.state.event.data.parameters;
-    grades_open.value = true;
+type availableModal = "grades" | "course_details";
+
+const SetupModalAndOpen = (store : Store<any>) => {
+    const window : availableModal = store.state.event.name;
+    switch (window) {
+        case "grades":
+            grades_title = store.state.event.data.title;
+            grades_parameters = store.state.event.data.parameters;
+            grades_open.value = true;
+            break;
+        case "course_details":
+            description_title = store.state.event.data.title;
+            description_course_id = store.state.event.data.course_id;
+            description_open.value = true;
+            break;
+    }
 }
-const closeModal = () => grades_open.value = false;
+const closeModal = (window : availableModal) => {
+    switch (window) {
+        case "grades":
+            grades_open.value = false
+            break;
+        case "course_details":
+            description_open.value = false;
+    }
+};
 
 const store = useStore();
 const $axios : AxiosInstance | undefined = inject("$axios");
@@ -68,9 +98,9 @@ const firstRow : CustomElement[] = [{
     type: "string",
     content: getCurrentElement(store,"learning_area")
 },{
-    id: "intermediate_gardes",
+    id: "gardes",
     type: "string",
-    content: getCurrentElement(store,"intermediate_grades")
+    content: getCurrentElement(store,"grades")
 },{
     id: "final_grade",
     type: "string",
@@ -78,13 +108,15 @@ const firstRow : CustomElement[] = [{
 }];
 const column_sizes = [4,1,1,2,2,2];
 const grades_open = ref(false);
+const description_open = ref(false);
 
 let school_years : any[] = [];
 let selected_year : Ref<any>;
 let courses : CurriculumCourse[];
-//let courses_id : number[] = [];
 let grades_title : string;
 let grades_parameters : GradesParameters;
+let description_title : string;
+let description_course_id : GradesParameters;
 
 if ($axios != undefined) {
     school_years = await executeLink($axios,"/v1/ordinary_classes?descending=true&student_id=" + user_id,

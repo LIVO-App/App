@@ -18,6 +18,7 @@ import CurriculumList from "./components/CurriculumList.vue";
 import IonicElement from "./components/IonicElement.vue";
 import IonicTable from "./components/IonicTable.vue";
 import GradesManager from "./components/GradesManager.vue";
+import CourseDescription from "./components/CourseDescription.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -80,7 +81,8 @@ const app = createApp(App)
   .component("CurriculumList",CurriculumList)
   .component("IonicElement",IonicElement)
   .component("IonicTable",IonicTable)
-  .component("GradesManager",GradesManager);
+  .component("GradesManager",GradesManager)
+  .component("CourseDescription",CourseDescription);
   
 router.isReady().then(() => {
   app.mount('#app');

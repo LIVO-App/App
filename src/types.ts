@@ -145,13 +145,9 @@ type CurriculumCourseProps = CourseBaseProps & {
     final_grade: GradeProps | null,
 }
 
-type Course = CourseBaseProps & {
-    creation_date: string,
+type CourseProps = CourseBaseProps & {
+    creation_date: Date,
     up_hours: number,
-    learning_area_ita: string,
-    learning_area_eng: string,
-    growth_area_ita: string,
-    growth_area_eng: string,
     min_students: number,
     max_students: number,
     proposer_teacher_ref: ResponseItem<{
@@ -171,6 +167,12 @@ type Course = CourseBaseProps & {
     [key in keyof string as `${Language}_criterions`]: string
 } & {
     [key in keyof string as `${Language}_activities`]: string
+} & {
+    [key in keyof string as `${Language}_learning_area`]: string
+} & {
+    [key in keyof string as `${Language}_growth_area`]: string
+} & {
+    [key in keyof string as `${Language}_description`]: string
 }
 
 class CourseBase implements CourseBaseProps {
@@ -188,7 +190,7 @@ class CourseBase implements CourseBaseProps {
         this.id = courseObj.id;
         this.credits = courseObj.credits;
         this.learning_area_ref = courseObj.learning_area_ref;
-        this.italian_title = courseObj.italian_title;
+        this.italian_title = courseObj.italian_title; //Da sistemare: togliere lingue e mettere get su title-displayed_name
         this.english_title = courseObj.english_title;
         this.italian_displayed_name = courseObj.italian_displayed_name;
         this.english_displayed_name = courseObj.english_displayed_name;
@@ -269,8 +271,16 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
         return [
             {
                 id: this.id + "_title",
-                type: "html",
-                content: this[`${language}_title`]
+                type: "string",
+                linkType: "event",
+                content: {
+                    event: "course_details",
+                    data: {
+                        title: this[`${language}_title`],
+                        course_id: this.id,
+                    },
+                    text: this[`${language}_title`]
+                }
             },{
                 id: this.id + "_section",
                 type: "string",
@@ -284,11 +294,11 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
                 type: "string",
                 content: (this.learning_area_ref.data as {id:string}).id
             },{
-                id: this.id + "_intermediate_gardes",
+                id: this.id + "_intermediate_gardes", //Mettere il controllo con future_course al passaggio a curriculum_v2
                 type: "icon",
                 linkType: "event",
                 content: {
-                    event: "intermediate_grades",
+                    event: "grades",
                     data: {
                         title: this[`${language}_title`],
                         parameters: {
@@ -306,7 +316,143 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
                 content: this.final_grade != null ? "" + this.final_grade : "-"
             }
         ];
+    }
+}
 
+class Course extends CourseBase implements CourseProps {
+    
+    creation_date: Date;
+    up_hours: number;
+    min_students: number;
+    max_students: number;
+    proposer_teacher_ref: ResponseItem<{
+        id: number
+    }>;
+    teacher_name: string;
+    teacher_surname: string;
+    certifying_admin_ref: ResponseItem<{
+        id: number
+    }>;
+    admin_name: string;
+    admin_surname: string;
+    admin_confirmation: string;
+    italian_expected_learning_results: string;
+    english_expected_learning_results: string;
+    italian_criterions: string;
+    english_criterions: string;
+    italian_activities: string;
+    english_activities: string;
+    italian_learning_area: string;
+    english_learning_area: string;
+    italian_growth_area: string;
+    english_growth_area: string;
+    italian_description: string;
+    english_description: string;
+    //Da sistemare: Aggiungere opento, teachings e learning_context
+
+    constructor(store : Store<any>, courseObj : CourseProps) {
+
+        const language : Language = store.state.language;
+
+        super(courseObj);
+        this.creation_date = new Date(courseObj.creation_date);
+        this.up_hours = courseObj.up_hours;
+        this.min_students = courseObj.min_students;
+        this.max_students = courseObj.max_students;
+        this.proposer_teacher_ref = courseObj.proposer_teacher_ref;
+        this.teacher_name = courseObj.teacher_name;
+        this.teacher_surname = courseObj.teacher_surname;
+        this.certifying_admin_ref = courseObj.certifying_admin_ref;
+        this.admin_name = courseObj.admin_name;
+        this.admin_surname = courseObj.admin_surname;
+        this.admin_confirmation = courseObj.admin_confirmation;
+        this.italian_expected_learning_results = courseObj.italian_expected_learning_results;
+        this.english_expected_learning_results = courseObj.english_expected_learning_results;
+        this.italian_criterions = courseObj.italian_criterions;
+        this.english_criterions = courseObj.english_criterions;
+        this.italian_activities = courseObj.italian_activities;
+        this.english_activities = courseObj.english_activities;
+        this.italian_learning_area = courseObj.italian_learning_area;
+        this.english_learning_area = courseObj.english_learning_area;
+        this.italian_growth_area = courseObj.italian_growth_area;
+        this.english_growth_area = courseObj.english_growth_area;
+        this.italian_description = courseObj.italian_description;
+        this.english_description = courseObj.english_description;
+    }
+
+    toCard(store : Store<any>) : GeneralCardElements {
+
+        const language : Language = store.state.language;
+        const hours_per_credit : number = store.state.hours_per_credit;
+        return {
+            id: "" + this.id,
+            group: "",
+            content: [{
+                id: this.id + "_description",
+                type: "html",
+                content: this[`${language}_description`]
+            },{
+                id: this.id + "_expected_learning_resuts_title",
+                type: "title",
+                content: getCurrentElement(store,"expected_learning_results").toUpperCase()
+            },{
+                id: this.id + "_expected_learning_resuts",
+                type: "html",
+                content: this[`${language}_expected_learning_results`]
+            },{
+                id: this.id + "_criterions_title",
+                type: "title",
+                content: getCurrentElement(store,"criterions").toUpperCase()
+            },{
+                id: this.id + "_criterions",
+                type: "html",
+                content: this[`${language}_criterions`]
+            },{
+                id: this.id + "_activities_title",
+                type: "title",
+                content: getCurrentElement(store,"activities").toUpperCase()
+            },{
+                id: this.id + "_activities",
+                type: "html",
+                content: this[`${language}_activities`]
+            },{
+                id: this.id + "_technical_information",
+                type: "title",
+                content: getCurrentElement(store,"technical_information").toUpperCase()
+            },{
+                id: this.id + "_learning_area",
+                type: "html",
+                content: "<b>" + getCurrentElement(store,"learning_area") + "</b>: " + this[`${language}_learning_area`]
+            },{
+                id: this.id + "_growth_area",
+                type: "html",
+                content: "<b>" + getCurrentElement(store,"growth_area") + "</b>: " + this[`${language}_growth_area`]
+            },{
+                id: this.id + "_credits",
+                type: "html",
+                content: "<b>" + getCurrentElement(store,"credits") + "</b>: " + this.credits + "(" + (this.credits * hours_per_credit) + " " + getCurrentElement(store,"hours") + ")"
+            },{
+                id: this.id + "_up_hours",
+                type: "html",
+                content: "<b>" + getCurrentElement(store,"up_hours") + "</b>: " + this.up_hours + " " + getCurrentElement(store,"hours")
+            },{
+                id: this.id + "_creation_date",
+                type: "html",
+                content: "<b>" + getCurrentElement(store,"creation_date") + "</b>: " + this.creation_date.toLocaleDateString("en-GB")
+            },{
+                id: this.id + "_students_number",
+                type: "html",
+                content: "<b>" + getCurrentElement(store,"students_number") + "</b>: " + this.min_students + " - " + this.max_students
+            },{
+                id: this.id + "_proposer_teacher",
+                type: "html",
+                content: "<b>" + getCurrentElement(store,"proposer_teacher") + "</b>: " + this.teacher_name + this.teacher_surname
+            }/*,{
+                id: this.id + "_certifying_admin",
+                type: "html",
+                content: "<b>" + getCurrentElement(store,"certifying_admin") + "</b>: " + this.admin_name + this.admin_surname
+            }*/] //Da limitare a teacher e admin
+        }
     }
 }
 
@@ -535,7 +681,7 @@ class Grade implements GradeProps {
         return [{
             id: this.id + "_description",
             type: "html",
-            content: this[`${language}_description`]
+            content: this[`${language}_description`] + (this.final ? " <b>[" + getCurrentElement(store,"final") + "]</b>" : "") //Da sistemare
         },{
             id: this.id + "_pubblication",
             type: "string",
@@ -555,4 +701,4 @@ type GradesParameters = {
     teacher_id?: number,
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, Course, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters }
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters }

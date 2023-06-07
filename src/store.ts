@@ -195,13 +195,26 @@ export const store = createStore({
                     school_year: "Anno scolastico",
                     school_year_choice: "Scegli un anno scolastico",
                     section: "Sezione",
-                    intermediate_grades: "Valutazioni intermedie",
+                    grades: "Valutazioni",
                     final_grade: "Valutazione finale",
                     description: "Descrizione",
                     date: "Data",
                     evaluation: "Valutazione",
                     arithmetic_mean: "Media aritmetica",
-                    no_grades: "Nessun voto registrato"
+                    final: "Finale",
+                    no_grades: "Nessun voto registrato",
+                    expected_learning_results: "Risultati apprendimento attesi",
+                    criterions: "Criteri",
+                    activities: "Attività",
+                    technical_information: "Informazioni tecniche",
+                    growth_area: "Area di crescita personale",
+                    creation_date: "Data di creazione",
+                    hours: "Ore",
+                    up_hours: "Ore UP",
+                    students_number: "Numero di studenti",
+                    proposer_teacher: "Insegnante proponente",
+                    certifying_admin: "Amministratore certificante",
+                    course_information_not_found: "Informazioni del corso non trovate"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -228,13 +241,26 @@ export const store = createStore({
                     school_year: "School year",
                     school_year_choice: "Choose a school year",
                     section: "Section",
-                    intermediate_grades: "Intermediate grades",
+                    grades: "Grades",
                     final_grade: "Final grade",
                     description: "Description",
                     date: "Date",
                     evaluation: "Evaluation",
                     arithmetic_mean: "Arithmetic mean",
-                    no_grades: "No grades recorded"
+                    final: "Final",
+                    no_grades: "No grades recorded",
+                    expected_learning_results: "Expected learning results",
+                    criterions: "Criterions",
+                    activities: "Activities",
+                    technical_information: "Technical information",
+                    growth_area: "Personal growth area",
+                    creation_date: "Creation date",
+                    hours: "Hours",
+                    up_hours: "UP hours",
+                    students_number: "Students number",
+                    proposer_teacher: "Proposer teacher",
+                    certifying_admin: "Certifying admin",
+                    course_information_not_found: "Course information not found"
                 }
             },
             user: {
@@ -243,7 +269,8 @@ export const store = createStore({
                 user: "student",
             },
             request: {},
-            event: {}
+            event: {},
+            hours_per_credit: 6
         }
     }
 });

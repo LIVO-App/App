@@ -83,24 +83,13 @@ const first_row : CustomElement[] = [{
 const column_sizes = [6,3,3];
 const tableData : CustomElement[][] = [];
 const grades : Grade[] = await executeLink($axios,"/v1/students/" + props.parameters.student_id + "/grades?course_id=" + props.parameters.course_id + "&block_id=" + props.parameters.block_id + (props.parameters.teacher_id != undefined ? "&teacher_id=" + props.parameters.teacher_id : ""),
-    response => response.data.data.map((a : GradeProps, index : number) => new Grade(a)),
-    () => []);
-
-let mean : string;
-let final_pos : number = -1;
-let count = 0;
-let tmp_grade;
-
-while (count < grades.length) {
-    tmp_grade = grades[count];
-    if (tmp_grade.final) {
-        grades.splice(final_pos,1);
-    } else {
+    response => response.data.data.map((a : GradeProps) => {
+        const tmp_grade = new Grade(a);
         tableData.push(tmp_grade.toTableRow(store));
-        count++;
-    }
-}
-mean = (grades.reduce((p,c) => p + c.grade,0) / grades.length).toFixed(2);
+        return tmp_grade;
+    }),
+    () => []);
+const mean = (grades.reduce((p,c) => p + c.grade,0) / grades.length).toFixed(2);
 </script>
 
 <style>
