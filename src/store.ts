@@ -177,7 +177,7 @@ export const store = createStore({
                     future: "Futuri",
                     upcoming: "Imminente",
                     completed: "Completati",
-                    noBlocks: "Nessun blocco di apprendimento",
+                    no_blocks: "Nessun blocco di apprendimento",
                     course: "Corso",
                     courses: "Corsi",
                     learning_area: "Area di apprendimento",
@@ -195,6 +195,7 @@ export const store = createStore({
                     school_year: "Anno scolastico",
                     school_year_choice: "Scegli un anno scolastico",
                     section: "Sezione",
+                    sections: "Sezioni",
                     grades: "Valutazioni",
                     final_grade: "Valutazione finale",
                     description: "Descrizione",
@@ -214,7 +215,13 @@ export const store = createStore({
                     students_number: "Numero di studenti",
                     proposer_teacher: "Insegnante proponente",
                     certifying_admin: "Amministratore certificante",
-                    course_information_not_found: "Informazioni del corso non trovate"
+                    course_information_not_found: "Informazioni del corso non trovate",
+                    learning_blocks: "Blocchi di apprendimento",
+                    learning_block_selection_message: "Seleziona un blocco di apprendimento per vedere i corsi in cui insegni o che ha un tuo insegnameto associato",
+                    teacher: "Insegnante",
+                    associated: "Associati",
+                    my_associated_teachings: "Miei insegnamenti associati",
+                    no_project_classes: "Nessuna classe progetto"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -223,7 +230,7 @@ export const store = createStore({
                     future: "Future",
                     upcoming: "Upcoming",
                     completed: "Completed",
-                    noBlocks: "No learning blocks",
+                    no_blocks: "No learning blocks",
                     course: "Course",
                     courses: "Courses",
                     learning_area: "Learning area",
@@ -241,6 +248,7 @@ export const store = createStore({
                     school_year: "School year",
                     school_year_choice: "Choose a school year",
                     section: "Section",
+                    sections: "Sections",
                     grades: "Grades",
                     final_grade: "Final grade",
                     description: "Description",
@@ -260,14 +268,36 @@ export const store = createStore({
                     students_number: "Students number",
                     proposer_teacher: "Proposer teacher",
                     certifying_admin: "Certifying admin",
-                    course_information_not_found: "Course information not found"
+                    course_information_not_found: "Course information not found",
+                    learning_blocks: "Learning blocks",
+                    learning_block_selection_message: "Select a learning block to see the courses you teach or that has a teaching of yours associated",
+                    teacher: "Teacher",
+                    associated: "Associated",
+                    my_associated_teachings: "My associated teachings",
+                    no_project_classes: "No project classes"
                 }
             },
+            /*
             user: {
                 id: 1,
                 username: "Student1",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4NjE4MzE0NiwiZXhwIjoxNjg2MjY5NTQ2fQ.nm4ssidIE38dcEhY6JoEyxeacK8nVUuV3sgf4TH3CTg",
                 user: "student",
-            },
+            },//*/
+            /*
+            user: {
+                id: 1,
+                username: "Teacher1",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiVGVhY2hlcjEiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4NjE3NjMxMywiZXhwIjoxNjg2MjYyNzEzfQ.yJxixQ3-_Ohewktzn5axs4uQ9L-hTFsl3IPc2tuVsVk",
+                user: "teacher",
+            },//*/
+            //*
+            user: {
+                id: 2,
+                username: "Teacher2",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4NjE3MTQ3NywiZXhwIjoxNjg2MjU3ODc3fQ.yvBQ9eedY5lYgL9ajDBf5iI_XtQGFBTlGsaBJVH9p7Y",
+                user: "teacher",
+            },//*/
             request: {},
             event: {},
             hours_per_credit: 6

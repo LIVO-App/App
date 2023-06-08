@@ -45,7 +45,7 @@
 
 <script setup lang="ts">
 import { RequestIcon,CustomElement, EventString, EventIcon, IconAlternatives, RequestString } from "@/types";
-import { IonButton, IonLabel, IonIcon, IonTitle } from "@ionic/vue";
+import { IonButton, IonLabel, IonIcon } from "@ionic/vue";
 import { PropType } from "vue";
 import { useStore } from "vuex";
 

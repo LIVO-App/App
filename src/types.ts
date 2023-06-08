@@ -107,6 +107,13 @@ type CourseCardElements = CardElements & {
     enrollment: Enrollment
 }
 
+type TeacherBlockCardElements = CardElements & {
+    title: string,
+    subtitle: string,
+    status: LearningBlockStatus,
+    selected: boolean
+}
+
 enum LearningBlockStatus {
     FUTURE,
     UPCOMING,
@@ -351,9 +358,6 @@ class Course extends CourseBase implements CourseProps {
     //Da sistemare: Aggiungere opento, teachings e learning_context
 
     constructor(store : Store<any>, courseObj : CourseProps) {
-
-        const language : Language = store.state.language;
-
         super(courseObj);
         this.creation_date = new Date(courseObj.creation_date);
         this.up_hours = courseObj.up_hours;
@@ -572,6 +576,21 @@ class LearningBlock implements LearningBlockProps {
         
         return tmp_element;
     }
+
+    toTeacherCard(store : Store<any>, selected = false, reference = new Date()) : TeacherBlockCardElements {
+        
+        const status = this.getStatus(reference);
+        const tmp_element : TeacherBlockCardElements = {
+            id: "" + this.id,
+            group: this.school_year,
+            title: getCurrentElement(store,"block") + " " + this.number,
+            subtitle: getRagneString(new Date(this.start),new Date(this.end)),
+            status: status,
+            selected: selected
+        };
+        
+        return tmp_element;
+    }
 }
 
 type IconAlternatives = {
@@ -663,7 +682,7 @@ class Grade implements GradeProps {
         this.id = hashCode(this.publication.toISOString());
     }
 
-    toCard(store : Store<any>, path? : string, method? : Method) : GeneralCardElements { //Da sistemare
+    toCard(store : Store<any>) : GeneralCardElements { //Da sistemare
         const language : Language = store.state.language;
         return {
             id: "" + this.id,
@@ -701,4 +720,57 @@ type GradesParameters = {
     teacher_id?: number,
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters }
+type ProjectClassTeachingsResponse = {
+    id: string,
+    italian_title: string,
+    english_title: string,
+    section: string,
+    teaching_ref: ResponseItem<{
+        "id": string
+    }>,
+    my_teaching?: boolean
+}
+
+class ProjectClassTeachings {
+        
+    id: string;
+    italian_title: string;
+    english_title: string;
+    sections: Set<string>;
+    my_teaching_refs: Set<string>;
+
+    constructor(props : ProjectClassTeachingsResponse) {
+        this.id = props.id;
+        this.italian_title = props.italian_title;
+        this.english_title = props.english_title;
+        this.sections = new Set([props.section]);
+        this.my_teaching_refs = new Set([(props.teaching_ref.data as {
+            "id": string
+        }).id]);
+    }
+    
+    toCard(store : Store<any>, group : string) : GeneralCardElements { //Da sistemare
+        const language : Language = store.state.language;
+        return {
+            id: "" + this.id,
+            group: group,
+            content: [{
+                id: this.id + "_title",
+                type: "title",
+                content: this[`${language}_title`]
+            },{
+                id: this.id + "_sections",
+                type: "string",
+                content: getCurrentElement(store,"sections") + ": " + Array.from(this.sections).join(", ")
+            },{
+                id: this.id + "_my_associated_teachings",
+                type: "string",
+                content: getCurrentElement(store,"my_associated_teachings") + ": " + Array.from(this.my_teaching_refs).join(", ")
+            }],
+            url: "project_courses/" + this.id,
+            method: "get"
+        }
+    }
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, ProjectClassTeachings }

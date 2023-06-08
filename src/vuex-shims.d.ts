@@ -14,6 +14,7 @@ declare module '@vue/runtime-core' {
     user: {
       id: number,
       username: string,
+      token: string,
       user: string
     },
     request: {

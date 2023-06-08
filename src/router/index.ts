@@ -36,7 +36,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/project_courses',
-    component: () => import ('../views/NotImplemented.vue')
+    component: () => import ('../views/ProjectCourses.vue')
   },
   {
     path: '/course_propose',

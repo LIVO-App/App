@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { CustomElement, Grade, GradeProps, GradesParameters } from "@/types";
 import { executeLink, getCurrentElement, getIcon } from "@/utils";
-import { IonContent, IonHeader, IonToolbar, IonGrid, IonRow, IonCol, IonText } from "@ionic/vue";
+import { IonHeader, IonToolbar, IonGrid, IonRow, IonCol, IonText } from "@ionic/vue";
 import { AxiosInstance } from "axios";
 import { inject, PropType } from "vue";
 import { useStore } from "vuex";

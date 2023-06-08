@@ -1,5 +1,5 @@
 import { AxiosInstance, Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, OrderedCardsList, Language, ElementsList, IconsList } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, OrderedCardsList, Language, ElementsList, IconsList, TeacherBlockCardElements, LearningBlockStatus } from "./types";
 import { Store } from "vuex";
 
 function getCompleteSchoolYear(year: number) {
@@ -21,6 +21,10 @@ function isGeneral(card : CardElements) : card is GeneralCardElements {
 
 function isCourse(card : CardElements) : card is CourseCardElements {
     return "credits" in card;
+}
+
+function isTeacherBlock(card : CardElements) : card is TeacherBlockCardElements {
+    return "status" in card;
 }
 
 async function executeLink($axios : AxiosInstance | undefined, url? : string | undefined, success = (response : any) => response, fail : (err: string) => any = (err : string) => err, method? : Method, body?: {[key: string] : any}, store? : Store<any>) {
@@ -96,6 +100,28 @@ function hashCode(str : string) {
         hash |= 0; // Convert to 32bit integer
     }
     return hash;
-  }
+}
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, updateCourses, getCurrentElement, getIcon, hashCode }
+function castStatus(store : Store<any>, status : string) : LearningBlockStatus | null {
+
+    let cast : LearningBlockStatus | null = null;
+
+    switch (status) {
+        case getCurrentElement(store,"current"):
+            cast = LearningBlockStatus.CURRENT;
+            break;
+        case getCurrentElement(store,"upcoming"):
+            cast = LearningBlockStatus.UPCOMING;
+            break;
+        case getCurrentElement(store,"completed"):
+            cast = LearningBlockStatus.COMPLETED;
+            break;
+        case getCurrentElement(store,"future"):
+            cast = LearningBlockStatus.FUTURE;
+            break;
+    }
+
+    return cast;
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isTeacherBlock, executeLink, updateCourses, getCurrentElement, getIcon, hashCode, castStatus }

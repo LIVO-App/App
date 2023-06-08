@@ -30,10 +30,7 @@ import { useStore } from "vuex";
 const store = useStore();
 
 const props = defineProps({
-    "title": {
-        type: String,
-        required: true
-    },
+    "title": String,
     "subtitle": String,
     "content": {
         type: Array<CustomElement>,
