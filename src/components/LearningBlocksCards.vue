@@ -2,12 +2,12 @@
     <ion-grid><!-- v-if="learning_blocks.loaded">-->
         <ion-row>
             <ion-col size="12" size-md="6">
-                <list-card :title="getCurrentElement(store,'current')" :emptiness_message="noBlocks" :cards_list="learning_blocks.current" />
-                <list-card :title="getCurrentElement(store,'future')" :emptiness_message="noBlocks" :cards_list="learning_blocks.future" />
+                <list-card :title="getCurrentElement(store,'current')" :emptiness_message="no_blocks" :cards_list="learning_blocks.current" />
+                <list-card :title="getCurrentElement(store,'future')" :emptiness_message="no_blocks" :cards_list="learning_blocks.future" />
             </ion-col>
             <ion-col size="12" size-md="6">
-                <list-card :title="getCurrentElement(store,'upcoming')" :emptiness_message="noBlocks" :cards_list="learning_blocks.upcoming" />
-                <list-card :title="getCurrentElement(store,'completed')" :emptiness_message="noBlocks" :cards_list="learning_blocks.completed" />
+                <list-card :title="getCurrentElement(store,'upcoming')" :emptiness_message="no_blocks" :cards_list="learning_blocks.upcoming" />
+                <list-card :title="getCurrentElement(store,'completed')" :emptiness_message="no_blocks" :cards_list="learning_blocks.completed" />
             </ion-col>
         </ion-row>
     </ion-grid>
@@ -48,7 +48,7 @@ const learning_blocks : {
   }
 });
 const promises : Promise<any>[] = [];
-const noBlocks = getCurrentElement(store,'noBlocks');
+const no_blocks = getCurrentElement(store,'no_blocks');
 
 let ordinary_classes : OrdinaryClass[],
   current_class : OrdinaryClass | undefined,

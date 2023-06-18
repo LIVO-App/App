@@ -116,7 +116,7 @@ let courses : CurriculumCourse[];
 let grades_title : string;
 let grades_parameters : GradesParameters;
 let description_title : string;
-let description_course_id : GradesParameters;
+let description_course_id : number;
 
 if ($axios != undefined) {
     school_years = await executeLink($axios,"/v1/ordinary_classes?descending=true&student_id=" + user_id,

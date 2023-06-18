@@ -1,7 +1,7 @@
 <template>
     <ion-item lines="none">
         <ion-card color="tertiary" style="width: 100%;" :button="button" :href="button && isGet ? url : undefined" @click="() => {
-                if (button && !isGet) { //Vedere se funziona
+                if (button && !isGet) {
                     store.state.request = {
                         url: url,
                         method: method,
