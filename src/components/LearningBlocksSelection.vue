@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { GeneralCardElements, LearningBlock, OrderedCardsList, ProjectClassTeachings, TeacherBlockCardElements } from '@/types';
+import { GeneralCardElements, LearningBlock, OrderedCardsList, CourseSectionsTeachings, TeacherBlockCardElements } from '@/types';
 import { IonGrid, IonRow, IonCol } from "@ionic/vue"
 import { inject, reactive, ref } from 'vue';
 import { useStore } from 'vuex';
@@ -54,10 +54,10 @@ const change_selection = async () => {
 
   const tmp_classes : {
     teacher: {
-      [key : number]: ProjectClassTeachings
+      [key : number]: CourseSectionsTeachings
     },
     associated: {
-      [key : number]: ProjectClassTeachings
+      [key : number]: CourseSectionsTeachings
     }
   } = {
     teacher: {},
@@ -84,7 +84,7 @@ const change_selection = async () => {
       (response : any) => {
         for (const class_teaching of response.data.data) {
           if (tmp_classes.teacher[class_teaching.id] == undefined) {
-            tmp_classes.teacher[class_teaching.id] = new ProjectClassTeachings(class_teaching);
+            tmp_classes.teacher[class_teaching.id] = new CourseSectionsTeachings(class_teaching);
           } else {
             tmp_classes.teacher[class_teaching.id].sections.add(class_teaching.section);
             if (class_teaching.my_teaching) {
@@ -93,14 +93,14 @@ const change_selection = async () => {
           }
         }
       });
-    courses.cards.teacher = Object.values(tmp_classes.teacher).map((a : ProjectClassTeachings) => a.toCard(store,"teacher"));
+    courses.cards.teacher = Object.values(tmp_classes.teacher).map((a : CourseSectionsTeachings) => a.toCard(store,"teacher",learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].id));
     await executeLink($axios,"/v1/teachers/" + user_id + "/associated_project_classes?block_id=" + learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].id,
       (response : any) => {
         const teaching_classes = new Set(Object.keys(tmp_classes.teacher));
         for (const class_teaching of response.data.data) {
           if (!teaching_classes.has("" + class_teaching.id)) {
             if (tmp_classes.associated[class_teaching.id] == undefined) {
-              tmp_classes.associated[class_teaching.id] = new ProjectClassTeachings(class_teaching);
+              tmp_classes.associated[class_teaching.id] = new CourseSectionsTeachings(class_teaching);
             } else {
               tmp_classes.associated[class_teaching.id].sections.add(class_teaching.section);
               tmp_classes.associated[class_teaching.id].my_teaching_refs.add(class_teaching.teaching_ref.data.id);
@@ -108,7 +108,7 @@ const change_selection = async () => {
           }
         }
       });
-    courses.cards.associated = Object.values(tmp_classes.associated).map((a : ProjectClassTeachings) => a.toCard(store,"my_associated_teachings"));
+    courses.cards.associated = Object.values(tmp_classes.associated).map((a : CourseSectionsTeachings) => a.toCard(store,"my_associated_teachings",learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].id));
   }
   trigger.value++;
   learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].selected = !learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].selected;

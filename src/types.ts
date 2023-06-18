@@ -1,6 +1,6 @@
 import { AxiosInstance, Method } from "axios";
 import { Store } from "vuex";
-import { executeLink, getCurrentElement, getIcon, getRagneString, hashCode } from "./utils";
+import { executeLink, getCurrentElement, getEnrollmentIcon, getIcon, getRagneString, hashCode } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -19,7 +19,7 @@ type Menu = {
 };
 
 type BaseElement = {
-    [key: string]: string //Mettere [key in keyof string as Language]
+    [key: string]: string //Da sistemare: mettere [key in keyof string as Language]
 }
 
 type ElementsList = {
@@ -86,6 +86,11 @@ class Enrollment {
     getChangingMethod() : Method {
         return this.enrollment ? "delete" : "post";
     }
+    toString(store : Store<any>) : string {
+        return this.isPending() ? getCurrentElement(store,"pending")
+                                : (this.enrollment === true ? getCurrentElement(store,"enrolled")
+                                                            : getCurrentElement(store,"not_enrolled"))
+    }
 }
 
 type CardElements = {
@@ -103,7 +108,7 @@ type GeneralCardElements = CardElements & {
 
 type CourseCardElements = CardElements & {
     credits: number,
-    content: string,
+    content: CustomElement[],
     enrollment: Enrollment
 }
 
@@ -218,19 +223,42 @@ class CourseSummary extends CourseBase implements CourseSummaryProps {
     toCard(store : Store<any>, learning_block : LearningBlock, path? : string, method? : Method, open_enrollment = false, reference = new Date()) : CourseCardElements {
         const language : Language = store.state.language;
         const tmp_enrollment = new Enrollment(this.pending,learning_block,reference,open_enrollment);
-        return {
+        const card : CourseCardElements = {
             id: "" + this.id,
             group: "",
             credits: this.credits,
-            content: this[`${language}_title`],
-            enrollment: tmp_enrollment,
-            url: path,
-            method: path != undefined ? 
-                        (tmp_enrollment.editable ? 
-                            (method ?? tmp_enrollment.getChangingMethod())
-                            : (method ?? "get"))
-                        : undefined
+            content: [{
+                id: this.id + "_credits",
+                type: "string",
+                content: getCurrentElement(store,"credits") + ": " + this.credits
+            },{
+                id: this.id + "_title",
+                type: "string",
+                linkType: "event",
+                content: {
+                    event: "course_details",
+                    data: {
+                        title: this[`${language}_title`],
+                        course_id: this.id,
+                    },
+                    text: this[`${language}_title`]
+                }
+            },{
+                id: this.id + "_enrollment",
+                type: "string",
+                content: tmp_enrollment.toString(store)
+            }],
+            enrollment: tmp_enrollment
         }
+        if (path != undefined) {
+            card.content.push({
+                id: this.id + "_title",
+                type: "icon",
+                linkType: "request",
+                content: getEnrollmentIcon(store,tmp_enrollment,path,method)
+            });
+        }
+        return card;
     }
 }
 
@@ -301,7 +329,7 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
                 type: "string",
                 content: (this.learning_area_ref.data as {id:string}).id
             },{
-                id: this.id + "_intermediate_gardes", //Mettere il controllo con future_course al passaggio a curriculum_v2
+                id: this.id + "_gardes", //Da sistemare: mettere il controllo con future_course al passaggio a curriculum_v2
                 type: "icon",
                 linkType: "event",
                 content: {
@@ -455,7 +483,7 @@ class Course extends CourseBase implements CourseProps {
                 id: this.id + "_certifying_admin",
                 type: "html",
                 content: "<b>" + getCurrentElement(store,"certifying_admin") + "</b>: " + this.admin_name + this.admin_surname
-            }*/] //Da limitare a teacher e admin
+            }*/] //Da sistemare: limitare a teacher e admin
         }
     }
 }
@@ -544,7 +572,7 @@ class LearningBlock implements LearningBlockProps {
                 block_list += courses.length > 0 ? "<ul>" : "<br />";
                 for (const course of courses) {
                     if (course.pending == "true") {
-                        block_list += "<li>" + course[`${language}_title`] + (status == LearningBlockStatus.CURRENT || status == LearningBlockStatus.UPCOMING ? " - " + getCurrentElement(store,"section") + " " + course.section : "") + "</li>"; //Aggiungere sezione
+                        block_list += "<li>" + course[`${language}_title`] + (status == LearningBlockStatus.CURRENT || status == LearningBlockStatus.UPCOMING ? " - " + getCurrentElement(store,"section") + " " + course.section : "") + "</li>"; //Da sistemare: vedere se sezione è fissa o meno
                     }
                 }
                 block_list += courses.length > 0 ? "</ul>" : "";
@@ -646,7 +674,7 @@ type OrderedCardsList<T = CardElements> = {
 
 type ElementType = "string" | "html" | "icon" | "title";
 
-type LinkType = "request" | "event"
+type LinkType = "request" | "event";
 
 type CustomElement = {
     id: string,
@@ -700,7 +728,7 @@ class Grade implements GradeProps {
         return [{
             id: this.id + "_description",
             type: "html",
-            content: this[`${language}_description`] + (this.final ? " <b>[" + getCurrentElement(store,"final") + "]</b>" : "") //Da sistemare
+            content: this[`${language}_description`] + (this.final ? " <b>[" + getCurrentElement(store,"final") + "]</b>" : "") //Da sistemare: visualizzazione migliore voto finale
         },{
             id: this.id + "_pubblication",
             type: "string",
@@ -717,7 +745,7 @@ type GradesParameters = {
     course_id: number,
     block_id: number,
     student_id: number,
-    teacher_id?: number,
+    teacher_id?: number
 }
 
 type ProjectClassTeachingsResponse = {
@@ -731,7 +759,7 @@ type ProjectClassTeachingsResponse = {
     my_teaching?: boolean
 }
 
-class ProjectClassTeachings {
+class CourseSectionsTeachings {
         
     id: string;
     italian_title: string;
@@ -749,7 +777,7 @@ class ProjectClassTeachings {
         }).id]);
     }
     
-    toCard(store : Store<any>, group : string) : GeneralCardElements { //Da sistemare
+    toCard(store : Store<any>, group : string, learning_block : string) : GeneralCardElements { //Da sistemare
         const language : Language = store.state.language;
         return {
             id: "" + this.id,
@@ -767,10 +795,78 @@ class ProjectClassTeachings {
                 type: "string",
                 content: getCurrentElement(store,"my_associated_teachings") + ": " + Array.from(this.my_teaching_refs).join(", ")
             }],
-            url: "project_courses/" + this.id,
+            url: "project_courses/" + this.id + "/" + learning_block,
             method: "get"
         }
     }
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, ProjectClassTeachings }
+type StudentProps = {
+    id: number,
+    name: string,
+    surname: string
+}
+
+class Student implements StudentProps {
+        
+        id: number;
+        name: string;
+        surname: string;
+    
+        constructor(props : StudentProps) {
+            this.id = props.id;
+            this.name = props.name;
+            this.surname = props.surname;
+        }
+        
+        toCard(store : Store<any>) : GeneralCardElements { //Da sistemare
+            return {
+                id: "" + this.id,
+                group: "",
+                content: [{
+                    id: this.id + "_name",
+                    type: "string",
+                    content: this.name
+                },{
+                    id: this.id + "_surname",
+                    type: "string",
+                    content: this.surname
+                }]
+            }
+        }
+
+        toTableRow(store : Store<any>, ordinary_class : OrdinaryClass, course_id : string, block_id : string, teacher_id : number, final_grade? : number) : CustomElement[] {
+            return [{ //Da sistemare: rendere cliccabile
+                id: this.id + "_name_surname",
+                type: "string",
+                content: this.name + " " + this.surname
+            },{
+                id: this.id + "_class",
+                type: "string",
+                content: (ordinary_class.study_year_ref.data as {id: number}).id + " " + (ordinary_class.study_address_ref.data as {id: string}).id //Da sistemare: chiedere api sezione (verrà messo in /project_classes/:course/:block/components)
+            },{
+                id: this.id + "_gardes", //Da sistemare: Mettere il controllo con future_course al passaggio a curriculum_v2
+                type: "icon",
+                linkType: "event",
+                content: {
+                    event: "grades",
+                    data: {
+                        title: this.name + " " + this.surname,
+                        parameters: {
+                            course_id: course_id,
+                            block_id: block_id,
+                            student_id: this.id,
+                            teacher_id: teacher_id
+                        }
+                    },
+                    icon: getIcon(store,"document_text")
+                }
+            },{
+                id: this.id + "_final_grade",
+                type: "string",
+                content: final_grade != undefined ? "" + final_grade : "-"
+            }]
+        }
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, Student }

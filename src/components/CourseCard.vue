@@ -4,31 +4,20 @@
             <ion-card-content>
                 <ion-grid>
                     <ion-row>
-                        <ion-col size="auto" style="border-right: 1px solid black;"> <!--Sistemare colore-->
-                            <ion-text>{{ getCurrentElement(store,"credits") + ": " + props.credits }}</ion-text>
+                        <ion-col size="auto" style="border-right: 1px solid var(--ion-color-dark);">
+                            <ionic-element :element="content[0]" />
                         </ion-col>
                         <ion-col>
-                            <div v-html="content" style="width: fit-content;"></div>
+                            <ionic-element :element="content[1]" @signal_event="$emit('signal_event')" />
                         </ion-col>
                         <ion-col size="auto">
                             <ion-text :color="enrollment.isPending() ? 'warning'
                                                                             : (props.enrollment.enrollment === true ? 'success' : 'danger')">
-                                {{ props.enrollment.isPending() ? getCurrentElement(store,"pending")
-                                                                : (props.enrollment.enrollment === true ? getCurrentElement(store,"enrolled")
-                                                                                                        : getCurrentElement(store,"not_enrolled")) }}
+                                <ionic-element :element="content[2]" />
                             </ion-text>
                         </ion-col>
                         <ion-col v-if="button" size="auto" style="border-left: 1px solid var(--ion-color-dark);">
-                            <ion-button fill="clear" @click="() => {
-                                    store.state.request = {
-                                        url: url,
-                                        method: method,
-                                    };
-                                    $emit('execute_link');
-                                }">
-                                <ion-icon v-if="enrollment.enrollment === false" :ios="getIcon(store,'add').ios" :md="getIcon(store,'add').md"></ion-icon>
-                                <ion-icon v-else :ios="getIcon(store,'close').ios" :md="getIcon(store,'close').md"></ion-icon>
-                            </ion-button>
+                            <ionic-element :element="content[3]" @execute_link="$emit('execute_link')" />
                         </ion-col>
                     </ion-row>
                 </ion-grid>
@@ -38,6 +27,7 @@
 </template>
 
 <script setup lang="ts">
+import { CustomElement } from "@/types";
 import { Enrollment } from "@/types";
 import { getCurrentElement, getIcon } from "@/utils";
 import { IonItem,IonCard,IonCardContent,IonGrid,IonRow,IonCol,IonText,IonButton,IonIcon } from "@ionic/vue";
@@ -53,18 +43,16 @@ const props = defineProps({
         required: true
     },
     "content": {
-        type: String,
+        type: Array as PropType<CustomElement[]>,
         required: true
     },
     "enrollment": {
-        type: Enrollment,
+        type: Object as PropType<Enrollment>,
         required: true
-    },
-    "url": String,
-    "method": String as PropType<Method>
+    }
 });
-defineEmits(["execute_link"]);
-const button = props.enrollment.editable && props.url != undefined && props.url != '';
+defineEmits(["execute_link","signal_event"]);
+const button = props.enrollment.editable && props.content.length > 3;
 </script>
 
 <style>

@@ -1,5 +1,5 @@
 import { AxiosInstance, Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, OrderedCardsList, Language, ElementsList, IconsList, TeacherBlockCardElements, LearningBlockStatus } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, OrderedCardsList, Language, ElementsList, IconsList, TeacherBlockCardElements, LearningBlockStatus, RequestIcon, Enrollment } from "./types";
 import { Store } from "vuex";
 
 function getCompleteSchoolYear(year: number) {
@@ -16,7 +16,7 @@ function getRagneString(start: Date, end: Date) {
 }
 
 function isGeneral(card : CardElements) : card is GeneralCardElements {
-    return !("credits" in card); //Vedere se creare un parametro per fare la condizione positiva
+    return !("credits" in card); //Da sistemare: vedere se creare un parametro per fare la condizione positiva
 }
 
 function isCourse(card : CardElements) : card is CourseCardElements {
@@ -61,16 +61,26 @@ async function executeLink($axios : AxiosInstance | undefined, url? : string | u
     }
 }
 
-function updateCourses(courses : OrderedCardsList, learning_block_id : number, value : Date | boolean) {
+function getEnrollmentIcon(store : Store<any>, enrollment : Enrollment, path : string, method? : Method) : RequestIcon {
+    return {
+        url: path,
+        method: enrollment.editable ? 
+                    (method ?? enrollment.getChangingMethod())
+                    : (method ?? "get"),
+        icon: enrollment.enrollment === false ? getIcon(store,"add") : getIcon(store,"close")
+    }
+}
+
+function updateCourses(store : Store<any>, courses : OrderedCardsList, learning_block_id : number, value : Date | boolean) {
 
     const course = courses.cards[""].find(c => c.id == "" + learning_block_id) as CourseCardElements;
-    const requestArray = course.url?.split("?") ?? ["",""];
+    const requestArray = (course.content[3].content as RequestIcon).url.split("?") ?? ["",""];
     const pathArray = requestArray[0].split("/");
     pathArray?.pop();
 
     course.enrollment.enrollment = value;
-    course.url = pathArray.join("/") + (value === false ? "/inscribe?" : "/unscribe?") + requestArray[1];
-    course.method = course.enrollment.getChangingMethod();
+    course.content[2].content = course.enrollment.toString(store);
+    course.content[3].content = getEnrollmentIcon(store, course.enrollment, pathArray.join("/") + (value === false ? "/inscribe?" : "/unscribe?") + requestArray[1], course.enrollment.getChangingMethod());
 }
 
 function getCurrentElement(store : Store<any>, key : string) {
@@ -124,4 +134,4 @@ function castStatus(store : Store<any>, status : string) : LearningBlockStatus |
     return cast;
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isTeacherBlock, executeLink, updateCourses, getCurrentElement, getIcon, hashCode, castStatus }
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isTeacherBlock, executeLink, getEnrollmentIcon, updateCourses, getCurrentElement, getIcon, hashCode, castStatus }

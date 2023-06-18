@@ -7,7 +7,17 @@
             :buttons="alertButtons"
             @didDismiss="setAlertStatus(false)"
         ></ion-alert>
-        <suspense>
+        <ion-modal :is-open="description_open" @didDismiss="closeModal()">
+            <suspense>
+                <template #default>
+                    <course-description :title="description_title" :course_id="description_course_id" @close="closeModal()"></course-description>
+                </template>
+                <template #fallback>
+                    <loading-component />
+                </template>
+            </suspense>
+        </ion-modal>
+        <suspense> <!--Da sistemare: aggiungere discorso Schede progetto_personale/specifico-->
             <template #default>
                 <block-description :key="trigger" :id="$route.params.id" />
             </template>
@@ -16,14 +26,14 @@
             </template>
         </suspense>
         <custom-select v-model="selected_area" :list="learning_areas" :label="learning_area + ':'" :aria_label="learning_area" :placeholder="placeholder" :getCompleteName="getCorrectName" />
-        <list-card :key="trigger" @execute_link="changeEnrollment($axios,store,courses,remainingCredits,selected_area)" :emptiness_message="getCurrentElement(store,'noCourses')" v-model:cards_list="courses" />
+        <list-card :key="trigger" @execute_link="changeEnrollment($axios,store,courses,remainingCredits,selected_area)" @signal_event="openModal()" :emptiness_message="getCurrentElement(store,'noCourses')" v-model:cards_list="courses" />
     </div>
 </template>
 
 <script setup lang="ts">
 import { CardsList, CourseCardElements, CourseSummary, CourseSummaryProps, Language, LearningArea, LearningBlock, LearningBlockStatus, OrderedCardsList } from '@/types';
 import { executeLink, getCurrentElement, updateCourses } from '@/utils';
-import { IonAlert } from '@ionic/vue';
+import { IonAlert, IonModal } from '@ionic/vue';
 import { AxiosInstance } from 'axios';
 import { inject, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -42,11 +52,13 @@ const changeEnrollment = ($axios : AxiosInstance | undefined, store : Store<any>
     const reload = (response : any) => {
 
         const pendingDate = new Date(response.data.data ?? "no date");
+        const wasPending = course.enrollment.isPending();
         const isPending = !isNaN(pendingDate.getTime());
 
-        updateCourses(courses,learning_block_id, isPending ? pendingDate : (unscribe ? false : (response.data ?? true)));
-        if (!isPending) {
+        updateCourses(store,courses,learning_block_id, isPending ? pendingDate : (unscribe ? false : (response.data ?? true)));
+        if (!wasPending && !isPending) {
             remainingCredits[selected_area] += (unscribe ? 1 : -1) * course.credits;
+            
         }
         trigger.value++;
     };
@@ -64,6 +76,12 @@ const changeEnrollment = ($axios : AxiosInstance | undefined, store : Store<any>
 const getCorrectName = (option: LearningArea) => option[`${language}_title`];
 const setAlertStatus = (state: boolean) => {
     openAlert.value = state;
+};
+const closeModal = () => description_open.value = false;
+const openModal = () => {
+    description_title = store.state.event.data.title;
+    description_course_id = store.state.event.data.course_id;
+    description_open.value = true;
 };
 
 const store = useStore();
@@ -88,11 +106,14 @@ const placeholder = getCurrentElement(store,"select") + (language == "italian" ?
 const alertButtons = [getCurrentElement(store,"ok")];
 const openAlert = ref(false);
 const selected_area = ref("");
+const description_open = ref(false);
 
 let learning_areas : LearningArea[] = [];
 let learning_blocks : LearningBlock[];
 let learning_block : LearningBlock | undefined;
 let learning_block_position : number;
+let description_title : string;
+let description_course_id : number;
 
 if ($axios != undefined) {
     learning_blocks = await executeLink($axios,"/v1/learning_blocks?year_of=" + learning_block_id,

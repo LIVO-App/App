@@ -221,7 +221,13 @@ export const store = createStore({
                     teacher: "Insegnante",
                     associated: "Associati",
                     my_associated_teachings: "Miei insegnamenti associati",
-                    no_project_classes: "Nessuna classe progetto"
+                    no_project_classes: "Nessuna classe progetto",
+                    section_choice: "Scegli una sezione",
+                    student: "Studente",
+                    class: "Classe",
+                    grade_insertion: "Inserimento valutazione",
+                    insert_grade: "Inserisci valutazione",
+                    grade: "Valutazione"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -274,7 +280,13 @@ export const store = createStore({
                     teacher: "Teacher",
                     associated: "Associated",
                     my_associated_teachings: "My associated teachings",
-                    no_project_classes: "No project classes"
+                    no_project_classes: "No project classes",
+                    section_choice: "Choose a section",
+                    student: "Student",
+                    class: "Class",
+                    grade_insertion: "Grade insertion",
+                    insert_grade: "Insert grade",
+                    grade: "Grade"
                 }
             },
             /*
