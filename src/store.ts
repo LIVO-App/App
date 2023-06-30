@@ -201,7 +201,7 @@ export const store = createStore({
                     description: "Descrizione",
                     date: "Data",
                     evaluation: "Valutazione",
-                    arithmetic_mean: "Media aritmetica",
+                    intermediate_arithmetic_mean: "Media aritmetica intermedia",
                     final: "Finale",
                     no_grades: "Nessun voto registrato",
                     expected_learning_results: "Risultati apprendimento attesi",
@@ -260,7 +260,7 @@ export const store = createStore({
                     description: "Description",
                     date: "Date",
                     evaluation: "Evaluation",
-                    arithmetic_mean: "Arithmetic mean",
+                    intermediate_arithmetic_mean: "Intermediate arithmetic mean",
                     final: "Final",
                     no_grades: "No grades recorded",
                     expected_learning_results: "Expected learning results",
@@ -293,21 +293,21 @@ export const store = createStore({
             user: {
                 id: 1,
                 username: "Student1",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4NjE4MzE0NiwiZXhwIjoxNjg2MjY5NTQ2fQ.nm4ssidIE38dcEhY6JoEyxeacK8nVUuV3sgf4TH3CTg",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODA3MTA2MywiZXhwIjoxNjg4MTU3NDYzfQ.3atH-J34jGFddRYuYNTgx4yJ6CFehPnkhJDFvn_ETTc",
                 user: "student",
             },//*/
             /*
             user: {
                 id: 1,
                 username: "Teacher1",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiVGVhY2hlcjEiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4NjE3NjMxMywiZXhwIjoxNjg2MjYyNzEzfQ.yJxixQ3-_Ohewktzn5axs4uQ9L-hTFsl3IPc2tuVsVk",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiVGVhY2hlcjEiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4ODA3MTA4MywiZXhwIjoxNjg4MTU3NDgzfQ.txoR1VMYSXAOKBjEm5LEyChmg4tpG8YRR4ynzhGKh2I",
                 user: "teacher",
             },//*/
             //*
             user: {
                 id: 2,
                 username: "Teacher2",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4NjE3MTQ3NywiZXhwIjoxNjg2MjU3ODc3fQ.yvBQ9eedY5lYgL9ajDBf5iI_XtQGFBTlGsaBJVH9p7Y",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4ODA3MTA5OSwiZXhwIjoxNjg4MTU3NDk5fQ.GYgZPm2YUeWyyB4K5_F0uicLPUp9Y5K7dWD_iMtZpIc",
                 user: "teacher",
             },//*/
             request: {},

@@ -16,7 +16,7 @@
     <template v-if="tableData.length > 0">
         <ionic-table :data="tableData" :first_row="first_row" :column_sizes="column_sizes"></ionic-table>
         <div class="ion-text-center ion-padding-bottom">
-            <ion-text color="primary">{{ getCurrentElement(store,"arithmetic_mean") }}: {{ mean }}</ion-text>
+            <ion-text color="primary">{{ getCurrentElement(store,"intermediate_arithmetic_mean") }}: {{ mean }}</ion-text>
         </div>
     </template>
     <template v-else>
@@ -122,13 +122,16 @@ const final_grade : Ref<boolean> = ref(false);
 
 let tmp_mean = 0;
 let mean = ""; //(grades.reduce((p,c) => p + c.grade,0) / grades.length).toFixed(2);
-
+let finalPresent = false;
 for (const grade of grades) {
     if (!grade.final) {
         tmp_mean += grade.grade;
+    } else {
+        finalPresent = true;
     }
 }
-mean = tmp_mean.toFixed(2);
+mean = (tmp_mean/(grades.length-(finalPresent ? 1 : 0))).toFixed(2);
+
 </script>
 
 <style>

@@ -43,7 +43,7 @@ type OrdinaryClass = {
         study_address: string,
         definition_year: number
     }>,
-    english_displayed_name: string,
+    english_displayed_name: string, //Da sistemare: togliere tutti i _displayed_ (qui vedere)
     italian_displayed_name: string,
     school_year: number,
     study_address_ref: ResponseItem<{
@@ -202,7 +202,7 @@ class CourseBase implements CourseBaseProps {
         this.id = courseObj.id;
         this.credits = courseObj.credits;
         this.learning_area_ref = courseObj.learning_area_ref;
-        this.italian_title = courseObj.italian_title; //Da sistemare: togliere lingue e mettere get su title-displayed_name
+        this.italian_title = courseObj.italian_title; //Da sistemare: sistemare lingue mettendo get
         this.english_title = courseObj.english_title;
         this.italian_displayed_name = courseObj.italian_displayed_name;
         this.english_displayed_name = courseObj.english_displayed_name;

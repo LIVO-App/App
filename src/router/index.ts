@@ -4,7 +4,7 @@ import { RouteRecordRaw } from 'vue-router';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '',
-    redirect: '/learning_blocks' //Sistemare in base a role
+    redirect: '/learning_blocks' //Da sistemare: in base a role
   },
   {
     path: '/learning_blocks',
@@ -37,6 +37,10 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/project_courses',
     component: () => import ('../views/ProjectCourses.vue')
+  },
+  {
+    path: '/project_courses/:course/:block',
+    component: () => import ('../views/ProjectClass.vue')
   },
   {
     path: '/course_propose',
