@@ -140,7 +140,9 @@ const courses : OrderedCardsList<GeneralCardElements> = reactive({
     associated: []
   }
 });
-const teaching_years = [2022,2021]; //Da sistemare: rendere dinamico
+const teaching_years = await executeLink($axios,"/v1/teachers/" + user_id + "/active_years",
+  (response : any) => response.data.data.map((a: any) => a.year),
+  () => []);
 const trigger = ref(0);
 
 let selected_block_indexes : Indexes = reactive({
