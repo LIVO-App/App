@@ -227,7 +227,9 @@ export const store = createStore({
                     class: "Classe",
                     grade_insertion: "Inserimento valutazione",
                     insert_grade: "Inserisci valutazione",
-                    grade: "Valutazione"
+                    grade: "Valutazione",
+                    empty_descriptions: "Descrizione vuota",
+                    grade_value_error: "Valore del voto errato"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -286,7 +288,9 @@ export const store = createStore({
                     class: "Class",
                     grade_insertion: "Grade insertion",
                     insert_grade: "Insert grade",
-                    grade: "Grade"
+                    grade: "Grade",
+                    empty_descriptions: "Empty description",
+                    grade_value_error: "Incorrect grade value"
                 }
             },
             /*
@@ -307,12 +311,16 @@ export const store = createStore({
             user: {
                 id: 2,
                 username: "Teacher2",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4ODA3MTA5OSwiZXhwIjoxNjg4MTU3NDk5fQ.GYgZPm2YUeWyyB4K5_F0uicLPUp9Y5K7dWD_iMtZpIc",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4ODE1ODgyMCwiZXhwIjoxNjg4MjQ1MjIwfQ.h9buHWkxqWKUPneZfXnMJ88BJoIyWKEMqImq0DxTPOc",
                 user: "teacher",
             },//*/
             request: {},
             event: {},
-            hours_per_credit: 6
+            hours_per_credit: 6,
+            grades_scale: {
+                min: 1,
+                max: 11
+            }
         }
     }
 });

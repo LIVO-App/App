@@ -28,7 +28,11 @@ declare module '@vue/runtime-core' {
         [key: string]: any
       }
     },
-    hours_per_credit: number
+    hours_per_credit: number,
+    grades_scale: {
+      min: number,
+      max: number
+    }
   }
 
   interface ComponentCustomProperties {

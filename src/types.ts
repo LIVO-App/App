@@ -54,6 +54,12 @@ type OrdinaryClass = {
     }>
 }
 
+type OrdinaryClassSummary = {
+    study_year: number,
+    address: string,
+    section: string
+}
+
 class Enrollment {
     private _enrollment: string
     private _editable: boolean
@@ -804,19 +810,28 @@ class CourseSectionsTeachings {
 type StudentProps = {
     id: number,
     name: string,
-    surname: string
+    surname: string,
+    ord_class_study_year: number,
+    ord_class_address: string,
+    ord_class_section: string
 }
 
-class Student implements StudentProps {
+class Student {
         
         id: number;
         name: string;
         surname: string;
+        ordinary_class: OrdinaryClassSummary;
     
         constructor(props : StudentProps) {
             this.id = props.id;
             this.name = props.name;
             this.surname = props.surname;
+            this.ordinary_class = {
+                study_year: props.ord_class_study_year,
+                address: props.ord_class_address,
+                section: props.ord_class_section
+            }
         }
         
         toCard(store : Store<any>) : GeneralCardElements { //Da sistemare
@@ -835,7 +850,7 @@ class Student implements StudentProps {
             }
         }
 
-        toTableRow(store : Store<any>, ordinary_class : OrdinaryClass, course_id : string, block_id : string, teacher_id : number, final_grade? : number) : CustomElement[] {
+        toTableRow(store : Store<any>, course_id : string, block_id : string, teacher_id : number, final_grade? : Grade) : CustomElement[] {
             return [{ //Da sistemare: rendere cliccabile
                 id: this.id + "_name_surname",
                 type: "string",
@@ -843,7 +858,7 @@ class Student implements StudentProps {
             },{
                 id: this.id + "_class",
                 type: "string",
-                content: (ordinary_class.study_year_ref.data as {id: number}).id + " " + (ordinary_class.study_address_ref.data as {id: string}).id //Da sistemare: chiedere api sezione (verrà messo in /project_classes/:course/:block/components)
+                content: this.ordinary_class.study_year + " " + this.ordinary_class.address + " " + this.ordinary_class.section
             },{
                 id: this.id + "_gardes", //Da sistemare: Mettere il controllo con future_course al passaggio a curriculum_v2
                 type: "icon",
@@ -864,9 +879,9 @@ class Student implements StudentProps {
             },{
                 id: this.id + "_final_grade",
                 type: "string",
-                content: final_grade != undefined ? "" + final_grade : "-"
+                content: final_grade != undefined ? "" + final_grade.grade : "-"
             }]
         }
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, Student }
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, Student }

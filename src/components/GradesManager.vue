@@ -34,12 +34,26 @@
         </div>
         <div class="ion-text-center">
             <ion-button @click="() => {
-                store.state.request = {
-                    url: '/v1/students/' + parameters.student_id + '/grades?teacher_id=' + parameters.teacher_id + '&course_id=' + parameters.course_id + '&block_id=' + parameters.block_id + '&ita_description=' + description + '&eng_description=' + description + '&grade=' + grade + '&final=' + final_grade + '&token=' + user.token,
-                    method: 'post',
-                };
-                $emit('execute_link');
-                $emit('close');
+                if (description == '') {
+                    store.state.event = {
+                        name: 'empty_descriptions',
+                        data: {}
+                    };
+                    $emit('signal_event');
+                } else if (grade < store.state.grades_scale.min || grade > store.state.grades_scale.max) {
+                    store.state.event = {
+                        name: 'grade_value_error',
+                        data: {}
+                    };
+                    $emit('signal_event');
+                } else {
+                    store.state.request = {
+                        url: '/v1/students/' + parameters.student_id + '/grades?teacher_id=' + parameters.teacher_id + '&course_id=' + parameters.course_id + '&block_id=' + parameters.block_id + '&ita_description=' + description + '&eng_description=' + description + '&grade=' + grade + '&final=' + final_grade + '&token=' + user.token,
+                        method: 'post',
+                    };
+                    $emit('execute_link');
+                    $emit('close');
+                }
             }">
                 {{ getCurrentElement(store,"insert_grade") }}
             </ion-button>
@@ -55,6 +69,13 @@ import { AxiosInstance } from "axios";
 import { inject, PropType, Ref, ref } from "vue";
 import { useStore } from "vuex";
 
+const push_grade = (grade: Grade) => {
+    if (grade.final) {
+        final.value = true;
+    }
+    tableData.push(grade.toTableRow(store));
+}
+
 const store = useStore();
 const $axios : AxiosInstance | undefined = inject("$axios");
 const user = store.state.user;
@@ -67,9 +88,10 @@ const props = defineProps({
     "parameters": {
         type: Object as PropType<GradesParameters>,
         required: true
-    }
+    },
+    "grades": Array<Grade>
 });
-defineEmits(["execute_link","close"]);
+defineEmits(["execute_link","signal_event","close"]);
 
 const elements : {
     [key: string]: CustomElement
@@ -105,32 +127,39 @@ const first_row : CustomElement[] = [{
 const column_sizes = [6,3,3];
 const tableData : CustomElement[][] = [];
 const final = ref(false);
-const grades : Grade[] = await executeLink($axios,"/v1/students/" + props.parameters.student_id + "/grades?course_id=" + props.parameters.course_id + "&block_id=" + props.parameters.block_id + (props.parameters.teacher_id != undefined ? "&teacher_id=" + props.parameters.teacher_id : ""),
-    response => response.data.data.map((a : GradeProps) => {
-        const tmp_grade = new Grade(a);
-        if (tmp_grade.final) {
-            final.value = true;
-        }
-        tableData.push(tmp_grade.toTableRow(store));
-        return tmp_grade;
-    }),
-    () => []);
-
 const description : Ref<string> = ref("");
 const grade : Ref<number> = ref(0);
 const final_grade : Ref<boolean> = ref(false);
 
+let actual_grades : Grade[];
 let tmp_mean = 0;
-let mean = ""; //(grades.reduce((p,c) => p + c.grade,0) / grades.length).toFixed(2);
+let mean = "";
 let finalPresent = false;
-for (const grade of grades) {
+
+if (props.grades != undefined) {
+    actual_grades = props.grades.map((a: Grade) => {
+        push_grade(a);
+        return a;
+    });
+} else {
+    actual_grades = await executeLink($axios,"/v1/students/" + props.parameters.student_id + "/grades?course_id=" + props.parameters.course_id + "&block_id=" + props.parameters.block_id + (props.parameters.teacher_id != undefined ? "&teacher_id=" + props.parameters.teacher_id : ""),
+    response => response.data.data.map((a : GradeProps) => {
+        const tmp_grade = new Grade(a);
+        push_grade(tmp_grade);
+        return tmp_grade;
+    }),
+    () => []);
+}
+
+for (const grade of actual_grades) {
     if (!grade.final) {
         tmp_mean += grade.grade;
     } else {
         finalPresent = true;
     }
 }
-mean = (tmp_mean/(grades.length-(finalPresent ? 1 : 0))).toFixed(2);
+
+mean = (tmp_mean/(actual_grades.length-(finalPresent ? 1 : 0))).toFixed(2);
 
 </script>
 
