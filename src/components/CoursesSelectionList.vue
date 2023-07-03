@@ -58,7 +58,6 @@ const changeEnrollment = ($axios : AxiosInstance | undefined, store : Store<any>
         updateCourses(store,courses,learning_block_id, isPending ? pendingDate : (unscribe ? false : (response.data ?? true)));
         if (!wasPending && !isPending) {
             remainingCredits[selected_area] += (unscribe ? 1 : -1) * course.credits;
-            
         }
         trigger.value++;
     };
@@ -151,7 +150,7 @@ if ($axios != undefined) {
         watch(selected_area,n => {
             courses.cards[""] = all_courses[n] ?? [];
             trigger.value++;
-        })
+        });
     }
 } else {
     console.error("Connection failed");

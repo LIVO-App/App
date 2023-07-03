@@ -27,9 +27,17 @@
             :aria_label="getCurrentElement(store,'school_year')"
             :placeholder="getCurrentElement(store,'school_year_choice')"
         ></custom-select>
+        <custom-select
+            v-model="selected_context"
+            :list="learning_contexts"
+            :label="getCurrentElement(store,'learning_context') + ':'"
+            :aria_label="getCurrentElement(store,'learning_context')"
+            :placeholder="getCurrentElement(store,'learning_context_choice')"
+            :getCompleteName="getContextAxronym"
+        ></custom-select>
         <suspense>
           <template #default>
-            <ionic-table :data="tableData" :first_row="firstRow" :column_sizes="column_sizes" @signal_event="SetupModalAndOpen(store)"></ionic-table>
+            <ionic-table :key="trigger" :data="tableData" :first_row="firstRow" :column_sizes="column_sizes" @signal_event="SetupModalAndOpen(store)"></ionic-table>
           </template>
           <template #fallback>
             <loading-component />
@@ -39,11 +47,11 @@
 </template>
 
 <script setup lang="ts">
-import { CurriculumCourse, CustomElement, GradesParameters } from "@/types";
+import { CurriculumCourse, CustomElement, GradesParameters, Language, LearningContext } from "@/types";
 import { executeLink, getCurrentElement } from "@/utils";
 import { IonModal } from "@ionic/vue";
 import { AxiosInstance } from "axios";
-import { inject, ref, Ref } from "vue";
+import { inject, ref, Ref, watch } from "vue";
 import { Store, useStore } from "vuex";
 
 type availableModal = "grades" | "course_details";
@@ -72,15 +80,51 @@ const closeModal = (window : availableModal) => {
             description_open.value = false;
     }
 };
+const getContextAxronym = (option: LearningContext) => option[`${language}_title`];
+const getYearCourses = async () => {
+
+    year_courses = {};
+
+    await executeLink($axios,"/v2/students/" + user.id + "/curriculum?school_year=" + selected_year.value + "&token=" + user.token, // context_id=" + selected_context.value + "&
+        response => {
+
+            let tmp_course : CurriculumCourse;
+            let tmp_context : LearningContext | undefined;
+            let tmp_context_id : number;
+
+            for (const course of response.data.data) {
+                tmp_course = new CurriculumCourse(course);
+                tmp_context = learning_contexts.find((a: LearningContext) => a.acronym == tmp_course.learning_context_acronym);
+                tmp_context_id = tmp_context != undefined ? tmp_context.id : -1;
+                if (year_courses[tmp_context_id] == undefined) {
+                    year_courses[tmp_context_id] = [tmp_course];
+                } else {
+                    year_courses[tmp_context_id].push(tmp_course);
+                }
+            }
+        },
+        () => []);
+    
+    courses = year_courses[selected_context.value] ?? [];
+};
+const updateTable = (year_correspondences : any, courses : CurriculumCourse[]) => {
+    for (const course of courses) {
+        if (year_correspondences[selected_year.value][course.id].length > 0) {
+            tableData.push(course.toTableRow(store,year_correspondences[selected_year.value][course.id][year_correspondences[selected_year.value][course.id].length-1],user.id));
+        }
+    }
+}
 
 const store = useStore();
 const $axios : AxiosInstance | undefined = inject("$axios");
-const user_id : number = store.state.user.id;
+const user = store.state.user;
+const language : Language = store.state.language;
 
-const correspondences : {
-    [key : number]: number[]
+const year_correspondences : {
+    [key : number]: {
+        [key : number]: number[]
+    }
 } = {};
-const tableData : CustomElement[][] = [];
 const firstRow : CustomElement[] = [{
     id: "title",
     type: "string",
@@ -109,17 +153,25 @@ const firstRow : CustomElement[] = [{
 const column_sizes = [4,1,1,2,2,2];
 const grades_open = ref(false);
 const description_open = ref(false);
+const trigger = ref(0);
 
 let school_years : any[] = [];
 let selected_year : Ref<any>;
-let courses : CurriculumCourse[];
+let year_courses : {
+    [key: string]: CurriculumCourse[]
+} = {};
+let courses : CurriculumCourse[] = [];
 let grades_title : string;
 let grades_parameters : GradesParameters;
 let description_title : string;
 let description_course_id : number;
+let learning_contexts : LearningContext[] = [];
+let selected_context : Ref<number>;
+let courses_list : CurriculumCourse[] = [];
+let tableData : CustomElement[][] = [];
 
 if ($axios != undefined) {
-    school_years = await executeLink($axios,"/v1/ordinary_classes?descending=true&student_id=" + user_id,
+    school_years = await executeLink($axios,"/v1/ordinary_classes?descending=true&student_id=" + user.id,
         response => {
             return response.data.data.map((a: any) => {
                 return {
@@ -128,33 +180,60 @@ if ($axios != undefined) {
             });
         },
         () => []);
-    selected_year = ref(school_years[0].id);
-    courses = await executeLink($axios,"/v1/students/" + user_id + "/curriculum?school_year=" + selected_year.value,
-        response => response.data.data.map((a: any) => {
-            //courses_id.push(a.id);
-            return new CurriculumCourse(a)
-        }),
+    learning_contexts = await executeLink($axios,"/v1/learning_contexts?",
+        response => {
+
+            const tmp_contexts = [];
+
+            for (const learning_context of response.data.data) {
+                if (store.state.excluded_learning_contexts_id.findIndex((a: number) => a != learning_context.id) != -1) {
+                    tmp_contexts.push(learning_context);
+                }
+            }
+
+            return tmp_contexts;
+        },
         () => []);
-    await executeLink($axios,"/v1/learning_blocks/correspondence?student_id=" + user_id,
+
+    selected_year = ref(school_years[0].id);
+    selected_context = ref(learning_contexts[0].id);
+    await getYearCourses();
+
+    watch(selected_year,n => {
+        getYearCourses();
+        tableData = [];
+        updateTable(year_correspondences,courses);
+        trigger.value++;
+    });
+    watch(selected_context,n => {
+        courses = year_courses[n] ?? [];
+        tableData = [];
+        updateTable(year_correspondences,courses);
+        trigger.value++;
+    });
+    
+    for (const context_courses of Object.values(year_courses)) {
+        courses_list = courses_list.concat(context_courses);
+    }
+    
+    await executeLink($axios,"/v1/learning_blocks/correspondence?student_id=" + user.id,
         response => {
             for (const correspondence of response.data.data) {
-                //courses_id = courses_id.filter((a : any) => a.id == correspondence.course_id)
-                if (correspondences[correspondence.course_id] == undefined) {
-                    correspondences[correspondence.course_id] = [correspondence.block_id]
+                if (year_correspondences[selected_year.value] == undefined) {
+                    year_correspondences[selected_year.value] = {};
+                }
+                if (year_correspondences[selected_year.value][correspondence.course_id] == undefined) {
+                    year_correspondences[selected_year.value][correspondence.course_id] = [correspondence.block_id];
                 } else {
-                    correspondences[correspondence.course_id].push(correspondence.block_id)
+                    year_correspondences[selected_year.value][correspondence.course_id].push(correspondence.block_id);
                 }
             }
         },
         () => [],
         "post",{
-            courses: courses.map((a : any) => a.id)
+            courses: courses_list.map((a : any) => a.id)
         });
-    for (const course of courses) {
-        if (correspondences[course.id].length > 0) {
-            tableData.push(course.toTableRow(store,correspondences[course.id][correspondences[course.id].length-1],user_id));
-        }
-    }
+    updateTable(year_correspondences,courses)
 }
 </script>
 

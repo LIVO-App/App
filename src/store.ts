@@ -229,7 +229,9 @@ export const store = createStore({
                     insert_grade: "Inserisci valutazione",
                     grade: "Valutazione",
                     empty_descriptions: "Descrizione vuota",
-                    grade_value_error: "Valore del voto errato"
+                    grade_value_error: "Valore del voto errato",
+                    learning_context: "Contesto di apprendimento",
+                    learning_context_choice: "Scegli un contesto di apprendimento"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -290,28 +292,30 @@ export const store = createStore({
                     insert_grade: "Insert grade",
                     grade: "Grade",
                     empty_descriptions: "Empty description",
-                    grade_value_error: "Incorrect grade value"
+                    grade_value_error: "Incorrect grade value",
+                    learning_context: "Learning context",
+                    learning_context_choice: "Choose a learning context"
                 }
             },
-            /*
+            //*
             user: {
                 id: 1,
                 username: "Student1",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODA3MTA2MywiZXhwIjoxNjg4MTU3NDYzfQ.3atH-J34jGFddRYuYNTgx4yJ6CFehPnkhJDFvn_ETTc",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODM2OTg4NywiZXhwIjoxNjg4NDU2Mjg3fQ.WDCzmZks_VgEPFzks4thl4sNR3f5h35OQMyTQvhCBIw",
                 user: "student",
             },//*/
             /*
             user: {
                 id: 1,
                 username: "Teacher1",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiVGVhY2hlcjEiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4ODA3MTA4MywiZXhwIjoxNjg4MTU3NDgzfQ.txoR1VMYSXAOKBjEm5LEyChmg4tpG8YRR4ynzhGKh2I",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiU3R1ZGVudDIiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODM2OTkwOCwiZXhwIjoxNjg4NDU2MzA4fQ.XYjUjhxj_HjkPy-V7ntbGf2Hww8Y8kiS_mes-fC7D7U",
                 user: "teacher",
             },//*/
-            //*
+            /*
             user: {
                 id: 2,
                 username: "Teacher2",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4ODE1ODgyMCwiZXhwIjoxNjg4MjQ1MjIwfQ.h9buHWkxqWKUPneZfXnMJ88BJoIyWKEMqImq0DxTPOc",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4ODM2OTkyMywiZXhwIjoxNjg4NDU2MzIzfQ.KHo_lC__bS3kiSPp384McdjuWz5b8y_k9ASoPB5X5Os",
                 user: "teacher",
             },//*/
             request: {},
@@ -320,7 +324,8 @@ export const store = createStore({
             grades_scale: {
                 min: 1,
                 max: 11
-            }
+            },
+            excluded_learning_contexts_id: [3] //Da sistemare: mettere referenza a contesto di apprendimento
         }
     }
 });

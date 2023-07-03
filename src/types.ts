@@ -43,7 +43,7 @@ type OrdinaryClass = {
         study_address: string,
         definition_year: number
     }>,
-    english_displayed_name: string, //Da sistemare: togliere tutti i _displayed_ (qui vedere)
+    english_displayed_name: string, //Da sistemare: sistemare visualizzazione nome classe
     italian_displayed_name: string,
     school_year: number,
     study_address_ref: ResponseItem<{
@@ -149,8 +149,6 @@ type CourseBaseProps = {
     }>
 } & {
     [key in keyof string as `${Language}_title`]: string
-} & {
-    [key in keyof string as `${Language}_displayed_name`]: string | null
 }
 
 type CourseSummaryProps = CourseBaseProps & {
@@ -161,6 +159,8 @@ type CourseSummaryProps = CourseBaseProps & {
 type CurriculumCourseProps = CourseBaseProps & {
     section: string,
     final_grade: GradeProps | null,
+    learning_context_acronym: string,
+    future_course: number
 }
 
 type CourseProps = CourseBaseProps & {
@@ -201,8 +201,6 @@ class CourseBase implements CourseBaseProps {
     }>;
     italian_title : string;
     english_title : string;
-    italian_displayed_name : string | null;
-    english_displayed_name : string | null;
 
     constructor(courseObj : CourseBaseProps) {
         this.id = courseObj.id;
@@ -210,8 +208,6 @@ class CourseBase implements CourseBaseProps {
         this.learning_area_ref = courseObj.learning_area_ref;
         this.italian_title = courseObj.italian_title; //Da sistemare: sistemare lingue mettendo get
         this.english_title = courseObj.english_title;
-        this.italian_displayed_name = courseObj.italian_displayed_name;
-        this.english_displayed_name = courseObj.english_displayed_name;
     }
 }
 
@@ -268,15 +264,19 @@ class CourseSummary extends CourseBase implements CourseSummaryProps {
     }
 }
 
-class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
+class CurriculumCourse extends CourseBase {
     
     section: string;
     final_grade: GradeProps | null;
+    learning_context_acronym: string;
+    future_course: boolean;
 
     constructor(courseObj : CurriculumCourseProps) {
         super(courseObj);
         this.section = courseObj.section;
         this.final_grade = courseObj.final_grade;
+        this.learning_context_acronym = courseObj.learning_context_acronym;
+        this.future_course = courseObj.future_course == 1;
     }
 
     /*concatGrades(grades : Grade[]) {
@@ -292,7 +292,7 @@ class CurriculumCourse extends CourseBase implements CurriculumCourseProps {
         this.intermediate_grades = this.intermediate_grades.concat(grades);
     }*/
 
-    toCard(store : Store<any>, path? : string, method? : Method) : GeneralCardElements { //Da sistemare
+    toCard(store : Store<any>, path? : string, method? : Method) : GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
         const language : Language = store.state.language;
         return {
             id: "" + this.id,
@@ -716,7 +716,7 @@ class Grade implements GradeProps {
         this.id = hashCode(this.publication.toISOString());
     }
 
-    toCard(store : Store<any>) : GeneralCardElements { //Da sistemare
+    toCard(store : Store<any>) : GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
         const language : Language = store.state.language;
         return {
             id: "" + this.id,
@@ -783,7 +783,7 @@ class CourseSectionsTeachings {
         }).id]);
     }
     
-    toCard(store : Store<any>, group : string, learning_block : string) : GeneralCardElements { //Da sistemare
+    toCard(store : Store<any>, group : string, learning_block : string) : GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
         const language : Language = store.state.language;
         return {
             id: "" + this.id,
@@ -884,4 +884,13 @@ class Student {
         }
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, Student }
+type LearningContext = {
+    id: number,
+    acronym: string,
+} & {
+    [key in keyof Language as `${Language}_title`]: string
+} & {
+    [key in keyof Language as `${Language}_description`]: string
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, Student, LearningContext }
