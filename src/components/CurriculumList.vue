@@ -20,21 +20,29 @@
                 </template>
             </suspense>
         </ion-modal>
-        <custom-select
-            v-model="selected_year"
-            :list="school_years"
-            :label="getCurrentElement(store,'school_year') + ':'"
-            :aria_label="getCurrentElement(store,'school_year')"
-            :placeholder="getCurrentElement(store,'school_year_choice')"
-        ></custom-select>
-        <custom-select
-            v-model="selected_context"
-            :list="learning_contexts"
-            :label="getCurrentElement(store,'learning_context') + ':'"
-            :aria_label="getCurrentElement(store,'learning_context')"
-            :placeholder="getCurrentElement(store,'learning_context_choice')"
-            :getCompleteName="getContextAxronym"
-        ></custom-select>
+        <ion-grid>
+            <ion-row>
+                <ion-col size="auto">
+                    <custom-select
+                        v-model="selected_year"
+                        :list="school_years"
+                        :label="getCurrentElement(store,'school_year') + ':'"
+                        :aria_label="getCurrentElement(store,'school_year')"
+                        :placeholder="getCurrentElement(store,'school_year_choice')"
+                    />
+                </ion-col>
+                <ion-col size="auto">
+                    <custom-select
+                        v-model="selected_context"
+                        :list="learning_contexts"
+                        :label="getCurrentElement(store,'learning_context') + ':'"
+                        :aria_label="getCurrentElement(store,'learning_context')"
+                        :placeholder="getCurrentElement(store,'learning_context_choice')"
+                        :getCompleteName="getContextAxronym"
+                    />
+                </ion-col>
+            </ion-row>
+        </ion-grid>
         <suspense>
           <template #default>
             <ionic-table :key="trigger" :data="tableData" :first_row="firstRow" :column_sizes="column_sizes" @signal_event="SetupModalAndOpen(store)"></ionic-table>
@@ -49,7 +57,7 @@
 <script setup lang="ts">
 import { CurriculumCourse, CustomElement, GradesParameters, Language, LearningContext } from "@/types";
 import { executeLink, getCurrentElement } from "@/utils";
-import { IonModal } from "@ionic/vue";
+import { IonModal, IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { AxiosInstance } from "axios";
 import { inject, ref, Ref, watch } from "vue";
 import { Store, useStore } from "vuex";
@@ -199,7 +207,7 @@ if ($axios != undefined) {
     selected_context = ref(learning_contexts[0].id);
     await getYearCourses();
 
-    watch(selected_year,n => {
+    watch(selected_year,() => {
         getYearCourses();
         tableData = [];
         updateTable(year_correspondences,courses);
