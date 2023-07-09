@@ -845,6 +845,7 @@ type StudentProps = {
     id: number,
     name: string,
     surname: string,
+    learning_context_acronym: string,
     ord_class_study_year: number,
     ord_class_address: string,
     ord_class_section: string
@@ -855,12 +856,14 @@ class Student {
         id: number;
         name: string;
         surname: string;
+        learning_context_acronym: string;
         ordinary_class: OrdinaryClassSummary;
     
         constructor(props : StudentProps) {
             this.id = props.id;
             this.name = props.name;
             this.surname = props.surname;
+            this.learning_context_acronym = props.learning_context_acronym;
             this.ordinary_class = {
                 study_year: props.ord_class_study_year,
                 address: props.ord_class_address,
@@ -889,6 +892,10 @@ class Student {
                 id: this.id + "_name_surname",
                 type: "string",
                 content: this.name + " " + this.surname
+            },{
+                id: this.id + "_learning_context",
+                type: "string",
+                content: this.learning_context_acronym
             },{
                 id: this.id + "_class",
                 type: "string",

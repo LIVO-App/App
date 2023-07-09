@@ -10,14 +10,14 @@
         <ion-modal id="grades_manages" :is-open="grades_open" @didDismiss="closeModal('grades')">
             <suspense>
                 <template #default>
-                    <grades-manager :title="grades_title" :parameters="grades_parameters" :grades="student_grades" @close="closeModal('grades')" @execute_link="add_grade()" @signal_event="setupModalAndOpen(store)"></grades-manager>
+                    <grades-manager :title="grades_title" :parameters="grades_parameters" :grades="student_grades" @close="closeModal('grades')" @execute_link="add_grade()" @signal_event="setupModalAndOpen(store)" />
                 </template>
                 <template #fallback>
                     <loading-component />
                 </template>
             </suspense>
         </ion-modal>
-        <!--<ion-modal :is-open="description_open" @didDismiss="closeModal('course_details')">
+        <ion-modal :is-open="description_open" @didDismiss="closeModal('course_details')">
             <suspense>
                 <template #default>
                     <course-description :title="description_title" :course_id="description_course_id" @close="closeModal('course_details')"></course-description>
@@ -26,7 +26,10 @@
                     <loading-component />
                 </template>
             </suspense>
-        </ion-modal>-->
+        </ion-modal>
+        <div>
+            <ionic-element v-for="button in buttons" :key="button.id" :element="button" @signal_event="setupModalAndOpen(store)" />
+        </div>
         <custom-select
             v-model="selected_section"
             :list="sections"
@@ -36,7 +39,7 @@
         ></custom-select>
         <suspense>
           <template #default>
-            <ionic-table :key="trigger" :data="tableData" :first_row="firstRow" :column_sizes="column_sizes" @signal_event="setupModalAndOpen(store)"></ionic-table>
+            <ionic-table :key="trigger" :data="table_data" :first_row="firstRow" :column_sizes="column_sizes" @signal_event="setupModalAndOpen(store)" />
           </template>
           <template #fallback>
             <loading-component />
@@ -47,10 +50,10 @@
 
 <script setup lang="ts">
 import { CustomElement, Grade, GradeProps, GradesParameters, Student } from "@/types";
-import { executeLink, getCurrentElement } from "@/utils";
+import { executeLink, getCurrentElement, getIcon } from "@/utils";
 import { IonModal, IonAlert } from "@ionic/vue";
 import { AxiosInstance } from "axios";
-import { inject, ref, Ref } from "vue";
+import { inject, ref, Ref, watch } from "vue";
 import { Store, useStore } from "vuex";
 
 type availableModal = "grades" | "course_details" | "empty_descriptions" | "grade_value_error";
@@ -74,11 +77,11 @@ const setupModalAndOpen = (store : Store<any>) => {
             alert_information.message = getCurrentElement(store,"grade_value_error");
             alert_open.value = true;
             break;
-        /*case "course_details":
+        case "course_details":
             description_title = store.state.event.data.title;
             description_course_id = store.state.event.data.course_id;
             description_open.value = true;
-            break;*/
+            break;
     }
 };
 const closeModal = (window : availableModal) => {
@@ -107,24 +110,48 @@ const add_grade = async () => {
 
             grades[student_id].push(new Grade(response.data.value));
             if (final == "true") {
-                student_pos = tableData.findIndex((a : CustomElement[]) => a[0].id == student_id + "_name_surname");
+                student_pos = table_data.findIndex((a : CustomElement[]) => a[0].id == student_id + "_name_surname");
                 console.log(student_pos);
-                console.log(tableData[student_pos]);
-                tableData[student_pos][tableData[student_pos].length-1].content = grade;
+                console.log(table_data[student_pos]);
+                table_data[student_pos][table_data[student_pos].length-1].content = grade;
                 trigger.value++;
             }
         },err => console.error(err),undefined,undefined,store)
 };
 
+const updateStudents = async () => {
+    const students : Student[] = await executeLink($axios,"/v1/project_classes/" + course_id + "/" + block_id + "/components?section=" + selected_section.value + "&teacher_id=" + user.id + "&token=" + user.token, //Da sistemare: creare link per pagina per gestire assoc_class e togliere teacher_id
+        response => response.data.data.map((a: any) => new Student(a)),
+        () => []);
+    
+    table_data = [];
+    for (const student of students) {
+        final_grade = undefined;
+        grades[student.id] = await executeLink($axios,"/v1/students/" + student.id + "/grades?course_id=" + course_id + "&block_id=" + block_id + "&teacher_id=" + user.id,
+            (response: any) => response.data.data.map((a : GradeProps) => {
+                const tmp_grade = new Grade(a);
+                if (tmp_grade.final) {
+                    final_grade = tmp_grade;
+                }
+                return tmp_grade;
+            }),
+            () => []);
+        table_data.push(student.toTableRow(store,course_id,block_id,user.id,final_grade));
+    }
+}
+
 const store = useStore();
 const $axios : AxiosInstance | undefined = inject("$axios");
 const user = store.state.user;
 
-const tableData : CustomElement[][] = [];
 const firstRow : CustomElement[] = [{
     id: "student",
     type: "string",
     content: getCurrentElement(store,"student")
+},{
+    id: "learning_context",
+    type: "string",
+    content: getCurrentElement(store,"learning_context")
 },{
     id: "class",
     type: "string",
@@ -138,7 +165,7 @@ const firstRow : CustomElement[] = [{
     type: "string",
     content: getCurrentElement(store,"final_grade")
 }];
-const column_sizes = [7,1,2,2];
+const column_sizes = [5,2,1,2,2];
 const grades_open = ref(false);
 const description_open = ref(false);
 const divided_path = window.location.pathname.split("/");
@@ -156,15 +183,28 @@ const alert_information = {
 };
 const sections : {id: string}[] = [];
 const tmp_sections : Set<string> = new Set();
+const buttons : CustomElement[] = [{
+        id: "course_details",
+        type: "icon",
+        linkType: "event",
+        content: {
+            event: "course_details",
+            data: {
+                title: "", // Da sistemare: mettere titolo quando ce l'avrà anche la pagina
+                course_id: parseInt(course_id),
+            },
+            icon: getIcon(store,"information_circle")
+        }
+    }]
 
+let table_data : CustomElement[][] = [];
 let selected_section : Ref<string>;
-let students : Student[] = [];
 let grades_title : string;
 let grades_parameters : GradesParameters;
 let final_grade : Grade | undefined;
 let student_grades : Grade[] | undefined;
-/*let description_title : string;
-let description_course_id : GradesParameters;*/
+let description_title : string;
+let description_course_id : GradesParameters;
 
 if ($axios != undefined) {
     await executeLink($axios,"/v2/teachers/" + user.id + "/my_project_classes?block_id=" + block_id + "&course_id=" + course_id + "&token=" + user.token,
@@ -178,23 +218,11 @@ if ($axios != undefined) {
     }
     
     selected_section = ref(sections[0].id);
-    students = await executeLink($axios,"/v1/project_classes/" + course_id + "/" + block_id + "/components?section=" + selected_section.value + "&teacher_id=" + user.id + "&token=" + user.token, //Da sistemare: creare link per pagina per gestire assoc_class e togliere teacher_id
-        response => response.data.data.map((a: any) => new Student(a)),
-        () => []);
-    
-    for (const student of students) {
-        final_grade = undefined;
-        grades[student.id] = await executeLink($axios,"/v1/students/" + student.id + "/grades?course_id=" + course_id + "&block_id=" + block_id + "&teacher_id=" + user.id,
-            (response: any) => response.data.data.map((a : GradeProps) => {
-                const tmp_grade = new Grade(a);
-                if (tmp_grade.final) {
-                    final_grade = tmp_grade;
-                }
-                return tmp_grade;
-            }),
-            () => []);
-        tableData.push(student.toTableRow(store,course_id,block_id,user.id,final_grade));
-    }
+    await updateStudents();
+    watch(selected_section,async () => {
+        await updateStudents();
+        trigger.value++;
+    });
 }
 </script>
 
