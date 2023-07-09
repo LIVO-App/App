@@ -1,5 +1,5 @@
 import { AxiosInstance, Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, OrderedCardsList, Language, ElementsList, IconsList, TeacherBlockCardElements, LearningBlockStatus, RequestIcon, Enrollment } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, OrderedCardsList, Language, ElementsList, IconsList, TeacherBlockCardElements, LearningBlockStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary } from "./types";
 import { Store } from "vuex";
 
 function getCompleteSchoolYear(year: number) {
@@ -71,18 +71,6 @@ function getEnrollmentIcon(store : Store<any>, enrollment : Enrollment, path : s
     }
 }
 
-function updateCourses(store : Store<any>, courses : OrderedCardsList, learning_block_id : number, value : Date | boolean) {
-
-    const course = courses.cards[""].find(c => c.id == "" + learning_block_id) as CourseCardElements;
-    const requestArray = (course.content[3].content as RequestIcon).url.split("?") ?? ["",""];
-    const pathArray = requestArray[0].split("/");
-    pathArray?.pop();
-
-    course.enrollment.enrollment = value;
-    course.content[2].content = course.enrollment.toString(store);
-    course.content[3].content = getEnrollmentIcon(store, course.enrollment, pathArray.join("/") + (value === false ? "/inscribe?" : "/unscribe?") + requestArray[1], course.enrollment.getChangingMethod());
-}
-
 function getCurrentElement(store : Store<any>, key : string) {
     
     const language : Language = store.state.language;
@@ -134,4 +122,16 @@ function castStatus(store : Store<any>, status : string) : LearningBlockStatus |
     return cast;
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isTeacherBlock, executeLink, getEnrollmentIcon, updateCourses, getCurrentElement, getIcon, hashCode, castStatus }
+function getActualLearningContext(store: Store<any>, learning_context: LearningContextSummary | undefined): LearningContextSummary {
+    return learning_context ?? store.state.main_learning_context;
+}
+
+function toSummary(learning_context: LearningContext | undefined): LearningContextSummary | undefined {
+    return learning_context != undefined ? {
+        id: learning_context.id,
+        acronym: learning_context.acronym,
+        credits: learning_context.credits
+    } : undefined;
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isTeacherBlock, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary }

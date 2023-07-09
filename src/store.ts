@@ -325,7 +325,12 @@ export const store = createStore({
                 min: 1,
                 max: 11
             },
-            excluded_learning_contexts_id: [3] //Da sistemare: mettere referenza a contesto di apprendimento
+            excluded_learning_contexts_id: [3], //Da sistemare: mettere referenza a contesto di apprendimento
+            main_learning_context: {
+                id: 1,
+                acronym: "SPE",
+                credits: null
+            } //Da sistemare: mettere referenza a contesto di apprendimento
         }
     }
 });

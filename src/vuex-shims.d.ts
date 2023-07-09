@@ -1,6 +1,6 @@
 import { ComponentCustomProperties } from "vue";
 import { Store } from "vuex";
-import { ElementsList, IconAlternatives, IconsList, Language, Menu } from "./types";
+import { ElementsList, IconAlternatives, IconsList, Language, LearningContextSummary, Menu } from "./types";
 import { Method } from "axios";
 
 declare module '@vue/runtime-core' {
@@ -32,7 +32,9 @@ declare module '@vue/runtime-core' {
     grades_scale: {
       min: number,
       max: number
-    }
+    },
+    excluded_learning_contexts_id: number[],
+    main_learning_context: LearningContextSummary
   }
 
   interface ComponentCustomProperties {

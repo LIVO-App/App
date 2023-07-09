@@ -20,11 +20,11 @@
 </template>
 
 <script setup lang="ts">
-import { GeneralCardElements, LearningBlock } from "@/types";
+import { GeneralCardElements, LearningBlock, LearningContextSummary } from "@/types";
 import { executeLink, getIcon } from "@/utils";
 import { IonGrid, IonRow, IonCol, IonIcon, IonTitle, IonText } from "@ionic/vue";
 import { AxiosInstance } from "axios";
-import { inject } from "vue";
+import { inject, PropType } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
@@ -35,14 +35,15 @@ const props = defineProps({
     "id": {
         type: String,
         required: true
-    }
+    },
+    "learning_context": Object as PropType<LearningContextSummary>,
 });
 let head_content : GeneralCardElements;
 
 if ($axios != undefined) {
     await executeLink($axios,"/v1/learning_blocks/" + props.id,
         async (response) => {
-            head_content = await (new LearningBlock(response.data.data)).toCard($axios,store,true,false);
+            head_content = await (new LearningBlock(response.data.data)).toCard($axios,store,props.learning_context,true,false);
         });
 } else {
     console.error("Connection failed");

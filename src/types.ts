@@ -1,6 +1,6 @@
 import { AxiosInstance, Method } from "axios";
 import { Store } from "vuex";
-import { executeLink, getCurrentElement, getEnrollmentIcon, getIcon, getRagneString, hashCode } from "./utils";
+import { executeLink, getActualLearningContext, getCurrentElement, getEnrollmentIcon, getIcon, getRagneString, hashCode } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -86,6 +86,9 @@ class Enrollment {
     get editable() : boolean {
         return this._editable;
     }
+    set editable(editable : boolean) {
+        this._editable = editable;
+    }
     isPending() : boolean {
         return this._enrollment !== "true" && this._enrollment !== "false";
     }
@@ -153,7 +156,8 @@ type CourseBaseProps = {
 
 type CourseSummaryProps = CourseBaseProps & {
     section?: string,
-    pending: string
+    pending: string,
+    learning_context_acronym: string
 }
 
 type CurriculumCourseProps = CourseBaseProps & {
@@ -215,11 +219,13 @@ class CourseSummary extends CourseBase implements CourseSummaryProps {
 
     section?: string | undefined;
     pending: string;
+    learning_context_acronym: string;
 
     constructor(courseObj : CourseSummaryProps) {
         super(courseObj);
         this.section = courseObj.section;
         this.pending = courseObj.pending;
+        this.learning_context_acronym = courseObj.learning_context_acronym;
     }
 
     toCard(store : Store<any>, learning_block : LearningBlock, path? : string, method? : Method, open_enrollment = false, reference = new Date()) : CourseCardElements {
@@ -243,7 +249,7 @@ class CourseSummary extends CourseBase implements CourseSummaryProps {
                         title: this[`${language}_title`],
                         course_id: this.id,
                     },
-                    text: this[`${language}_title`]
+                    text: this[`${language}_title`] + (this.section != null ? " - " + getCurrentElement(store,"section") + ": " + this.section : "")
                 }
             },{
                 id: this.id + "_enrollment",
@@ -254,7 +260,7 @@ class CourseSummary extends CourseBase implements CourseSummaryProps {
         }
         if (path != undefined) {
             card.content.push({
-                id: this.id + "_title",
+                id: this.id + "_change_enrollment",
                 type: "icon",
                 linkType: "request",
                 content: getEnrollmentIcon(store,tmp_enrollment,path,method)
@@ -555,44 +561,69 @@ class LearningBlock implements LearningBlockProps {
         return course_list;
     }*/
 
-    async getBlockList($axios : AxiosInstance, store : Store<any>, reference = new Date(), credits? : boolean, courses_list? : boolean) : Promise<string> {
+    async getBlockList($axios : AxiosInstance, store : Store<any>, learning_context?: LearningContextSummary, reference = new Date(), credits? : boolean, courses_list? : boolean) : Promise<string> {
     
         const language : Language = store.state.language;
         const status = this.getStatus(reference);
         const put_credits = credits ?? status == LearningBlockStatus.FUTURE;
         const put_courses_list = courses_list ?? (status == LearningBlockStatus.CURRENT || status == LearningBlockStatus.UPCOMING);
-
-        let courses : CourseSummary[];
-        let block_list = put_courses_list ? "" : "<ul>";
-    
+        const actual_learning_context = getActualLearningContext(store,learning_context);
+        const courses: {
+            [learning_area_id: string]: CourseSummary[]
+        } = {};
         const learning_areas = await executeLink($axios,"/v1/learning_areas?all_data=true&block_id=" + this.id + "&credits=" + put_credits,
             response => response.data.data,
-            () => [])
+            () => []);
+
+        let courses_presence: boolean;
+        let block_list = put_courses_list ? "" : "<ul>";
+
+        await executeLink($axios,"/v1/courses?student_id=" + store.state.user.id + "&context_id=" + actual_learning_context.id + "&block_id=" + this.id,
+            response => (response.data.data as CourseSummaryProps[]).map(x => {
+                const course = new CourseSummary(x);
+                const learning_area_id = (course.learning_area_ref.data as {id:string}).id;
+                if (courses[learning_area_id] == undefined) {
+                    courses[learning_area_id] = [];
+                }
+                courses[learning_area_id].push(course);
+            }));
         
         for (const area of learning_areas) {
-            courses = await executeLink($axios,"/v1/courses?student_id=" + store.state.user.id + "&block_id=" + this.id + "&area_id=" + area.id,
-                response => (response.data.data as CourseSummaryProps[]).map(x => new CourseSummary(x)),
-                () => [])
-            block_list += (put_courses_list ? "<label>" : "<li>") + area[`${store.state.language as Language}_title`] + ": " + (put_credits ? courses.filter(course => course.pending == "true").reduce((pv, cv) => pv + cv.credits, 0) + "/" + area.credits : "") + (put_courses_list ? "</label>" : "</li>");
+            block_list += (put_courses_list ? "<label>" : "<li>") + area[`${store.state.language as Language}_title`] + ": " + (put_credits ? (courses[area.id] != undefined ? courses[area.id].filter(course => course.pending == "true").reduce((pv, cv) => pv + cv.credits, 0) : 0) + "/" + area.credits : "") + (put_courses_list ? "</label>" : "</li>");
             if (put_courses_list) {
-                block_list += courses.length > 0 ? "<ul>" : "<br />";
-                for (const course of courses) {
-                    if (course.pending == "true") {
-                        block_list += "<li>" + course[`${language}_title`] + (status == LearningBlockStatus.CURRENT || status == LearningBlockStatus.UPCOMING ? " - " + getCurrentElement(store,"section") + " " + course.section : "") + "</li>"; //Da sistemare: vedere se sezione è fissa o meno
+                courses_presence = courses[area.id] != undefined && courses[area.id].length > 0;
+                block_list += courses_presence ? "<ul>" : "<br />";
+                if (courses_presence) {
+                    for (const course of courses[area.id]) {
+                        if (course.pending == "true") {
+                            block_list += "<li>"
+                                + course[`${language}_title`] 
+                                + ((status == LearningBlockStatus.CURRENT || status == LearningBlockStatus.UPCOMING) && course.section != null
+                                    ? " - " + getCurrentElement(store,"section") + " " + course.section : "")
+                                + "</li>"; //Da sistemare: vedere se sezione è fissa o meno
+                        }
                     }
+                    block_list += "</ul>";
                 }
-                block_list += courses.length > 0 ? "</ul>" : "";
             }
         }
         block_list += (put_courses_list ? "" : "</ul>");
+        
     
         return block_list;
     }
 
-    async toCard($axios : AxiosInstance, store : Store<any>, credits? : boolean, courses_list? : boolean, reference = new Date()) : Promise<GeneralCardElements> {
+    async getInscribedCredits($axios : AxiosInstance, store: Store<any>, learning_context_id: number): Promise<number> {
+        return await executeLink($axios,"/v1/courses?student_id=" + store.state.user.id + "&block_id=" + this.id + "&context_id=" + learning_context_id,
+                response => response.data.data.reduce((a: number, b: CourseSummaryProps) => a + (b.pending == "true" ? b.credits : 0), 0),
+                () => 0);
+    }
+
+    async toCard($axios : AxiosInstance, store : Store<any>, learning_context? : LearningContextSummary, credits? : boolean, courses_list? : boolean, reference = new Date()) : Promise<GeneralCardElements> {
         
         const status = this.getStatus(reference);
         const put_credits = credits ?? status == LearningBlockStatus.FUTURE;
+        const actual_learning_context: LearningContextSummary = getActualLearningContext(store,learning_context);
         const tmp_element : GeneralCardElements = {
             id: "" + this.id,
             group: this.school_year,
@@ -601,8 +632,11 @@ class LearningBlock implements LearningBlockProps {
             content: [{
                 id: "" + this.id,
                 type: "html",
-                content: status == LearningBlockStatus.COMPLETED ? "" : 
-                    (put_credits ? "<label>" + getCurrentElement(store,"constraints") + ":</label>" : "") + (await this.getBlockList($axios, store, reference,credits,courses_list))
+                content: status != LearningBlockStatus.COMPLETED || credits != undefined || courses_list != undefined ?
+                    (put_credits ? "<label>" + getCurrentElement(store,"constraints") + ":"
+                    + (actual_learning_context.credits != null ? " " + (await this.getInscribedCredits($axios,store,actual_learning_context.id)) + "/" + actual_learning_context.credits : "") + "</label>" : "")
+                    + (actual_learning_context.credits == null ? (await this.getBlockList($axios, store, actual_learning_context, reference,credits,courses_list)) : "")
+                    : ""
             }],
             url: "learning_blocks/" + this.id,
             method: "get"
@@ -884,13 +918,16 @@ class Student {
         }
 }
 
-type LearningContext = {
+type LearningContextSummary = {
     id: number,
     acronym: string,
-} & {
+    credits?: number | null
+} // Da sistemare: togliere id-acronym quando sistemato backend
+
+type LearningContext = LearningContextSummary & {
     [key in keyof Language as `${Language}_title`]: string
 } & {
-    [key in keyof Language as `${Language}_description`]: string
+    [key in keyof Language as `${Language}_description`]: string | null // Da sistemare: vedere descrizioni che possono essere null
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, Student, LearningContext }
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, Student, LearningContextSummary, LearningContext }
