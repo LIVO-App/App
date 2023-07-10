@@ -60,7 +60,8 @@ const props = defineProps({
     element: {
         type: Object as PropType<CustomElement>,
         required: true
-    }
+    },
+    color: String
 })
 defineEmits(["execute_link","signal_event"]);
 </script>

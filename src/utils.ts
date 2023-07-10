@@ -134,4 +134,8 @@ function toSummary(learning_context: LearningContext | undefined): LearningConte
     } : undefined;
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isTeacherBlock, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary }
+function toDateString(date: Date) {
+    return date.toLocaleDateString("en-GB");
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isTeacherBlock, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString }

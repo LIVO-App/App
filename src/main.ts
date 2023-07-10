@@ -22,6 +22,9 @@ import CourseDescription from "./components/CourseDescription.vue";
 import LearningBlocksSelection from "./components/LearningBlocksSelection.vue";
 import TeacherBlockCard from "./components/TeacherBlockCard.vue";
 import ProjectClass from "./components/ProjectClass.vue";
+import AnnouncementsComponent from "./components/AnnouncementsComponent.vue";
+import AnnouncementViewer from "./components/AnnouncementViewer.vue";
+import AnnouncementsPublisher from "./components/AnnouncementsPublisher.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -88,7 +91,10 @@ const app = createApp(App)
   .component("CourseDescription",CourseDescription)
   .component("LearningBlocksSelection",LearningBlocksSelection)
   .component("TeacherBlockCard",TeacherBlockCard)
-  .component("ProjectClass",ProjectClass);
+  .component("ProjectClass",ProjectClass)
+  .component("AnnouncementsComponent",AnnouncementsComponent)
+  .component("AnnouncementViewer",AnnouncementViewer)
+  .component("AnnouncementsPublisher",AnnouncementsPublisher);
   
 router.isReady().then(() => {
   app.mount('#app');

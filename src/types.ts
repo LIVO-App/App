@@ -1,6 +1,6 @@
 import { AxiosInstance, Method } from "axios";
 import { Store } from "vuex";
-import { executeLink, getActualLearningContext, getCurrentElement, getEnrollmentIcon, getIcon, getRagneString, hashCode } from "./utils";
+import { executeLink, getActualLearningContext, getCurrentElement, getEnrollmentIcon, getIcon, getRagneString, hashCode, toDateString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -937,4 +937,62 @@ type LearningContext = LearningContextSummary & {
     [key in keyof Language as `${Language}_description`]: string | null // Da sistemare: vedere descrizioni che possono essere null
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, Student, LearningContextSummary, LearningContext }
+type AnnouncementSummaryProps = {
+    id: number,
+    publishment: Date
+} & {
+    [key in keyof Language as `${Language}_title`]: string
+}
+
+type Announcement = AnnouncementSummaryProps & {
+    [key in keyof Language as `${Language}_message`]: string
+}
+
+class AnnouncementSummary implements AnnouncementSummaryProps {
+    id: number;
+    publishment: Date;
+    italian_title: string;
+    english_title: string;
+
+    constructor(props : AnnouncementSummaryProps) {
+        this.id = props.id;
+        this.publishment = new Date(props.publishment);
+        this.italian_title = props.italian_title;
+        this.english_title = props.english_title;
+    }
+
+    toCard(store : Store<any>) : GeneralCardElements {
+        const language : Language = store.state.language;
+        return {
+            id: "" + this.id,
+            group: "",
+            content: [{
+                id: this.id + "_title",
+                type: "string",
+                linkType: "event",
+                content: {
+                    event: "announcement",
+                    data: {
+                        title: this[`${language}_title`],
+                        announcement_id: this.id,
+                    },
+                    text: this[`${language}_title`]
+                }
+            },{
+                id: this.id + "_publishment",
+                type: "string",
+                content: getCurrentElement(store,"publishment") + ": " + toDateString(this.publishment)
+            }]
+        }
+    }
+}
+
+type AnnouncementParameters = {
+    course_id: number,
+    block_id: number,
+    sections: string[],
+    current_section_index: number,
+    teacher_id?: number
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, Student, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters }

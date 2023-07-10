@@ -19,6 +19,10 @@ import {
     easelSharp,
     informationCircleOutline,
     informationCircleSharp,
+    mailOpenOutline,
+    mailOpenSharp,
+    mailOutline,
+    mailSharp,
     ribbonOutline,
     ribbonSharp,
     schoolOutline,
@@ -166,8 +170,13 @@ export const store = createStore({
                 document_text: {
                     ios: documentTextOutline,
                     md: documentTextSharp
+                },
+                mail: {
+                    ios: mailOutline,
+                    md: mailSharp
                 }
             },
+            languages: ["italian","english"],
             language: "italian",
             elements: {
                 "italian": {
@@ -231,7 +240,17 @@ export const store = createStore({
                     empty_descriptions: "Descrizione vuota",
                     grade_value_error: "Valore del voto errato",
                     learning_context: "Contesto di apprendimento",
-                    learning_context_choice: "Scegli un contesto di apprendimento"
+                    learning_context_choice: "Scegli un contesto di apprendimento",
+                    no_messages: "Nessun messaggio",
+                    publishment: "Pubblicazione",
+                    title: "Titolo",
+                    message: "Messaggio",
+                    publish: "Pubblica",
+                    announcement_publishment: "Pubblicazione annuncio",
+                    to: "A",
+                    empty_titles_or_messages: "Titoli e/o messagi vuoti",
+                    no_selected_sections: "Nessuna sezione selezionata",
+                    message_not_sent_sections: "Messaggio non inviato alle sezioni"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -294,10 +313,20 @@ export const store = createStore({
                     empty_descriptions: "Empty description",
                     grade_value_error: "Incorrect grade value",
                     learning_context: "Learning context",
-                    learning_context_choice: "Choose a learning context"
+                    learning_context_choice: "Choose a learning context",
+                    no_messages: "No messages",
+                    publishment: "Publishment",
+                    title: "Title",
+                    message: "Message",
+                    publish: "Publish",
+                    announcement_publishment: "Announcement publishment",
+                    to: "To",
+                    empty_titles_or_messages: "Empty titles and/or messages",
+                    no_selected_sections: "No selected sections",
+                    message_not_sent_sections: "Message not sent to sections"
                 }
             },
-            //*
+            /*
             user: {
                 id: 1,
                 username: "Student1",
@@ -311,11 +340,11 @@ export const store = createStore({
                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiU3R1ZGVudDIiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODM2OTkwOCwiZXhwIjoxNjg4NDU2MzA4fQ.XYjUjhxj_HjkPy-V7ntbGf2Hww8Y8kiS_mes-fC7D7U",
                 user: "teacher",
             },//*/
-            /*
+            //*
             user: {
                 id: 2,
                 username: "Teacher2",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4ODM2OTkyMywiZXhwIjoxNjg4NDU2MzIzfQ.KHo_lC__bS3kiSPp384McdjuWz5b8y_k9ASoPB5X5Os",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4ODkyMDAzNSwiZXhwIjoxNjg5MDA2NDM1fQ.p5RehtVLVCWv4_QLRlSCmBQIK7InkdWF4vjyWqj0XlM",
                 user: "teacher",
             },//*/
             request: {},

@@ -28,7 +28,7 @@
             </suspense>
         </ion-modal>
         <div>
-            <ionic-element v-for="button in buttons" :key="button.id" :element="button" @signal_event="setupModalAndOpen(store)" />
+            <ionic-element v-for="button in buttons" :key="button.id" :element="button" @signal_event="setupModalAndOpen(store)" @execute_link="$router.push(store.state.request.url)" />
         </div>
         <custom-select
             v-model="selected_section"
@@ -184,6 +184,15 @@ const alert_information = {
 const sections : {id: string}[] = [];
 const tmp_sections : Set<string> = new Set();
 const buttons : CustomElement[] = [{
+        id: "announcements",
+        type: "icon",
+        linkType: "request",
+        content: {
+            url: "/project_courses/" + course_id + "/" + block_id + "/announcements",
+            method: "get",
+            icon: getIcon(store,"mail") // Da sistemare: mettere in alto e fare popup
+        }
+    },{
         id: "course_details",
         type: "icon",
         linkType: "event",
@@ -216,8 +225,8 @@ if ($axios != undefined) {
             id: section
         })
     }
-    
     selected_section = ref(sections[0].id);
+    
     await updateStudents();
     watch(selected_section,async () => {
         await updateStudents();
