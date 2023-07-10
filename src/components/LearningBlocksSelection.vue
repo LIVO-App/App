@@ -2,7 +2,7 @@
     <ion-grid><!-- v-if="learning_blocks.loaded">-->
         <ion-row>
             <ion-col size="12" size-md="6">
-                <list-card :title="getCurrentElement(store,'learning_blocks')" :emptiness_message="getCurrentElement(store,'no_blocks')" :cards_list="learning_blocks" @signal_event="change_selection()" />
+              <list-card :title="getCurrentElement(store,'learning_blocks')" :emptiness_message="getCurrentElement(store,'no_blocks')" :cards_list="learning_blocks" @signal_event="change_selection()" />
             </ion-col>
             <ion-col size="12" size-md="6">
               <list-card :key="trigger" :title="getCurrentElement(store,'courses')" :emptiness_message="getCurrentElement(store,is_nothing_selected() ? 'learning_block_selection_message' : 'no_project_classes')" :cards_list="is_nothing_selected() ? empty_courses : courses" />

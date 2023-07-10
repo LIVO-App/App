@@ -47,7 +47,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import ('../views/NotImplemented.vue')
   },
   {
-    path: '/project_courses/:course/:block/announcements',
+    path: '/announcements/:course/:block',
     component: () => import ('../views/AnnouncementsPage.vue')
   }
 ]

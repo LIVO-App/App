@@ -188,7 +188,7 @@ const buttons : CustomElement[] = [{
         type: "icon",
         linkType: "request",
         content: {
-            url: "/project_courses/" + course_id + "/" + block_id + "/announcements",
+            url: "/announcements/" + course_id + "/" + block_id,
             method: "get",
             icon: getIcon(store,"mail") // Da sistemare: mettere in alto e fare popup
         }

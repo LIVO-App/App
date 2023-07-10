@@ -17,7 +17,7 @@
                 </template>
             </suspense>
         </ion-modal>
-        <suspense> <!--Da sistemare: aggiungere discorso Schede progetto_personale/specifico-->
+        <suspense>
             <template #default>
                 <block-description :key="trigger" :id="$route.params.id" :learning_context="toSummary(learning_contexts.find(a => a.id == selected_context))" />
             </template>

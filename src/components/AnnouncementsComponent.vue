@@ -82,19 +82,19 @@ const setupModalAndOpen = async(store : Store<any>) => {
             alert_open.value = true;
             break;
         case "publish":
-                promises.push(executeLink($axios,"/v1/announcements?teacher_id=" + user.id + "&course_id=" + course_id + "&block_id=" + block_id + "&token=" + user.token,
-                    () => "",
-                    (err) => {
-                        console.error(err);
-                    },
-                    "post",
-                    {
-                        sections: store.state.event.data.sections,
-                        italian_title: store.state.event.data.title,
-                        english_title: store.state.event.data.title,
-                        italian_message: store.state.event.data.message,
-                        english_message: store.state.event.data.message
-                    }));
+            await executeLink($axios,"/v1/announcements?teacher_id=" + user.id + "&course_id=" + course_id + "&block_id=" + block_id + "&token=" + user.token,
+                () => "",
+                (err) => {
+                    console.error(err);
+                },
+                "post",
+                {
+                    sections: store.state.event.data.sections,
+                    italian_title: store.state.event.data.title,
+                    english_title: store.state.event.data.title,
+                    italian_message: store.state.event.data.message,
+                    english_message: store.state.event.data.message
+                });
             if (failed_sections.length > 0) {
                 alert_information.message = getCurrentElement(store,"message_not_sent_sections") + ": " + failed_sections.join(" ");
                 alert_open.value = true;
@@ -130,8 +130,8 @@ const user = store.state.user;
 const announcement_open = ref(false);
 const publishment_open = ref(false);
 const divided_path = window.location.pathname.split("/");
-const course_id = divided_path[divided_path.length-3];
-const block_id = divided_path[divided_path.length-2];
+const course_id = divided_path[divided_path.length-2];
+const block_id = divided_path[divided_path.length-1];
 const trigger = ref(0);
 const sections : {id: string}[] = [];
 const tmp_sections : Set<string> = new Set();

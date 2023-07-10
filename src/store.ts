@@ -70,6 +70,14 @@ export const store = createStore({
                 },
                 {
                     title: {
+                        italian: "Annunci",
+                        english: "Announcements"
+                    },
+                    url: '/announcements',
+                    iconRef: "mail"
+                },
+                {
+                    title: {
                         italian: "Impostazioni",
                         english: "Settings"
                     },
@@ -101,6 +109,14 @@ export const store = createStore({
                     },
                     url: '/course_propose',
                     iconRef: "add_circle"
+                },
+                { // Da sistemare: non deve apparire
+                    title: {
+                        italian: "Annunci",
+                        english: "Announcements"
+                    },
+                    url: '/announcements',
+                    iconRef: "mail"
                 },
                 {
                     title: {
