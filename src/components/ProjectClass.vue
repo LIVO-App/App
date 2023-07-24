@@ -56,11 +56,11 @@ import { AxiosInstance } from "axios";
 import { inject, ref, Ref, watch } from "vue";
 import { Store, useStore } from "vuex";
 
-type availableModal = "grades" | "course_details" | "empty_descriptions" | "grade_value_error";
+type AvailableModal = "grades" | "course_details" | "empty_descriptions" | "grade_value_error";
 
 const setupModalAndOpen = (store : Store<any>) => {
     
-    const window : availableModal = store.state.event.name;
+    const window : AvailableModal = store.state.event.name;
     
     switch (window) {
         case "grades":
@@ -84,7 +84,7 @@ const setupModalAndOpen = (store : Store<any>) => {
             break;
     }
 };
-const closeModal = (window : availableModal) => {
+const closeModal = (window : AvailableModal) => {
     switch (window) {
         case "grades":
             grades_open.value = false

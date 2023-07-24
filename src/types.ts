@@ -196,7 +196,8 @@ type CourseBaseProps = {
 
 type CourseSummaryProps = CourseBaseProps & {
     section?: string,
-    pending: string
+    pending: string,
+    group: number
 }
 
 type CurriculumCourseProps = CourseBaseProps & {
@@ -258,11 +259,13 @@ class CourseSummary extends CourseBase implements CourseSummaryProps {
 
     section?: string | undefined;
     pending: string;
+    group: number;
 
     constructor(courseObj : CourseSummaryProps) {
         super(courseObj);
         this.section = courseObj.section;
         this.pending = courseObj.pending;
+        this.group = courseObj.group;
     }
 
     toCard(store : Store<any>, learning_block : LearningBlock, path? : string, method? : Method, open_enrollment = false, reference = new Date()) : CourseCardElements {
@@ -270,8 +273,9 @@ class CourseSummary extends CourseBase implements CourseSummaryProps {
         const tmp_enrollment = new Enrollment(this.pending,learning_block,reference,open_enrollment);
         const card : CourseCardElements = {
             id: "" + this.id,
-            group: "",
+            group: this.group,
             credits: this.credits,
+            enrollment: tmp_enrollment,
             content: [{
                 id: this.id + "_credits",
                 type: "string",
@@ -292,8 +296,7 @@ class CourseSummary extends CourseBase implements CourseSummaryProps {
                 id: this.id + "_enrollment",
                 type: "string",
                 content: tmp_enrollment.toString(store)
-            }],
-            enrollment: tmp_enrollment
+            }]
         }
         if (path != undefined) {
             card.content.push({

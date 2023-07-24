@@ -34,7 +34,7 @@
                     <template v-else>
                         <template v-for="card in props.cards_list.cards[ordered_cards.key]">
                             <teacher-block-card v-if="isTeacherBlock(card)" @signal_event="$emit('signal_event')" :key="'teacher-block-card-' + card.id" :id="card.id" :title="card.title" :subtitle="card.subtitle" :status="card.status" :selected="card.selected" />
-                            <course-card v-else-if="isCourse(card)" :key="'card-course-' + card.id" @signal_event="$emit('signal_event')" :credits="card.credits" :content="card.content" :enrollment="card.enrollment" :url="card.url" :method="card.method" />
+                            <course-card v-else-if="isCourse(card)" @execute_link="$emit('execute_link')" @signal_event="$emit('signal_event')" :key="'card-course-' + card.id" :credits="card.credits" :content="card.content" :enrollment="card.enrollment" :url="card.url" :method="card.method" />
                             <item-card v-else-if="isGeneral(card)" @execute_link="$emit('execute_link')" @signal_event="$emit('signal_event')" :key="'card-general-' + card.id" :title="card.title" :subtitle="card.subtitle" :content="card.content" :url="card.url" :method="card.method" />
                         </template>
                     </template>

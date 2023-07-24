@@ -213,7 +213,7 @@ export const store = createStore({
                     open_enrollment: "Iscrizioni aperte",
                     planned: "Pianificati",
                     error: "Errore",
-                    maximumCreditsError: "Crediti massimi raggiunti",
+                    maximum_credits_error: "Crediti massimi raggiunti",
                     ok: "Ok",
                     school_year: "Anno scolastico",
                     school_year_choice: "Scegli un anno scolastico",
@@ -266,7 +266,9 @@ export const store = createStore({
                     empty_titles_or_messages: "Titoli e/o messagi vuoti",
                     no_selected_sections: "Nessuna sezione selezionata",
                     message_not_sent_sections: "Messaggio non inviato alle sezioni",
-                    no_courses: "Nessun corso disponibile"
+                    no_courses: "Nessun corso disponibile",
+                    group: "Gruppo",
+                    maximum_courses_error: "Corsi per gruppo massimi raggiunti"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -288,7 +290,7 @@ export const store = createStore({
                     open_enrollment: "Open enrollment",
                     planned: "Planned",
                     error: "Error",
-                    maximumCreditsError: "Maximum credits reached",
+                    maximum_credits_error: "Maximum credits reached",
                     ok: "Ok",
                     school_year: "School year",
                     school_year_choice: "Choose a school year",
@@ -340,14 +342,16 @@ export const store = createStore({
                     empty_titles_or_messages: "Empty titles and/or messages",
                     no_selected_sections: "No selected sections",
                     message_not_sent_sections: "Message not sent to sections",
-                    no_courses: "No courses available"
+                    no_courses: "No courses available",
+                    group: "Group",
+                    maximum_courses_error: "Maximum courses per group reached"
                 }
             },
-            /*
+            //*
             user: {
                 id: 1,
                 username: "Student1",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY5MDE4ODcwOCwiZXhwIjoxNjkwMjc1MTA4fQ.grWOeNBC1CKgTu5cbAKZyCtgbMsquyKORF3eOZdFMKQ",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY5MDE5NzQ3MSwiZXhwIjoxNjkwMjgzODcxfQ.7Cx7l0I4b99ta2qHf6V3bTSWYERUA7xUT1902LKQ1Cw",
                 user: "student",
             },//*/
             /*
@@ -357,7 +361,7 @@ export const store = createStore({
                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiU3R1ZGVudDIiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODM2OTkwOCwiZXhwIjoxNjg4NDU2MzA4fQ.XYjUjhxj_HjkPy-V7ntbGf2Hww8Y8kiS_mes-fC7D7U",
                 user: "teacher",
             },//*/
-            //*
+            /*
             user: {
                 id: 2,
                 username: "Teacher2",
@@ -375,7 +379,8 @@ export const store = createStore({
             main_learning_context: {
                 id: "SPE",
                 credits: null
-            } //Da sistemare: mettere referenza a contesto di apprendimento
+            }, //Da sistemare: mettere referenza a contesto di apprendimento
+            courses_per_group: 1
         }
     }
 });

@@ -34,7 +34,8 @@ declare module '@vue/runtime-core' {
       max: number
     },
     excluded_learning_contexts_id: number[],
-    main_learning_context: LearningContextSummary
+    main_learning_context: LearningContextSummary,
+    courses_per_group: number
   }
 
   interface ComponentCustomProperties {
