@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { CardsList, CourseCardElements, CourseSummary, CourseSummaryProps, Enrollment, Language, LearningArea, LearningBlock, LearningBlockStatus, LearningContext, OrderedCardsList, RequestIcon } from '@/types';
+import { CardsList, CourseCardElements, CourseSummary, CourseSummaryProps, Language, LearningArea, LearningBlock, LearningBlockStatus, LearningContext, OrderedCardsList, RequestIcon } from '@/types';
 import { executeLink, getCurrentElement, getEnrollmentIcon, toSummary } from '@/utils';
 import { IonAlert, IonModal, IonGrid, IonRow, IonCol } from '@ionic/vue';
 import { AxiosInstance } from 'axios';
@@ -77,7 +77,7 @@ const updateCourses = (course : CourseCardElements, value : Date | boolean) => {
     const pathArray = requestArray[0].split("/");
     pathArray?.pop();
 
-    let tmp_context_id : LearningContext | undefined;//, edited_course : CourseCardElements;  // Da sistemare: forse problema per non aver fatto copia profonda
+    //, edited_course : CourseCardElements;  // Da sistemare: forse problema per non aver fatto copia profonda
     
     for (const context_reference of contexts_to_edit) {
         if (context_reference.context_id == selected_context.value) {
@@ -145,12 +145,12 @@ const openModal = () => {
 };
 const getContextAxronym = (option: LearningContext) => option[`${language}_title`];
 
-const store = useStore();
-const $axios : AxiosInstance | undefined = inject("$axios");
+const store: Store<any> = useStore();
+const $axios: AxiosInstance | undefined = inject("$axios");
 const $route = useRoute();
-const language : Language = store.state.language;
-const user_id : string = store.state.user.id;
-const learning_block_id : string = $route.params.id as string;
+const language: Language = store.state.language;
+const user_id: string = store.state.user.id;
+const learning_block_id: string = $route.params.id as string;
 
 const all_courses : {
     [key: string]: CardsList<CourseCardElements>

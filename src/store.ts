@@ -19,8 +19,6 @@ import {
     easelSharp,
     informationCircleOutline,
     informationCircleSharp,
-    mailOpenOutline,
-    mailOpenSharp,
     mailOutline,
     mailSharp,
     ribbonOutline,

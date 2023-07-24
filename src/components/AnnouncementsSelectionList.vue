@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { GeneralCardElements, LearningBlock, OrderedCardsList, CourseSectionsTeachings, TeacherBlockCardElements, MinimumCourseProps, MinimizedCourse } from '@/types';
+import { GeneralCardElements, LearningBlock, OrderedCardsList, TeacherBlockCardElements, MinimumCourseProps, MinimizedCourse } from '@/types';
 import { IonGrid, IonRow, IonCol } from "@ionic/vue"
 import { inject, reactive, ref } from 'vue';
 import { useStore } from 'vuex';
@@ -51,19 +51,6 @@ const find_block = (learning_blocks : OrderedCardsList<TeacherBlockCardElements>
   };
 }
 const change_selection = async () => {
-
-  const tmp_classes : {
-    teacher: {
-      [key : number]: CourseSectionsTeachings
-    },
-    associated: {
-      [key : number]: CourseSectionsTeachings
-    }
-  } = {
-    teacher: {},
-    associated: {}
-  };
-  
   if (selected_block_indexes.year != "-1" && selected_block_indexes.index != -1) {
     learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].selected = !learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].selected;
   }

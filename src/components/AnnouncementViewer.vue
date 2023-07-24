@@ -24,7 +24,7 @@ import { CustomElement } from "@/types";
 import { executeLink, getIcon } from "@/utils";
 import { IonHeader, IonToolbar, IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { AxiosInstance } from "axios";
-import { inject, PropType, Ref, ref } from "vue";
+import { inject } from "vue";
 import { useStore } from "vuex";
 
 const store = useStore();

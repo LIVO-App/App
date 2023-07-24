@@ -1,5 +1,5 @@
 import { AxiosInstance, Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, OrderedCardsList, Language, ElementsList, IconsList, TeacherBlockCardElements, LearningBlockStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, TeacherBlockCardElements, LearningBlockStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary } from "./types";
 import { Store } from "vuex";
 
 function getCompleteSchoolYear(year: number) {

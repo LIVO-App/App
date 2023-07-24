@@ -64,7 +64,7 @@
 <script setup lang="ts">
 import { CustomElement, Grade, GradeProps, GradesParameters } from "@/types";
 import { executeLink, getCurrentElement, getIcon } from "@/utils";
-import { IonHeader, IonToolbar, IonGrid, IonRow, IonCol, IonText, IonTitle, IonItem, IonLabel, IonInput, IonCheckbox, IonButton } from "@ionic/vue";
+import { IonHeader, IonToolbar, IonGrid, IonRow, IonCol, IonText, IonTitle, IonLabel, IonInput, IonCheckbox, IonButton } from "@ionic/vue";
 import { AxiosInstance } from "axios";
 import { inject, PropType, Ref, ref } from "vue";
 import { useStore } from "vuex";

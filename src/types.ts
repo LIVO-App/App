@@ -910,7 +910,8 @@ class Student {
             }
         }
         
-        toCard(store : Store<any>) : GeneralCardElements { //Da sistemare
+        toCard(store : Store<any>) : GeneralCardElements { // Da sistemare: per visualizzazione tabella a telefono
+            store.state //dummy use
             return {
                 id: "" + this.id,
                 group: "",

@@ -150,7 +150,6 @@ const alert_information = {
     message: "",
     buttons: [getCurrentElement(store,"ok")]
 };
-const promises: Promise<any>[] = [];
 const messages: OrderedCardsList = {
     order: [],
     cards: {
