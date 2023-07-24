@@ -77,7 +77,7 @@ const setupModalAndOpen = async(store : Store<any>) => {
             alert_information.message = getCurrentElement(store,"empty_titles_or_messages");
             alert_open.value = true;
             break;
-        case "no_selected_sections":
+        case "no_selected_sections": // Da sistemare: non ha funzionato
             alert_information.message = getCurrentElement(store,"no_selected_sections");
             alert_open.value = true;
             break;
@@ -115,7 +115,7 @@ const closeModal = (window : availableModal) => {
 };
 
 const updateMessages = async () => {
-    messages.cards[""] = await executeLink($axios,"/v1/project_classes/" + course_id + "/" + block_id + "/announcements?section=" + selected_section.value + "&token=" + user.token,
+    messages.cards[""] = await executeLink($axios,"/v1/project_classes/" + course_id + "/" + block_id + "/announcements?token=" + user.token + (user.user == "teacher" ? "&section=" + selected_section.value : ""),
         response => response.data.data.map((a: AnnouncementSummaryProps) => (new AnnouncementSummary(a)).toCard(store)),(err) => {
             console.log(err);
             return [];
@@ -163,22 +163,24 @@ let announcement_title: string;
 let announcement_id: string;
 
 if ($axios != undefined) {
-    await executeLink($axios,"/v2/teachers/" + user.id + "/my_project_classes?block_id=" + block_id + "&course_id=" + course_id + "&token=" + user.token,
-        response => response.data.data.map((a: any) => tmp_sections.add(a.section)));
-    await executeLink($axios,"/v2/teachers/" + user.id + "/associated_project_classes?block_id=" + block_id + "&course_id=" + course_id + "&token=" + user.token,
-        response => response.data.data.map((a: any) => tmp_sections.add(a.section)));
-    
-    for (const section of tmp_sections) {
-        sections.push({
-            id: section
-        })
+    if (user.user == "teacher") {
+        await executeLink($axios,"/v2/teachers/" + user.id + "/my_project_classes?block_id=" + block_id + "&course_id=" + course_id + "&token=" + user.token,
+            response => response.data.data.map((a: any) => tmp_sections.add(a.section)));
+        await executeLink($axios,"/v2/teachers/" + user.id + "/associated_project_classes?block_id=" + block_id + "&course_id=" + course_id + "&token=" + user.token,
+            response => response.data.data.map((a: any) => tmp_sections.add(a.section)));
+        
+        for (const section of tmp_sections) {
+            sections.push({
+                id: section
+            })
+        }
+        selected_section = ref(sections[0].id);
+        watch(selected_section,async () => {
+            await updateMessages();
+        });
     }
-    selected_section = ref(sections[0].id);
 
     await updateMessages();
-    watch(selected_section,async () => {
-        await updateMessages();
-    });
 }
 </script>
 

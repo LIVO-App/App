@@ -25,6 +25,7 @@ import ProjectClass from "./components/ProjectClass.vue";
 import AnnouncementsComponent from "./components/AnnouncementsComponent.vue";
 import AnnouncementViewer from "./components/AnnouncementViewer.vue";
 import AnnouncementsPublisher from "./components/AnnouncementsPublisher.vue";
+import AnnouncementsSelectionList from "./components/AnnouncementsSelectionList.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -94,7 +95,8 @@ const app = createApp(App)
   .component("ProjectClass",ProjectClass)
   .component("AnnouncementsComponent",AnnouncementsComponent)
   .component("AnnouncementViewer",AnnouncementViewer)
-  .component("AnnouncementsPublisher",AnnouncementsPublisher);
+  .component("AnnouncementsPublisher",AnnouncementsPublisher)
+  .component("AnnouncementsSelectionList",AnnouncementsSelectionList);
   
 router.isReady().then(() => {
   app.mount('#app');
