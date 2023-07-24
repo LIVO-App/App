@@ -242,7 +242,8 @@ export const store = createStore({
                     certifying_admin: "Amministratore certificante",
                     course_information_not_found: "Informazioni del corso non trovate",
                     learning_blocks: "Blocchi di apprendimento",
-                    learning_block_selection_message: "Seleziona un blocco di apprendimento per vedere i corsi in cui insegni o che ha un tuo insegnameto associato",
+                    teacher_learning_block_selection_message: "Seleziona un blocco di apprendimento per vedere i corsi in cui insegni o che ha un tuo insegnameto associato",
+                    student_learning_block_selection_message: "Seleziona un blocco di apprendimento per vedere i corsi a cui sei iscritto",
                     teacher: "Insegnante",
                     associated: "Associati",
                     my_associated_teachings: "Miei insegnamenti associati",
@@ -266,7 +267,8 @@ export const store = createStore({
                     to: "A",
                     empty_titles_or_messages: "Titoli e/o messagi vuoti",
                     no_selected_sections: "Nessuna sezione selezionata",
-                    message_not_sent_sections: "Messaggio non inviato alle sezioni"
+                    message_not_sent_sections: "Messaggio non inviato alle sezioni",
+                    no_courses: "Nessun corso disponibile"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -315,7 +317,7 @@ export const store = createStore({
                     certifying_admin: "Certifying admin",
                     course_information_not_found: "Course information not found",
                     learning_blocks: "Learning blocks",
-                    learning_block_selection_message: "Select a learning block to see the courses you teach or that has a teaching of yours associated",
+                    teacher_learning_block_selection_message: "Select a learning block to see the courses you teach or that has a teaching of yours associated",
                     teacher: "Teacher",
                     associated: "Associated",
                     my_associated_teachings: "My associated teachings",
@@ -339,14 +341,15 @@ export const store = createStore({
                     to: "To",
                     empty_titles_or_messages: "Empty titles and/or messages",
                     no_selected_sections: "No selected sections",
-                    message_not_sent_sections: "Message not sent to sections"
+                    message_not_sent_sections: "Message not sent to sections",
+                    no_courses: "No courses available"
                 }
             },
             /*
             user: {
                 id: 1,
                 username: "Student1",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODM2OTg4NywiZXhwIjoxNjg4NDU2Mjg3fQ.WDCzmZks_VgEPFzks4thl4sNR3f5h35OQMyTQvhCBIw",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY5MDE4ODcwOCwiZXhwIjoxNjkwMjc1MTA4fQ.grWOeNBC1CKgTu5cbAKZyCtgbMsquyKORF3eOZdFMKQ",
                 user: "student",
             },//*/
             /*
@@ -360,7 +363,7 @@ export const store = createStore({
             user: {
                 id: 2,
                 username: "Teacher2",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY4ODkyMDAzNSwiZXhwIjoxNjg5MDA2NDM1fQ.p5RehtVLVCWv4_QLRlSCmBQIK7InkdWF4vjyWqj0XlM",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY5MDE4ODcyOCwiZXhwIjoxNjkwMjc1MTI4fQ.xd9JPtcxfD5XnZ8wKmwJmhIWxv2cEHFb6vsATNT780I",
                 user: "teacher",
             },//*/
             request: {},
@@ -370,10 +373,9 @@ export const store = createStore({
                 min: 1,
                 max: 11
             },
-            excluded_learning_contexts_id: [3], //Da sistemare: mettere referenza a contesto di apprendimento
+            excluded_learning_contexts_id: ["ECA"], //Da sistemare: mettere referenza a contesto di apprendimento
             main_learning_context: {
-                id: 1,
-                acronym: "SPE",
+                id: "SPE",
                 credits: null
             } //Da sistemare: mettere referenza a contesto di apprendimento
         }

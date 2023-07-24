@@ -29,7 +29,7 @@
                         :label="getCurrentElement(store,'school_year') + ':'"
                         :aria_label="getCurrentElement(store,'school_year')"
                         :placeholder="getCurrentElement(store,'school_year_choice')"
-                    />
+                    /> <!-- Da sistemare: aggiungere "All" -->
                 </ion-col>
                 <ion-col size="auto">
                     <custom-select
@@ -97,17 +97,13 @@ const getYearCourses = async () => {
         response => {
 
             let tmp_course : CurriculumCourse;
-            let tmp_context : LearningContext | undefined;
-            let tmp_context_id : number;
 
             for (const course of response.data.data) {
                 tmp_course = new CurriculumCourse(course);
-                tmp_context = learning_contexts.find((a: LearningContext) => a.acronym == tmp_course.learning_context_acronym);
-                tmp_context_id = tmp_context != undefined ? tmp_context.id : -1;
-                if (year_courses[tmp_context_id] == undefined) {
-                    year_courses[tmp_context_id] = [tmp_course];
+                if (year_courses[tmp_course.learning_context_id] == undefined) {
+                    year_courses[tmp_course.learning_context_id] = [tmp_course];
                 } else {
-                    year_courses[tmp_context_id].push(tmp_course);
+                    year_courses[tmp_course.learning_context_id].push(tmp_course);
                 }
             }
         },
@@ -174,7 +170,7 @@ let grades_parameters : GradesParameters;
 let description_title : string;
 let description_course_id : number;
 let learning_contexts : LearningContext[] = [];
-let selected_context : Ref<number>;
+let selected_context : Ref<string>;
 let courses_list : CurriculumCourse[] = [];
 let tableData : CustomElement[][] = [];
 

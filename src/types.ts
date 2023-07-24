@@ -121,7 +121,7 @@ type CourseCardElements = CardElements & {
     enrollment: Enrollment
 }
 
-type TeacherBlockCardElements = CardElements & {
+type HiglightBlockCardElements = CardElements & {
     title: string,
     subtitle: string,
     status: LearningBlockStatus,
@@ -144,6 +144,46 @@ type LearningArea = {
     [key in keyof string as `${Language}_description`]: string | null
 }
 
+type MinimumCourseProps = {
+    id: number,
+    section: string
+} & {
+    [key in keyof string as `${Language}_title`]: string
+}
+
+class MinimizedCourse implements MinimumCourseProps {
+    id: number;
+    section: string;
+    italian_title: string;
+    english_title: string;
+
+    constructor(course : MinimumCourseProps) {
+        this.id = course.id;
+        this.section = course.section;
+        this.italian_title = course.italian_title;
+        this.english_title = course.english_title;
+    }
+
+    toCard(store : Store<any>, path? : string) : GeneralCardElements {
+        const language : Language = store.state.language;
+        return {
+            id: "" + hashCode(this.italian_title),
+            group: "",
+            content: [{
+                id: "title",
+                type: "html",
+                content: this[`${language}_title`]
+            },{
+                id: "section",
+                type: "string",
+                content: getCurrentElement(store,"section") + ": " + this.section
+            }],
+            url: path,
+            method: "get"
+        }
+    }
+}
+
 type CourseBaseProps = {
     id: number,
     credits: number,
@@ -156,14 +196,13 @@ type CourseBaseProps = {
 
 type CourseSummaryProps = CourseBaseProps & {
     section?: string,
-    pending: string,
-    learning_context_acronym: string
+    pending: string
 }
 
 type CurriculumCourseProps = CourseBaseProps & {
     section: string,
     final_grade: GradeProps | null,
-    learning_context_acronym: string,
+    learning_context_id: string,
     future_course: number
 }
 
@@ -219,13 +258,11 @@ class CourseSummary extends CourseBase implements CourseSummaryProps {
 
     section?: string | undefined;
     pending: string;
-    learning_context_acronym: string;
 
     constructor(courseObj : CourseSummaryProps) {
         super(courseObj);
         this.section = courseObj.section;
         this.pending = courseObj.pending;
-        this.learning_context_acronym = courseObj.learning_context_acronym;
     }
 
     toCard(store : Store<any>, learning_block : LearningBlock, path? : string, method? : Method, open_enrollment = false, reference = new Date()) : CourseCardElements {
@@ -274,14 +311,14 @@ class CurriculumCourse extends CourseBase {
     
     section: string;
     final_grade: GradeProps | null;
-    learning_context_acronym: string;
+    learning_context_id: string;
     future_course: boolean;
 
     constructor(courseObj : CurriculumCourseProps) {
         super(courseObj);
         this.section = courseObj.section;
         this.final_grade = courseObj.final_grade;
-        this.learning_context_acronym = courseObj.learning_context_acronym;
+        this.learning_context_id = courseObj.learning_context_id;
         this.future_course = courseObj.future_course == 1;
     }
 
@@ -613,7 +650,7 @@ class LearningBlock implements LearningBlockProps {
         return block_list;
     }
 
-    async getInscribedCredits($axios : AxiosInstance, store: Store<any>, learning_context_id: number): Promise<number> {
+    async getInscribedCredits($axios : AxiosInstance, store: Store<any>, learning_context_id: string): Promise<number> {
         return await executeLink($axios,"/v1/courses?student_id=" + store.state.user.id + "&block_id=" + this.id + "&context_id=" + learning_context_id,
                 response => response.data.data.reduce((a: number, b: CourseSummaryProps) => a + (b.pending == "true" ? b.credits : 0), 0),
                 () => 0);
@@ -645,10 +682,10 @@ class LearningBlock implements LearningBlockProps {
         return tmp_element;
     }
 
-    toTeacherCard(store : Store<any>, selected = false, reference = new Date()) : TeacherBlockCardElements {
+    toHighlightCard(store : Store<any>, selected = false, reference = new Date()) : HiglightBlockCardElements {
         
         const status = this.getStatus(reference);
-        const tmp_element : TeacherBlockCardElements = {
+        const tmp_element : HiglightBlockCardElements = {
             id: "" + this.id,
             group: this.school_year,
             title: getCurrentElement(store,"block") + " " + this.number,
@@ -845,7 +882,9 @@ type StudentProps = {
     id: number,
     name: string,
     surname: string,
-    learning_context_acronym: string,
+    learning_context_ref: ResponseItem<{
+        "id": string
+    }>,
     ord_class_study_year: number,
     ord_class_address: string,
     ord_class_section: string
@@ -856,14 +895,14 @@ class Student {
         id: number;
         name: string;
         surname: string;
-        learning_context_acronym: string;
+        learning_context_id: string;
         ordinary_class: OrdinaryClassSummary;
     
         constructor(props : StudentProps) {
             this.id = props.id;
             this.name = props.name;
             this.surname = props.surname;
-            this.learning_context_acronym = props.learning_context_acronym;
+            this.learning_context_id = (props.learning_context_ref.data as {id:string}).id;
             this.ordinary_class = {
                 study_year: props.ord_class_study_year,
                 address: props.ord_class_address,
@@ -895,7 +934,7 @@ class Student {
             },{
                 id: this.id + "_learning_context",
                 type: "string",
-                content: this.learning_context_acronym
+                content: this.learning_context_id
             },{
                 id: this.id + "_class",
                 type: "string",
@@ -926,10 +965,9 @@ class Student {
 }
 
 type LearningContextSummary = {
-    id: number,
-    acronym: string,
+    id: string
     credits?: number | null
-} // Da sistemare: togliere id-acronym quando sistemato backend
+}
 
 type LearningContext = LearningContextSummary & {
     [key in keyof Language as `${Language}_title`]: string
@@ -995,4 +1033,4 @@ type AnnouncementParameters = {
     teacher_id?: number
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, Student, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters }
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightBlockCardElements as TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, Student, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters }

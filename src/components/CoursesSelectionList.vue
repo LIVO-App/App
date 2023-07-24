@@ -63,7 +63,7 @@ import { useRoute } from 'vue-router';
 import { Store, useStore } from 'vuex';
 
 type RemainingCredits = {
-    [key : number]: TmpList | number
+    [key : string]: TmpList | number
 };
 
 type TmpList = {
@@ -77,23 +77,20 @@ const updateCourses = (course : CourseCardElements, value : Date | boolean) => {
     const pathArray = requestArray[0].split("/");
     pathArray?.pop();
 
-    let tmp_context : LearningContext | undefined;//, edited_course : CourseCardElements;  // Da sistemare: forse problema per non aver fatto copia profonda
+    let tmp_context_id : LearningContext | undefined;//, edited_course : CourseCardElements;  // Da sistemare: forse problema per non aver fatto copia profonda
     
     for (const context_reference of contexts_to_edit) {
-        tmp_context = learning_contexts.find(a => a.acronym == context_reference.context_acronym);
-        if (tmp_context != undefined) {
-            if (tmp_context.id == selected_context.value) {
-                    course.enrollment.enrollment = value;
-                    course.content[2].content = course.enrollment.toString(store);
-                    course.content[3].content = getEnrollmentIcon(store, course.enrollment, pathArray.join("/") + (value === false ? "/inscribe?" : "/unscribe?") + requestArray[1], course.enrollment.getChangingMethod());
-                    
-            } else {
-                course.enrollment.editable = false; // Da sistemare: chiedere se in backend, quando è presente il corso per due contesti, c'è il controllo che non sia iscritto nell'altro contesto
-            }
-
-            all_courses[tmp_context.id][selected_area.value] = all_courses[tmp_context.id][selected_area.value].filter(a => a.id != course.id);
-            all_courses[tmp_context.id][selected_area.value].push(course);
+        if (context_reference.context_id == selected_context.value) {
+                course.enrollment.enrollment = value;
+                course.content[2].content = course.enrollment.toString(store);
+                course.content[3].content = getEnrollmentIcon(store, course.enrollment, pathArray.join("/") + (value === false ? "/inscribe?" : "/unscribe?") + requestArray[1], course.enrollment.getChangingMethod());
+                
+        } else {
+            course.enrollment.editable = false; // Da sistemare: chiedere se in backend, quando è presente il corso per due contesti, c'è il controllo che non sia iscritto nell'altro contesto
         }
+
+        all_courses[context_reference.context_id][selected_area.value] = all_courses[context_reference.context_id][selected_area.value].filter(a => a.id != course.id);
+        all_courses[context_reference.context_id][selected_area.value].push(course);
     }
 }
 
@@ -156,8 +153,8 @@ const user_id : string = store.state.user.id;
 const learning_block_id : string = $route.params.id as string;
 
 const all_courses : {
-    [key: number]: CardsList<CourseCardElements>
-} = {};
+    [key: string]: CardsList<CourseCardElements>
+} = {}; // Da sistemare: aggiungere gruppo (gruppi come group e controlli in nuova variabile)
 const courses : OrderedCardsList<CourseCardElements> = {
     order: [],
     cards: {}
@@ -177,13 +174,13 @@ let learning_block : LearningBlock | undefined;
 let learning_block_position : number;
 let description_title : string;
 let description_course_id : number;
-let selected_context : Ref<number>;
+let selected_context : Ref<string>;
 let learning_contexts : LearningContext[] = [];
 let tmp_courses : CourseSummaryProps[];
 let courses_ids : number[];
 let course_correspondences: {
     course_id: number,
-    context_acronym: string
+    context_id: string
 }[];
 
 if ($axios != undefined) {
@@ -228,7 +225,7 @@ if ($axios != undefined) {
                 course_correspondences = response.data.data;
                 for (const correspondence of course_correspondences) {
                     course_props = tmp_courses.find(a => a.id == correspondence.course_id);
-                    learning_context_index = learning_contexts.findIndex(a => a.acronym == correspondence.context_acronym); // Da sistemare: cambiare con id quando verrà cambiato nel backend
+                    learning_context_index = learning_contexts.findIndex(a => a.id == correspondence.context_id);
                     if (course_props != undefined && learning_context_index != -1) {
                         tmp_learning_context = learning_contexts[learning_context_index];
                         tmp_course = new CourseSummary(course_props);
@@ -254,7 +251,7 @@ if ($axios != undefined) {
                                 if (tmp_course.pending === "true") {
                                     (remaining_credits[tmp_learning_context.id] as number) -= tmp_course.credits;
                                 }
-                                //remaining_credits[tmp_learning_context.id] = tmp_courses.reduce((a,b) => b.pending === "true" && b.learning_context_acronym == tmp_learning_context.acronym ? a - b.credits : a,tmp_learning_context.credits);
+                                //remaining_credits[tmp_learning_context.id] = tmp_courses.reduce((a,b) => b.pending === "true" && b.learning_context_id == tmp_learning_context.id ? a - b.credits : a,tmp_learning_context.credits);
                             } else {
                                 if (remaining_credits[tmp_learning_context.id] == undefined) {
                                     remaining_credits[tmp_learning_context.id] = {};

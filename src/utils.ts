@@ -129,7 +129,6 @@ function getActualLearningContext(store: Store<any>, learning_context: LearningC
 function toSummary(learning_context: LearningContext | undefined): LearningContextSummary | undefined {
     return learning_context != undefined ? {
         id: learning_context.id,
-        acronym: learning_context.acronym,
         credits: learning_context.credits
     } : undefined;
 }
