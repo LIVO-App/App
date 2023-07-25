@@ -43,7 +43,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import ('../views/ProjectClass.vue')
   },
   {
-    path: '/course_propose',
+    path: '/course_proposition',
     component: () => import ('../views/NotImplemented.vue')
   },
   {
@@ -53,6 +53,18 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/announcements',
     component: () => import ('../views/GeneralAnnouncements.vue')
+  },
+  {
+    path: '/ordinary_classes',
+    component: () => import ('../views/OrdinaryClasses.vue')
+  },
+  {
+    path: '/ordinary_classes',
+    component: () => import ('../views/OrdinaryClasses.vue')
+  },
+  {
+    path: '/students/:id',
+    component: () => import ('../views/NotImplemented.vue')
   }
 ]
 

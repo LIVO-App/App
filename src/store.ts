@@ -21,6 +21,8 @@ import {
     informationCircleSharp,
     mailOutline,
     mailSharp,
+    peopleOutline,
+    peopleSharp,
     ribbonOutline,
     ribbonSharp,
     schoolOutline,
@@ -33,7 +35,7 @@ export const store = createStore({
     state() {
         return {
             menu: {
-            "student": [
+            "student": [ // Da sistemare: spostare traduzioni e mettere riferimenti a title
                 {
                     title: {
                         italian: "Blocchi di apprendimento",
@@ -99,6 +101,14 @@ export const store = createStore({
                     },
                     url: '/project_courses',
                     iconRef: "brief_case"
+                },
+                {
+                    title: {
+                        italian: "Classi ordinarie",
+                        english: "Ordinary classes"
+                    },
+                    url: '/ordinary_classes',
+                    iconRef: "people"
                 },
                 {
                     title: {
@@ -188,6 +198,10 @@ export const store = createStore({
                 mail: {
                     ios: mailOutline,
                     md: mailSharp
+                },
+                people: {
+                    ios: peopleOutline,
+                    md: peopleSharp
                 }
             },
             languages: ["italian","english"],
@@ -247,6 +261,7 @@ export const store = createStore({
                     my_associated_teachings: "Miei insegnamenti associati",
                     no_project_classes: "Nessuna classe progetto",
                     section_choice: "Scegli una sezione",
+                    no_sections: "Nessuna sezione disponibile",
                     student: "Studente",
                     class: "Classe",
                     grade_insertion: "Inserimento valutazione",
@@ -268,7 +283,12 @@ export const store = createStore({
                     message_not_sent_sections: "Messaggio non inviato alle sezioni",
                     no_courses: "Nessun corso disponibile",
                     group: "Gruppo",
-                    maximum_courses_error: "Corsi per gruppo massimi raggiunti"
+                    maximum_courses_error: "Corsi per gruppo massimi raggiunti",
+                    classes: "Classi",
+                    no_classes: "Nessuna classe disponibile",
+                    students: "Studenti",
+                    no_students: "Nessuno studente disponibile",
+                    ordinary_class_selection_message: "Seleziona una classe per vedere gli studenti associati",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -323,6 +343,7 @@ export const store = createStore({
                     my_associated_teachings: "My associated teachings",
                     no_project_classes: "No project classes",
                     section_choice: "Choose a section",
+                    no_sections: "No sections available",
                     student: "Student",
                     class: "Class",
                     grade_insertion: "Grade insertion",
@@ -344,14 +365,19 @@ export const store = createStore({
                     message_not_sent_sections: "Message not sent to sections",
                     no_courses: "No courses available",
                     group: "Group",
-                    maximum_courses_error: "Maximum courses per group reached"
+                    maximum_courses_error: "Maximum courses per group reached",
+                    classes: "Classes",
+                    no_classes: "No classes available",
+                    students: "Students",
+                    no_students: "No students available",
+                    ordinary_class_selection_message: "Select a class to see the associated students",
                 }
             },
-            //*
+            /*
             user: {
                 id: 1,
                 username: "Student1",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY5MDE5NzQ3MSwiZXhwIjoxNjkwMjgzODcxfQ.7Cx7l0I4b99ta2qHf6V3bTSWYERUA7xUT1902LKQ1Cw",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY5MDI5NTcyMiwiZXhwIjoxNjkwMzgyMTIyfQ.XUWskLmEDsJwpWvwzDqJnqiu9pif98vsTPbla-7EBHI",
                 user: "student",
             },//*/
             /*
@@ -361,11 +387,11 @@ export const store = createStore({
                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiU3R1ZGVudDIiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODM2OTkwOCwiZXhwIjoxNjg4NDU2MzA4fQ.XYjUjhxj_HjkPy-V7ntbGf2Hww8Y8kiS_mes-fC7D7U",
                 user: "teacher",
             },//*/
-            /*
+            //*
             user: {
                 id: 2,
                 username: "Teacher2",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY5MDE4ODcyOCwiZXhwIjoxNjkwMjc1MTI4fQ.xd9JPtcxfD5XnZ8wKmwJmhIWxv2cEHFb6vsATNT780I",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY5MDI3OTczNiwiZXhwIjoxNjkwMzY2MTM2fQ.DTgTk2b2oqNbCE8o1oSg5JbxInCF7pj7m4W_54zfAYA",
                 user: "teacher",
             },//*/
             request: {},

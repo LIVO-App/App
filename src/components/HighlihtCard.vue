@@ -14,9 +14,9 @@
                     <ion-row class="ion-align-items-center">
                         <ion-col>
                             <ion-card-title :color="selected ? 'tertiary' : undefined">{{ title }}</ion-card-title>
-                            <ion-card-subtitle :color="selected ? 'tertiary' : undefined">{{ subtitle }}</ion-card-subtitle>
+                            <ion-card-subtitle v-if="subtitle != undefined" :color="selected ? 'tertiary' : undefined">{{ subtitle }}</ion-card-subtitle>
                         </ion-col>
-                        <ion-col size="auto">
+                        <ion-col v-if="status != undefined" size="auto">
                             <ion-label :color="status == LearningBlockStatus.CURRENT ? 'success' : (status == LearningBlockStatus.UPCOMING ? 'medium' : '')">
                                 {{ status_string }}
                             </ion-label>
@@ -46,10 +46,7 @@ const props = defineProps({
         required: true
     },
     "subtitle": String,
-    "status": {
-        type: Number as PropType<LearningBlockStatus>,
-        required: true
-    },
+    "status": Number as PropType<LearningBlockStatus>,
     "selected": {
         type: Boolean,
         required: true,

@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { GeneralCardElements, LearningBlockStatus, OrdinaryClass, LearningBlock, OrderedCardsList } from '@/types';
+import { GeneralCardElements, LearningBlockStatus, OrdinaryClassProps, LearningBlock, OrderedCardsList } from '@/types';
 import { IonGrid, IonRow, IonCol } from "@ionic/vue"
 import { inject, reactive } from 'vue';
 import { useStore } from 'vuex';
@@ -50,8 +50,8 @@ const learning_blocks : {
 const promises : Promise<any>[] = [];
 const no_blocks = getCurrentElement(store,'no_blocks');
 
-let ordinary_classes : OrdinaryClass[],
-  current_class : OrdinaryClass | undefined,
+let ordinary_classes : OrdinaryClassProps[],
+  current_class : OrdinaryClassProps | undefined,
   current_school_year : number,
   tmp_element : GeneralCardElements | undefined,
   learning_block : LearningBlock;

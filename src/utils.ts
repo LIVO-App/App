@@ -1,5 +1,5 @@
 import { AxiosInstance, Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, TeacherBlockCardElements, LearningBlockStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, HiglightBlockCardElements, LearningBlockStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, HiglightCardElements } from "./types";
 import { Store } from "vuex";
 
 function getCompleteSchoolYear(year: number) {
@@ -23,7 +23,11 @@ function isCourse(card : CardElements) : card is CourseCardElements {
     return "credits" in card;
 }
 
-function isTeacherBlock(card : CardElements) : card is TeacherBlockCardElements {
+function isHiglithCard(card : CardElements) : card is HiglightCardElements {
+    return "selected" in card;
+}
+
+function isHiglithBlock(card : CardElements) : card is HiglightBlockCardElements {
     return "status" in card;
 }
 
@@ -137,4 +141,4 @@ function toDateString(date: Date) {
     return date.toLocaleDateString("en-GB");
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isTeacherBlock, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString }
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isHiglithCard, isHiglithBlock, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString }

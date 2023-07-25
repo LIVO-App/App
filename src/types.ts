@@ -37,12 +37,14 @@ type ResponseItem<T> = {
     data: T | T[]
 }
 
-type OrdinaryClass = {
-    annual_credits_ref: ResponseItem<{
-        study_year: number,
-        study_address: string,
-        definition_year: number
-    }>,
+type AnnualCredits = {
+    study_year: number,
+    study_address: string,
+    definition_year: number
+}
+
+type OrdinaryClassProps = {
+    annual_credits_ref: ResponseItem<AnnualCredits>,
     english_displayed_name: string, //Da sistemare: sistemare visualizzazione nome classe
     italian_displayed_name: string,
     school_year: number,
@@ -54,11 +56,73 @@ type OrdinaryClass = {
     }>
 }
 
-type OrdinaryClassSummary = {
+type OrdinaryClassSummaryProps = {
     study_year: number,
     address: string,
-    section: string
+    section: string,
+    school_year?: number
 }
+
+class OrdinaryClassSummary implements OrdinaryClassSummaryProps {
+    study_year: number;
+    address: string;
+    section: string;
+    school_year: number;
+    
+    constructor(classObj : OrdinaryClassSummaryProps) {
+        this.study_year = classObj.study_year;
+        this.address = classObj.address;
+        this.section = classObj.section;
+        this.school_year = classObj.school_year ?? new Date().getFullYear();
+    }
+
+    toString(section = true, school_year = false) {
+        return this.study_year + " " + this.address + (section ? " " + this.section : "") + (school_year ? " " + this.school_year : "");
+    }
+
+    toHighlightCard(store : Store<any>, section = true, school_year = false, selected = false) : HiglightCardElements {
+        return {
+            id: this.toString(section,school_year),
+            group: this.school_year,
+            title: this.toString(section,school_year),
+            selected: selected
+        };
+    }
+}
+
+/*class OrdinaryClass {
+    annual_credits?: AnnualCredits
+    english_displayed_name?: string //Da sistemare: sistemare visualizzazione nome classe
+    italian_displayed_name?: string
+    school_year: number
+    address: string
+    study_year: number
+    section?: string
+
+    constructor(classObj : OrdinaryClassProps) {
+        this.annual_credits = classObj.annual_credits_ref.data as AnnualCredits;
+        this.english_displayed_name = classObj.english_displayed_name;
+        this.italian_displayed_name = classObj.italian_displayed_name;
+        this.school_year = classObj.school_year;
+        this.address = (classObj.study_address_ref.data as {id: string}).id;
+        this.study_year = (classObj.study_year_ref.data as {id: number}).id;
+    }
+
+    toCard(store : Store<any>, path? : string) : GeneralCardElements {
+        const language : Language = store.state.language;
+        return {
+            id: this.study_year + "_" + this.address,
+            group: "",
+            content: [{
+                id: "title",
+                type: "html",
+                content: this.study_year + " " + this.address
+            }],
+            url: path,
+            method: "get"
+        }
+    }
+}*/
 
 class Enrollment {
     private _enrollment: string
@@ -121,11 +185,14 @@ type CourseCardElements = CardElements & {
     enrollment: Enrollment
 }
 
-type HiglightBlockCardElements = CardElements & {
+type HiglightCardElements = CardElements & {
     title: string,
-    subtitle: string,
-    status: LearningBlockStatus,
     selected: boolean
+}
+
+type HiglightBlockCardElements = HiglightCardElements & {
+    subtitle: string,
+    status: LearningBlockStatus
 }
 
 enum LearningBlockStatus {
@@ -881,10 +948,13 @@ class CourseSectionsTeachings {
     }
 }
 
-type StudentProps = {
+type StudentSummaryProps = {
     id: number,
     name: string,
     surname: string,
+}
+
+type StudentProps = StudentSummaryProps & {
     learning_context_ref: ResponseItem<{
         "id": string
     }>,
@@ -893,24 +963,47 @@ type StudentProps = {
     ord_class_section: string
 }
 
-class Student {
+class StudentSummary implements StudentSummaryProps {
+
+    id: number;
+    name: string;
+    surname: string;
+
+    constructor(student: StudentSummaryProps) {
+        this.id = student.id;
+        this.name = student.name;
+        this.surname = student.surname;
+    }
+
+    toCard(store : Store<any>, path: string) : GeneralCardElements {
+        store.state //dummy use
+        return {
+            id: "" + this.id,
+            group: "",
+            content: [{
+                id: this.id + "_name_surname",
+                type: "string",
+                content: this.name + " " + this.surname
+            }],
+            url: path,
+            method: "get"
+        }
+    }
+}
+
+class Student extends StudentSummary {
         
-        id: number;
-        name: string;
-        surname: string;
         learning_context_id: string;
         ordinary_class: OrdinaryClassSummary;
     
         constructor(props : StudentProps) {
-            this.id = props.id;
-            this.name = props.name;
-            this.surname = props.surname;
+            super(props);
             this.learning_context_id = (props.learning_context_ref.data as {id:string}).id;
-            this.ordinary_class = {
+            this.ordinary_class = new OrdinaryClassSummary({
                 study_year: props.ord_class_study_year,
                 address: props.ord_class_address,
                 section: props.ord_class_section
-            }
+            })
         }
         
         toCard(store : Store<any>) : GeneralCardElements { // Da sistemare: per visualizzazione tabella a telefono
@@ -942,7 +1035,7 @@ class Student {
             },{
                 id: this.id + "_class",
                 type: "string",
-                content: this.ordinary_class.study_year + " " + this.ordinary_class.address + " " + this.ordinary_class.section
+                content: this.ordinary_class.toString()
             },{
                 id: this.id + "_gardes", //Da sistemare: Mettere il controllo con future_course al passaggio a curriculum_v2
                 type: "icon",
@@ -1037,4 +1130,4 @@ type AnnouncementParameters = {
     teacher_id?: number
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClass, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightBlockCardElements as TeacherBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, Student, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters }
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentSummary, Student, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters }

@@ -2,7 +2,7 @@
     <ion-grid><!-- v-if="learning_blocks.loaded">-->
         <ion-row>
             <ion-col size="12" size-md="6">
-              <list-card :title="getCurrentElement(store,'learning_blocks')" :emptiness_message="getCurrentElement(store,'no_blocks')" :cards_list="learning_blocks" @signal_event="change_selection()" />
+              <list-card :title="getCurrentElement(store,'learning_blocks')" :emptiness_message="getCurrentElement(store,'no_blocks')" :cards_list="learning_blocks" @signal_event="changeSelection()" />
             </ion-col>
             <ion-col size="12" size-md="6">
               <list-card :key="trigger" :title="getCurrentElement(store,'courses')" :emptiness_message="getCurrentElement(store,is_nothing_selected() ? 'student_learning_block_selection_message' : 'no_courses')" :cards_list="courses" />
@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { GeneralCardElements, LearningBlock, OrderedCardsList, TeacherBlockCardElements, MinimumCourseProps, MinimizedCourse } from '@/types';
+import { GeneralCardElements, LearningBlock, OrderedCardsList, HiglightBlockCardElements, MinimumCourseProps, MinimizedCourse } from '@/types';
 import { IonGrid, IonRow, IonCol } from "@ionic/vue"
 import { inject, reactive, ref } from 'vue';
 import { useStore } from 'vuex';
@@ -25,7 +25,7 @@ type Indexes = {
 }
 
 const is_nothing_selected = () => selected_block_indexes.year == '-1' && selected_block_indexes.index == -1;
-const find_block = (learning_blocks : OrderedCardsList<TeacherBlockCardElements>, id? : string) : Indexes => {
+const find_block = (learning_blocks : OrderedCardsList<HiglightBlockCardElements>, id? : string) : Indexes => {
 
   const years = Object.keys(learning_blocks.cards);
 
@@ -35,7 +35,7 @@ const find_block = (learning_blocks : OrderedCardsList<TeacherBlockCardElements>
 
   do {
     year = years[count];
-    index = learning_blocks.cards[year].findIndex((a : TeacherBlockCardElements) => {
+    index = learning_blocks.cards[year].findIndex((a : HiglightBlockCardElements) => {
       if (id != undefined) {
         return a.id == id
       } else {
@@ -50,28 +50,28 @@ const find_block = (learning_blocks : OrderedCardsList<TeacherBlockCardElements>
     index: index
   };
 }
-const change_selection = async () => {
+const changeSelection = async () => {
   if (selected_block_indexes.year != "-1" && selected_block_indexes.index != -1) {
-    learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].selected = !learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].selected;
+    selectedChange();
   }
-  const tmp_selected = find_block(learning_blocks,store.state.event.data.id);
 
+  const tmp_selected = find_block(learning_blocks,store.state.event.data.id);
   if (selected_block_indexes.year == tmp_selected.year && selected_block_indexes.index == tmp_selected.index) {
     selected_block_indexes = {
       year: "-1",
       index: -1
     };
-    courses.cards = {
-      teacher: [],
-      associated: []
-    };
+    courses.cards[""] = [];
   } else {
     selected_block_indexes = tmp_selected;
+    selectedChange();
     courses.cards[""] = await executeLink($axios,"/v1/students/" + user.id + "/project_classes?block_id=" + learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].id + "&token=" + user.token,
       (response : any) => response.data.data.map((a: MinimumCourseProps) => (new MinimizedCourse(a)).toCard(store,"/announcements/" + a.id + "/" + learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].id)));
   }
+}
+const selectedChange = (year = selected_block_indexes.year,index = selected_block_indexes.index,value = !learning_blocks.cards[year][index].selected) => {
+  learning_blocks.cards[year][index].selected = value;
   trigger.value++;
-  learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].selected = !learning_blocks.cards[selected_block_indexes.year][selected_block_indexes.index].selected;
 }
 
 const $axios : AxiosInstance | undefined = inject("$axios");
@@ -79,7 +79,7 @@ const store = useStore();
 const user = store.state.user;
 
 const promises : Promise<any>[] = [];
-const learning_blocks : OrderedCardsList<TeacherBlockCardElements> = reactive({
+const learning_blocks : OrderedCardsList<HiglightBlockCardElements> = reactive({
   order: [],
   cards: {}
 });
