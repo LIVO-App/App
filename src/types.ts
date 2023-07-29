@@ -1,6 +1,6 @@
 import { AxiosInstance, Method } from "axios";
 import { Store } from "vuex";
-import { executeLink, getActualLearningContext, getCurrentElement, getEnrollmentIcon, getIcon, getRagneString, hashCode, toDateString } from "./utils";
+import { executeLink, getActualLearningContext, getCurrentElement, getCurrentSchoolYear, getEnrollmentIcon, getGender, getIcon, getRagneString, hashCode, toDateString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -73,7 +73,7 @@ class OrdinaryClassSummary implements OrdinaryClassSummaryProps {
         this.study_year = classObj.study_year;
         this.address = classObj.address;
         this.section = classObj.section;
-        this.school_year = classObj.school_year ?? new Date().getFullYear();
+        this.school_year = classObj.school_year ?? getCurrentSchoolYear();
     }
 
     toString(section = true, school_year = false) {
@@ -204,7 +204,7 @@ enum LearningBlockStatus {
 
 type LearningArea = {
     id: string,
-    credits: number
+    credits?: number
 } & {
     [key in keyof string as `${Language}_title`]: string
 } & {
@@ -270,7 +270,9 @@ type CourseSummaryProps = CourseBaseProps & {
 type CurriculumCourseProps = CourseBaseProps & {
     section: string,
     final_grade: GradeProps | null,
-    learning_context_id: string,
+    learning_context_ref: ResponseItem<{
+        id: string
+    }>,
     future_course: number
 }
 
@@ -388,7 +390,7 @@ class CurriculumCourse extends CourseBase {
         super(courseObj);
         this.section = courseObj.section;
         this.final_grade = courseObj.final_grade;
-        this.learning_context_id = courseObj.learning_context_id;
+        this.learning_context_id = (courseObj.learning_context_ref.data as {id:string}).id;
         this.future_course = courseObj.future_course == 1;
     }
 
@@ -955,12 +957,25 @@ type StudentSummaryProps = {
 }
 
 type StudentProps = StudentSummaryProps & {
-    learning_context_ref: ResponseItem<{
+    learning_context_ref?: ResponseItem<{
         "id": string
     }>,
     ord_class_study_year: number,
     ord_class_address: string,
     ord_class_section: string
+}
+
+type StudentInformationProps = StudentSummaryProps & {
+    username: string,
+    gender: string,
+    birth_date: string,
+    address: string,
+    email: string,
+    ordinary_class_ref: ResponseItem<{
+        study_address: string,
+        study_year: number
+    }>,
+    class_section: string
 }
 
 class StudentSummary implements StudentSummaryProps {
@@ -993,12 +1008,12 @@ class StudentSummary implements StudentSummaryProps {
 
 class Student extends StudentSummary {
         
-        learning_context_id: string;
+        learning_context_id?: string;
         ordinary_class: OrdinaryClassSummary;
     
         constructor(props : StudentProps) {
             super(props);
-            this.learning_context_id = (props.learning_context_ref.data as {id:string}).id;
+            this.learning_context_id = props.learning_context_ref != undefined ? (props.learning_context_ref.data as {id:string}).id : undefined;
             this.ordinary_class = new OrdinaryClassSummary({
                 study_year: props.ord_class_study_year,
                 address: props.ord_class_address,
@@ -1024,15 +1039,12 @@ class Student extends StudentSummary {
         }
 
         toTableRow(store : Store<any>, course_id : string, block_id : string, teacher_id : number, final_grade? : Grade) : CustomElement[] {
-            return [{ //Da sistemare: rendere cliccabile
+            const row_to_return: CustomElement[] = [{ //Da sistemare: rendere cliccabile
                 id: this.id + "_name_surname",
                 type: "string",
                 content: this.name + " " + this.surname
-            },{
-                id: this.id + "_learning_context",
-                type: "string",
-                content: this.learning_context_id
-            },{
+            }];
+            const tmp_row: CustomElement[] = [{
                 id: this.id + "_class",
                 type: "string",
                 content: this.ordinary_class.toString()
@@ -1057,8 +1069,85 @@ class Student extends StudentSummary {
                 id: this.id + "_final_grade",
                 type: "string",
                 content: final_grade != undefined ? "" + final_grade.grade : "-"
+            }];
+
+            if (this.learning_context_id != undefined) {
+                row_to_return.push({
+                    id: this.id + "_learning_context",
+                    type: "string",
+                    content: this.learning_context_id
+                })
+            }
+
+            return row_to_return.concat(tmp_row);
+        }
+}
+
+class StudentInformation extends StudentSummary {
+
+    username: string;
+    gender: Gender;
+    birth_date: Date;
+    address: string;
+    email: string;
+    ordinary_class: OrdinaryClassSummary;
+
+    constructor(props: StudentInformationProps) {
+        super(props);
+        this.username = props.username;
+        this.gender = props.gender as Gender;
+        this.birth_date = new Date(props.birth_date);
+        this.address = props.address;
+        this.email = props.email;
+
+        const tmp_class = props.ordinary_class_ref.data as {
+            study_address: string,
+            study_year: number,
+            section: string
+        };
+        this.ordinary_class = new OrdinaryClassSummary({
+            study_year: tmp_class.study_year,
+            address: tmp_class.study_address,
+            section: props.class_section
+        })
+    }
+
+    toCard(store : Store<any>) : GeneralCardElements {
+        return {
+            id: "" + this.username,
+            title: this.username,
+            group: "",
+            content: [{
+                id: this.id + "_name",
+                type: "string",
+                content: getCurrentElement(store,"name") + ": " + this.name
+            },{
+                id: this.id + "_surname",
+                type: "string",
+                content: getCurrentElement(store,"surname") + ": " + this.surname
+            },{
+                id: this.id + "_gender",
+                type: "string",
+                content: getCurrentElement(store,"gender") + ": " + getGender(store,this.gender)
+            },{
+                id: this.id + "_birth_date",
+                type: "string",
+                content: getCurrentElement(store,"birth_date") + ": " + toDateString(this.birth_date)
+            },{
+                id: this.id + "_address",
+                type: "string",
+                content: getCurrentElement(store,"address") + ": " + this.address
+            },{
+                id: this.id + "_email",
+                type: "string",
+                content: getCurrentElement(store,"email") + ": " + this.email
+            },{
+                id: this.id + "_class",
+                type: "string",
+                content: getCurrentElement(store,"class") + ": " + this.ordinary_class.toString()
             }]
         }
+    }
 }
 
 type LearningContextSummary = {
@@ -1130,4 +1219,33 @@ type AnnouncementParameters = {
     teacher_id?: number
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentSummary, Student, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters }
+type Gender = "M" | "F" | "O";
+
+const GenderKeys: {
+    [key in keyof string as Gender]: string
+} = {
+    "M": "male",
+    "F": "female",
+    "O": "other"
+}
+
+type RemainingCredits<T> = {
+    [key : string]: TmpList<T> | T
+};
+
+type TmpList<T> = {
+    [key: string]: T
+};
+
+type Progression = {
+    learning_area_ref: ResponseItem<{
+        id: string | null
+    }>,
+    learning_context_ref: ResponseItem<{
+        id: string
+    }>,
+    credits: string,
+    max_credits: number
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression }

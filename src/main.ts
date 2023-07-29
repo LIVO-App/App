@@ -27,6 +27,8 @@ import AnnouncementViewer from "./components/AnnouncementViewer.vue";
 import AnnouncementsPublisher from "./components/AnnouncementsPublisher.vue";
 import AnnouncementsSelectionList from "./components/AnnouncementsSelectionList.vue";
 import OrdinaryClassesStudents from "./components/OrdinaryClassesStudents.vue";
+import StudentDescription from "./components/StudentDescription.vue";
+import OverallStudentDescription from "./components/OverallStudentDescription.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -98,7 +100,9 @@ const app = createApp(App)
   .component("AnnouncementViewer",AnnouncementViewer)
   .component("AnnouncementsPublisher",AnnouncementsPublisher)
   .component("AnnouncementsSelectionList",AnnouncementsSelectionList)
-  .component("OrdinaryClassesStudents",OrdinaryClassesStudents);
+  .component("OrdinaryClassesStudents",OrdinaryClassesStudents)
+  .component("StudentDescription",StudentDescription)
+  .component("OverallStudentDescription",OverallStudentDescription);
   
 router.isReady().then(() => {
   app.mount('#app');

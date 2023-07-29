@@ -2,7 +2,7 @@
     <ion-grid>
         <ion-row>
             <ion-col size="auto">
-                <ion-icon @click="$router.go(-1)" aria-hidden="true" class="ion-padding-end" :ios="getIcon(store,'arrow_back').ios" :md="getIcon(store,'arrow_back').md"></ion-icon> <!--Da sistemare-->
+                <ion-icon @click="$router.go(-1)" aria-hidden="true" class="ion-padding-end" :ios="getIcon(store,'arrow_back').ios" :md="getIcon(store,'arrow_back').md"></ion-icon> <!-- Da sistemare: freccetta -->
             </ion-col>
             <ion-col>
                 <ion-title style="wid">{{ head_content.title }}</ion-title>

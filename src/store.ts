@@ -126,6 +126,14 @@ export const store = createStore({
                     url: '/announcements',
                     iconRef: "mail"
                 },
+                { // Da sistemare: non deve apparire
+                    title: {
+                        italian: "Studenti",
+                        english: "Students"
+                    },
+                    url: '/students',
+                    iconRef: "people"
+                },
                 {
                     title: {
                         italian: "Impostazioni",
@@ -289,6 +297,18 @@ export const store = createStore({
                     students: "Studenti",
                     no_students: "Nessuno studente disponibile",
                     ordinary_class_selection_message: "Seleziona una classe per vedere gli studenti associati",
+                    name: "Nome",
+                    surname: "Cognome",
+                    gender: "Genere",
+                    birth_date: "Data di nascita",
+                    address: "Indirizzo",
+                    email: "E-mail",
+                    male: "Maschio",
+                    female: "Femmina",
+                    other: "Altro",
+                    progression: "Progressi",
+                    context_credits: "Crediti nel contesto",
+                    area_credits: "Crediti per area"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -371,13 +391,25 @@ export const store = createStore({
                     students: "Students",
                     no_students: "No students available",
                     ordinary_class_selection_message: "Select a class to see the associated students",
+                    name: "Name",
+                    surname: "Surname",
+                    gender: "Gender",
+                    birth_date: "Birth date",
+                    address: "Address",
+                    email: "E-mail",
+                    male: "Maschio",
+                    female: "Femmina",
+                    other: "Altro",
+                    progression: "Progression",
+                    context_credits: "Context credits",
+                    area_credits: "Area credits"
                 }
             },
             /*
             user: {
                 id: 1,
                 username: "Student1",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY5MDI5NTcyMiwiZXhwIjoxNjkwMzgyMTIyfQ.XUWskLmEDsJwpWvwzDqJnqiu9pif98vsTPbla-7EBHI",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY5MDU1MjY1MiwiZXhwIjoxNjkwNjM5MDUyfQ.h5TN0M40v8jnNzVOP8JeQfpH3vMsii8RD1JXgdJq18Y",
                 user: "student",
             },//*/
             /*
@@ -391,7 +423,7 @@ export const store = createStore({
             user: {
                 id: 2,
                 username: "Teacher2",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY5MDI3OTczNiwiZXhwIjoxNjkwMzY2MTM2fQ.DTgTk2b2oqNbCE8o1oSg5JbxInCF7pj7m4W_54zfAYA",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY5MDU1NDg2NiwiZXhwIjoxNjkwNjQxMjY2fQ.8OB2mx0ERnOkChC5Jn0IwptWUSXOPC-v8OiFb1cULys",
                 user: "teacher",
             },//*/
             request: {},

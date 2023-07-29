@@ -43,7 +43,7 @@ import { useStore } from 'vuex';
 import { Menu } from "./types";
 import { getIcon } from './utils';
 
-const image = computed(() => require("./assets/Logo_LIVO_Campus_POS_RGB.png"))
+const image = computed(() => require("./assets/Logo_LIVO_Campus_POS_RGB.png"));
 
 const store = useStore();
 const menu : Menu = store.state.menu;

@@ -64,7 +64,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/students/:id',
-    component: () => import ('../views/NotImplemented.vue')
+    component: () => import ('../views/StudentDescription.vue')
   }
 ]
 

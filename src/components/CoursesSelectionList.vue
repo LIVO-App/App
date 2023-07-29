@@ -54,21 +54,13 @@
 </template>
 
 <script setup lang="ts">
-import { CardsList, CourseCardElements, CourseSummary, CourseSummaryProps, Language, LearningArea, LearningBlock, LearningBlockStatus, LearningContext, OrderedCardsList, RequestIcon } from '@/types';
+import { CardsList, CourseCardElements, CourseSummary, CourseSummaryProps, Language, LearningArea, LearningBlock, LearningBlockStatus, LearningContext, OrderedCardsList, RemainingCredits, RequestIcon, TmpList } from '@/types';
 import { executeLink, getCurrentElement, getEnrollmentIcon, toSummary } from '@/utils';
 import { IonAlert, IonModal, IonGrid, IonRow, IonCol } from '@ionic/vue';
 import { AxiosInstance } from 'axios';
 import { inject, Ref, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { Store, useStore } from 'vuex';
-
-type RemainingCredits = {
-    [key : string]: TmpList | number
-};
-
-type TmpList = {
-    [key: string]: number
-};
 
 type AvailableModal = "course_details" | "max_credits" | "max_courses";
 
@@ -120,7 +112,7 @@ const changeEnrollment = async () => {
             course = tmp_course;
             available_courses = remaining_courses[selected_context.value][selected_area.value][tmp_course.group]-1 >= 0;
             available_area_credits = typeof remaining_credits[selected_context.value] == 'number' && (remaining_credits[selected_context.value] as number) >= course.credits;
-            available_context_credits = (remaining_credits[selected_context.value] as TmpList)[selected_area.value] >= course.credits;
+            available_context_credits = (remaining_credits[selected_context.value] as TmpList<number>)[selected_area.value] >= course.credits;
             if (unscribe
                 || available_courses && available_area_credits
                 || available_courses && available_context_credits) {
@@ -137,7 +129,7 @@ const changeEnrollment = async () => {
                                 if (typeof remaining_credits[selected_context.value] == 'number') {
                                     (remaining_credits[selected_context.value] as number) += (unscribe ? 1 : -1) * course.credits;
                                 } else {
-                                    (remaining_credits[selected_context.value] as TmpList)[selected_area.value] += (unscribe ? 1 : -1) * course.credits;
+                                    (remaining_credits[selected_context.value] as TmpList<number>)[selected_area.value] += (unscribe ? 1 : -1) * course.credits;
                                 }
                             }
                             trigger.value++;
@@ -220,7 +212,7 @@ const courses : OrderedCardsList<CourseCardElements> = {
     cards: {}
 };
 const trigger = ref(0);
-const remaining_credits : RemainingCredits = {};
+const remaining_credits : RemainingCredits<number> = {};
 const learning_area = getCurrentElement(store,"learning_area");
 const placeholder = getCurrentElement(store,"select") + (language == "italian" ? " l'" : " the ") + learning_area;
 const openAlert = ref(false);
@@ -335,13 +327,13 @@ if ($axios != undefined) {
                                 if (remaining_credits[tmp_learning_context.id] == undefined) {
                                     remaining_credits[tmp_learning_context.id] = {};
                                 }
-                                if ((remaining_credits[tmp_learning_context.id] as TmpList)[tmp_learning_area.id] == undefined) {
-                                    (remaining_credits[tmp_learning_context.id] as TmpList)[tmp_learning_area.id] = tmp_learning_area.credits;
+                                if ((remaining_credits[tmp_learning_context.id] as TmpList<number>)[tmp_learning_area.id] == undefined) {
+                                    (remaining_credits[tmp_learning_context.id] as TmpList<number>)[tmp_learning_area.id] = tmp_learning_area.credits as number;
                                 }
                                 if (tmp_course.pending === "true") {
-                                    (remaining_credits[tmp_learning_context.id] as TmpList)[tmp_learning_area.id] -= tmp_course.credits;
+                                    (remaining_credits[tmp_learning_context.id] as TmpList<number>)[tmp_learning_area.id] -= tmp_course.credits;
                                 }
-                                //(remaining_credits[tmp_learning_context.id] as TmpList)[tmp_learning_area.id] = tmp_courses.reduce((a,b) => b.pending === "true" ? a - b.credits : a,tmp_learning_area.credits);
+                                //(remaining_credits[tmp_learning_context.id] as TmpList<number>)[tmp_learning_area.id] = tmp_courses.reduce((a,b) => b.pending === "true" ? a - b.credits : a,tmp_learning_area.credits);
                             }
                         }
                     }
