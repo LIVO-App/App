@@ -1,6 +1,6 @@
 <template>
-    <student-description :id="student_id" />
-    <curriculum-list :student_id="student_id" />
+  <student-description :id="student_id" />
+  <curriculum-list :student_id="student_id" />
 </template>
 
 <script setup lang="ts">
@@ -15,5 +15,4 @@ const student_id: string = $route.params.id as string;
 </script>
 
 <style>
-
 </style>

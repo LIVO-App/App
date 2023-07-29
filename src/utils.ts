@@ -15,24 +15,24 @@ function getRagneString(start: Date, end: Date) {
     return (new Date(start)).toLocaleDateString("en-GB") + " - " + (new Date(end)).toLocaleDateString("en-GB");
 }
 
-function isGeneral(card : CardElements) : card is GeneralCardElements {
+function isGeneral(card: CardElements): card is GeneralCardElements {
     return !("credits" in card); //Da sistemare: vedere se creare un parametro per fare la condizione positiva
 }
 
-function isCourse(card : CardElements) : card is CourseCardElements {
+function isCourse(card: CardElements): card is CourseCardElements {
     return "credits" in card;
 }
 
-function isHiglithCard(card : CardElements) : card is HiglightCardElements {
+function isHiglithCard(card: CardElements): card is HiglightCardElements {
     return "selected" in card;
 }
 
-function isHiglithBlock(card : CardElements) : card is HiglightBlockCardElements {
+function isHiglithBlock(card: CardElements): card is HiglightBlockCardElements {
     return "status" in card;
 }
 
-async function executeLink($axios : AxiosInstance | undefined, url? : string | undefined, success = (response : any) => response, fail : (err: string) => any = (err : string) => err, method? : Method, body?: {[key: string] : any}, store? : Store<any>) {
-    
+async function executeLink($axios: AxiosInstance | undefined, url?: string | undefined, success = (response: any) => response, fail: (err: string) => any = (err: string) => err, method?: Method, body?: { [key: string]: any }, store?: Store<any>) {
+
     const toExecute = url ?? store?.state.request.url;
     const howExecute = method ?? store?.state.request.method ?? "get";
 
@@ -44,10 +44,10 @@ async function executeLink($axios : AxiosInstance | undefined, url? : string | u
                 request = $axios.get(toExecute);
                 break;
             case "post":
-                request = $axios.post(toExecute,body);
+                request = $axios.post(toExecute, body);
                 break;
             case "put":
-                request = $axios.put(toExecute,body);
+                request = $axios.put(toExecute, body);
                 break;
             case "delete":
                 request = $axios.delete(toExecute);
@@ -58,40 +58,40 @@ async function executeLink($axios : AxiosInstance | undefined, url? : string | u
         return request.then(success)
             .catch(fail);
     } else {
-        return new Promise((resolve,reject) => {
+        return new Promise((resolve, reject) => {
             console.error("No axios instance or url defined");
             reject(fail("No axios instance or url defined"));
         });
     }
 }
 
-function getEnrollmentIcon(store : Store<any>, enrollment : Enrollment, path : string, method? : Method) : RequestIcon {
+function getEnrollmentIcon(store: Store<any>, enrollment: Enrollment, path: string, method?: Method): RequestIcon {
     return {
         url: path,
-        method: enrollment.editable ? 
-                    (method ?? enrollment.getChangingMethod())
-                    : (method ?? "get"),
-        icon: enrollment.enrollment === false ? getIcon(store,"add") : getIcon(store,"close")
+        method: enrollment.editable ?
+            (method ?? enrollment.getChangingMethod())
+            : (method ?? "get"),
+        icon: enrollment.enrollment === false ? getIcon(store, "add") : getIcon(store, "close")
     }
 }
 
-function getCurrentElement(store : Store<any>, key : string) {
-    
-    const language : Language = store.state.language;
-    const elements : ElementsList = store.state.elements;
+function getCurrentElement(store: Store<any>, key: string) {
+
+    const language: Language = store.state.language;
+    const elements: ElementsList = store.state.elements;
 
     return elements[language][key];
 }
 
-function getIcon(store : Store<any>, key : string) {
-    
-    const icons : IconsList = store.state.icons;
+function getIcon(store: Store<any>, key: string) {
+
+    const icons: IconsList = store.state.icons;
 
     return icons[key];
 }
 
-function hashCode(str : string) {
-    
+function hashCode(str: string) {
+
     let i, chr;
     let hash = 0;
 
@@ -104,21 +104,21 @@ function hashCode(str : string) {
     return hash;
 }
 
-function castStatus(store : Store<any>, status : string) : LearningBlockStatus | null {
+function castStatus(store: Store<any>, status: string): LearningBlockStatus | null {
 
-    let cast : LearningBlockStatus | null = null;
+    let cast: LearningBlockStatus | null = null;
 
     switch (status) {
-        case getCurrentElement(store,"current"):
+        case getCurrentElement(store, "current"):
             cast = LearningBlockStatus.CURRENT;
             break;
-        case getCurrentElement(store,"upcoming"):
+        case getCurrentElement(store, "upcoming"):
             cast = LearningBlockStatus.UPCOMING;
             break;
-        case getCurrentElement(store,"completed"):
+        case getCurrentElement(store, "completed"):
             cast = LearningBlockStatus.COMPLETED;
             break;
-        case getCurrentElement(store,"future"):
+        case getCurrentElement(store, "future"):
             cast = LearningBlockStatus.FUTURE;
             break;
     }
@@ -142,7 +142,7 @@ function toDateString(date: Date) {
 }
 
 function getGender(store: Store<any>, key: Gender) {
-    return getCurrentElement(store,GenderKeys[key]);
+    return getCurrentElement(store, GenderKeys[key]);
 }
 
 export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isHiglithCard, isHiglithBlock, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender }

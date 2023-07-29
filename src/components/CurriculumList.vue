@@ -1,313 +1,436 @@
 <template>
+  <div class="ion-padding-horizontal">
+    <ion-modal
+      id="grades_manages"
+      :is-open="grades_open"
+      @didDismiss="closeModal('grades')"
+    >
+      <suspense>
+        <template #default>
+          <grades-manager
+            :title="grades_title"
+            :parameters="grades_parameters"
+            @close="closeModal('grades')"
+          ></grades-manager>
+        </template>
+        <template #fallback>
+          <loading-component />
+        </template>
+      </suspense>
+    </ion-modal>
+    <ion-modal
+      :is-open="description_open"
+      @didDismiss="closeModal('course_details')"
+    >
+      <suspense>
+        <template #default>
+          <course-description
+            :title="description_title"
+            :course_id="description_course_id"
+            @close="closeModal('course_details')"
+          ></course-description>
+        </template>
+        <template #fallback>
+          <loading-component />
+        </template>
+      </suspense>
+    </ion-modal>
     <div class="ion-padding-horizontal">
-        <ion-modal id="grades_manages" :is-open="grades_open" @didDismiss="closeModal('grades')">
-            <suspense>
-                <template #default>
-                    <grades-manager :title="grades_title" :parameters="grades_parameters" @close="closeModal('grades')"></grades-manager>
-                </template>
-                <template #fallback>
-                    <loading-component />
-                </template>
-            </suspense>
-        </ion-modal>
-        <ion-modal :is-open="description_open" @didDismiss="closeModal('course_details')">
-            <suspense>
-                <template #default>
-                    <course-description :title="description_title" :course_id="description_course_id" @close="closeModal('course_details')"></course-description>
-                </template>
-                <template #fallback>
-                    <loading-component />
-                </template>
-            </suspense>
-        </ion-modal>
-        <div class="ion-padding-horizontal">
-            <ion-title class="ion-padding-bottom">{{ getCurrentElement(store,"progression") }}</ion-title>
-            <template v-if="Array.isArray(credits_progression[selected_context])">
-                <ion-list>
-                    <ion-item>
-                        <ion-label class="ion-padding-horizontal">{{ getCurrentElement(store,"context_credits") }}:</ion-label>
-                        <ion-label>{{ castToStringArray(credits_progression[selected_context]).join("/") }}</ion-label>
-                    </ion-item>
-                </ion-list>
-            </template>
-            <template v-else>
-                <ion-title size="small" class="ion-padding-bottom"><b>{{ getCurrentElement(store,"area_credits") }}</b></ion-title>
-                <ion-list>
-                    <ion-item v-for="area_progression in Object.keys(castToTmpList(credits_progression[selected_context]))" :key="area_progression">
-                        <ion-label>{{ getAreaTitle(area_progression) }}:</ion-label>
-                        <ion-label>{{ castToTmpList(credits_progression[selected_context])[area_progression].join("/") }}</ion-label>
-                    </ion-item>
-                </ion-list>
-            </template>
-        </div>
-        <ion-grid>
-            <ion-row>
-                <ion-col size="auto">
-                    <custom-select
-                        v-model="selected_year"
-                        :list="school_years"
-                        :label="getCurrentElement(store,'school_year') + ':'"
-                        :aria_label="getCurrentElement(store,'school_year')"
-                        :placeholder="getCurrentElement(store,'school_year_choice')"
-                    /> <!-- Da sistemare: aggiungere "All" -->
-                </ion-col>
-                <ion-col size="auto">
-                    <custom-select
-                        v-model="selected_context"
-                        :list="learning_contexts"
-                        :label="getCurrentElement(store,'learning_context') + ':'"
-                        :aria_label="getCurrentElement(store,'learning_context')"
-                        :placeholder="getCurrentElement(store,'learning_context_choice')"
-                        :getCompleteName="getContextAcronym"
-                    />
-                </ion-col>
-            </ion-row>
-        </ion-grid>
-        <suspense>
-          <template #default>
-            <ionic-table :key="trigger" :data="tableData" :first_row="firstRow" :column_sizes="column_sizes" @signal_event="SetupModalAndOpen(store)"></ionic-table>
-          </template>
-          <template #fallback>
-            <loading-component />
-          </template>
-        </suspense>
+      <ion-title class="ion-padding-bottom">{{
+        getCurrentElement(store, "progression")
+      }}</ion-title>
+      <template v-if="Array.isArray(credits_progression[selected_context])">
+        <ion-list>
+          <ion-item>
+            <ion-label class="ion-padding-horizontal"
+              >{{ getCurrentElement(store, "context_credits") }}:</ion-label
+            >
+            <ion-label>{{
+              castToStringArray(credits_progression[selected_context]).join("/")
+            }}</ion-label>
+          </ion-item>
+        </ion-list>
+      </template>
+      <template v-else>
+        <ion-title size="small" class="ion-padding-bottom"
+          ><b>{{ getCurrentElement(store, "area_credits") }}</b></ion-title
+        >
+        <ion-list>
+          <ion-item
+            v-for="area_progression in Object.keys(
+              castToTmpList(credits_progression[selected_context])
+            )"
+            :key="area_progression"
+          >
+            <ion-label>{{ getAreaTitle(area_progression) }}:</ion-label>
+            <ion-label>{{
+              castToTmpList(credits_progression[selected_context])[
+                area_progression
+              ].join("/")
+            }}</ion-label>
+          </ion-item>
+        </ion-list>
+      </template>
     </div>
+    <ion-grid>
+      <ion-row>
+        <ion-col size="auto">
+          <custom-select
+            v-model="selected_year"
+            :list="school_years"
+            :label="getCurrentElement(store, 'school_year') + ':'"
+            :aria_label="getCurrentElement(store, 'school_year')"
+            :placeholder="getCurrentElement(store, 'school_year_choice')"
+          />
+          <!-- Da sistemare: aggiungere "All" -->
+        </ion-col>
+        <ion-col size="auto">
+          <custom-select
+            v-model="selected_context"
+            :list="learning_contexts"
+            :label="getCurrentElement(store, 'learning_context') + ':'"
+            :aria_label="getCurrentElement(store, 'learning_context')"
+            :placeholder="getCurrentElement(store, 'learning_context_choice')"
+            :getCompleteName="getContextAcronym"
+          />
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <suspense>
+      <template #default>
+        <ionic-table
+          :key="trigger"
+          :data="tableData"
+          :first_row="firstRow"
+          :column_sizes="column_sizes"
+          @signal_event="SetupModalAndOpen(store)"
+        ></ionic-table>
+      </template>
+      <template #fallback>
+        <loading-component />
+      </template>
+    </suspense>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { CurriculumCourse, CustomElement, GradesParameters, Language, LearningArea, LearningContext, Progression, RemainingCredits, TmpList } from "@/types";
+import {
+  CurriculumCourse,
+  CustomElement,
+  GradesParameters,
+  Language,
+  LearningArea,
+  LearningContext,
+  Progression,
+  RemainingCredits,
+  TmpList,
+} from "@/types";
 import { executeLink, getCurrentElement } from "@/utils";
-import { IonModal, IonGrid, IonRow, IonCol, IonTitle, IonLabel, IonList, IonItem } from "@ionic/vue";
+import {
+  IonModal,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonTitle,
+  IonLabel,
+  IonList,
+  IonItem,
+} from "@ionic/vue";
 import { AxiosInstance } from "axios";
 import { inject, ref, Ref, watch } from "vue";
 import { Store, useStore } from "vuex";
 
 type availableModal = "grades" | "course_details";
 
-const SetupModalAndOpen = (store : Store<any>) => {
-    const window : availableModal = store.state.event.name;
-    switch (window) {
-        case "grades":
-            grades_title = store.state.event.data.title;
-            grades_parameters = store.state.event.data.parameters;
-            grades_open.value = true;
-            break;
-        case "course_details":
-            description_title = store.state.event.data.title;
-            description_course_id = store.state.event.data.course_id;
-            description_open.value = true;
-            break;
-    }
-}
-const closeModal = (window : availableModal) => {
-    switch (window) {
-        case "grades":
-            grades_open.value = false
-            break;
-        case "course_details":
-            description_open.value = false;
-    }
+const SetupModalAndOpen = (store: Store<any>) => {
+  const window: availableModal = store.state.event.name;
+  switch (window) {
+    case "grades":
+      grades_title = store.state.event.data.title;
+      grades_parameters = store.state.event.data.parameters;
+      grades_open.value = true;
+      break;
+    case "course_details":
+      description_title = store.state.event.data.title;
+      description_course_id = store.state.event.data.course_id;
+      description_open.value = true;
+      break;
+  }
 };
-const getContextAcronym = (option: LearningContext) => option[`${language}_title`];
+const closeModal = (window: availableModal) => {
+  switch (window) {
+    case "grades":
+      grades_open.value = false;
+      break;
+    case "course_details":
+      description_open.value = false;
+  }
+};
+const getContextAcronym = (option: LearningContext) =>
+  option[`${language}_title`];
 const getYearCourses = async () => {
+  year_courses = {};
 
-    year_courses = {};
+  await executeLink(
+    $axios,
+    "/v2/students/" +
+      reference_id +
+      "/curriculum?school_year=" +
+      selected_year.value +
+      "&token=" +
+      user.token, // context_id=" + selected_context.value + "&
+    (response) => {
+      let tmp_course: CurriculumCourse;
 
-    await executeLink($axios,"/v2/students/" + reference_id + "/curriculum?school_year=" + selected_year.value + "&token=" + user.token, // context_id=" + selected_context.value + "&
-        response => {
-
-            let tmp_course : CurriculumCourse;
-
-            for (const course of response.data.data) {
-                tmp_course = new CurriculumCourse(course);
-                if (year_courses[tmp_course.learning_context_id] == undefined) {
-                    year_courses[tmp_course.learning_context_id] = [];
-                }
-                year_courses[tmp_course.learning_context_id].push(tmp_course);
-            }
-            
-        },
-        () => []);
-    
-    courses = year_courses[selected_context.value] ?? [];
-};
-const updateTable = (year_correspondences : any, courses : CurriculumCourse[]) => {
-    for (const course of courses) {
-        if (year_correspondences[selected_year.value][course.id].length > 0) {
-            tableData.push(course.toTableRow(store,year_correspondences[selected_year.value][course.id][year_correspondences[selected_year.value][course.id].length-1],user.id));
+      for (const course of response.data.data) {
+        tmp_course = new CurriculumCourse(course);
+        if (year_courses[tmp_course.learning_context_id] == undefined) {
+          year_courses[tmp_course.learning_context_id] = [];
         }
-    }
-}
-const getAreaTitle = (key: string) => {
-    const tmp_area = learning_areas.find(a => a.id == key);
-    return tmp_area != undefined ? tmp_area[`${language}_title`] : "";
+        year_courses[tmp_course.learning_context_id].push(tmp_course);
+      }
+    },
+    () => []
+  );
+
+  courses = year_courses[selected_context.value] ?? [];
 };
-const castToStringArray = (obj: TmpList<string[]> | string[]) => obj as string[];
-const castToTmpList = (obj: TmpList<string[]> | string[]) => obj as TmpList<string[]>;
+const updateTable = (
+  year_correspondences: any,
+  courses: CurriculumCourse[]
+) => {
+  for (const course of courses) {
+    if (year_correspondences[selected_year.value][course.id].length > 0) {
+      tableData.push(
+        course.toTableRow(
+          store,
+          year_correspondences[selected_year.value][course.id][
+            year_correspondences[selected_year.value][course.id].length - 1
+          ],
+          user.id
+        )
+      );
+    }
+  }
+};
+const getAreaTitle = (key: string) => {
+  const tmp_area = learning_areas.find((a) => a.id == key);
+  return tmp_area != undefined ? tmp_area[`${language}_title`] : "";
+};
+const castToStringArray = (obj: TmpList<string[]> | string[]) =>
+  obj as string[];
+const castToTmpList = (obj: TmpList<string[]> | string[]) =>
+  obj as TmpList<string[]>;
 
 const store = useStore();
-const $axios : AxiosInstance | undefined = inject("$axios");
+const $axios: AxiosInstance | undefined = inject("$axios");
 const user = store.state.user;
-const language : Language = store.state.language;
+const language: Language = store.state.language;
 const props = defineProps({
-    "student_id": String
+  student_id: String,
 });
 
-const year_correspondences : {
-    [key : number]: {
-        [key : number]: number[]
-    }
+const year_correspondences: {
+  [key: number]: {
+    [key: number]: number[];
+  };
 } = {};
-const firstRow : CustomElement[] = [{
+const firstRow: CustomElement[] = [
+  {
     id: "title",
     type: "string",
-    content: getCurrentElement(store,"course")
-},{
+    content: getCurrentElement(store, "course"),
+  },
+  {
     id: "section",
     type: "string",
-    content: getCurrentElement(store,"section")
-},{
+    content: getCurrentElement(store, "section"),
+  },
+  {
     id: "credits",
     type: "string",
-    content: getCurrentElement(store,"credits")
-},{
+    content: getCurrentElement(store, "credits"),
+  },
+  {
     id: "learning_area",
     type: "string",
-    content: getCurrentElement(store,"learning_area")
-},{
+    content: getCurrentElement(store, "learning_area"),
+  },
+  {
     id: "gardes",
     type: "string",
-    content: getCurrentElement(store,"grades")
-},{
+    content: getCurrentElement(store, "grades"),
+  },
+  {
     id: "final_grade",
     type: "string",
-    content: getCurrentElement(store,"final_grade")
-}];
-const column_sizes = [4,1,1,2,2,2];
+    content: getCurrentElement(store, "final_grade"),
+  },
+];
+const column_sizes = [4, 1, 1, 2, 2, 2];
 const grades_open = ref(false);
 const description_open = ref(false);
 const trigger = ref(0);
-const reference_id: string = props.student_id != undefined && user.user != "student" ? props.student_id : user.id;
+const reference_id: string =
+  props.student_id != undefined && user.user != "student"
+    ? props.student_id
+    : user.id;
 const credits_progression: RemainingCredits<string[]> = {};
 
-let school_years : any[] = [];
-let selected_year : Ref<any>;
-let year_courses : {
-    [key: string]: CurriculumCourse[]
+let school_years: any[] = [];
+let selected_year: Ref<any>;
+let year_courses: {
+  [key: string]: CurriculumCourse[];
 } = {};
-let courses : CurriculumCourse[] = [];
-let grades_title : string;
-let grades_parameters : GradesParameters;
-let description_title : string;
-let description_course_id : number;
-let learning_contexts : LearningContext[] = [];
+let courses: CurriculumCourse[] = [];
+let grades_title: string;
+let grades_parameters: GradesParameters;
+let description_title: string;
+let description_course_id: number;
+let learning_contexts: LearningContext[] = [];
 let learning_areas: LearningArea[] = [];
-let selected_context : Ref<string>;
-let courses_list : CurriculumCourse[] = [];
-let tableData : CustomElement[][] = [];
+let selected_context: Ref<string>;
+let courses_list: CurriculumCourse[] = [];
+let tableData: CustomElement[][] = [];
 
 if ($axios != undefined) {
-    school_years = user.user == "student"
-        ? await executeLink($axios,"/v1/ordinary_classes?descending=true&student_id=" + user.id,
-            response => {
-                return response.data.data.map((a: any) => {
-                    return {
-                        id: a.school_year
-                    }
-                });
-            },
-            () => [])
-        : await executeLink($axios,"/v1/teachers/" + user.id + "/active_years",
-            response => {
-                return response.data.data.map((a: any) => {
-                    return {
-                        id: a.year
-                    }
-                });
-            },
-            () => []);
-    learning_contexts = await executeLink($axios,"/v1/learning_contexts?",
-        response => {
+  school_years =
+    user.user == "student"
+      ? await executeLink(
+          $axios,
+          "/v1/ordinary_classes?descending=true&student_id=" + user.id,
+          (response) => {
+            return response.data.data.map((a: any) => {
+              return {
+                id: a.school_year,
+              };
+            });
+          },
+          () => []
+        )
+      : await executeLink(
+          $axios,
+          "/v1/teachers/" + user.id + "/active_years",
+          (response) => {
+            return response.data.data.map((a: any) => {
+              return {
+                id: a.year,
+              };
+            });
+          },
+          () => []
+        );
+  learning_contexts = await executeLink(
+    $axios,
+    "/v1/learning_contexts?",
+    (response) => {
+      const tmp_contexts = [];
 
-            const tmp_contexts = [];
+      for (const learning_context of response.data.data) {
+        if (
+          store.state.excluded_learning_contexts_id.findIndex(
+            (a: number) => a != learning_context.id
+          ) != -1
+        ) {
+          tmp_contexts.push(learning_context);
+        }
+      }
 
-            for (const learning_context of response.data.data) {
-                if (store.state.excluded_learning_contexts_id.findIndex((a: number) => a != learning_context.id) != -1) {
-                    tmp_contexts.push(learning_context);
-                }
-            }
+      return tmp_contexts;
+    },
+    () => []
+  );
+  learning_areas = await executeLink(
+    $axios,
+    "/v1/learning_areas?all_data=true",
+    (response) => response.data.data,
+    () => []
+  );
 
-            return tmp_contexts;
-        },
-        () => []);
-    learning_areas = await executeLink($axios,"/v1/learning_areas?all_data=true",
-        response => response.data.data,
-        () => []);
+  selected_year = ref(school_years[0].id);
+  selected_context = ref(learning_contexts[0].id);
+  await getYearCourses();
 
-    selected_year = ref(school_years[0].id);
-    selected_context = ref(learning_contexts[0].id);
-    await getYearCourses();
+  watch(selected_year, () => {
+    getYearCourses();
+    tableData = [];
+    updateTable(year_correspondences, courses);
+    trigger.value++;
+  });
+  watch(selected_context, (n) => {
+    courses = year_courses[n] ?? [];
+    tableData = [];
+    updateTable(year_correspondences, courses);
+    trigger.value++;
+  });
 
-    watch(selected_year,() => {
-        getYearCourses();
-        tableData = [];
-        updateTable(year_correspondences,courses);
-        trigger.value++;
-    });
-    watch(selected_context,n => {
-        courses = year_courses[n] ?? [];
-        tableData = [];
-        updateTable(year_correspondences,courses);
-        trigger.value++;
-    });
-    
-    for (const context_courses of Object.values(year_courses)) {
-        courses_list = courses_list.concat(context_courses);
+  for (const context_courses of Object.values(year_courses)) {
+    courses_list = courses_list.concat(context_courses);
+  }
+
+  await executeLink(
+    $axios,
+    "/v1/learning_blocks/correspondence?student_id=" + reference_id,
+    (response) => {
+      for (const correspondence of response.data.data) {
+        if (year_correspondences[selected_year.value] == undefined) {
+          year_correspondences[selected_year.value] = {};
+        }
+        if (
+          year_correspondences[selected_year.value][correspondence.course_id] ==
+          undefined
+        ) {
+          year_correspondences[selected_year.value][correspondence.course_id] =
+            [];
+        }
+        year_correspondences[selected_year.value][
+          correspondence.course_id
+        ].push(correspondence.block_id);
+      }
+    },
+    () => [],
+    "post",
+    {
+      courses: courses_list.map((a: any) => a.id),
     }
-    
-    await executeLink($axios,"/v1/learning_blocks/correspondence?student_id=" + reference_id,
-        response => {
-            for (const correspondence of response.data.data) {
-                if (year_correspondences[selected_year.value] == undefined) {
-                    year_correspondences[selected_year.value] = {};
-                }
-                if (year_correspondences[selected_year.value][correspondence.course_id] == undefined) {
-                    year_correspondences[selected_year.value][correspondence.course_id] = [];
-                }
-                year_correspondences[selected_year.value][correspondence.course_id].push(correspondence.block_id);
-            }
-        },
-        () => [],
-        "post",{
-            courses: courses_list.map((a : any) => a.id)
-        });
-    updateTable(year_correspondences,courses);
+  );
+  updateTable(year_correspondences, courses);
 
-    await executeLink($axios,"/v1/students/" + reference_id + "/annual_credits?school_year=" + selected_year.value + "&token=" + user.token,
-        response => {
-            
-            let tmp_context: string, tmp_area: string | null, tmp_status: string[];
+  await executeLink(
+    $axios,
+    "/v1/students/" +
+      reference_id +
+      "/annual_credits?school_year=" +
+      selected_year.value +
+      "&token=" +
+      user.token,
+    (response) => {
+      let tmp_context: string, tmp_area: string | null, tmp_status: string[];
 
-            for (const progression of (response.data.data as Progression[])) {
-                tmp_context = (progression.learning_context_ref.data as {id: string}).id;
-                tmp_area = (progression.learning_area_ref.data as {id: string | null}).id;
-                tmp_status = [progression.credits,"" + progression.max_credits];
-                if (tmp_area == null) {
-                    credits_progression[tmp_context] = tmp_status;
-                } else {
-                    if (credits_progression[tmp_context] == undefined) {
-                        credits_progression[tmp_context] = {};
-                    }
-                    (credits_progression[tmp_context] as TmpList<string[]>)[tmp_area] = tmp_status;
-                }
-            }
-        });
+      for (const progression of response.data.data as Progression[]) {
+        tmp_context = (progression.learning_context_ref.data as { id: string })
+          .id;
+        tmp_area = (progression.learning_area_ref.data as { id: string | null })
+          .id;
+        tmp_status = [progression.credits, "" + progression.max_credits];
+        if (tmp_area == null) {
+          credits_progression[tmp_context] = tmp_status;
+        } else {
+          if (credits_progression[tmp_context] == undefined) {
+            credits_progression[tmp_context] = {};
+          }
+          (credits_progression[tmp_context] as TmpList<string[]>)[tmp_area] =
+            tmp_status;
+        }
+      }
+    }
+  );
 }
 </script>
 
 <style>
 ion-modal#grades_manages {
-    --width: fit-content;
-    --height: fit-content;
+  --width: fit-content;
+  --height: fit-content;
 }
 </style>

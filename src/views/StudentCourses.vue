@@ -1,9 +1,11 @@
 <template>
   <ion-page>
-    <outer-header :subtitle="getCurrentElement(store,'subtitle')" /> <!--:title="store.state.menu[store.state.user.user][store.state.menuIndex].title[store.state.language]" />-->
+    <outer-header :subtitle="getCurrentElement(store, 'subtitle')" />
+    <!--:title="store.state.menu[store.state.user.user][store.state.menuIndex].title[store.state.language]" />-->
 
     <ion-content :fullscreen="true">
-      <inner-header :subtitle="getCurrentElement(store,'subtitle')" /> <!--:title="store.state.menu[store.state.user.user][store.state.menuIndex].title[store.state.language]" />-->
+      <inner-header :subtitle="getCurrentElement(store, 'subtitle')" />
+      <!--:title="store.state.menu[store.state.user.user][store.state.menuIndex].title[store.state.language]" />-->
 
       <suspense>
         <template #default>
@@ -18,13 +20,12 @@
 </template>
 
 <script setup lang="ts">
-import { getCurrentElement } from '@/utils';
-import { IonContent, IonPage } from '@ionic/vue';
-import { useStore } from 'vuex';
+import { getCurrentElement } from "@/utils";
+import { IonContent, IonPage } from "@ionic/vue";
+import { useStore } from "vuex";
 
 const store = useStore();
 </script>
 
 <style>
-
 </style>

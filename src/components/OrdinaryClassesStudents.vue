@@ -93,7 +93,6 @@ const find_class = (
   };
 };
 const changeSelection = async () => {
-  
   let tmp_class: HiglightCardElements;
 
   if (
@@ -102,7 +101,7 @@ const changeSelection = async () => {
   ) {
     selectedChange();
   }
-  
+
   const tmp_selected = find_class(ordinary_classes, store.state.event.data.id);
   if (
     selected_class_indexes.year == tmp_selected.year &&
@@ -117,9 +116,10 @@ const changeSelection = async () => {
     selected_section.value = "";
   } else {
     selected_class_indexes = tmp_selected;
-    tmp_class = ordinary_classes.cards[selected_class_indexes.year][
-      selected_class_indexes.index
-    ];
+    tmp_class =
+      ordinary_classes.cards[selected_class_indexes.year][
+        selected_class_indexes.index
+      ];
     sections =
       all_sections[parseInt(selected_class_indexes.year)][tmp_class.id];
     selected_section.value = sections[0].id;
@@ -127,10 +127,14 @@ const changeSelection = async () => {
     students.cards[""] = await getStudents();
   }
 };
-const selectedChange = (year = selected_class_indexes.year,index = selected_class_indexes.index,value = !ordinary_classes.cards[year][index].selected) => {
+const selectedChange = (
+  year = selected_class_indexes.year,
+  index = selected_class_indexes.index,
+  value = !ordinary_classes.cards[year][index].selected
+) => {
   ordinary_classes.cards[year][index].selected = value;
   trigger.value++;
-}
+};
 const getStudents = async () => {
   const class_keys =
     ordinary_classes.cards[selected_class_indexes.year][
@@ -203,7 +207,7 @@ for (const year of school_years) {
         user.token,
       (response) => {
         console.log(response);
-        
+
         ordinary_classes.order.push({
           key: year,
           title: year,
@@ -234,7 +238,6 @@ for (const year of school_years) {
 }
 await Promise.all(promises);
 console.log(all_sections);
-
 
 watch(selected_section, async (new_section) => {
   if (new_section != undefined && new_section != "") {

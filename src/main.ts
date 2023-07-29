@@ -51,11 +51,11 @@ import './theme/variables.css';
 
 import axios from 'axios'
 //import axios from './plugins/axios'
-import { store } from "./store"; 
+import { store } from "./store";
 //import VueSession from 'vue-session'
 
 //axios.ts replacement
-const options : {
+const options: {
   baseUrl?: string
   token?: string
 } = {
@@ -65,7 +65,7 @@ const options : {
 const $axios = axios.create({
   baseURL: options.baseUrl,
   headers: {
-      Authorization: options.token ? `Bearer ${options.token}` : '',
+    Authorization: options.token ? `Bearer ${options.token}` : '',
   }
 })
 
@@ -77,33 +77,33 @@ const app = createApp(App)
   /*.use(axios, {
       baseUrl: 'https://cataas.com/',
   })*/
-  .provide("$axios",$axios)
-  .component("OuterHeader",OuterHeader)
-  .component("InnerHeader",InnerHeader)
-  .component("LearningBlocksCards",LearningBlocksCards)
-  .component("ListCard",ListCard)
-  .component("ItemCard",ItemCard)
-  .component("LoadingComponent",LoadingComponent)
-  .component("BlockDescription",BlockDescription)
-  .component("CoursesSelectionList",CoursesSelectionList)
-  .component("CustomSelect",CustomSelect)
-  .component("CourseCard",CourseCard)
-  .component("CurriculumList",CurriculumList)
-  .component("IonicElement",IonicElement)
-  .component("IonicTable",IonicTable)
-  .component("GradesManager",GradesManager)
-  .component("CourseDescription",CourseDescription)
-  .component("LearningBlocksSelection",LearningBlocksSelection)
-  .component("HighlihtCard",HighlihtCard)
-  .component("ProjectClass",ProjectClass)
-  .component("AnnouncementsComponent",AnnouncementsComponent)
-  .component("AnnouncementViewer",AnnouncementViewer)
-  .component("AnnouncementsPublisher",AnnouncementsPublisher)
-  .component("AnnouncementsSelectionList",AnnouncementsSelectionList)
-  .component("OrdinaryClassesStudents",OrdinaryClassesStudents)
-  .component("StudentDescription",StudentDescription)
-  .component("OverallStudentDescription",OverallStudentDescription);
-  
+  .provide("$axios", $axios)
+  .component("OuterHeader", OuterHeader)
+  .component("InnerHeader", InnerHeader)
+  .component("LearningBlocksCards", LearningBlocksCards)
+  .component("ListCard", ListCard)
+  .component("ItemCard", ItemCard)
+  .component("LoadingComponent", LoadingComponent)
+  .component("BlockDescription", BlockDescription)
+  .component("CoursesSelectionList", CoursesSelectionList)
+  .component("CustomSelect", CustomSelect)
+  .component("CourseCard", CourseCard)
+  .component("CurriculumList", CurriculumList)
+  .component("IonicElement", IonicElement)
+  .component("IonicTable", IonicTable)
+  .component("GradesManager", GradesManager)
+  .component("CourseDescription", CourseDescription)
+  .component("LearningBlocksSelection", LearningBlocksSelection)
+  .component("HighlihtCard", HighlihtCard)
+  .component("ProjectClass", ProjectClass)
+  .component("AnnouncementsComponent", AnnouncementsComponent)
+  .component("AnnouncementViewer", AnnouncementViewer)
+  .component("AnnouncementsPublisher", AnnouncementsPublisher)
+  .component("AnnouncementsSelectionList", AnnouncementsSelectionList)
+  .component("OrdinaryClassesStudents", OrdinaryClassesStudents)
+  .component("StudentDescription", StudentDescription)
+  .component("OverallStudentDescription", OverallStudentDescription);
+
 router.isReady().then(() => {
   app.mount('#app');
 });

@@ -35,123 +35,123 @@ export const store = createStore({
     state() {
         return {
             menu: {
-            "student": [ // Da sistemare: spostare traduzioni e mettere riferimenti a title
-                {
-                    title: {
-                        italian: "Blocchi di apprendimento",
-                        english: "Learning blocks"
+                "student": [ // Da sistemare: spostare traduzioni e mettere riferimenti a title
+                    {
+                        title: {
+                            italian: "Blocchi di apprendimento",
+                            english: "Learning blocks"
+                        },
+                        url: '/learning_blocks',
+                        iconRef: "easel"
                     },
-                    url: '/learning_blocks',
-                    iconRef: "easel"
-                },
-                {
-                    title: {
-                        italian: "Curriculum",
-                        english: "Curriculum"
+                    {
+                        title: {
+                            italian: "Curriculum",
+                            english: "Curriculum"
+                        },
+                        url: '/curriculum',
+                        iconRef: "school"
                     },
-                    url: '/curriculum',
-                    iconRef: "school"
-                },
-                {
-                    title: {
-                        italian: "ObenBadge",
-                        english: "OpenBadges"
+                    {
+                        title: {
+                            italian: "ObenBadge",
+                            english: "OpenBadges"
+                        },
+                        url: '/openbadges',
+                        iconRef: "ribbon"
                     },
-                    url: '/openbadges',
-                    iconRef: "ribbon"
-                },
-                {
-                    title: {
-                        italian: "Cittadinanza attiva",
-                        english: "Citizenship report"
+                    {
+                        title: {
+                            italian: "Cittadinanza attiva",
+                            english: "Citizenship report"
+                        },
+                        url: '/citizenship_report',
+                        iconRef: "clipboard"
                     },
-                    url: '/citizenship_report',
-                    iconRef: "clipboard"
-                },
-                {
-                    title: {
-                        italian: "Annunci",
-                        english: "Announcements"
+                    {
+                        title: {
+                            italian: "Annunci",
+                            english: "Announcements"
+                        },
+                        url: '/announcements',
+                        iconRef: "mail"
                     },
-                    url: '/announcements',
-                    iconRef: "mail"
-                },
-                {
-                    title: {
-                        italian: "Impostazioni",
-                        english: "Settings"
+                    {
+                        title: {
+                            italian: "Impostazioni",
+                            english: "Settings"
+                        },
+                        url: '/settings',
+                        iconRef: "settings"
                     },
-                    url: '/settings',
-                    iconRef: "settings"
-                },
-                {
-                    title: {
-                        italian: "Info",
-                        english: "Info"
+                    {
+                        title: {
+                            italian: "Info",
+                            english: "Info"
+                        },
+                        url: '/info',
+                        iconRef: "information_circle"
+                    }
+                ],
+                "teacher": [
+                    {
+                        title: {
+                            italian: "Corsi progetto",
+                            english: "Project courses"
+                        },
+                        url: '/project_courses',
+                        iconRef: "brief_case"
                     },
-                    url: '/info',
-                    iconRef: "information_circle"
-                }
-            ],
-            "teacher": [
-                {
-                    title: {
-                        italian: "Corsi progetto",
-                        english: "Project courses"
+                    {
+                        title: {
+                            italian: "Classi ordinarie",
+                            english: "Ordinary classes"
+                        },
+                        url: '/ordinary_classes',
+                        iconRef: "people"
                     },
-                    url: '/project_courses',
-                    iconRef: "brief_case"
-                },
-                {
-                    title: {
-                        italian: "Classi ordinarie",
-                        english: "Ordinary classes"
+                    {
+                        title: {
+                            italian: "Proposta corso",
+                            english: "Course propose"
+                        },
+                        url: '/course_propose',
+                        iconRef: "add_circle"
                     },
-                    url: '/ordinary_classes',
-                    iconRef: "people"
-                },
-                {
-                    title: {
-                        italian: "Proposta corso",
-                        english: "Course propose"
+                    { // Da sistemare: non deve apparire
+                        title: {
+                            italian: "Annunci",
+                            english: "Announcements"
+                        },
+                        url: '/announcements',
+                        iconRef: "mail"
                     },
-                    url: '/course_propose',
-                    iconRef: "add_circle"
-                },
-                { // Da sistemare: non deve apparire
-                    title: {
-                        italian: "Annunci",
-                        english: "Announcements"
+                    { // Da sistemare: non deve apparire
+                        title: {
+                            italian: "Studenti",
+                            english: "Students"
+                        },
+                        url: '/students',
+                        iconRef: "people"
                     },
-                    url: '/announcements',
-                    iconRef: "mail"
-                },
-                { // Da sistemare: non deve apparire
-                    title: {
-                        italian: "Studenti",
-                        english: "Students"
+                    {
+                        title: {
+                            italian: "Impostazioni",
+                            english: "Settings"
+                        },
+                        url: '/settings',
+                        iconRef: "settings"
                     },
-                    url: '/students',
-                    iconRef: "people"
-                },
-                {
-                    title: {
-                        italian: "Impostazioni",
-                        english: "Settings"
-                    },
-                    url: '/settings',
-                    iconRef: "settings"
-                },
-                {
-                    title: {
-                        italian: "Info",
-                        english: "Info"
-                    },
-                    url: '/info',
-                    iconRef: "information_circle"
-                }
-            ],
-            "admin": []
+                    {
+                        title: {
+                            italian: "Info",
+                            english: "Info"
+                        },
+                        url: '/info',
+                        iconRef: "information_circle"
+                    }
+                ],
+                "admin": []
             },
             menuIndex: 0,
             icons: {
@@ -212,7 +212,7 @@ export const store = createStore({
                     md: peopleSharp
                 }
             },
-            languages: ["italian","english"],
+            languages: ["italian", "english"],
             language: "italian",
             elements: {
                 "italian": {
