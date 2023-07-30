@@ -24,7 +24,7 @@
         </template>
       </suspense>
     </ion-modal>
-    <suspense>
+    <suspense v-if="$route.params.id != undefined">
       <template #default>
         <block-description
           :key="trigger"
