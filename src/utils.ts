@@ -2,6 +2,8 @@ import { AxiosInstance, Method } from "axios";
 import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, HiglightBlockCardElements, LearningBlockStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, HiglightCardElements, Gender, GenderKeys } from "./types";
 import { Store } from "vuex";
 
+// Da sistemare: togliere store come parametro e usare import { store } from ./store
+
 function getCompleteSchoolYear(year: number) {
     return year + " - " + (year + 1);
 }
