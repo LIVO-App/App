@@ -37,6 +37,7 @@ import {
   HiglightBlockCardElements,
   MinimumCourseProps,
   MinimizedCourse,
+  User,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { inject, reactive, ref } from "vue";
@@ -137,7 +138,7 @@ const selectedChange = (
 
 const $axios: AxiosInstance | undefined = inject("$axios");
 const store = useStore();
-const user = store.state.user;
+const user = User.getLoggedUser() as User;
 
 const promises: Promise<any>[] = [];
 const learning_blocks: OrderedCardsList<HiglightBlockCardElements> = reactive({

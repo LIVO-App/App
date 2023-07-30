@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { CustomElement } from "@/types";
+import { CustomElement, User } from "@/types";
 import { executeLink, getIcon } from "@/utils";
 import { IonHeader, IonToolbar, IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { AxiosInstance } from "axios";
@@ -32,7 +32,7 @@ import { useStore } from "vuex";
 const store = useStore();
 const $axios: AxiosInstance | undefined = inject("$axios");
 const language = store.state.language;
-const user = store.state.user;
+const user = User.getLoggedUser() as User;
 
 const props = defineProps({
   title: {

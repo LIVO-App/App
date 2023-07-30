@@ -87,6 +87,7 @@ import {
   RemainingCredits,
   RequestIcon,
   TmpList,
+  User,
 } from "@/types";
 import {
   executeLink,
@@ -293,7 +294,7 @@ const store: Store<any> = useStore();
 const $axios: AxiosInstance | undefined = inject("$axios");
 const $route = useRoute();
 const language: Language = store.state.language;
-const user = store.state.user;
+const user = User.getLoggedUser() as User;
 const learning_block_id: string = $route.params.id as string;
 
 const all_courses: {

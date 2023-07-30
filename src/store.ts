@@ -32,12 +32,15 @@ import {
     logOutOutline,
     logOutSharp
 } from 'ionicons/icons';
-import { User } from "./types";
+import { UserProps } from "./types";
 
 export const store = createStore({
     mutations: {
-        edit_user(state: any, user: User | undefined) {
+        edit_user(state: any, user: UserProps | undefined) {
             state.user = user;
+        },
+        setLoggedUser(state: any, logged: boolean) {
+            state.logged_user = logged;
         }
     },
     actions: {
@@ -46,6 +49,12 @@ export const store = createStore({
         },
         logout({ commit }) {
             commit("edit_user", undefined);
+        },
+        signalLogin({ commit }) {
+            commit("setLoggedUser",true);
+        },
+        signalLogout({ commit }) {
+            commit("setLoggedUser",false);
         }
     },
     state() {
@@ -459,6 +468,7 @@ export const store = createStore({
                     no_password: "Password missing"
                 }
             },
+            logged_user: false,
             /*
             user: {
                 id: 1,

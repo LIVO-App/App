@@ -1,6 +1,6 @@
 import { ComponentCustomProperties } from "vue";
 import { Store } from "vuex";
-import { ElementsList, IconAlternatives, IconsList, Language, LearningContextSummary, Menu, User, UserType } from "./types";
+import { ElementsList, IconAlternatives, IconsList, Language, LearningContextSummary, Menu, UserProps, UserType } from "./types";
 import { Method } from "axios";
 
 declare module '@vue/runtime-core' {
@@ -11,7 +11,7 @@ declare module '@vue/runtime-core' {
     icons: IconsList,
     language: Language,
     elements: ElementsList,
-    user: User | undefined,
+    user: UserProps | undefined,
     request: {
       url: string,
       method: Method,

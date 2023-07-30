@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import { store } from "../store";
-import { Menu } from '@/types';
+import { Menu, User } from '@/types';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -100,17 +100,31 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from) => {
-  if (
-    store.state.user == undefined &&
-    to.name !== 'auth'
-  ) {
-    // redirect the user to the login page
-    return { name: 'auth' }
-  } else if (to.name !== 'auth' && to.name !== 'logout' && (store.state.menu as Menu)[store.state.user.user].findIndex(
-    (page) => page.url === to.path
-  ) == -1 || to.name === 'auth' && store.state.user != undefined) {
-    return false;
+
+  const user = User.getLoggedUser();
+
+  if (user == undefined && to.name !== 'auth') {
+    return { name: 'auth' };
+  } else if (user != undefined) {
+    if (to.name !== 'auth' && to.name !== 'logout' && (store.state.menu as Menu)[user.user].findIndex(
+      (page) => page.url.split("/")[1] === to.path.split("/")[1]
+    ) == -1 || to.name === 'auth') { // Da sistemare: controllare quando ci sarà persistenza
+      return false;
+    } else if (to.name === 'logout') {
+      logout();
+      return { name: 'auth' };
+    }
   }
 })
+
+const logout = async () => {
+  const session = window.sessionStorage;
+
+  for (const key of User.getProperties()) {
+      session.removeItem(key);
+  }
+  await store.dispatch("signalLogin"); // Dummy change to trigger reactive behaviour
+  await store.dispatch("signalLogout");
+}
 
 export default router

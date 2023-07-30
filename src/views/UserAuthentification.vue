@@ -22,40 +22,54 @@
 import { executeLink, getCurrentElement } from "@/utils";
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonAlert } from "@ionic/vue";
 import { useStore } from "vuex";
-import { LoginInformation } from "@/types";
+import { LoginInformation, User } from "@/types";
 import { AxiosInstance } from "axios";
-import { inject, ref, watch } from "vue";
+import { inject, ref } from "vue";
 import { useRouter } from "vue-router";
-import { key } from "ionicons/icons";
 
 const login = async (payload: LoginInformation) => {
+
+    const session = window.sessionStorage;
 
     const login_parameters = {};
 
     let redirect = "/";
+    let tmp_index = 0;
 
     try {
         checkParameters(payload,login_parameters);
         if (!alert_open.value) {
             switch (payload.type) {
                 case "student":
-                    redirect += "learning_blocks"
+                    redirect += "learning_blocks";
+                    tmp_index = 0;
                     break;
                 case "teacher":
-                    redirect += "project_courses"
+                    redirect += "project_courses";
+                    tmp_index = 0;
                     break;
                 case "admin":
-                    redirect += "project_courses"
+                    redirect += "project_courses";
+                    tmp_index = 0;
                     break;
             }
             await executeLink($axios,"/v1/auth/" + payload.type + "_login",
             async (response) => {
-                await store.dispatch("login",{
+
+                const tmp_user: {
+                    [key: string]: string
+                } = {
                     id: response.data.id,
                     token: response.data.token,
                     username: payload.parameters.username,
                     user: payload.type
-                });
+                };
+
+                for (const key of User.getProperties()) {
+                    session.setItem(key,tmp_user[key]);
+                }
+                await store.dispatch("signalLogin");
+                store.state.menuIndex = tmp_index;
                 $router.push(redirect);
             },() => {
                 alert_information.message = getCurrentElement(store,"wrong_username_or_password");

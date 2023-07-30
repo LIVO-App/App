@@ -85,6 +85,7 @@ import {
   GradeProps,
   GradesParameters,
   Student,
+  User,
 } from "@/types";
 import { executeLink, getCurrentElement, getIcon } from "@/utils";
 import { IonModal, IonAlert } from "@ionic/vue";
@@ -221,7 +222,7 @@ const updateStudents = async () => {
 
 const store = useStore();
 const $axios: AxiosInstance | undefined = inject("$axios");
-const user = store.state.user;
+const user = User.getLoggedUser() as User;
 
 const firstRow: CustomElement[] = [
   {

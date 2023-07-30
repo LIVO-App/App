@@ -673,6 +673,8 @@ class LearningBlock implements LearningBlockProps {
     async getBlockList($axios: AxiosInstance, store: Store<any>, learning_context?: LearningContextSummary, reference = new Date(), credits?: boolean, courses_list?: boolean): Promise<string> {
 
         const language: Language = store.state.language;
+        const user = User.getLoggedUser() as User;
+
         const status = this.getStatus(reference);
         const put_credits = credits ?? status == LearningBlockStatus.FUTURE;
         const put_courses_list = courses_list ?? (status == LearningBlockStatus.CURRENT || status == LearningBlockStatus.UPCOMING);
@@ -687,7 +689,7 @@ class LearningBlock implements LearningBlockProps {
         let courses_presence: boolean;
         let block_list = put_courses_list ? "" : "<ul>";
 
-        await executeLink($axios, "/v1/courses?student_id=" + store.state.user.id + "&context_id=" + actual_learning_context.id + "&block_id=" + this.id,
+        await executeLink($axios, "/v1/courses?student_id=" + user.id + "&context_id=" + actual_learning_context.id + "&block_id=" + this.id,
             response => (response.data.data as CourseSummaryProps[]).map(x => {
                 const course = new CourseSummary(x);
                 const learning_area_id = (course.learning_area_ref.data as { id: string }).id;
@@ -723,7 +725,10 @@ class LearningBlock implements LearningBlockProps {
     }
 
     async getInscribedCredits($axios: AxiosInstance, store: Store<any>, learning_context_id: string): Promise<number> {
-        return await executeLink($axios, "/v1/courses?student_id=" + store.state.user.id + "&block_id=" + this.id + "&context_id=" + learning_context_id,
+
+        const user = User.getLoggedUser() as User;
+
+        return await executeLink($axios, "/v1/courses?student_id=" + user.id + "&block_id=" + this.id + "&context_id=" + learning_context_id,
             response => response.data.data.reduce((a: number, b: CourseSummaryProps) => a + (b.pending == "true" ? b.credits : 0), 0),
             () => 0);
     }
@@ -1274,11 +1279,46 @@ type FailLoginResponse = LoginResponse & {
     password: boolean,
 }
 
-type User = {
+type UserProps = {
     id: number,
     username: string,
     token: string,
     user: UserType
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, FailLoginResponse, User }
+class User implements UserProps {
+    
+    id: number;
+    username: string;
+    token: string;
+    user: UserType;
+
+    constructor(props: UserProps) {
+        this.id = props.id;
+        this.username = props.username;
+        this.token = props.token;
+        this.user = props.user;
+    }
+
+    static getProperties() {
+        return ["id", "username", "token", "user"];
+    }
+
+    static getLoggedUser() {
+        
+        const session = window.sessionStorage;
+        
+        if (session.getItem("id") != undefined) {
+            return new User({
+                id: parseInt(session.getItem("id") as string),
+                username: session.getItem("username") as string,
+                token: session.getItem("token") as string,
+                user: session.getItem("user") as UserType
+            });
+        } else {
+            return undefined;
+        }
+    }
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, FailLoginResponse, UserProps, User }

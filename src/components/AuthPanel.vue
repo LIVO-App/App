@@ -54,14 +54,17 @@
           </ion-item>
         </template>
         <ion-button
-          @click="
+          @click=";
             $emit('login', {
               type: login_type,
               parameters: {
                 username: user_information[login_type].username,
                 password: user_information[login_type].password,
               },
-            })
+            });
+            for (const key in user_information[login_type]) {
+              user_information[login_type][key] = '';
+            }
           "
           expand="block"
           class="ion-margin-vertical"
@@ -72,7 +75,7 @@
             <ion-row>
                 <ion-col>
                 <ion-button
-                    @click="login_type = 'student'"
+                    @click="changeType('student')"
                     expand="block"
                     color="primary"
                     :fill="login_type == 'student' ? 'solid' : 'outline'"
@@ -82,7 +85,7 @@
                 </ion-col>
                 <ion-col>
                 <ion-button
-                    @click="login_type = 'teacher'"
+                    @click="changeType('teacher')"
                     expand="block"
                     color="primary"
                     :fill="login_type == 'teacher' ? 'solid' : 'outline'"
@@ -92,7 +95,7 @@
                 </ion-col>
                 <ion-col>
                 <ion-button
-                    @click="login_type = 'admin'"
+                    @click="changeType('admin')"
                     expand="block"
                     color="primary"
                     :fill="login_type == 'admin' ? 'solid' : 'outline'"
@@ -128,7 +131,18 @@ import { key } from "ionicons/icons";
 import { Ref, ref } from "vue";
 import { useStore } from "vuex";
 
+const changeType = (type: UserType) => {
+  for (const key in user_information[login_type.value]) {
+    if (user_information[type] != undefined) {
+      user_information[type][key] = user_information[login_type.value][key];
+    }
+    user_information[login_type.value][key] = "";
+  }
+  login_type.value = type;
+}
+
 const store = useStore();
+
 const login_type: Ref<UserType> = ref("student");
 const user_information: {
   [key in keyof string as UserType]: {

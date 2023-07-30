@@ -133,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { CustomElement, Grade, GradeProps, GradesParameters } from "@/types";
+import { CustomElement, Grade, GradeProps, GradesParameters, User } from "@/types";
 import { executeLink, getCurrentElement, getIcon } from "@/utils";
 import {
   IonHeader,
@@ -161,7 +161,7 @@ const push_grade = (grade: Grade) => {
 
 const store = useStore();
 const $axios: AxiosInstance | undefined = inject("$axios");
-const user = store.state.user;
+const user = User.getLoggedUser() as User;
 
 const props = defineProps({
   title: {

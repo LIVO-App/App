@@ -124,6 +124,7 @@ import {
   Progression,
   RemainingCredits,
   TmpList,
+  User,
 } from "@/types";
 import { executeLink, getCurrentElement } from "@/utils";
 import {
@@ -224,7 +225,7 @@ const castToTmpList = (obj: TmpList<string[]> | string[]) =>
 
 const store = useStore();
 const $axios: AxiosInstance | undefined = inject("$axios");
-const user = store.state.user;
+const user = User.getLoggedUser() as User;
 const language: Language = store.state.language;
 const props = defineProps({
   student_id: String,
@@ -274,7 +275,7 @@ const trigger = ref(0);
 const reference_id: string =
   props.student_id != undefined && user.user != "student"
     ? props.student_id
-    : user.id;
+    : "" + user.id;
 const credits_progression: RemainingCredits<string[]> = {};
 
 let school_years: any[] = [];

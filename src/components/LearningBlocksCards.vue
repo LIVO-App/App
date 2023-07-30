@@ -37,6 +37,7 @@ import {
   OrdinaryClassProps,
   LearningBlock,
   OrderedCardsList,
+  User,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { inject, reactive } from "vue";
@@ -46,6 +47,7 @@ import { executeLink, getCurrentElement, getCurrentSchoolYear } from "@/utils";
 
 const $axios: AxiosInstance | undefined = inject("$axios");
 const store = useStore();
+const user = User.getLoggedUser() as User;
 
 const learning_blocks: {
   current: OrderedCardsList<GeneralCardElements>;
@@ -82,7 +84,7 @@ let ordinary_classes: OrdinaryClassProps[],
 if ($axios != undefined) {
   ordinary_classes = await executeLink(
     $axios,
-    "/v1/ordinary_classes?student_id=" + store.state.user.id,
+    "/v1/ordinary_classes?student_id=" + user.id,
     (response) => response.data.data
   ); /* = [{
     study_year_id: 1,

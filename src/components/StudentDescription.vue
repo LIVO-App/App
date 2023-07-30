@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts" setup>
-import { GeneralCardElements, StudentInformation } from "@/types";
+import { GeneralCardElements, StudentInformation, User } from "@/types";
 import { executeLink, getIcon } from "@/utils";
 import {
   IonGrid,
@@ -56,7 +56,7 @@ import { useStore } from "vuex";
 
 const store = useStore();
 const $axios: AxiosInstance | undefined = inject("$axios");
-const user = store.state.user;
+const user = User.getLoggedUser() as User;
 const props = defineProps({
   id: {
     type: String,

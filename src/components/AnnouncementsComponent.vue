@@ -86,6 +86,7 @@ import {
   AnnouncementSummaryProps,
   CustomElement,
   OrderedCardsList,
+  User,
 } from "@/types";
 import { executeLink, getCurrentElement, getIcon } from "@/utils";
 import { IonModal, IonAlert } from "@ionic/vue";
@@ -197,7 +198,7 @@ const updateMessages = async () => {
 
 const store = useStore();
 const $axios: AxiosInstance | undefined = inject("$axios");
-const user = store.state.user;
+const user = User.getLoggedUser() as User;
 
 const announcement_open = ref(false);
 const publishment_open = ref(false);

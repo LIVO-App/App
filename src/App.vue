@@ -12,12 +12,10 @@
               ></ion-img>
             </ion-list-header>
 
-            <ion-menu-toggle
-              :auto-hide="false"
-            >
-              <template v-if="store.state.user != undefined">
+            <ion-menu-toggle :auto-hide="false">
+              <template v-if="store.state.logged_user || (user = User.getLoggedUser()) != undefined">
                 <ion-item
-                  v-for="(p, i) in menu[store.state.user.user]"
+                  v-for="(p, i) in menu[castToUser(user).user]"
                   :key="i"
                   @click="store.state.menuIndex = i"
                   router-direction="root"
@@ -60,24 +58,28 @@ import {
   IonRouterOutlet,
   IonSplitPane,
 } from "@ionic/vue";
-import { computed } from "vue";
+import { computed, reactive, watch } from "vue";
 import { useStore } from "vuex";
 
 import { Menu, User } from "./types";
 import { getIcon } from "./utils";
 
 const image = computed(() => require("./assets/Logo_LIVO_Campus_POS_RGB.png"));
+const castToUser = (user: User | undefined) => user as User;
 
 const store = useStore();
 const menu: Menu = store.state.menu;
+const user = User.getLoggedUser();
 
-//Set menu index
 let path = window.location.pathname;
-if (store.state.user != undefined && path !== undefined) {
+let tmp_index: number;
+
+if (user != undefined && path !== undefined) {
   path = path.split("/")[1];
-  store.state.menuIndex = menu[store.state.user.user].findIndex(
+  tmp_index = menu[user.user].findIndex(
     (page) => page.url.split("/")[1] === path
   );
+  store.state.menuIndex = tmp_index != -1 ? tmp_index : 0;
 }
 </script>
 

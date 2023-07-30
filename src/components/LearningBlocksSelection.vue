@@ -36,6 +36,7 @@ import {
   OrderedCardsList,
   CourseSectionsTeachings,
   HiglightBlockCardElements,
+  User,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { inject, reactive, ref } from "vue";
@@ -118,7 +119,7 @@ const changeSelection = async () => {
     await executeLink(
       $axios,
       "/v1/teachers/" +
-        user_id +
+        user.id +
         "/my_project_classes?block_id=" +
         learning_blocks.cards[selected_block_indexes.year][
           selected_block_indexes.index
@@ -154,7 +155,7 @@ const changeSelection = async () => {
     await executeLink(
       $axios,
       "/v1/teachers/" +
-        user_id +
+        user.id +
         "/associated_project_classes?block_id=" +
         learning_blocks.cards[selected_block_indexes.year][
           selected_block_indexes.index
@@ -201,7 +202,7 @@ const selectedChange = (
 
 const $axios: AxiosInstance | undefined = inject("$axios");
 const store = useStore();
-const user_id = store.state.user.id;
+const user = User.getLoggedUser() as User;
 
 const promises: Promise<any>[] = [];
 const learning_blocks: OrderedCardsList<HiglightBlockCardElements> = reactive({
@@ -230,7 +231,7 @@ const courses: OrderedCardsList<GeneralCardElements> = reactive({
 });
 const teaching_years = await executeLink(
   $axios,
-  "/v1/teachers/" + user_id + "/active_years",
+  "/v1/teachers/" + user.id + "/active_years",
   (response: any) => response.data.data.map((a: any) => a.year),
   () => []
 );

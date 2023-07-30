@@ -51,6 +51,7 @@ import {
   OrdinaryClassSummary,
   StudentSummaryProps,
   StudentSummary,
+  User,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { inject, reactive, Ref, ref, watch } from "vue";
@@ -161,7 +162,7 @@ const getStudents = async () => {
 
 const $axios: AxiosInstance | undefined = inject("$axios");
 const store = useStore();
-const user = store.state.user;
+const user = User.getLoggedUser() as User;
 
 const promises: Promise<any>[] = [];
 const ordinary_classes: OrderedCardsList<HiglightCardElements> = reactive({
