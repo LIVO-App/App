@@ -108,7 +108,7 @@ router.beforeEach((to, from) => {
     return { name: 'auth' }
   } else if (to.name !== 'auth' && to.name !== 'logout' && (store.state.menu as Menu)[store.state.user.user].findIndex(
     (page) => page.url === to.path
-  ) == -1) {
+  ) == -1 || to.name === 'auth' && store.state.user != undefined) {
     return false;
   }
 })
