@@ -1314,6 +1314,7 @@ class User implements UserProps {
                 username: session.getItem("username") as string,
                 token: session.getItem("token") as string,
                 user: session.getItem("user") as UserType
+                // Da sistemare: scadenza token
             });
         } else {
             return undefined;

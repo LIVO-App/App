@@ -20,7 +20,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/auth',
     name: 'auth',
-    component: () => import('../views/UserAuthentification.vue')
+    component: () => import('../views/UserAuthentication.vue')
   },
   {
     path: '/logout',

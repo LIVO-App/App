@@ -15,7 +15,7 @@
             <ion-menu-toggle :auto-hide="false">
               <template v-if="store.state.logged_user || (user = User.getLoggedUser()) != undefined">
                 <ion-item
-                  v-for="(p, i) in menu[castToUser(user).user]"
+                  v-for="(p, i) in menu[castToUser(user = User.getLoggedUser()).user]"
                   :key="i"
                   @click="store.state.menuIndex = i"
                   router-direction="root"

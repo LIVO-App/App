@@ -70,6 +70,7 @@
           class="ion-margin-vertical"
           >{{ getCurrentElement(store, "login") }}</ion-button
         >
+        <!-- Da sistemare: google login -->
         <div style="border-top: 1px solid var(--ion-color-dark)">
             <ion-grid>
             <ion-row>
