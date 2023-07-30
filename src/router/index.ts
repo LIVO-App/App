@@ -4,11 +4,23 @@ import { RouteRecordRaw } from 'vue-router';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '',
-    redirect: '/learning_blocks' //Da sistemare: in base a role
+    redirect: '/auth'
+  },
+  {
+    path: '/',
+    redirect: '/auth'
   },
   {
     path: '/learning_blocks',
     component: () => import('../views/LearningBlocks.vue')
+  },
+  {
+    path: '/auth',
+    component: () => import('../views/UserAuthentification.vue')
+  },
+  {
+    path: '/logout',
+    component: () => import('../views/TmpLogout.vue')
   },
   {
     path: '/learning_blocks/:id',

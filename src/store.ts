@@ -29,13 +29,29 @@ import {
     schoolSharp,
     settingsOutline,
     settingsSharp,
+    logOutOutline,
+    logOutSharp
 } from 'ionicons/icons';
+import { User } from "./types";
 
 export const store = createStore({
+    mutations: {
+        edit_user(state: any, user: User | undefined) {
+            state.user = user;
+        }
+    },
+    actions: {
+        login({ commit }, user) {
+            commit("edit_user", user);
+        },
+        logout({ commit }) {
+            commit("edit_user", undefined);
+        }
+    },
     state() {
         return {
             menu: {
-                "student": [ // Da sistemare: spostare traduzioni e mettere riferimenti a title
+                "student": [ // Da sistemare: spostare traduzioni, mettere riferimenti a title e fare rework del menu
                     {
                         title: {
                             italian: "Blocchi di apprendimento",
@@ -83,6 +99,14 @@ export const store = createStore({
                         },
                         url: '/settings',
                         iconRef: "settings"
+                    },
+                    { // Da sistemare: spostare in profilo quando verrà creato
+                        title: {
+                            italian: "Logout",
+                            english: "Logout"
+                        },
+                        url: '/logout',
+                        iconRef: "logout"
                     },
                     {
                         title: {
@@ -133,6 +157,14 @@ export const store = createStore({
                         },
                         url: '/students',
                         iconRef: "people"
+                    },
+                    { // Da sistemare: spostare in profilo quando verrà creato
+                        title: {
+                            italian: "Logout",
+                            english: "Logout"
+                        },
+                        url: '/logout',
+                        iconRef: "logout"
                     },
                     {
                         title: {
@@ -210,6 +242,10 @@ export const store = createStore({
                 people: {
                     ios: peopleOutline,
                     md: peopleSharp
+                },
+                logout: {
+                    ios: logOutOutline,
+                    md: logOutSharp
                 }
             },
             languages: ["italian", "english"],
@@ -308,7 +344,16 @@ export const store = createStore({
                     other: "Altro",
                     progression: "Progressi",
                     context_credits: "Crediti nel contesto",
-                    area_credits: "Crediti per area"
+                    area_credits: "Crediti per area",
+                    auth: "Autenticazione",
+                    username: "Username",
+                    password: "Password",
+                    admin: "Amministratore",
+                    login: "Login",
+                    wrong_username_or_password: "Username o password sbagliati",
+                    server_error: "Errore del server",
+                    no_username: "Username non inserito",
+                    no_password: "Password non inserita"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -402,7 +447,16 @@ export const store = createStore({
                     other: "Altro",
                     progression: "Progression",
                     context_credits: "Context credits",
-                    area_credits: "Area credits"
+                    area_credits: "Area credits",
+                    auth: "Authentication",
+                    username: "Username",
+                    password: "Password",
+                    admin: "Admin",
+                    login: "Login",
+                    wrong_username_or_password: "Wrong username or password",
+                    server_error: "Server error",
+                    no_username: "Username missing",
+                    no_password: "Password missing"
                 }
             },
             /*
@@ -419,7 +473,7 @@ export const store = createStore({
                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiU3R1ZGVudDIiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODM2OTkwOCwiZXhwIjoxNjg4NDU2MzA4fQ.XYjUjhxj_HjkPy-V7ntbGf2Hww8Y8kiS_mes-fC7D7U",
                 user: "teacher",
             },//*/
-            //*
+            /*
             user: {
                 id: 2,
                 username: "Teacher2",

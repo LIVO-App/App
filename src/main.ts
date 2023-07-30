@@ -29,6 +29,7 @@ import AnnouncementsSelectionList from "./components/AnnouncementsSelectionList.
 import OrdinaryClassesStudents from "./components/OrdinaryClassesStudents.vue";
 import StudentDescription from "./components/StudentDescription.vue";
 import OverallStudentDescription from "./components/OverallStudentDescription.vue";
+import AuthPanel from "./components/AuthPanel.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -102,7 +103,8 @@ const app = createApp(App)
   .component("AnnouncementsSelectionList", AnnouncementsSelectionList)
   .component("OrdinaryClassesStudents", OrdinaryClassesStudents)
   .component("StudentDescription", StudentDescription)
-  .component("OverallStudentDescription", OverallStudentDescription);
+  .component("OverallStudentDescription", OverallStudentDescription)
+  .component("AuthPanel", AuthPanel);
 
 router.isReady().then(() => {
   app.mount('#app');

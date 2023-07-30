@@ -14,26 +14,28 @@
 
             <ion-menu-toggle
               :auto-hide="false"
-              v-for="(p, i) in menu[store.state.user.user]"
-              :key="i"
             >
-              <ion-item
-                @click="store.state.menuIndex = i"
-                router-direction="root"
-                :router-link="p.url"
-                lines="none"
-                :detail="false"
-                class="hydrated"
-                :class="{ selected: store.state.menuIndex === i }"
-              >
-                <ion-icon
-                  aria-hidden="true"
-                  class="ion-padding-end"
-                  :ios="getIcon(store, p.iconRef).ios"
-                  :md="getIcon(store, p.iconRef).md"
-                ></ion-icon>
-                <ion-label>{{ p.title[store.state.language] }}</ion-label>
-              </ion-item>
+              <template v-if="store.state.user != undefined">
+                <ion-item
+                  v-for="(p, i) in menu[store.state.user.user]"
+                  :key="i"
+                  @click="store.state.menuIndex = i"
+                  router-direction="root"
+                  :router-link="p.url"
+                  lines="none"
+                  :detail="false"
+                  class="hydrated"
+                  :class="{ selected: store.state.menuIndex === i }"
+                >
+                  <ion-icon
+                    aria-hidden="true"
+                    class="ion-padding-end"
+                    :ios="getIcon(store, p.iconRef).ios"
+                    :md="getIcon(store, p.iconRef).md"
+                  ></ion-icon>
+                  <ion-label>{{ p.title[store.state.language] }}</ion-label>
+                </ion-item>
+              </template>
             </ion-menu-toggle>
           </ion-list>
         </ion-content>
@@ -61,7 +63,7 @@ import {
 import { computed } from "vue";
 import { useStore } from "vuex";
 
-import { Menu } from "./types";
+import { Menu, User } from "./types";
 import { getIcon } from "./utils";
 
 const image = computed(() => require("./assets/Logo_LIVO_Campus_POS_RGB.png"));
@@ -71,7 +73,7 @@ const menu: Menu = store.state.menu;
 
 //Set menu index
 let path = window.location.pathname;
-if (path !== undefined) {
+if (store.state.user != undefined && path !== undefined) {
   path = path.split("/")[1];
   store.state.menuIndex = menu[store.state.user.user].findIndex(
     (page) => page.url.split("/")[1] === path
