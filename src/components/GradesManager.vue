@@ -21,7 +21,7 @@
       :data="tableData"
       :first_row="first_row"
       :column_sizes="column_sizes"
-    ></ionic-table>
+    ></ionic-table> <!-- Da sistemare: cambiare e mettere card -->
     <div class="ion-text-center ion-padding-bottom">
       <ion-text color="primary"
         >{{ getCurrentElement(store, "intermediate_arithmetic_mean") }}:
@@ -76,7 +76,7 @@
         v-model="final_grade"
         :aria-label="getCurrentElement(store, 'final_grade')"
         class="ion-padding-start"
-      ></ion-checkbox>
+      ></ion-checkbox> <!-- Da sistemare: mettere popup "Sei sicuro?" -->
     </div>
     <div class="ion-text-center">
       <ion-button

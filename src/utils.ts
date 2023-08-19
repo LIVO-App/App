@@ -18,7 +18,7 @@ function getRagneString(start: Date, end: Date) {
 }
 
 function isGeneral(card: CardElements): card is GeneralCardElements {
-    return !("credits" in card); //Da sistemare: vedere se creare un parametro per fare la condizione positiva
+    return "side_button" in card;
 }
 
 function isCourse(card: CardElements): card is CourseCardElements {
@@ -147,4 +147,8 @@ function getGender(store: Store<any>, key: Gender) {
     return getCurrentElement(store, GenderKeys[key]);
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isHiglithCard, isHiglithBlock, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender }
+function numberToSection(section: number) {
+    return String.fromCharCode(65 + section);
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isHiglithCard, isHiglithBlock, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection }

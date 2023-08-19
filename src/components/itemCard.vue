@@ -1,5 +1,6 @@
 <template>
   <ion-item lines="none">
+    <!-- Da sistemare: spostare item in ListCard -->
     <ion-card
       color="tertiary"
       style="width: 100%"
@@ -24,13 +25,38 @@
         }}</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <ionic-element
-          v-for="element in content"
-          :key="element.id"
-          :element="element"
-          @execute_link="$emit('execute_link')"
-          @signal_event="$emit('signal_event')"
-        ></ionic-element>
+        <ion-grid v-if="side_button != undefined">
+          <ion-row>
+            <ion-col>
+              <ionic-element
+                v-for="element in content"
+                :key="element.id"
+                :element="element"
+                @execute_link="$emit('execute_link')"
+                @signal_event="$emit('signal_event')"
+              />
+            </ion-col>
+            <ion-col
+              size="auto"
+              style="border-left: 1px solid var(--ion-color-dark)"
+            >
+              <ionic-element
+                :element="side_button"
+                @execute_link="$emit('execute_link')"
+                @signal_event="$emit('signal_event')"
+              />
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+        <template v-else>
+          <ionic-element
+            v-for="element in content"
+            :key="element.id"
+            :element="element"
+            @execute_link="$emit('execute_link')"
+            @signal_event="$emit('signal_event')"
+          />
+        </template>
       </ion-card-content>
     </ion-card>
   </ion-item>
@@ -45,6 +71,9 @@ import {
   IonCardTitle,
   IonCardSubtitle,
   IonCardContent,
+  IonGrid,
+  IonRow,
+  IonCol,
 } from "@ionic/vue";
 import { Method } from "axios";
 import { PropType } from "vue";
@@ -59,6 +88,7 @@ const props = defineProps({
     type: Array<CustomElement>,
     required: true,
   },
+  side_button: Object as PropType<CustomElement>,
   url: String,
   method: String as PropType<Method>,
 });

@@ -1,6 +1,6 @@
 import { AxiosInstance, Method } from "axios";
 import { Store } from "vuex";
-import { executeLink, getActualLearningContext, getCurrentElement, getCurrentSchoolYear, getEnrollmentIcon, getGender, getIcon, getRagneString, hashCode, toDateString } from "./utils";
+import { executeLink, getActualLearningContext, getCurrentElement, getCurrentSchoolYear, getEnrollmentIcon, getGender, getIcon, getRagneString, hashCode, numberToSection, toDateString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -176,6 +176,7 @@ type CardElements = {
 type GeneralCardElements = CardElements & {
     title?: string,
     subtitle?: string,
+    side_button?: CustomElement,
     content: CustomElement[]
 }
 
@@ -615,15 +616,17 @@ type LearningBlockProps = {
     school_year: number;
     start: string;
     end: string;
+    num_groups: number;
 }
 
-class LearningBlock implements LearningBlockProps {
+class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi numero blocchi
 
     id: number;
     number: number;
     school_year: number;
     start: string;
     end: string;
+    num_groups: number;
 
     constructor(blockObj: LearningBlockProps) {
         this.id = blockObj.id;
@@ -631,6 +634,7 @@ class LearningBlock implements LearningBlockProps {
         this.school_year = blockObj.school_year;
         this.start = blockObj.start;
         this.end = blockObj.end;
+        this.num_groups = blockObj.num_groups;
     }
 
     getStatus(reference = new Date()) { // future [TDB] upcoming [SD] current [ED] completed
@@ -812,6 +816,16 @@ type EventString = EventParameters & {
     text: string
 }
 
+type RequestStringIcon = RequestParameters & {
+    text: string,
+    icon: IconAlternatives
+}
+
+type EventStringIcon = EventParameters & {
+    text: string,
+    icon: IconAlternatives
+}
+
 type Role = "" | "student" | "teacher" | "admin";
 
 type CardsList<T = CardElements> = {
@@ -826,7 +840,7 @@ type OrderedCardsList<T = CardElements> = {
     cards: CardsList<T>
 }
 
-type ElementType = "string" | "html" | "icon" | "title";
+type ElementType = "string" | "html" | "icon" | "title" | "string_icon";
 
 type LinkType = "request" | "event";
 
@@ -834,7 +848,7 @@ type CustomElement = {
     id: string,
     type: ElementType,
     linkType?: LinkType,
-    content: string | IconAlternatives | RequestIcon | EventIcon | RequestString | EventString
+    content: string | IconAlternatives | RequestIcon | EventIcon | RequestString | EventString | RequestStringIcon | EventStringIcon
 }
 
 type GradeProps = {
@@ -1114,7 +1128,7 @@ class StudentInformation extends StudentSummary {
             study_year: tmp_class.study_year,
             address: tmp_class.study_address,
             section: props.class_section
-        })
+        });
     }
 
     toCard(store: Store<any>): GeneralCardElements {
@@ -1160,11 +1174,7 @@ type LearningContextSummary = {
     credits?: number | null
 }
 
-type LearningContext = LearningContextSummary & {
-    [key in keyof Language as `${Language}_title`]: string
-} & {
-        [key in keyof Language as `${Language}_description`]: string | null // Da sistemare: vedere descrizioni che possono essere null
-    }
+type LearningContext = LearningContextSummary & IdTitleDescription<string>;
 
 type AnnouncementSummaryProps = {
     id: number,
@@ -1287,7 +1297,7 @@ type UserProps = {
 }
 
 class User implements UserProps {
-    
+
     id: number;
     username: string;
     token: string;
@@ -1305,9 +1315,9 @@ class User implements UserProps {
     }
 
     static getLoggedUser() {
-        
+
         const session = window.sessionStorage;
-        
+
         if (session.getItem("id") != undefined) {
             return new User({
                 id: parseInt(session.getItem("id") as string),
@@ -1321,4 +1331,506 @@ class User implements UserProps {
     }
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, FailLoginResponse, UserProps, User }
+type CourseModelProps = {
+    course_ref: ResponseItem<{
+        id: number
+    }>,
+    creation_school_year: number,
+    project_class_confirmation_date: string,
+    project_class_to_be_modified: boolean | null,
+    course_confirmation_date: string,
+    course_to_be_modified: boolean | null
+} & {
+        [key in keyof string as `${Language}_title`]: string
+    }
+
+class CourseModel {
+
+    id: number;
+    italian_title: string;
+    english_title: string;
+    creation_school_year: number;
+    project_class_confirmation_date: Date;
+    project_class_to_be_modified: boolean | null;
+    course_confirmation_date: Date;
+    course_to_be_modified: boolean | null;
+
+    constructor(props: CourseModelProps) {
+        this.id = (props.course_ref.data as { id: number }).id;
+        this.italian_title = props.italian_title;
+        this.english_title = props.english_title;
+        this.creation_school_year = props.creation_school_year;
+        this.project_class_confirmation_date = new Date(props.project_class_confirmation_date);
+        this.project_class_to_be_modified = props.project_class_to_be_modified;
+        this.course_confirmation_date = new Date(props.course_confirmation_date);
+        this.course_to_be_modified = props.course_to_be_modified;
+    }
+
+    toString(store: Store<any>) {
+        const language: Language = store.state.language;
+        return this[`${language}_title`] + " - " + this.creation_school_year;
+    }
+}
+
+type PagesType = "editor";
+
+type Pages = "course_id" | "title" | "characteristics" | "students_distribution" | "description" | "expected_learning_results" | "criterions" | "activities" | "access_object" | "teacher_list";
+
+type PropositionTitles = {
+    [key in keyof string as `${Language}_title`]: string
+};
+
+type PropositionCharacteristics = {
+    up_hours: number,
+    credits: number,
+    area_id: string,
+    growth_id: number,
+    block_id: number,
+    class_group: number
+};
+
+type PropositionStudentsDistribution = { // Da sistemare: trovaqre nome comune
+    num_section: number,
+    min_students: number,
+    max_students: number,
+    teaching_list: string[]
+}
+
+type PropositionDescriptions = {
+    [key in keyof string as `${Language}_descr`]: string
+};
+
+type PropositionExpectedLearningResults = {
+    [key in keyof string as `${Language}_exp_l`]: string
+};
+
+type PropositionCriterions = {
+    [key in keyof string as `${Language}_cri`]: string
+};
+
+type PropositionActivities = {
+    [key in keyof string as `${Language}_act`]: string
+};
+
+type AccessObject = {
+    study_year: number
+    study_address: string
+    main_study_year: boolean
+    presidium: boolean
+}
+
+type PropositionAccessObject = {
+    [key: string]: AccessObject[]
+};
+
+type PropositionTeacher = {
+    teacher_id: number,
+    main: boolean,
+    sections: string[]
+};
+
+class ModelProposition {
+
+    [key: string]: any;
+
+    private _course_id: number;
+    private _title: PropositionTitles;
+    private _characteristics: PropositionCharacteristics;
+    private _students_distribution: PropositionStudentsDistribution;
+    private _description: PropositionDescriptions;
+    private _expected_learning_results: PropositionExpectedLearningResults;
+    private _criterions: PropositionCriterions;
+    private _activities: PropositionActivities;
+    private _access_object: PropositionAccessObject;
+    private _teacher_list: PropositionTeacher[];
+    private remaining: Pages[];
+
+    constructor() {
+        this._course_id = 0;
+        this._title = {
+            italian_title: "",
+            english_title: ""
+        };
+        this._characteristics = {
+            up_hours: 0,
+            credits: 0,
+            area_id: "",
+            growth_id: -1,
+            block_id: -1,
+            class_group: -1
+        };
+        this._students_distribution = {
+            num_section: 0,
+            min_students: 0,
+            max_students: 0,
+            teaching_list: []
+        };
+        this._description = {
+            italian_descr: "",
+            english_descr: ""
+        };
+        this._expected_learning_results = {
+            italian_exp_l: "",
+            english_exp_l: ""
+        };
+        this._criterions = {
+            italian_cri: "",
+            english_cri: ""
+        };
+        this._activities = {
+            italian_act: "",
+            english_act: ""
+        };
+        this._access_object = {};
+        this._teacher_list = [];
+
+        this.remaining = ["course_id", "title", "characteristics", "description", "expected_learning_results", "criterions", "activities", "access_object", "teacher_list"];
+    }
+
+    public get course_id() {
+        return this._course_id;
+    }
+    public set course_id(value: number) {
+        this._course_id = value;
+        this.remaining = this.remaining.filter(a => a != "course_id");
+    }
+
+    public get title() {
+        return this._title;
+    }
+    public set title(value: PropositionTitles) {
+        this._title = value;
+        this.remaining = this.remaining.filter(a => a != "title");
+    }
+
+    public get characteristics() {
+        return this._characteristics;
+    }
+    public set characteristics(value: PropositionCharacteristics) {
+        this._characteristics = value;
+        this.remaining = this.remaining.filter(a => a != "characteristics");
+    }
+
+    public get students_distribution() {
+        return this._students_distribution;
+    }
+    public set students_distribution(value: PropositionStudentsDistribution) {
+        this._students_distribution = value;
+        this.remaining = this.remaining.filter(a => a != "students_distribution");
+    }
+
+    public get description() {
+        return this._description;
+    }
+    public set description(value: PropositionDescriptions) {
+        this._description = value;
+        this.remaining = this.remaining.filter(a => a != "description");
+    }
+
+    public get expected_learning_results() {
+        return this._expected_learning_results;
+    }
+    public set expected_learning_results(value: PropositionExpectedLearningResults) {
+        this._expected_learning_results = value;
+        this.remaining = this.remaining.filter(a => a != "expected_learning_results");
+    }
+
+    public get criterions() {
+        return this._criterions;
+    }
+    public set criterions(value: PropositionCriterions) {
+        this._criterions = value;
+        this.remaining = this.remaining.filter(a => a != "criterions");
+    }
+
+    public get activities() {
+        return this._activities;
+    }
+    public set activities(value: PropositionActivities) {
+        this._activities = value;
+        this.remaining = this.remaining.filter(a => a != "activities");
+    }
+
+    public get access_object() {
+        return this._access_object;
+    }
+    public set access_object(value: PropositionAccessObject) {
+        this._access_object = value;
+        this.remaining = this.remaining.filter(a => a != "access_object");
+    }
+
+    public get teacher_list() {
+        return this._teacher_list;
+    }
+    public set teacher_list(list: PropositionTeacher[]) {
+        this._teacher_list = list.map(a => {
+            return {
+                teacher_id: a.teacher_id,
+                main: /*!!*/a.main ? true : false,
+                sections: a.sections
+            }
+        });
+        this.remaining = this.remaining.filter(a => a != "teacher_list");
+    }
+
+    toProposition() {
+        const proposition: {
+            [key: string]: any
+        } = {};
+        const keys = Object.keys(this).filter(a => a != "id" && a != "remaining");
+
+        for (const page of keys) {
+            for (const key of page) {
+                proposition[key] = this[page][key];
+            }
+        }
+
+        return proposition;
+    }
+
+    isComplete() {
+        return this.remaining.length == 0;
+    }
+
+    getRemaining() {
+        return this.remaining;
+    }
+
+    getPages(type?: PagesType): Pages[] {
+        switch (type) {
+            case undefined:
+                return ["title", "characteristics", "students_distribution", "description", "expected_learning_results", "criterions", "activities", "access_object", "teacher_list"];
+            case "editor":
+                return ["description", "expected_learning_results", "criterions", "activities"];
+        }
+    }
+}
+
+type IdTitleDescription<T> = {
+    id: T,
+} & {
+        [key in keyof string as `${Language}_title`]: string
+    } & {
+        [key in keyof string as `${Language}_description`]?: string // Da sistemare: vedere descrizioni che possono essere null
+    }
+
+type GrowthArea = IdTitleDescription<number>;
+
+type TeachingProps = IdTitleDescription<string>;
+
+class Teaching implements TeachingProps {
+    id: string;
+    italian_title: string;
+    english_title: string;
+    italian_description?: string;
+    english_description?: string;
+
+    constructor(props: TeachingProps) {
+        this.id = props.id;
+        this.italian_title = props.italian_title;
+        this.english_title = props.english_title;
+        this.italian_description = props.italian_description;
+        this.english_description = props.english_description;
+    }
+
+    toCard(store: Store<any>): GeneralCardElements {
+        const language: Language = store.state.language;
+        return {
+            id: this.id,
+            group: "",
+            side_button: {
+                id: this.id + "_remove",
+                type: "icon",
+                linkType: "event",
+                content: {
+                    event: "remove",
+                    data: {
+                        id: this.id,
+                    },
+                    icon: getIcon(store, "close"),
+                },
+            },
+            content: [
+                {
+                    id: this.id,
+                    type: "string",
+                    content: this[`${language}_title`],
+                },
+            ],
+        }
+    }
+}
+
+type StudyAddress = IdTitleDescription<string> & {
+    max_classes: number
+};
+
+class AccessProposition {
+    study_year: number;
+    study_address: StudyAddress;
+    presidium: boolean;
+    main_study_year: boolean;
+
+    constructor(
+        study_year: number,
+        study_address: StudyAddress,
+        presidium: boolean,
+        main_study_year: boolean
+    ) {
+        this.study_year = study_year;
+        this.study_address = study_address;
+        this.presidium = presidium;
+        this.main_study_year = main_study_year;
+    }
+
+    toCard(store: Store<any>, learning_context_id: string): GeneralCardElements {
+        const language: Language = store.state.language;
+
+        return {
+            id: this.study_address.id + "_" + this.study_year,
+            group: learning_context_id,
+            side_button: {
+                id: this.study_address.id + "_remove",
+                type: "icon",
+                linkType: "event",
+                content: {
+                    event: "remove",
+                    data: {
+                        learning_context_id: learning_context_id,
+                        study_address_id: this.study_address.id,
+                        study_year: this.study_year,
+                    },
+                    icon: getIcon(store, "close"),
+                },
+            },
+            content: [
+                {
+                    id: "class",
+                    type: "string",
+                    content: this.study_year + " " + this.study_address[`${language}_title`],
+                },
+                {
+                    id: "presidium",
+                    type: "string",
+                    content: getCurrentElement(store, "presidium") + ": " + this.presidium,
+                },
+                {
+                    id: "main_study_year",
+                    type: "string",
+                    content: getCurrentElement(store, "main_study_year") + ": " + this.main_study_year,
+                },
+            ],
+        }
+    }
+
+    toAccessObj(): AccessObject {
+        return {
+            study_year: this.study_year,
+            study_address: this.study_address.id,
+            presidium: this.presidium,
+            main_study_year: this.main_study_year,
+        }
+    }
+}
+
+type TeacherProps = {
+    id: number,
+    cf: string,
+    username: string,
+    name: string,
+    surname: string,
+    gender: string,
+    birth_date: string,
+    address: string,
+    email: string
+}
+
+class Teacher {
+    id: number;
+    cf: string;
+    username: string;
+    name: string;
+    surname: string;
+    gender: Gender;
+    birth_date: Date;
+    address: string;
+    email: string;
+
+    constructor(teacher: TeacherProps) {
+        this.id = teacher.id;
+        this.cf = teacher.cf;
+        this.username = teacher.username;
+        this.name = teacher.name;
+        this.surname = teacher.surname;
+        this.gender = teacher.gender == "M" || teacher.gender == "F" ? teacher.gender : "O";
+        this.birth_date = new Date(teacher.birth_date);
+        this.address = teacher.address;
+        this.email = teacher.email;
+    }
+}
+
+class TeacherProposition {
+    teacher: Teacher;
+    main: boolean;
+    sections: string[];
+
+    constructor(teacher: Teacher, main: boolean, sections: boolean[]) {
+        this.teacher = teacher;
+        this.main = main;
+        this.sections = [];
+        for (const key in sections) {
+            if (sections[key]) {
+                this.sections.push(numberToSection(parseInt(key)));
+            }
+        }
+    }
+
+    toCard(store: Store<any>): GeneralCardElements {
+        return {
+            id: "" + this.teacher.id,
+            group: "",
+            side_button: {
+                id: this.teacher.id + "_remove",
+                type: "icon",
+                linkType: "event",
+                content: {
+                    event: "remove",
+                    data: {
+                        id: this.teacher.id,
+                    },
+                    icon: getIcon(store, "close"),
+                },
+            },
+            content: [
+                {
+                    id: "name",
+                    type: "string_icon",
+                    linkType: "event",
+                    content: {
+                        event: "info",
+                        data: {
+                            teacher_id: this.teacher.id,
+                        },
+                        icon: getIcon(store, "information_circle"),
+                        text: this.teacher.name + " " + this.teacher.surname + (this.main ? " [" + getCurrentElement(store, "main_teacher") + "]" : "")
+                    },
+                },
+                {
+                    id: "sections",
+                    type: "string",
+                    content: getCurrentElement(store, "sections") + ": " + this.sections.join(", "),
+                },
+            ],
+        }
+    }
+
+    toTeacherObj(): PropositionTeacher {
+        return {
+            teacher_id: this.teacher.id,
+            main: this.main,
+            sections: this.sections
+        }
+    }
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, FailLoginResponse, UserProps, User, CourseModelProps, CourseModel, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition }

@@ -70,7 +70,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/course_proposition',
     name: 'course_proposition',
-    component: () => import('../views/NotImplemented.vue')
+    component: () => import('../views/CourseProposition.vue')
   },
   {
     path: '/announcements/:course/:block',
