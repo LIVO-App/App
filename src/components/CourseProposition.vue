@@ -32,7 +32,7 @@
       :placeholder="getCurrentElement(store, 'possible_models')"
       :getCompleteName="modelToString"
     />
-    <ion-card>
+    <ion-card :key="trigger">
       <ion-card-header color="primary">
         <ion-card-title color="tertiary" class="ion-text-center">{{
           getCurrentElement(store, pages[current_page_index])
@@ -43,9 +43,9 @@
           <template
             v-if="
               pages[current_page_index] == 'title' ||
-              course_proposition
-                .getPages('editor')
-                .findIndex((a) => a == pages[current_page_index]) != -1
+              ModelProposition.getProps('editor').findIndex(
+                (a) => a == pages[current_page_index]
+              ) != -1
             "
           >
             <ion-row v-for="language in languages" :key="language">
@@ -556,6 +556,10 @@ import {
   PropositionExpectedLearningResults,
   PropositionActivities,
   PropositionCriterions,
+  Course,
+  CourseProps,
+  AccessObject,
+  PropositionTeacher,
 } from "@/types";
 import {
   executeLink,
@@ -600,11 +604,10 @@ const go = (direction: boolean) => {
   }
 };
 const propose = () => {
-  console.log(course_proposition);
   executeLink(
     $axios,
-    "/v1/propositions?token=" + user.token, // Da sistemare: sembra non funzionare le sezioni multiple su project_teach
-    clean_course_proposition,
+    "/v1/propositions?token=" + user.token, // Da sistemare: sembra non funzionare con le sezioni multiple su project_teach (mette solo A)
+    edit_course_proposition,                // Da sistemare: la proposta di corsi già esistenti crea errori nel server
     () => setupModalAndOpen("title"),
     "post",
     course_proposition.toProposition()
@@ -618,8 +621,7 @@ const closeModal = (alert: boolean) => {
   }
 };
 const setupModalAndOpen = async (window: AvailableModal) => {
-  console.log("No");
-  
+  // Da sistemare: fare le info degli insegnanti e i vari errori
   switch (window) {
     default:
       break;
@@ -647,11 +649,43 @@ const castToActivities = (activities: any) =>
   activities as PropositionActivities;
 const castToStudentsDistribution = (students_distribution: any) =>
   students_distribution as PropositionStudentsDistribution;
-const addElement = (type: ListTypes) => {
-  // Da sistemare: trovare pezzi in comune negli switch per semplificare la funzione e la successiva
+const addTeaching = (id?: string) => {
+  const actual_teaching_id = id ?? selected_teaching.value;
 
   let tmp_teaching_index: number;
   let teaching: Teaching;
+
+  if (
+    actual_teaching_id != "" &&
+    (tmp_teaching_index = teachings.available.findIndex(
+      (a) => a.id == actual_teaching_id
+    )) != -1
+  ) {
+    teaching = teachings.available[tmp_teaching_index];
+
+    course_proposition.students_distribution.teaching_list.push(teaching.id);
+
+    teachings_cards.cards[""].push(teaching.toCard(store));
+
+    teachings.selected.push(teaching);
+    teachings.available.splice(tmp_teaching_index, 1);
+    if (id == undefined) {
+      selected_teaching.value = "";
+    }
+    
+    trigger.value++;
+  }
+};
+const addAccess = (
+  learning_context_id?: string,
+  access_object?: AccessObject
+) => {
+  const actual_learning_context_id =
+    learning_context_id ?? selected_learning_context.value;
+  let actual_study_address_id: string;
+  let actual_study_year: number;
+  let actual_presidium: boolean;
+  let actual_main_study_year: boolean;
 
   let tmp_learning_context_index: number;
   let tmp_study_address_index: number;
@@ -661,163 +695,175 @@ const addElement = (type: ListTypes) => {
   let study_address: StudyAddress;
   let study_year: { id: number };
 
+  if (access_object != undefined) {
+    actual_study_address_id = access_object.study_address;
+    actual_study_year = access_object.study_year;
+    actual_presidium = access_object.presidium;
+    actual_main_study_year = access_object.main_study_year;
+  } else {
+    actual_study_address_id = selected_study_address.value;
+    actual_study_year = selected_study_year.value;
+    actual_presidium = presidium.value;
+    actual_main_study_year = main_study_year.value;
+  }
+
+  if (
+    actual_learning_context_id != "" &&
+    (tmp_learning_context_index = learning_contexts.available.findIndex(
+      (a) => a.id == actual_learning_context_id
+    )) != -1 &&
+    actual_study_address_id != "" &&
+    (tmp_study_address_index = study_addresses.available[
+      actual_learning_context_id
+    ].findIndex((a) => a.id == actual_study_address_id)) != -1 &&
+    actual_study_year != 0 &&
+    (tmp_study_year_index = study_years.available[actual_learning_context_id][
+      actual_study_address_id
+    ].findIndex((a) => a.id == actual_study_year)) != -1
+  ) {
+    learning_context = learning_contexts.available[tmp_learning_context_index];
+    study_address =
+      study_addresses.available[learning_context.id][tmp_study_address_index];
+    study_year =
+      study_years.available[learning_context.id][study_address.id][
+        tmp_study_year_index
+      ];
+
+    tmp_access_proposition = new AccessProposition(
+      study_year.id,
+      study_address,
+      actual_presidium,
+      actual_main_study_year
+    );
+
+    if (course_proposition.access_object[learning_context.id] == undefined) {
+      course_proposition.access_object[learning_context.id] = [];
+    }
+    course_proposition.access_object[learning_context.id].push(
+      tmp_access_proposition.toAccessObj()
+    );
+
+    if (access_propositions_cards.cards[learning_context.id] == undefined) {
+      access_propositions_cards.order.push({
+        key: learning_context.id,
+        title: learning_context[`${language}_title`],
+      });
+      access_propositions_cards.order.sort((a, b) =>
+        a.key == b.key ? 0 : a.key > b.key ? 1 : -1
+      );
+      access_propositions_cards.cards[learning_context.id] = [];
+    }
+    access_propositions_cards.cards[learning_context.id].push(
+      tmp_access_proposition.toCard(store, actual_learning_context_id)
+    );
+
+    if (study_years.selected[learning_context.id] == undefined) {
+      study_years.selected[learning_context.id] = {};
+    }
+    if (
+      study_years.selected[learning_context.id][study_address.id] == undefined
+    ) {
+      study_years.selected[learning_context.id][study_address.id] = [];
+    }
+    study_years.selected[learning_context.id][study_address.id].push(
+      study_year
+    );
+    study_years.available[learning_context.id][study_address.id].splice(
+      tmp_study_year_index,
+      1
+    );
+    if (access_object == undefined) {
+      selected_study_year.value = 0;
+    }
+
+    if (
+      study_years.available[learning_context.id][study_address.id].length == 0
+    ) {
+      if (study_addresses.selected[learning_context.id] == undefined) {
+        study_addresses.selected[learning_context.id] = [];
+      }
+      study_addresses.selected[learning_context.id].push(study_address);
+      study_addresses.available[learning_context.id].splice(
+        tmp_study_address_index,
+        1
+      );
+      if (access_object == undefined) {
+        selected_study_address.value = "";
+      }
+    }
+    if (study_addresses.available[learning_context.id].length == 0) {
+      learning_contexts.selected.push(learning_context);
+      learning_contexts.available.splice(tmp_learning_context_index, 1);
+      if (learning_context == undefined) {
+        selected_learning_context.value = "";
+      }
+    }
+
+    if (access_object == undefined) {
+      presidium.value = false;
+      main_study_year.value = false;
+    }
+  }
+  trigger.value++;
+};
+const addTeacher = (proposition_teacher?: PropositionTeacher) => {
+  let actual_teacher_id: number;
+  let actual_main_teacher: boolean;
   let tmp_teacher_index: number;
   let teacher: Teacher;
   let teacher_proposition: TeacherProposition;
 
-  switch (type) {
-    case "teachings":
-      if (
-        selected_teaching.value != "" &&
-        (tmp_teaching_index = teachings.available.findIndex(
-          (a) => a.id == selected_teaching.value
-        )) != -1
-      ) {
-        teaching = teachings.available[tmp_teaching_index];
+  if (proposition_teacher != undefined) {
+    actual_teacher_id = proposition_teacher.teacher_id;
+    actual_main_teacher = proposition_teacher.main;
+  } else {
+    actual_teacher_id = selected_teacher.value;
+    actual_main_teacher = main_teacher.value;
+  }
 
-        course_proposition.students_distribution.teaching_list.push(
-          teaching.id
-        );
+  if (
+    actual_teacher_id != 0 &&
+    (tmp_teacher_index = teachers.available.findIndex(
+      (a) => a.id == actual_teacher_id
+    )) != -1 &&
+    (proposition_teacher != undefined ? proposition_teacher.sections.length > 0 : sections.find((a) => a))
+  ) {
+    teacher = teachers.available[tmp_teacher_index];
+    teacher_proposition = new TeacherProposition(
+      teacher,
+      actual_main_teacher,
+      sections
+    );
 
-        teachings_cards.cards[""].push(teaching.toCard(store));
+    course_proposition.teacher_list.push(teacher_proposition.toTeacherObj());
 
-        teachings.selected.push(teaching);
-        teachings.available.splice(tmp_teaching_index, 1);
-        selected_teaching.value = "";
+    teachers_cards.cards[""].push(teacher_proposition.toCard(store));
+
+    teachers.selected.push(teacher);
+    teachers.available.splice(tmp_teacher_index, 1);
+    if (proposition_teacher == undefined) {
+      selected_teacher.value = 0;
+      main_teacher.value = false;
+      for (const i in sections) {
+        sections[i] = false;
       }
-      break;
-    case "access":
-      if (
-        selected_learning_context.value != "" &&
-        (tmp_learning_context_index = learning_contexts.available.findIndex(
-          (a) => a.id == selected_learning_context.value
-        )) != -1 &&
-        selected_study_address.value != "" &&
-        (tmp_study_address_index = study_addresses.available[
-          selected_learning_context.value
-        ].findIndex((a) => a.id == selected_study_address.value)) != -1 &&
-        selected_study_year.value != 0 &&
-        (tmp_study_year_index = study_years.available[
-          selected_learning_context.value
-        ][selected_study_address.value].findIndex(
-          (a) => a.id == selected_study_year.value
-        )) != -1
-      ) {
-        learning_context =
-          learning_contexts.available[tmp_learning_context_index];
-        study_address =
-          study_addresses.available[learning_context.id][
-            tmp_study_address_index
-          ];
-        study_year =
-          study_years.available[learning_context.id][study_address.id][
-            tmp_study_year_index
-          ];
-
-        tmp_access_proposition = new AccessProposition(
-          study_year.id,
-          study_address,
-          presidium.value,
-          main_study_year.value
-        );
-
-        if (
-          course_proposition.access_object[learning_context.id] == undefined
-        ) {
-          course_proposition.access_object[learning_context.id] = [];
-        }
-        course_proposition.access_object[learning_context.id].push(
-          tmp_access_proposition.toAccessObj()
-        );
-
-        if (access_propositions_cards.cards[learning_context.id] == undefined) {
-          access_propositions_cards.order.push({
-            key: learning_context.id,
-            title: learning_context[`${language}_title`],
-          });
-          access_propositions_cards.order.sort((a, b) =>
-            a.key == b.key ? 0 : a.key > b.key ? 1 : -1
-          );
-          access_propositions_cards.cards[learning_context.id] = [];
-        }
-        access_propositions_cards.cards[learning_context.id].push(
-          tmp_access_proposition.toCard(store, selected_learning_context.value)
-        );
-
-        if (study_years.selected[learning_context.id] == undefined) {
-          study_years.selected[learning_context.id] = {};
-        }
-        if (
-          study_years.selected[learning_context.id][study_address.id] ==
-          undefined
-        ) {
-          study_years.selected[learning_context.id][study_address.id] = [];
-        }
-        study_years.selected[learning_context.id][study_address.id].push(
-          study_year
-        );
-        study_years.available[learning_context.id][study_address.id].splice(
-          tmp_study_year_index,
-          1
-        );
-        selected_study_year.value = 0;
-
-        if (
-          study_years.available[learning_context.id][study_address.id].length ==
-          0
-        ) {
-          if (study_addresses.selected[learning_context.id] == undefined) {
-            study_addresses.selected[learning_context.id] = [];
-          }
-          study_addresses.selected[learning_context.id].push(study_address);
-          study_addresses.available[learning_context.id].splice(
-            tmp_study_address_index,
-            1
-          );
-          selected_study_address.value = "";
-        }
-        if (study_addresses.available[learning_context.id].length == 0) {
-          learning_contexts.selected.push(learning_context);
-          learning_contexts.available.splice(tmp_learning_context_index, 1);
-          selected_learning_context.value = "";
-        }
-
-        presidium.value = false;
-        main_study_year.value = false;
-      }
-      break;
-    case "teachers":
-      if (
-        selected_teacher.value != 0 &&
-        (tmp_teacher_index = teachers.available.findIndex(
-          (a) => a.id == selected_teacher.value
-        )) != -1 &&
-        sections.find((a) => a)
-      ) {
-        teacher = teachers.available[tmp_teacher_index];
-        teacher_proposition = new TeacherProposition(
-          teacher,
-          main_teacher.value,
-          sections
-        );
-
-        course_proposition.teacher_list.push(
-          teacher_proposition.toTeacherObj()
-        );
-
-        teachers_cards.cards[""].push(teacher_proposition.toCard(store));
-
-        teachers.selected.push(teacher);
-        teachers.available.splice(tmp_teacher_index, 1);
-        selected_teacher.value = 0;
-        main_teacher.value = false;
-        for (const i in sections) {
-          sections[i] = false;
-        }
-      }
-      break;
+    }
   }
   trigger.value++;
+};
+const addElement = (type: ListTypes) => {
+  // Da sistemare: trovare pezzi in comune negli switch per semplificare la funzione e la successiva
+  switch (type) {
+    case "teachings":
+      addTeaching();
+      break;
+    case "access":
+      addAccess();
+      break;
+    case "teachers":
+      addTeacher();
+      break;
+  }
 };
 const removeElement = (type: ListTypes) => {
   let teaching_id: string;
@@ -964,32 +1010,96 @@ const removeElement = (type: ListTypes) => {
   }
   trigger.value++;
 };
-const clean_course_proposition = () => { // Da sistemare: fare completare
-  console.log("Ciao");
-  
-  /*course_proposition.title = {};
-  course_proposition.characteristics = {};
-  course_proposition.descriptions = {};
-  course_proposition.expected_learning_results = {};
-  course_proposition.criterions = {};
-  course_proposition.activities = {};
-  course_proposition.students_distribution = {
-    min_students: 0,
-    max_students: 0,
-    teaching_list: [],
-  };
-  course_proposition.access_object = {};
-  course_proposition.teacher_list = [];
-  course_proposition.remaining = [];*/
-  course_proposition.remaining.push("title");
-  course_proposition.remaining.push("characteristics");
-  course_proposition.remaining.push("descriptions");
-  course_proposition.remaining.push("expected_learning_results");
-  course_proposition.remaining.push("criterions");
-  course_proposition.remaining.push("activities");
-  course_proposition.remaining.push("students_distribution");
-  course_proposition.remaining.push("access_object");
-  course_proposition.remaining.push("teacher_list");
+const edit_course_proposition = async (course_id?: number) => {
+  let course: Course;
+  let growth_area: GrowthArea;
+  let learning_area: LearningArea;
+  if ($axios != undefined) {
+    if (course_id != undefined) {
+      course = await executeLink(
+        $axios,
+        "/v1/courses/" + course_id + "?admin_info=true",
+        (response) => new Course($axios, user, response.data.data)
+      );
+      growth_area = await executeLink(
+        $axios,
+        "/v1/growth_areas",
+        (response) => {
+          const tmp = response.data.data.find(
+            (a: GrowthArea) =>
+              a.italian_title == course.italian_growth_area &&
+              a.english_title == course.english_growth_area
+          ); // Da sistemare: chiedere a Pietro per id
+          return tmp != undefined
+            ? tmp
+            : {
+                id: -1,
+                italian_title: "",
+                english_title: "",
+              };
+        }
+      );
+      learning_area = await executeLink(
+        $axios,
+        "/v1/learning_areas",
+        (response) => {
+          const tmp = response.data.data.find(
+            (a: LearningArea) =>
+              a.italian_title == course.italian_learning_area &&
+              a.english_title == course.english_learning_area
+          ); // Da sistemare: chiedere a Pietro per id
+          return tmp != undefined
+            ? tmp
+            : {
+                id: -1,
+                italian_title: "",
+                english_title: "",
+              };
+        }
+      );
+      course_proposition = reactive(
+        new ModelProposition({
+          course_id: course_id,
+          italian_title: course.italian_title,
+          english_title: course.english_title,
+          up_hours: course.up_hours,
+          credits: course.credits,
+          area_id: learning_area.id,
+          growth_id: growth_area.id,
+          block_id: -1,
+          class_group: -1,
+          num_section: 0,
+          min_students: course.min_students,
+          max_students: course.max_students,
+          teaching_list: course.teaching_list.map((a) => a.id),
+          italian_descr: course.italian_description,
+          english_descr: course.english_description,
+          italian_exp_l: course.italian_expected_learning_results,
+          english_exp_l: course.english_expected_learning_results,
+          italian_cri: course.italian_criterions,
+          english_cri: course.english_criterions,
+          italian_act: course.italian_activities,
+          english_act: course.english_activities,
+          access_object: course.access_object,
+          teacher_list: [],
+        })
+      );
+      for (const teaching of course_proposition.students_distribution
+        .teaching_list) {
+        addTeaching(teaching);
+      }
+      for (const learning_context_id in course_proposition.access_object) {
+        for (const access_object of course_proposition.access_object[
+          learning_context_id
+        ]) {
+          addAccess(learning_context_id, access_object);
+        }
+      }
+    } else {
+      course_proposition = reactive(new ModelProposition());
+    }
+    trigger.value++;
+  }
 };
 const parameters_remaining = computed(
   () => course_proposition.remaining.length == 0
@@ -1002,15 +1112,14 @@ const language: Language = store.state.language;
 const languages: Language[] = store.state.languages;
 
 const trigger = ref(0);
-const selected_model = ref("");
+const selected_model = ref(0);
 const alert_open = ref(false);
 const alert_information = {
   title: getCurrentElement(store, "error"),
   message: "",
   buttons: [getCurrentElement(store, "ok")],
 };
-const course_proposition = reactive(new ModelProposition());
-const pages = course_proposition.getPages();
+const pages = ModelProposition.getProps("pages");
 const current_page_index = ref(0);
 const buttons: CustomElement[] = [
   {
@@ -1032,11 +1141,11 @@ const buttons: CustomElement[] = [
     },
   },
   {
-    id: "info",
+    id: "teacher_info",
     type: "icon",
     linkType: "event",
     content: {
-      event: "info",
+      event: "teacher_info",
       icon: getIcon(store, "information_circle"),
     },
   },
@@ -1133,6 +1242,7 @@ const teachers_cards: OrderedCardsList<GeneralCardElements> = {
   }
 }*/
 
+let course_proposition = reactive(new ModelProposition());
 let models: CourseModel[] = [];
 let learning_areas: LearningArea[] = [];
 let growth_areas: GrowthArea[] = [];
@@ -1154,7 +1264,7 @@ if ($axios != undefined) {
   }*/
   models = await executeLink(
     $axios,
-    "/v1/propositions?token=" + user.token,
+    "/v1/propositions?token=" + user.token, // Da sistemare: chiedere perchè vengono fuori anche modelli da confermare
     (response) =>
       response.data.data.map((a: CourseModelProps) => new CourseModel(a)),
     () => []
@@ -1192,9 +1302,12 @@ if ($axios != undefined) {
   teachings.available = await executeLink(
     $axios,
     "/v1/teachings?all_data=true",
-    (response) => response.data.data.map((a: TeachingProps) => new Teaching(a)),
+    (response) => {
+      return response.data.data.map((a: TeachingProps) => new Teaching(a))
+    },
     () => []
   );
+  
   learning_contexts.available = await executeLink(
     $axios,
     "/v1/learning_contexts",
@@ -1295,6 +1408,7 @@ if ($axios != undefined) {
     }
   });
   watch(selected_model, () => {
+    edit_course_proposition(selected_model.value);
     trigger.value++;
   });
 }
