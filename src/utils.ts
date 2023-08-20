@@ -18,7 +18,7 @@ function getRagneString(start: Date, end: Date) {
 }
 
 function isGeneral(card: CardElements): card is GeneralCardElements {
-    return "side_button" in card;
+    return "side_button" in card || !("credits" in card); //Da sistemare: vedere se creare un parametro per fare la condizione positiva
 }
 
 function isCourse(card: CardElements): card is CourseCardElements {

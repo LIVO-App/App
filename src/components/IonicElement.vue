@@ -66,7 +66,7 @@
         {{ castEventStringIcon(element.content).text }}
       </ion-label>
       <ion-button
-        v-if="element.type == 'icon'"
+        v-if="element.type == 'string_icon'"
         :disabled="disabled"
         fill="clear"
         @click="
