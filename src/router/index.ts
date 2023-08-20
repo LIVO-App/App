@@ -91,6 +91,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/students/:id',
     name: 'student',
     component: () => import('../views/StudentDescription.vue')
+  },
+  {
+    path: '/propositions_history',
+    name: 'propositions_history',
+    component: () => import('../views/PropositionsHistory.vue')
   }
 ]
 
@@ -103,6 +108,8 @@ router.beforeEach((to, from) => {
 
   const user = User.getLoggedUser();
 
+  console.log(to);
+  
   if (user == undefined && to.name !== 'auth') {
     return { name: 'auth' };
   } else if (user != undefined) {

@@ -18,14 +18,14 @@
         }
       "
     >
-      <ion-card-header v-if="title != undefined && subtitle != undefined">
+      <ion-card-header v-if="title != undefined || subtitle != undefined">
         <ion-card-title v-if="title != undefined">{{ title }}</ion-card-title>
         <ion-card-subtitle v-if="subtitle != undefined">{{
           subtitle
         }}</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <ion-grid v-if="side_button != undefined">
+        <ion-grid v-if="side_element != undefined">
           <ion-row>
             <ion-col>
               <ionic-element
@@ -41,7 +41,7 @@
               style="border-left: 1px solid var(--ion-color-dark)"
             >
               <ionic-element
-                :element="side_button"
+                :element="side_element"
                 @execute_link="$emit('execute_link')"
                 @signal_event="$emit('signal_event')"
               />
@@ -88,7 +88,7 @@ const props = defineProps({
     type: Array<CustomElement>,
     required: true,
   },
-  side_button: Object as PropType<CustomElement>,
+  side_element: Object as PropType<CustomElement>,
   url: String,
   method: String as PropType<Method>,
 });

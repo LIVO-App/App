@@ -24,6 +24,10 @@
         </template>
       </suspense>
     </ion-modal>-->
+    <ionic-element
+      :element="buttons[3]"
+      @execute_link="$router.push(store.state.request.url)"
+    />
     <custom-select
       v-model="selected_model"
       :list="models"
@@ -1149,6 +1153,16 @@ const buttons: CustomElement[] = [
       icon: getIcon(store, "information_circle"),
     },
   },
+  {
+    id: "history",
+    type: "icon",
+    linkType: "request",
+    content: {
+      url: "/propositions_history",
+      method: "get",
+      icon: getIcon(store, "archive"), // Da sistemare: mettere in alto e fare popup
+    },
+  },
 ];
 const selected_block = ref(-1);
 const addition = ref(false);
@@ -1264,7 +1278,7 @@ if ($axios != undefined) {
   }*/
   models = await executeLink(
     $axios,
-    "/v1/propositions?token=" + user.token, // Da sistemare: chiedere perchè vengono fuori anche modelli da confermare
+    "/v1/propositions?token=" + user.token, // Da sistemare: chiedere perchè vengono fuori anche modelli da confermare (se è giusto sistemare id per duplicati) e solamente quelli fatti dal professore (in caso ho sbagliato, qual è l'api?)
     (response) =>
       response.data.data.map((a: CourseModelProps) => new CourseModel(a)),
     () => []

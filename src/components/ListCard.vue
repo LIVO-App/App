@@ -65,7 +65,7 @@
                 :title="card.title"
                 :subtitle="card.subtitle"
                 :content="card.content"
-                :side_button="card.side_button"
+                :side_element="card.side_element"
                 :url="card.url"
                 :method="card.method"
               />
@@ -130,7 +130,7 @@
                   :title="card.title"
                   :subtitle="card.subtitle"
                   :content="card.content"
-                  :side_button="card.side_button"
+                  :side_element="card.side_element"
                   :url="card.url"
                   :method="card.method"
                 />

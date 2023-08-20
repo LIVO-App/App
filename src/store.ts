@@ -32,7 +32,8 @@ import {
     logOutOutline,
     logOutSharp,
     arrowForwardOutline,
-    arrowForwardSharp
+    arrowForwardSharp,
+    fileTrayFullOutline
 } from 'ionicons/icons';
 import { UserProps } from "./types";
 
@@ -169,6 +170,14 @@ export const store = createStore({
                         url: '/students',
                         iconRef: "people"
                     },
+                    { // Da sistemare: non deve apparire
+                        title: {
+                            italian: "Proposte corsi",
+                            english: "Courses propositions"
+                        },
+                        url: '/propositions_history',
+                        iconRef: "archive"
+                    },
                     { // Da sistemare: spostare in profilo quando verrà creato
                         title: {
                             italian: "Logout",
@@ -261,6 +270,10 @@ export const store = createStore({
                 logout: {
                     ios: logOutOutline,
                     md: logOutSharp
+                },
+                archive: {
+                    ios: fileTrayFullOutline,
+                    md: fileTrayFullOutline
                 }
             },
             languages: ["italian", "english"],
@@ -408,6 +421,10 @@ export const store = createStore({
                     main_teacher: "Coordinatore di classe",
                     num_section_needed: "Numero delle sezioni necessario",
                     no_teacher_proposition: "Nessuna insegnante proposto",
+                    school_years: "Anni scolastici",
+                    no_school_years: "Nessun anno scolastico",
+                    project_class_confirmation_date: "Data conferma classe progetto",
+                    course_confirmation_date: "Data conferma modello di corso"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -549,7 +566,10 @@ export const store = createStore({
                     teacher_choice: "Teacher choice",
                     main_teacher: "Main teacher",
                     num_section_needed: "Number of section needed",
-                    no_teacher_proposition: "No teacher proposed"
+                    no_teacher_proposition: "No teacher proposed",
+                    school_years: "School years",
+                    no_school_years: "No school years",
+                    project_class_confirmation_date: "Project class confirmation date"
                 }
             },
             logged_user: false,

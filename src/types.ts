@@ -176,7 +176,7 @@ type CardElements = {
 type GeneralCardElements = CardElements & {
     title?: string,
     subtitle?: string,
-    side_button?: CustomElement,
+    side_element?: CustomElement,
     content: CustomElement[]
 }
 
@@ -186,7 +186,7 @@ type CourseCardElements = CardElements & {
     enrollment: Enrollment
 }
 
-type HiglightCardElements = CardElements & {
+type HiglightCardElements = CardElements & { // Da sistemare: unite con GeneralCardElements ora che ha side_element
     title: string,
     selected: boolean
 }
@@ -1383,11 +1383,33 @@ class CourseModel {
         this.project_class_to_be_modified = props.project_class_to_be_modified;
         this.course_confirmation_date = new Date(props.course_confirmation_date);
         this.course_to_be_modified = props.course_to_be_modified;
+        // Da sistemare: chiedere a pietro di mettere modello di base qui (e/o chiedere se è id e fargli cambiare nome) insieme a proposer teacher
     }
 
     toString(store: Store<any>) {
         const language: Language = store.state.language;
         return this[`${language}_title`] + " - " + this.creation_school_year;
+    }
+
+    toCard(store: Store<any>, edit = false): GeneralCardElements { // Da sistemare: evidenziare quando project_class_to_be_modified | course_to_be_modified una volta unita HiglightCard a GeneralCardElements
+        const language: Language = store.state.language;
+
+        return {
+            id: "" + this.id,
+            group: "",
+            title: this[`${language}_title`] + " - " + this.creation_school_year,
+            content: [{
+                id: this.id + "_project_class_confirmation_date",
+                type: "string",
+                content: getCurrentElement(store, "project_class_confirmation_date") + ": " + toDateString(this.project_class_confirmation_date)
+            }, {
+                id: this.id + "_course_confirmation_date",
+                type: "string",
+                content: getCurrentElement(store, "course_confirmation_date") + ": " + toDateString(this.course_confirmation_date)
+            }],
+            url: "/course_proposition?" + (edit ? "edit" : "view") + "=" + this.id, // Da sistemare: mettere guardia che sistema il link, salvando le cose sulla sessione
+            method: "get"
+        }
     }
 }
 
@@ -1718,7 +1740,7 @@ class Teaching {
         return {
             id: this.id,
             group: "",
-            side_button: {
+            side_element: {
                 id: this.id + "_remove",
                 type: "icon",
                 linkType: "event",
@@ -1769,7 +1791,7 @@ class AccessProposition {
         return {
             id: this.study_address.id + "_" + this.study_year,
             group: learning_context_id,
-            side_button: {
+            side_element: {
                 id: this.study_address.id + "_remove",
                 type: "icon",
                 linkType: "event",
@@ -1871,7 +1893,7 @@ class TeacherProposition {
         return {
             id: "" + this.teacher.id,
             group: "",
-            side_button: {
+            side_element: {
                 id: this.teacher.id + "_remove",
                 type: "icon",
                 linkType: "event",
@@ -1924,5 +1946,7 @@ type OpenToConstraint = {
 } & {
     [key in keyof string as `${Language}_title`]: string
 }
+
+
 
 export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, FailLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint }
