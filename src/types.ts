@@ -1372,9 +1372,9 @@ class CourseModel {
     }
 }
 
-type PagesType = "editor";
+type PagesType = "editor" | "no_inner_props";
 
-type Pages = "course_id" | "title" | "characteristics" | "students_distribution" | "description" | "expected_learning_results" | "criterions" | "activities" | "access_object" | "teacher_list";
+type Pages = "course_id" | "title" | "characteristics" | "students_distribution" | "descriptions" | "expected_learning_results" | "criterions" | "activities" | "access_object" | "teacher_list";
 
 type PropositionTitles = {
     [key in keyof string as `${Language}_title`]: string
@@ -1443,7 +1443,7 @@ class ModelProposition {
     private _activities: PropositionActivities;
     private _access_object: PropositionAccessObject;
     private _teacher_list: PropositionTeacher[];
-    private remaining: Pages[];
+    private _remaining: Pages[];
 
     constructor() {
         this._course_id = 0;
@@ -1484,7 +1484,7 @@ class ModelProposition {
         this._access_object = {};
         this._teacher_list = [];
 
-        this.remaining = ["course_id", "title", "characteristics", "description", "expected_learning_results", "criterions", "activities", "access_object", "teacher_list"];
+        this._remaining = ["course_id", "title", "characteristics", "descriptions", "expected_learning_results", "criterions", "activities", "access_object", "teacher_list"];
     }
 
     public get course_id() {
@@ -1492,7 +1492,7 @@ class ModelProposition {
     }
     public set course_id(value: number) {
         this._course_id = value;
-        this.remaining = this.remaining.filter(a => a != "course_id");
+        this._remaining = this._remaining.filter(a => a != "course_id");
     }
 
     public get title() {
@@ -1500,7 +1500,7 @@ class ModelProposition {
     }
     public set title(value: PropositionTitles) {
         this._title = value;
-        this.remaining = this.remaining.filter(a => a != "title");
+        this._remaining = this._remaining.filter(a => a != "title");
     }
 
     public get characteristics() {
@@ -1508,7 +1508,7 @@ class ModelProposition {
     }
     public set characteristics(value: PropositionCharacteristics) {
         this._characteristics = value;
-        this.remaining = this.remaining.filter(a => a != "characteristics");
+        this._remaining = this._remaining.filter(a => a != "characteristics");
     }
 
     public get students_distribution() {
@@ -1516,15 +1516,15 @@ class ModelProposition {
     }
     public set students_distribution(value: PropositionStudentsDistribution) {
         this._students_distribution = value;
-        this.remaining = this.remaining.filter(a => a != "students_distribution");
+        this._remaining = this._remaining.filter(a => a != "students_distribution");
     }
 
-    public get description() {
+    public get descriptions() {
         return this._description;
     }
-    public set description(value: PropositionDescriptions) {
+    public set descriptions(value: PropositionDescriptions) {
         this._description = value;
-        this.remaining = this.remaining.filter(a => a != "description");
+        this._remaining = this._remaining.filter(a => a != "descriptions");
     }
 
     public get expected_learning_results() {
@@ -1532,7 +1532,7 @@ class ModelProposition {
     }
     public set expected_learning_results(value: PropositionExpectedLearningResults) {
         this._expected_learning_results = value;
-        this.remaining = this.remaining.filter(a => a != "expected_learning_results");
+        this._remaining = this._remaining.filter(a => a != "expected_learning_results");
     }
 
     public get criterions() {
@@ -1540,7 +1540,7 @@ class ModelProposition {
     }
     public set criterions(value: PropositionCriterions) {
         this._criterions = value;
-        this.remaining = this.remaining.filter(a => a != "criterions");
+        this._remaining = this._remaining.filter(a => a != "criterions");
     }
 
     public get activities() {
@@ -1548,7 +1548,7 @@ class ModelProposition {
     }
     public set activities(value: PropositionActivities) {
         this._activities = value;
-        this.remaining = this.remaining.filter(a => a != "activities");
+        this._remaining = this._remaining.filter(a => a != "activities");
     }
 
     public get access_object() {
@@ -1556,7 +1556,7 @@ class ModelProposition {
     }
     public set access_object(value: PropositionAccessObject) {
         this._access_object = value;
-        this.remaining = this.remaining.filter(a => a != "access_object");
+        this._remaining = this._remaining.filter(a => a != "access_object");
     }
 
     public get teacher_list() {
@@ -1570,18 +1570,25 @@ class ModelProposition {
                 sections: a.sections
             }
         });
-        this.remaining = this.remaining.filter(a => a != "teacher_list");
+        this._remaining = this._remaining.filter(a => a != "teacher_list");
     }
 
     toProposition() {
         const proposition: {
             [key: string]: any
         } = {};
-        const keys = Object.keys(this).filter(a => a != "id" && a != "remaining");
+        const keys = Object.keys(this).filter(a => a != "id" && a != "_remaining");
 
+        let inner_keys: string[];
+        
         for (const page of keys) {
-            for (const key of page) {
-                proposition[key] = this[page][key];
+            if (this.getPages("no_inner_props").findIndex(a => a == page.slice(1)) == -1) {
+                inner_keys = Object.keys(this[page]);
+                for (const key of inner_keys) {
+                    proposition[key] = this[page][key];
+                }
+            } else {
+                proposition[page.slice(1)] = this[page];
             }
         }
 
@@ -1589,19 +1596,23 @@ class ModelProposition {
     }
 
     isComplete() {
-        return this.remaining.length == 0;
+        return this._remaining.length == 0;
     }
 
-    getRemaining() {
-        return this.remaining;
+    
+    public get remaining() : string[] {
+        return this._remaining;
     }
+    
 
     getPages(type?: PagesType): Pages[] {
         switch (type) {
             case undefined:
-                return ["title", "characteristics", "students_distribution", "description", "expected_learning_results", "criterions", "activities", "access_object", "teacher_list"];
+                return ["title", "characteristics", "students_distribution", "descriptions", "expected_learning_results", "criterions", "activities", "access_object", "teacher_list"];
             case "editor":
-                return ["description", "expected_learning_results", "criterions", "activities"];
+                return ["descriptions", "expected_learning_results", "criterions", "activities"];
+            case "no_inner_props":
+                return ["access_object", "teacher_list"];
         }
     }
 }

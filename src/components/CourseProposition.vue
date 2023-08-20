@@ -63,12 +63,61 @@
                   fill="outline"
                   class="ion-margin-vertical"
                 />
-                <ion-textarea
+                <!-- Da sistemare: trovare un modo per rendere la chiamata generale -->
+                <!--<ion-textarea
                   v-else
                   v-model="
-                    castToTitles(course_proposition[pages[current_page_index]])[
-                      `${language}_title`
-                    ]
+                    castToLanguageObj(course_proposition[pages[current_page_index]])[`${language}_descr exp_l cri act`]
+                  "
+                  :label="getCurrentElement(store, language)"
+                  :aria-label="getCurrentElement(store, language)"
+                  fill="outline"
+                  class="ion-margin-vertical"
+                />-->
+                <ion-textarea
+                  v-else-if="pages[current_page_index] == 'descriptions'"
+                  v-model="
+                    castToDescriptions(
+                      course_proposition[pages[current_page_index]]
+                    )[`${language}_descr`]
+                  "
+                  :label="getCurrentElement(store, language)"
+                  :aria-label="getCurrentElement(store, language)"
+                  fill="outline"
+                  class="ion-margin-vertical"
+                />
+                <ion-textarea
+                  v-else-if="
+                    pages[current_page_index] == 'expected_learning_results'
+                  "
+                  v-model="
+                    castToExpectedLearningResults(
+                      course_proposition[pages[current_page_index]]
+                    )[`${language}_exp_l`]
+                  "
+                  :label="getCurrentElement(store, language)"
+                  :aria-label="getCurrentElement(store, language)"
+                  fill="outline"
+                  class="ion-margin-vertical"
+                />
+                <ion-textarea
+                  v-else-if="pages[current_page_index] == 'criterions'"
+                  v-model="
+                    castToCriterions(
+                      course_proposition[pages[current_page_index]]
+                    )[`${language}_cri`]
+                  "
+                  :label="getCurrentElement(store, language)"
+                  :aria-label="getCurrentElement(store, language)"
+                  fill="outline"
+                  class="ion-margin-vertical"
+                />
+                <ion-textarea
+                  v-else-if="pages[current_page_index] == 'activities'"
+                  v-model="
+                    castToActivities(
+                      course_proposition[pages[current_page_index]]
+                    )[`${language}_act`]
                   "
                   :label="getCurrentElement(store, language)"
                   :aria-label="getCurrentElement(store, language)"
@@ -367,7 +416,12 @@
                 <ion-row>
                   <ion-col>
                     <ion-text
-                      >{{ getCurrentElement(store, "sections") }}: {{ parseInt(num_section) <= 0 ? getCurrentElement(store,'num_section_needed') : "" }}</ion-text
+                      >{{ getCurrentElement(store, "sections") }}:
+                      {{
+                        parseInt(num_section) <= 0
+                          ? getCurrentElement(store, "num_section_needed")
+                          : ""
+                      }}</ion-text
                     >
                     <ion-list v-if="parseInt(num_section) > 0">
                       <ion-item
@@ -408,13 +462,18 @@
                 <ion-col>
                   <list-card
                     :key="trigger + '_list'"
-                    :cards_list="pages[current_page_index] == 'access_object'
-                          ? access_propositions_cards
-                          : teachers_cards"
+                    :cards_list="
+                      pages[current_page_index] == 'access_object'
+                        ? access_propositions_cards
+                        : teachers_cards
+                    "
                     :emptiness_message="
-                      getCurrentElement(store, pages[current_page_index] == 'access_object'
+                      getCurrentElement(
+                        store,
+                        pages[current_page_index] == 'access_object'
                           ? 'no_access_proposition'
-                          : 'no_teacher_proposition')
+                          : 'no_teacher_proposition'
+                      )
                     "
                     @signal_event="
                       removeElement(
@@ -447,20 +506,21 @@
               />
             </ion-col>
           </ion-row>
-          <template v-if="course_proposition.getRemaining().length == 0">
-            <ion-row>
-              <ion-col>
-                <ion-button
-                  @click="propose"
-                  expand="block"
-                  color="primary"
-                  fill="solid"
-                >
-                  {{ getCurrentElement(store, "propose") }}
-                </ion-button>
-              </ion-col>
-            </ion-row>
-          </template>
+          <!--<template v-if="parameters_remaining">-->
+          <!-- Da sistemare: sistemare remainings -->
+          <ion-row>
+            <ion-col>
+              <ion-button
+                @click="propose"
+                expand="block"
+                color="primary"
+                fill="solid"
+              >
+                {{ getCurrentElement(store, "propose") }}
+              </ion-button>
+            </ion-col>
+          </ion-row>
+          <!--</template>-->
         </ion-grid>
       </ion-card-content>
     </ion-card>
@@ -492,6 +552,10 @@ import {
   Teacher,
   TeacherProps,
   TeacherProposition,
+  PropositionDescriptions,
+  PropositionExpectedLearningResults,
+  PropositionActivities,
+  PropositionCriterions,
 } from "@/types";
 import {
   executeLink,
@@ -514,7 +578,7 @@ import {
   IonTextarea,
   IonCheckbox,
   IonList,
-  IonItem
+  IonItem,
 } from "@ionic/vue";
 import { AxiosInstance } from "axios";
 import { computed, inject, reactive, ref, Ref, watch } from "vue";
@@ -537,6 +601,14 @@ const go = (direction: boolean) => {
 };
 const propose = () => {
   console.log(course_proposition);
+  executeLink(
+    $axios,
+    "/v1/propositions?token=" + user.token, // Da sistemare: sembra non funzionare le sezioni multiple su project_teach
+    clean_course_proposition,
+    () => setupModalAndOpen("title"),
+    "post",
+    course_proposition.toProposition()
+  ); // Da sistemare: sistemare remainings e dopo setuPModalAndOpen
 };
 const closeModal = (alert: boolean) => {
   if (alert) {
@@ -546,6 +618,8 @@ const closeModal = (alert: boolean) => {
   }
 };
 const setupModalAndOpen = async (window: AvailableModal) => {
+  console.log("No");
+  
   switch (window) {
     default:
       break;
@@ -563,6 +637,14 @@ const teacherToString = (teacher: Teacher) =>
 const castToTitles = (titles: any) => titles as PropositionTitles;
 const castToCharacteristics = (characteristics: any) =>
   characteristics as PropositionCharacteristics;
+const castToDescriptions = (descriptions: any) =>
+  descriptions as PropositionDescriptions;
+const castToExpectedLearningResults = (expected_learning_results: any) =>
+  expected_learning_results as PropositionExpectedLearningResults;
+const castToCriterions = (criterions: any) =>
+  criterions as PropositionCriterions;
+const castToActivities = (activities: any) =>
+  activities as PropositionActivities;
 const castToStudentsDistribution = (students_distribution: any) =>
   students_distribution as PropositionStudentsDistribution;
 const addElement = (type: ListTypes) => {
@@ -710,7 +792,7 @@ const addElement = (type: ListTypes) => {
         (tmp_teacher_index = teachers.available.findIndex(
           (a) => a.id == selected_teacher.value
         )) != -1 &&
-        sections.find(a => a)
+        sections.find((a) => a)
       ) {
         teacher = teachers.available[tmp_teacher_index];
         teacher_proposition = new TeacherProposition(
@@ -724,7 +806,7 @@ const addElement = (type: ListTypes) => {
         );
 
         teachers_cards.cards[""].push(teacher_proposition.toCard(store));
-        
+
         teachers.selected.push(teacher);
         teachers.available.splice(tmp_teacher_index, 1);
         selected_teacher.value = 0;
@@ -861,10 +943,11 @@ const removeElement = (type: ListTypes) => {
       tmp_teacher_index = teachers.selected.findIndex(
         (a) => a.id == teacher_id
       );
-      
 
       course_proposition.teacher_list.splice(
-        course_proposition.teacher_list.findIndex(a => a.teacher_id == teacher_id),
+        course_proposition.teacher_list.findIndex(
+          (a) => a.teacher_id == teacher_id
+        ),
         1
       );
       teachers_cards.cards[""].splice(
@@ -881,6 +964,36 @@ const removeElement = (type: ListTypes) => {
   }
   trigger.value++;
 };
+const clean_course_proposition = () => { // Da sistemare: fare completare
+  console.log("Ciao");
+  
+  /*course_proposition.title = {};
+  course_proposition.characteristics = {};
+  course_proposition.descriptions = {};
+  course_proposition.expected_learning_results = {};
+  course_proposition.criterions = {};
+  course_proposition.activities = {};
+  course_proposition.students_distribution = {
+    min_students: 0,
+    max_students: 0,
+    teaching_list: [],
+  };
+  course_proposition.access_object = {};
+  course_proposition.teacher_list = [];
+  course_proposition.remaining = [];*/
+  course_proposition.remaining.push("title");
+  course_proposition.remaining.push("characteristics");
+  course_proposition.remaining.push("descriptions");
+  course_proposition.remaining.push("expected_learning_results");
+  course_proposition.remaining.push("criterions");
+  course_proposition.remaining.push("activities");
+  course_proposition.remaining.push("students_distribution");
+  course_proposition.remaining.push("access_object");
+  course_proposition.remaining.push("teacher_list");
+};
+const parameters_remaining = computed(
+  () => course_proposition.remaining.length == 0
+);
 
 const store = useStore();
 const $axios: AxiosInstance | undefined = inject("$axios");
@@ -1132,7 +1245,7 @@ if ($axios != undefined) {
   );
 
   watch(selected_block, (new_block) => {
-    course_proposition.block_id = new_block;
+    course_proposition.characteristics.block_id = new_block;
     groups = learning_blocks.map((a) => {
       return {
         id: a.num_groups,
@@ -1175,7 +1288,9 @@ if ($axios != undefined) {
       if (sections.length > actual_n) {
         sections.splice(actual_n);
       } else if (sections.length < actual_n) {
-        sections = reactive(sections.concat(new Array(actual_n-sections.length).fill(false)));
+        sections = reactive(
+          sections.concat(new Array(actual_n - sections.length).fill(false))
+        );
       }
     }
   });
