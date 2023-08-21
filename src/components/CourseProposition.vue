@@ -24,10 +24,22 @@
         </template>
       </suspense>
     </ion-modal>-->
+    <!-- Da sistemare: spostare dopo rework menu -->
     <ionic-element
       :element="buttons[3]"
       @execute_link="$router.push(store.state.request.url)"
     />
+    <template v-if="user.user == 'admin'">
+      <ionic-element :element="buttons[4]" @signal_event="approve()" />
+      <ionic-element
+        :element="buttons[5]"
+        @signal_event="approve(false)"
+      /> <!-- Da sistemare: chiedere quando usare le DEL di project_class e course se c'è /approval -->
+      <ionic-element
+        :element="action == 'view' ? buttons[6] : buttons[7]"
+        @signal_event="changeModality(action == 'view' ? 'edit' : 'view')"
+      />
+    </template>
     <custom-select
       v-model="selected_model"
       :list="models"
@@ -288,25 +300,27 @@
                 <ion-text>
                   {{ getCurrentElement(store, "students_per_section") }}:
                 </ion-text>
-                <custom-select
-                  :key="trigger + '_select'"
-                  v-model="selected_teaching"
-                  :list="teachings.available"
-                  :label="getCurrentElement(store, 'teaching') + ':'"
-                  :aria_label="getCurrentElement(store, 'teaching')"
-                  :placeholder="getCurrentElement(store, 'teaching_choices')"
-                  :getCompleteName="teachingToString"
-                  :disabled="action == 'view'"
-                />
-                <ion-button
+                <template
                   v-if="action != 'view'"
-                  @click="addElement('teachings')"
-                  expand="block"
-                  color="primary"
-                  fill="solid"
                 >
-                  {{ getCurrentElement(store, "add") }}
-                </ion-button>
+                  <custom-select
+                    :key="trigger + '_select'"
+                    v-model="selected_teaching"
+                    :list="teachings.available"
+                    :label="getCurrentElement(store, 'teaching') + ':'"
+                    :aria_label="getCurrentElement(store, 'teaching')"
+                    :placeholder="getCurrentElement(store, 'teaching_choices')"
+                    :getCompleteName="teachingToString"
+                  />
+                  <ion-button
+                    @click="addElement('teachings')"
+                    expand="block"
+                    color="primary"
+                    fill="solid"
+                  >
+                    {{ getCurrentElement(store, "add") }}
+                  </ion-button>
+                </template>
                 <list-card
                   :key="trigger + '_list'"
                   :cards_list="teachings_cards"
@@ -323,7 +337,7 @@
             "
           >
             <ion-grid>
-              <template v-if="pages[current_page_index] == 'access_object'">
+              <template v-if="action != 'view' && pages[current_page_index] == 'access_object'">
                 <ion-row>
                   <ion-col>
                     <custom-select
@@ -337,7 +351,6 @@
                         getCurrentElement(store, 'learning_context_choice')
                       "
                       :getCompleteName="learningContextToString"
-                      :disabled="action == 'view'"
                     />
                   </ion-col>
                   <ion-col>
@@ -356,7 +369,6 @@
                           : getCurrentElement(store, 'learning_context_needed')
                       "
                       :getCompleteName="studyAddressToString"
-                      :disabled="action == 'view'"
                     />
                   </ion-col>
                   <ion-col>
@@ -381,7 +393,6 @@
                             : 'study_address_needed'
                         )
                       "
-                      :disabled="action == 'view'"
                     />
                   </ion-col>
                   <ion-col>
@@ -390,7 +401,6 @@
                       :aria-label="getCurrentElement(store, 'presidium')"
                       class="ion-padding-start"
                       label-placement="start"
-                      :disabled="action == 'view'"
                       >{{ getCurrentElement(store, "presidium") }}</ion-checkbox
                     >
                     <ion-checkbox
@@ -398,7 +408,6 @@
                       :aria-label="getCurrentElement(store, 'main_study_year')"
                       class="ion-padding-start"
                       label-placement="start"
-                      :disabled="action == 'view'"
                       >{{
                         getCurrentElement(store, "main_study_year")
                       }}</ion-checkbox
@@ -406,7 +415,7 @@
                   </ion-col>
                 </ion-row>
               </template>
-              <template v-else>
+              <template v-else-if="action != 'view'">
                 <ion-row>
                   <ion-col size="auto">
                     <custom-select
@@ -417,7 +426,6 @@
                       :aria_label="getCurrentElement(store, 'teacher')"
                       :placeholder="getCurrentElement(store, 'teacher_choice')"
                       :getCompleteName="teacherToString"
-                      :disabled="action == 'view'"
                     />
                   </ion-col>
                   <ion-col>
@@ -433,7 +441,6 @@
                       :aria-label="getCurrentElement(store, 'main_teacher')"
                       class="ion-padding-start"
                       label-placement="start"
-                      :disabled="action == 'view'"
                       >{{
                         getCurrentElement(store, "main_teacher")
                       }}</ion-checkbox
@@ -460,7 +467,6 @@
                           :aria-label="numberToSection(index)"
                           class="ion-padding-start"
                           label-placement="start"
-                          :disabled="action == 'view'"
                           >{{ numberToSection(index) }}</ion-checkbox
                         >
                       </ion-item>
@@ -697,7 +703,9 @@ const addTeaching = (id?: string) => {
 
     course_proposition.students_distribution.teaching_list.push(teaching.id);
 
-    teachings_cards.cards[""].push(teaching.toCard(store, action == "view"));
+    teachings_cards.cards[""].push(
+      teaching.toCard(store, action.value == "view")
+    );
 
     teachings.selected.push(teaching);
     teachings.available.splice(tmp_teaching_index, 1);
@@ -789,7 +797,7 @@ const addAccess = (
       tmp_access_proposition.toCard(
         store,
         actual_learning_context_id,
-        action == "view"
+        action.value == "view"
       )
     );
 
@@ -876,7 +884,7 @@ const addTeacher = (proposition_teacher?: PropositionTeacher) => {
     course_proposition.teacher_list.push(teacher_proposition.toTeacherObj());
 
     teachers_cards.cards[""].push(
-      teacher_proposition.toCard(store, action == "view")
+      teacher_proposition.toCard(store, action.value == "view")
     );
 
     teachers.selected.push(teacher);
@@ -1141,9 +1149,37 @@ const edit_course_proposition = async (course_id?: number) => {
     trigger.value++;
   }
 };
-const parameters_remaining = computed(
+const changeModality = (new_action: Action) => {
+  action.value = new_action;
+  // Da sistemare: mettere X a liste
+  trigger.value++; // Da sistemare: mettere i trigger a tutti i parametri
+};
+const approve = (outcome = true) => {
+  executeLink(
+    $axios,
+    "/v1/propositions/approval?course_id=" +
+      course_proposition.id +
+      "&block_id=" +
+      course_proposition.characteristics.block_id +
+      "&approved=" +
+      outcome +
+      "&token=" +
+      user.token,
+    () => {
+      // Da sistemare: controlla risposta e apri modal
+      console.log(outcome ? "Accettato" : "Rifiutato");
+      
+    },
+    () => {
+      // Da sistemare: controlla risposta e apri modal
+      console.log("Operazione non riuscita");
+    },
+    "put"
+  );
+};
+/*const parameters_remaining = computed(
   () => course_proposition.remaining.length == 0
-);
+);*/
 
 const store = useStore();
 const $axios: AxiosInstance | undefined = inject("$axios");
@@ -1198,6 +1234,42 @@ const buttons: CustomElement[] = [
       url: "/propositions_history",
       method: "get",
       icon: getIcon(store, "archive"), // Da sistemare: mettere in alto e fare popup
+    },
+  },
+  {
+    id: "approve",
+    type: "icon",
+    linkType: "event",
+    content: {
+      event: "approve",
+      icon: getIcon(store, "checkmark"),
+    },
+  },
+  {
+    id: "reject",
+    type: "icon",
+    linkType: "event",
+    content: {
+      event: "reject",
+      icon: getIcon(store, "close"),
+    },
+  },
+  {
+    id: "edit",
+    type: "icon",
+    linkType: "event",
+    content: {
+      event: "edit",
+      icon: getIcon(store, "pencil"),
+    },
+  },
+  {
+    id: "view",
+    type: "icon",
+    linkType: "event",
+    content: {
+      event: "view",
+      icon: getIcon(store, "eye"),
     },
   },
 ];
@@ -1277,12 +1349,9 @@ const teachers_cards: OrderedCardsList<GeneralCardElements> = {
     "": [],
   },
 };
-const action: Action =
-  $route.query.edit != undefined
-    ? "edit"
-    : $route.query.view != undefined
-    ? "view"
-    : "propose";
+const action: Ref<Action> = ref(
+  $route.query.view != undefined ? "view" : "propose"
+);
 /*const correspondences: {
   [key in keyof string as ListTypes]: {
     [key: string]: string
@@ -1468,7 +1537,7 @@ if ($axios != undefined) {
     edit_course_proposition(selected_model.value);
     trigger.value++;
   });
-  selected_model.value = parseInt($route.query[action] as string);
+  selected_model.value = parseInt($route.query[action.value] as string);
 }
 </script>
 
