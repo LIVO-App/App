@@ -1392,13 +1392,18 @@ class CourseModel {
         return this[`${language}_title`] + " - " + this.creation_school_year;
     }
 
-    toCard(store: Store<any>, edit = false): GeneralCardElements { // Da sistemare: evidenziare quando project_class_to_be_modified | course_to_be_modified una volta unita HiglightCard a GeneralCardElements
+    toCard(store: Store<any>, user: User, view = false): GeneralCardElements { // Da sistemare: evidenziare quando project_class_to_be_modified | course_to_be_modified una volta unita HiglightCard a GeneralCardElements
         const language: Language = store.state.language;
 
         return {
             id: "" + this.id,
             group: "",
             title: this[`${language}_title`] + " - " + this.creation_school_year,
+            side_element: user.user == "admin" ? {
+                id: "status",
+                type: "string",
+                content: this.project_class_confirmation_date instanceof Date && !isNaN(this.project_class_confirmation_date.getMilliseconds()) ? "Approvato" : "Da approvare" // Da sistemare: mettere stato quando disponibile proposer
+            } : undefined,
             content: [{
                 id: this.id + "_project_class_confirmation_date",
                 type: "string",
@@ -1408,7 +1413,7 @@ class CourseModel {
                 type: "string",
                 content: getCurrentElement(store, "course_confirmation_date") + ": " + toDateString(this.course_confirmation_date)
             }],
-            url: "/course_proposition?" + (edit ? "edit" : "view") + "=" + this.id, // Da sistemare: mettere guardia che sistema il link, salvando le cose sulla sessione
+            url: "/course_proposition?" + (view ? "view" + "=" + this.id : ""), // Da sistemare: mettere guardia che sistema il link, salvando le cose sulla sessione
             method: "get"
         }
     }

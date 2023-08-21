@@ -88,7 +88,7 @@ const changeSelection = async () => {
     
     for (const proposition of propositions) {
       if (proposition.creation_school_year == parseInt(school_years.cards[""][selected_year_index.value].id)) {
-        year_propositions.cards[""].push(proposition.toCard(store));
+        year_propositions.cards[""].push(proposition.toCard(store,user,true));
       }
     }
   }
