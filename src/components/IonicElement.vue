@@ -14,6 +14,7 @@
   <template v-else>
     <ion-button
       v-if="element.type == 'icon'"
+      :disabled="disabled"
       fill="clear"
       @click="
         () => {
@@ -42,13 +43,13 @@
       v-else-if="element.type == 'string'"
       @click="
         () => {
-          if (element.linkType == 'request') {
+          if (!disabled && element.linkType == 'request') {
             store.state.request = {
               url: castRequestString(element.content).url,
               method: castRequestString(element.content).method,
             };
             $emit('execute_link');
-          } else if (element.linkType == 'event') {
+          } else if (!disabled && element.linkType == 'event') {
             store.state.event = {
               name: castEventString(props.element.content).event,
               data: castEventString(props.element.content).data,
@@ -60,6 +61,38 @@
     >
       {{ castEventString(element.content).text }}
     </ion-label>
+    <template v-else-if="element.type == 'string_icon'">
+      <ion-label>
+        {{ castEventStringIcon(element.content).text }}
+      </ion-label>
+      <ion-button
+        v-if="element.type == 'string_icon'"
+        :disabled="disabled"
+        fill="clear"
+        @click="
+          () => {
+            if (element.linkType == 'request') {
+              store.state.request = {
+                url: castRequestStringIcon(element.content).url,
+                method: castRequestStringIcon(element.content).method,
+              };
+              $emit('execute_link');
+            } else if (element.linkType == 'event') {
+              store.state.event = {
+                name: castEventStringIcon(props.element.content).event,
+                data: castEventStringIcon(props.element.content).data,
+              };
+              $emit('signal_event');
+            }
+          }
+        "
+      >
+        <ion-icon
+          :ios="castRequestIcon(element.content).icon.ios"
+          :md="castRequestIcon(element.content).icon.md"
+        ></ion-icon>
+      </ion-button>
+    </template>
   </template>
 </template>
 
@@ -71,6 +104,8 @@ import {
   EventIcon,
   IconAlternatives,
   RequestString,
+  RequestStringIcon,
+  EventStringIcon,
 } from "@/types";
 import { IonButton, IonLabel, IonIcon } from "@ionic/vue";
 import { PropType } from "vue";
@@ -81,6 +116,8 @@ const castRequestIcon = (a: any) => a as RequestIcon;
 const castEventIcon = (a: any) => a as EventIcon;
 const castRequestString = (a: any) => a as RequestString;
 const castEventString = (a: any) => a as EventString;
+const castRequestStringIcon = (a: any) => a as RequestStringIcon;
+const castEventStringIcon = (a: any) => a as EventStringIcon;
 
 const store = useStore();
 const props = defineProps({
@@ -88,7 +125,7 @@ const props = defineProps({
     type: Object as PropType<CustomElement>,
     required: true,
   },
-  color: String,
+  disabled: Boolean, // Da sistemare: aggiornare posti dove viene usato
 });
 defineEmits(["execute_link", "signal_event"]);
 </script>

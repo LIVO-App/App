@@ -30,7 +30,10 @@ import {
     settingsOutline,
     settingsSharp,
     logOutOutline,
-    logOutSharp
+    logOutSharp,
+    arrowForwardOutline,
+    arrowForwardSharp,
+    fileTrayFullOutline
 } from 'ionicons/icons';
 import { UserProps } from "./types";
 
@@ -51,10 +54,10 @@ export const store = createStore({
             commit("edit_user", undefined);
         },
         signalLogin({ commit }) {
-            commit("setLoggedUser",true);
+            commit("setLoggedUser", true);
         },
         signalLogout({ commit }) {
-            commit("setLoggedUser",false);
+            commit("setLoggedUser", false);
         }
     },
     state() {
@@ -148,7 +151,7 @@ export const store = createStore({
                             italian: "Proposta corso",
                             english: "Course propose"
                         },
-                        url: '/course_propose',
+                        url: '/course_proposition',
                         iconRef: "add_circle"
                     },
                     { // Da sistemare: non deve apparire
@@ -166,6 +169,14 @@ export const store = createStore({
                         },
                         url: '/students',
                         iconRef: "people"
+                    },
+                    { // Da sistemare: non deve apparire
+                        title: {
+                            italian: "Proposte corsi",
+                            english: "Courses propositions"
+                        },
+                        url: '/propositions_history',
+                        iconRef: "archive"
                     },
                     { // Da sistemare: spostare in profilo quando verrà creato
                         title: {
@@ -232,6 +243,10 @@ export const store = createStore({
                     ios: arrowBackOutline,
                     md: arrowBackSharp
                 },
+                arrow_forward: {
+                    ios: arrowForwardOutline,
+                    md: arrowForwardSharp
+                },
                 add: {
                     ios: addOutline,
                     md: addSharp
@@ -255,6 +270,10 @@ export const store = createStore({
                 logout: {
                     ios: logOutOutline,
                     md: logOutSharp
+                },
+                archive: {
+                    ios: fileTrayFullOutline,
+                    md: fileTrayFullOutline
                 }
             },
             languages: ["italian", "english"],
@@ -362,7 +381,50 @@ export const store = createStore({
                     wrong_username_or_password: "Username o password sbagliati",
                     server_error: "Errore del server",
                     no_username: "Username non inserito",
-                    no_password: "Password non inserita"
+                    no_password: "Password non inserita",
+                    reference_model: "Modello di riferimento",
+                    possible_models: "Possibili modelli",
+                    characteristics: "Caratteristiche",
+                    conduct: "Svolgimento",
+                    teaching_list: "Insegnamenti",
+                    access_object: "Accesso",
+                    teacher_list: "Insegnanti",
+                    italian: "Italiano",
+                    english: "Inglese",
+                    propose: "Proponi",
+                    min_students: "Studenti minimi",
+                    max_students: "Studenti massimi",
+                    area_choice: "Scegli un'area di apprendimento",
+                    growth_choice: "Scegli un'area di crescita personale",
+                    learning_blocks_choice: "Scegli un blocco di apprendimento",
+                    learning_block_needed: "Blocco di apprendimento necessario",
+                    group_choice: "Scegli un gruppo",
+                    grant_access: "Concedi l'accesso",
+                    add_teacher: "Aggiungi insegnante",
+                    teaching_choices: "Scegli un insegnamento",
+                    study_year: "Anno di studio",
+                    study_address: "Indirizzo di studio",
+                    study_year_choice: "Scegli un anno di studio",
+                    study_address_choice: "Scegli un indirizzo di studio",
+                    presidium: "Presidio",
+                    main_study_year: "Anno di studi principale",
+                    students_per_section: "Studenti per sezione",
+                    students_distribution: "Distribuzione studenti",
+                    num_section: "Numero di sezioni (1: A, 2: A e B, ...)",
+                    teaching: "Insegnamento",
+                    add: "Aggiungi",
+                    study_address_needed: "Indirizzo di studio necessario",
+                    no_teachings: "Nessun insegnamento",
+                    learning_context_needed: "Indirizzo di studio necessario",
+                    no_access_proposition: "Nessuna proposta di accesso per le classi ordinarie",
+                    teacher_choice: "Scegli un insegnante",
+                    main_teacher: "Coordinatore di classe",
+                    num_section_needed: "Numero delle sezioni necessario",
+                    no_teacher_proposition: "Nessuna insegnante proposto",
+                    school_years: "Anni scolastici",
+                    no_school_years: "Nessun anno scolastico",
+                    project_class_confirmation_date: "Data conferma classe progetto",
+                    course_confirmation_date: "Data conferma modello di corso"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -465,7 +527,49 @@ export const store = createStore({
                     wrong_username_or_password: "Wrong username or password",
                     server_error: "Server error",
                     no_username: "Username missing",
-                    no_password: "Password missing"
+                    no_password: "Password missing",
+                    reference_model: "Reference model",
+                    possible_models: "Possible models",
+                    characteristics: "Characteristics",
+                    conduct: "Conduct",
+                    teaching_list: "Teachings",
+                    access_object: "Access",
+                    teacher_list: "Teachers",
+                    italian: "Italian",
+                    english: "English",
+                    propose: "Propose",
+                    min_students: "Minimum students",
+                    max_students: "Maximum students",
+                    area_choice: "Choose a learning area",
+                    growth_choice: "Choose a personal growth area",
+                    learning_blocks_choice: "Choose a learning block",
+                    learning_block_needed: "Learning block needed",
+                    group_choice: "Choose a group",
+                    grant_access: "Grant access",
+                    add_teacher: "Add teacher",
+                    teaching_choices: "Choose a teaching",
+                    study_year: "Study year",
+                    study_address: "Study address",
+                    study_year_choice: "Choose a study year",
+                    study_address_choice: "Choose a study address",
+                    presidium: "Presidium",
+                    main_study_year: "Main study year",
+                    students_per_section: "Students per section",
+                    students_distribution: "Students distribution",
+                    num_section: "Numero di sezioni (1: A, 2: A and B, ...)",
+                    teaching: "Insegnamento",
+                    add: "Add",
+                    study_address_needed: "Study address needed",
+                    no_teachings: "No teachings",
+                    learning_context_needed: "Learning context needed",
+                    no_access_proposition: "No access proposition for ordinary classes",
+                    teacher_choice: "Teacher choice",
+                    main_teacher: "Main teacher",
+                    num_section_needed: "Number of section needed",
+                    no_teacher_proposition: "No teacher proposed",
+                    school_years: "School years",
+                    no_school_years: "No school years",
+                    project_class_confirmation_date: "Project class confirmation date"
                 }
             },
             logged_user: false,
