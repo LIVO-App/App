@@ -8,6 +8,7 @@
     :placeholder="placeholder"
     class="ion-padding"
     fill="solid"
+    :disabled="disabled"
   >
     <!-- interface="popover" è più carino, ma da warnings-->
     <ion-select-option
@@ -44,6 +45,7 @@ const props = defineProps({
     type: Function,
     default: (option: any) => option.id,
   },
+  disabled: Boolean,
 });
 defineEmits(["update:selected_option"]);
 </script>

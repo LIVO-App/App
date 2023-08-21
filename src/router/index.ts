@@ -70,7 +70,22 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/course_proposition',
     name: 'course_proposition',
-    component: () => import('../views/CourseProposition.vue')
+    component: () => import('../views/CourseProposition.vue')/*,
+    beforeEnter: (to, from) => {
+      if (to.query.edit != undefined || to.query.view != undefined) {
+        sessionStorage.setItem("proposition",JSON.stringify({
+          "id": to.query.edit ?? to.query.view,
+          "action": to.query.edit != undefined ? "edit" : to.query.view != undefined ? "view" : ""
+        }));
+        return {
+          name: 'course_proposition',
+          query: {}
+        };
+      } else {
+        //sessionStorage.removeItem("proposition");
+        return true;
+      }
+    }*/
   },
   {
     path: '/announcements/:course/:block',
@@ -107,8 +122,6 @@ const router = createRouter({
 router.beforeEach((to, from) => {
 
   const user = User.getLoggedUser();
-
-  console.log(to);
   
   if (user == undefined && to.name !== 'auth') {
     return { name: 'auth' };

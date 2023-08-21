@@ -539,13 +539,13 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             response => {
                 let learning_context_id;
                 for (const constraint of (response.data.data as OpenToConstraint[])) {
-                    learning_context_id = (constraint.learning_context_ref.data as {id: string}).id;
+                    learning_context_id = (constraint.learning_context_ref.data as { id: string }).id;
                     if (this.access_object[learning_context_id] == undefined) {
                         this.access_object[learning_context_id] = [];
                     }
                     this.access_object[learning_context_id].push({
-                        study_year: (constraint.study_year_ref.data as {id: number}).id,
-                        study_address: (constraint.study_address_ref.data as {id: string}).id,
+                        study_year: (constraint.study_year_ref.data as { id: number }).id,
+                        study_address: (constraint.study_address_ref.data as { id: string }).id,
                         main_study_year: constraint.main_study_year == 1,
                         presidium: constraint.presidium == 1
                     });
@@ -1713,7 +1713,7 @@ type GrowthArea = IdTitleDescription<number>;
 
 type TeachingProps = {
     id?: string
-    teaching_ref?: ResponseItem<{id: string}>
+    teaching_ref?: ResponseItem<{ id: string }>
 } & {
         [key in keyof string as `${Language}_title`]: string
     } & {
@@ -1728,19 +1728,19 @@ class Teaching {
     english_description?: string;
 
     constructor(props: TeachingProps) {
-        this.id = props.teaching_ref != undefined ? (props.teaching_ref.data as {id: string}).id : props.id as string;
+        this.id = props.teaching_ref != undefined ? (props.teaching_ref.data as { id: string }).id : props.id as string;
         this.italian_title = props.italian_title;
         this.english_title = props.english_title;
         this.italian_description = props.italian_description;
         this.english_description = props.english_description;
     }
 
-    toCard(store: Store<any>): GeneralCardElements {
+    toCard(store: Store<any>, disabled = false): GeneralCardElements {
         const language: Language = store.state.language;
         return {
             id: this.id,
             group: "",
-            side_element: {
+            side_element: disabled ? undefined : {
                 id: this.id + "_remove",
                 type: "icon",
                 linkType: "event",
@@ -1785,13 +1785,13 @@ class AccessProposition {
         this.main_study_year = main_study_year;
     }
 
-    toCard(store: Store<any>, learning_context_id: string): GeneralCardElements {
+    toCard(store: Store<any>, learning_context_id: string, disabled = false): GeneralCardElements {
         const language: Language = store.state.language;
 
         return {
             id: this.study_address.id + "_" + this.study_year,
             group: learning_context_id,
-            side_element: {
+            side_element: disabled ? undefined : {
                 id: this.study_address.id + "_remove",
                 type: "icon",
                 linkType: "event",
@@ -1889,11 +1889,11 @@ class TeacherProposition {
         }
     }
 
-    toCard(store: Store<any>): GeneralCardElements {
+    toCard(store: Store<any>, disabled = false): GeneralCardElements {
         return {
             id: "" + this.teacher.id,
             group: "",
-            side_element: {
+            side_element: disabled ? undefined : {
                 id: this.teacher.id + "_remove",
                 type: "icon",
                 linkType: "event",
@@ -1944,8 +1944,8 @@ type OpenToConstraint = {
     main_study_year: number,
     learning_context_ref: ResponseItem<{ id: string }>
 } & {
-    [key in keyof string as `${Language}_title`]: string
-}
+        [key in keyof string as `${Language}_title`]: string
+    }
 
 
 
