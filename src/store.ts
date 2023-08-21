@@ -33,7 +33,18 @@ import {
     logOutSharp,
     arrowForwardOutline,
     arrowForwardSharp,
-    fileTrayFullOutline
+    fileTrayFullOutline,
+    calendarOutline,
+    calendarSharp,
+    linkOutline,
+    linkSharp,
+    fileTrayFullSharp,
+    checkmarkOutline,
+    checkmarkSharp,
+    pencilOutline,
+    pencilSharp,
+    eyeOutline,
+    eyeSharp
 } from 'ionicons/icons';
 import { UserProps } from "./types";
 
@@ -203,7 +214,80 @@ export const store = createStore({
                         iconRef: "information_circle"
                     }
                 ],
-                "admin": []
+                "admin": [
+                    {
+                        title: {
+                            italian: "Corsi progetto",
+                            english: "Project courses"
+                        },
+                        url: '/project_courses',
+                        iconRef: "brief_case"
+                    },
+                    {
+                        title: {
+                            italian: "Proposte corsi",
+                            english: "Courses propositions"
+                        },
+                        url: '/propositions_history',
+                        iconRef: "archive"
+                    },
+                    {
+                        title: {
+                            italian: "Classi ordinarie",
+                            english: "Ordinary classes"
+                        },
+                        url: '/ordinary_classes',
+                        iconRef: "people"
+                    },
+                    {
+                        title: {
+                            italian: "Cittadinanza attiva",
+                            english: "Citizenship report"
+                        },
+                        url: '/citizenship_report',
+                        iconRef: "clipboard"
+                    },
+                    {
+                        title: {
+                            italian: "Gestione blocchi di apprendimento",
+                            english: "Learning blocks management"
+                        },
+                        url: '/learning_blocks_management',
+                        iconRef: "calendar"
+                    },
+                    {
+                        title: {
+                            italian: "Gestione vincoli",
+                            english: "Constraints management"
+                        },
+                        url: '/constraints_management',
+                        iconRef: "link"
+                    },
+                    { // Da sistemare: non deve apparire
+                        title: {
+                            italian: "Proposta corso",
+                            english: "Course propose"
+                        },
+                        url: '/course_proposition',
+                        iconRef: "add_circle"
+                    },
+                    {
+                        title: {
+                            italian: "Impostazioni",
+                            english: "Settings"
+                        },
+                        url: '/settings',
+                        iconRef: "settings"
+                    },
+                    {
+                        title: {
+                            italian: "Info",
+                            english: "Info"
+                        },
+                        url: '/info',
+                        iconRef: "information_circle"
+                    }
+                ]
             },
             menuIndex: 0,
             icons: {
@@ -273,7 +357,27 @@ export const store = createStore({
                 },
                 archive: {
                     ios: fileTrayFullOutline,
-                    md: fileTrayFullOutline
+                    md: fileTrayFullSharp
+                },
+                calendar: {
+                    ios: calendarOutline,
+                    md: calendarSharp
+                },
+                link: {
+                    ios: linkOutline,
+                    md: linkSharp
+                },
+                checkmark: {
+                    ios: checkmarkOutline,
+                    md: checkmarkSharp
+                },
+                pencil: {
+                    ios: pencilOutline,
+                    md: pencilSharp
+                },
+                eye: {
+                    ios: eyeOutline,
+                    md: eyeSharp
                 }
             },
             languages: ["italian", "english"],

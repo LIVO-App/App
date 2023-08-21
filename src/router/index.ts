@@ -111,7 +111,17 @@ const routes: Array<RouteRecordRaw> = [
     path: '/propositions_history',
     name: 'propositions_history',
     component: () => import('../views/PropositionsHistory.vue')
-  }
+  },
+  {
+    path: '/learning_blocks_management',
+    name: 'learning_blocks_management',
+    component: () => import('../views/NotImplemented.vue')
+  },
+  {
+    path: '/constraints_management',
+    name: 'constraints_management',
+    component: () => import('../views/NotImplemented.vue')
+  },
 ]
 
 const router = createRouter({
