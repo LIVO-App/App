@@ -15,7 +15,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/learning_sessions',
     name: 'learning_sessions',
-    component: () => import('../views/LearningBlocks.vue')
+    component: () => import('../views/LearningSessions.vue')
   },
   {
     path: '/auth',

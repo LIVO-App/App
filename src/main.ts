@@ -6,11 +6,11 @@ import { IonicVue } from '@ionic/vue';
 
 import OuterHeader from "./components/OuterHeader.vue";
 import InnerHeader from "./components/InnerHeader.vue";
-import LearningBlocksCards from "./components/LearningBlocksCards.vue";
+import LearningSessionsCards from "./components/LearningSessionsCards.vue";
 import ListCard from "./components/ListCard.vue";
 import ItemCard from "./components/itemCard.vue";
 import LoadingComponent from "./components/LoadingComponent.vue";
-import BlockDescription from "./components/BlockDescription.vue";
+import SessionDescription from "./components/SessionDescription.vue";
 import CoursesSelectionList from "./components/CoursesSelectionList.vue";
 import CustomSelect from "./components/CustomSelect.vue";
 import CourseCard from "./components/CourseCard.vue";
@@ -19,7 +19,7 @@ import IonicElement from "./components/IonicElement.vue";
 import IonicTable from "./components/IonicTable.vue";
 import GradesManager from "./components/GradesManager.vue";
 import CourseDescription from "./components/CourseDescription.vue";
-import LearningBlocksSelection from "./components/LearningBlocksSelection.vue";
+import LearningSessionsSelection from "./components/LearningSessionsSelection.vue";
 import HighlihtCard from "./components/HighlihtCard.vue";
 import ProjectClass from "./components/ProjectClass.vue";
 import AnnouncementsComponent from "./components/AnnouncementsComponent.vue";
@@ -83,11 +83,11 @@ const app = createApp(App)
   .provide("$axios", $axios)
   .component("OuterHeader", OuterHeader)
   .component("InnerHeader", InnerHeader)
-  .component("LearningBlocksCards", LearningBlocksCards)
+  .component("LearningSessionsCards", LearningSessionsCards)
   .component("ListCard", ListCard)
   .component("ItemCard", ItemCard)
   .component("LoadingComponent", LoadingComponent)
-  .component("BlockDescription", BlockDescription)
+  .component("SessionDescription", SessionDescription)
   .component("CoursesSelectionList", CoursesSelectionList)
   .component("CustomSelect", CustomSelect)
   .component("CourseCard", CourseCard)
@@ -96,7 +96,7 @@ const app = createApp(App)
   .component("IonicTable", IonicTable)
   .component("GradesManager", GradesManager)
   .component("CourseDescription", CourseDescription)
-  .component("LearningBlocksSelection", LearningBlocksSelection)
+  .component("LearningSessionsSelection", LearningSessionsSelection)
   .component("HighlihtCard", HighlihtCard)
   .component("ProjectClass", ProjectClass)
   .component("AnnouncementsComponent", AnnouncementsComponent)
