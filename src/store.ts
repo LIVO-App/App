@@ -77,10 +77,10 @@ export const store = createStore({
                 "student": [ // Da sistemare: spostare traduzioni, mettere riferimenti a title e fare rework del menu
                     {
                         title: {
-                            italian: "Blocchi di apprendimento",
-                            english: "Learning blocks"
+                            italian: "Sessioni di apprendimento",
+                            english: "Learning sessions"
                         },
-                        url: '/learning_blocks',
+                        url: '/learning_sessions',
                         iconRef: "easel"
                     },
                     {
@@ -220,7 +220,7 @@ export const store = createStore({
                             italian: "Corsi progetto",
                             english: "Project courses"
                         },
-                        url: '/learning_blocks_management',
+                        url: '/learning_sessions_management',
                         iconRef: "brief_case"
                     },
                     {
@@ -250,9 +250,9 @@ export const store = createStore({
                     {
                         title: {
                             italian: "Gestione blocchi di apprendimento",
-                            english: "Learning blocks management"
+                            english: "Learning sessions management"
                         },
-                        url: '/learning_blocks_management',
+                        url: '/learning_sessions_management',
                         iconRef: "calendar"
                     },
                     {
@@ -401,12 +401,12 @@ export const store = createStore({
             elements: {
                 "italian": {
                     constraints: "Vincoli crediti",
-                    block: "Blocco",
+                    session: "Sessione",
                     current: "Corrente",
                     future: "Futuri",
                     upcoming: "Imminente",
                     completed: "Completati",
-                    no_blocks: "Nessun blocco di apprendimento",
+                    no_sessions: "Nessun blocco di apprendimento",
                     course: "Corso",
                     courses: "Corsi",
                     learning_area: "Area di apprendimento",
@@ -445,9 +445,9 @@ export const store = createStore({
                     proposer_teacher: "Insegnante proponente",
                     certifying_admin: "Amministratore certificante",
                     course_information_not_found: "Informazioni del corso non trovate",
-                    learning_blocks: "Blocchi di apprendimento",
-                    teacher_learning_block_selection_message: "Seleziona un blocco di apprendimento per vedere i corsi in cui insegni o che ha un tuo insegnameto associato",
-                    student_learning_block_selection_message: "Seleziona un blocco di apprendimento per vedere i corsi a cui sei iscritto",
+                    learning_sessions: "Blocchi di apprendimento",
+                    teacher_learning_session_selection_message: "Seleziona un blocco di apprendimento per vedere i corsi in cui insegni o che ha un tuo insegnameto associato",
+                    student_learning_session_selection_message: "Seleziona un blocco di apprendimento per vedere i corsi a cui sei iscritto",
                     teacher: "Insegnante",
                     associated: "Associati",
                     my_associated_teachings: "Miei insegnamenti associati",
@@ -516,8 +516,8 @@ export const store = createStore({
                     max_students: "Studenti massimi",
                     area_choice: "Scegli un'area di apprendimento",
                     growth_choice: "Scegli un'area di crescita personale",
-                    learning_blocks_choice: "Scegli un blocco di apprendimento",
-                    learning_block_needed: "Blocco di apprendimento necessario",
+                    learning_sessions_choice: "Scegli un blocco di apprendimento",
+                    learning_session_needed: "Blocco di apprendimento necessario",
                     group_choice: "Scegli un gruppo",
                     grant_access: "Concedi l'accesso",
                     add_teacher: "Aggiungi insegnante",
@@ -549,12 +549,12 @@ export const store = createStore({
                 },
                 "english": {
                     constraints: "Credits constraints",
-                    block: "Block",
+                    session: "Session",
                     current: "Current",
                     future: "Future",
                     upcoming: "Upcoming",
                     completed: "Completed",
-                    no_blocks: "No learning blocks",
+                    no_sessions: "No learning sessions",
                     course: "Course",
                     courses: "Courses",
                     learning_area: "Learning area",
@@ -593,8 +593,8 @@ export const store = createStore({
                     proposer_teacher: "Proposer teacher",
                     certifying_admin: "Certifying admin",
                     course_information_not_found: "Course information not found",
-                    learning_blocks: "Learning blocks",
-                    teacher_learning_block_selection_message: "Select a learning block to see the courses you teach or that has a teaching of yours associated",
+                    learning_sessions: "Learning sessions",
+                    teacher_learning_session_selection_message: "Select a learning session to see the courses you teach or that has a teaching of yours associated",
                     teacher: "Teacher",
                     associated: "Associated",
                     my_associated_teachings: "My associated teachings",
@@ -663,8 +663,8 @@ export const store = createStore({
                     max_students: "Maximum students",
                     area_choice: "Choose a learning area",
                     growth_choice: "Choose a personal growth area",
-                    learning_blocks_choice: "Choose a learning block",
-                    learning_block_needed: "Learning block needed",
+                    learning_sessions_choice: "Choose a learning session",
+                    learning_session_needed: "Learning session needed",
                     group_choice: "Choose a group",
                     grant_access: "Grant access",
                     add_teacher: "Add teacher",

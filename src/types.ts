@@ -127,9 +127,9 @@ class OrdinaryClassSummary implements OrdinaryClassSummaryProps {
 class Enrollment {
     private _enrollment: string
     private _editable: boolean
-    constructor(pending: string, learning_block: LearningBlock, reference = new Date(), open_enrollment = false) {
+    constructor(pending: string, learning_session: LearningBlock, reference = new Date(), open_enrollment = false) {
         this._enrollment = pending;
-        this._editable = learning_block.getStatus(reference) == LearningBlockStatus.FUTURE && open_enrollment;
+        this._editable = learning_session.getStatus(reference) == LearningBlockStatus.FUTURE && open_enrollment;
     }
     get enrollment(): Date | boolean {
         if (this._enrollment === "true") {
@@ -338,9 +338,9 @@ class CourseSummary extends CourseBase {
         this.group = courseObj.group;
     }
 
-    toCard(store: Store<any>, learning_block: LearningBlock, path?: string, method?: Method, open_enrollment = false, reference = new Date()): CourseCardElements {
+    toCard(store: Store<any>, learning_session: LearningBlock, path?: string, method?: Method, open_enrollment = false, reference = new Date()): CourseCardElements {
         const language: Language = store.state.language;
-        const tmp_enrollment = new Enrollment(this.pending, learning_block, reference, open_enrollment);
+        const tmp_enrollment = new Enrollment(this.pending, learning_session, reference, open_enrollment);
         const card: CourseCardElements = {
             id: "" + this.id,
             group: this.group,
@@ -423,7 +423,7 @@ class CurriculumCourse extends CourseBase {
         }
     }
 
-    toTableRow(store: Store<any>, block_id: number, student_id: number, teacher_id?: number): CustomElement[] {
+    toTableRow(store: Store<any>, session_id: number, student_id: number, teacher_id?: number): CustomElement[] {
         const language: Language = store.state.language;
         return [
             {
@@ -460,7 +460,7 @@ class CurriculumCourse extends CourseBase {
                         title: this[`${language}_title`],
                         parameters: {
                             course_id: this.id,
-                            block_id: block_id,
+                            session_id: session_id,
                             student_id: student_id,
                             teacher_id: teacher_id
                         }
@@ -647,13 +647,13 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
     end: string;
     num_groups: number;
 
-    constructor(blockObj: LearningBlockProps) {
-        this.id = blockObj.id;
-        this.number = blockObj.number;
-        this.school_year = blockObj.school_year;
-        this.start = blockObj.start;
-        this.end = blockObj.end;
-        this.num_groups = blockObj.num_groups;
+    constructor(sessionObj: LearningBlockProps) {
+        this.id = sessionObj.id;
+        this.number = sessionObj.number;
+        this.school_year = sessionObj.school_year;
+        this.start = sessionObj.start;
+        this.end = sessionObj.end;
+        this.num_groups = sessionObj.num_groups;
     }
 
     getStatus(reference = new Date()) { // future [TDB] upcoming [SD] current [ED] completed
@@ -668,9 +668,9 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
                     : LearningBlockStatus.COMPLETED;
     }
 
-    /*async getDividedCourseList(block: LearningBlock, learning_areas: LearningArea[], $axios: AxiosInstance, store : Store<any>) {
+    /*async getDividedCourseList(session: LearningBlock, learning_areas: LearningArea[], $axios: AxiosInstance, store : Store<any>) {
         const language = store.state.language
-        const courses : CourseSummary[] = (await $axios.get("/v1/courses?student_id=" + user_id + "&block_id=" + block.id)).data.data;
+        const courses : CourseSummary[] = (await $axios.get("/v1/courses?student_id=" + user_id + "&session_id=" + session.id)).data.data;
         let tmp_learning_area_id : string,
             tmp_learning_area : LearningArea | undefined,
             i : number,
@@ -705,14 +705,14 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
         const courses: {
             [learning_area_id: string]: CourseSummary[]
         } = {};
-        const learning_areas = await executeLink($axios, "/v1/learning_areas?all_data=true&block_id=" + this.id + "&credits=" + put_credits,
+        const learning_areas = await executeLink($axios, "/v1/learning_areas?all_data=true&session_id=" + this.id + "&credits=" + put_credits,
             response => response.data.data,
             () => []);
 
         let courses_presence: boolean;
-        let block_list = put_courses_list ? "" : "<ul>";
+        let session_list = put_courses_list ? "" : "<ul>";
 
-        await executeLink($axios, "/v1/courses?student_id=" + user.id + "&context_id=" + actual_learning_context.id + "&block_id=" + this.id,
+        await executeLink($axios, "/v1/courses?student_id=" + user.id + "&context_id=" + actual_learning_context.id + "&session_id=" + this.id,
             response => (response.data.data as CourseSummaryProps[]).map(x => {
                 const course = new CourseSummary(x);
                 const learning_area_id = (course.learning_area_ref.data as { id: string }).id;
@@ -723,35 +723,35 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
             }));
 
         for (const area of learning_areas) {
-            block_list += (put_courses_list ? "<label>" : "<li>") + area[`${store.state.language as Language}_title`] + ": " + (put_credits ? (courses[area.id] != undefined ? courses[area.id].filter(course => course.pending == "true").reduce((pv, cv) => pv + cv.credits, 0) : 0) + "/" + area.credits : "") + (put_courses_list ? "</label>" : "</li>");
+            session_list += (put_courses_list ? "<label>" : "<li>") + area[`${store.state.language as Language}_title`] + ": " + (put_credits ? (courses[area.id] != undefined ? courses[area.id].filter(course => course.pending == "true").reduce((pv, cv) => pv + cv.credits, 0) : 0) + "/" + area.credits : "") + (put_courses_list ? "</label>" : "</li>");
             if (put_courses_list) {
                 courses_presence = courses[area.id] != undefined && courses[area.id].length > 0;
-                block_list += courses_presence ? "<ul>" : "<br />";
+                session_list += courses_presence ? "<ul>" : "<br />";
                 if (courses_presence) {
                     for (const course of courses[area.id]) {
                         if (course.pending == "true") {
-                            block_list += "<li>"
+                            session_list += "<li>"
                                 + course[`${language}_title`]
                                 + ((status == LearningBlockStatus.CURRENT || status == LearningBlockStatus.UPCOMING) && course.section != null
                                     ? " - " + getCurrentElement(store, "section") + " " + course.section : "")
                                 + "</li>"; //Da sistemare: vedere se sezione è fissa o meno
                         }
                     }
-                    block_list += "</ul>";
+                    session_list += "</ul>";
                 }
             }
         }
-        block_list += (put_courses_list ? "" : "</ul>");
+        session_list += (put_courses_list ? "" : "</ul>");
 
 
-        return block_list;
+        return session_list;
     }
 
     async getInscribedCredits($axios: AxiosInstance, store: Store<any>, learning_context_id: string): Promise<number> {
 
         const user = User.getLoggedUser() as User;
 
-        return await executeLink($axios, "/v1/courses?student_id=" + user.id + "&block_id=" + this.id + "&context_id=" + learning_context_id,
+        return await executeLink($axios, "/v1/courses?student_id=" + user.id + "&session_id=" + this.id + "&context_id=" + learning_context_id,
             response => response.data.data.reduce((a: number, b: CourseSummaryProps) => a + (b.pending == "true" ? b.credits : 0), 0),
             () => 0);
     }
@@ -764,7 +764,7 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
         const tmp_element: GeneralCardElements = {
             id: "" + this.id,
             group: this.school_year,
-            title: getCurrentElement(store, "block") + " " + this.number,
+            title: getCurrentElement(store, "session") + " " + this.number,
             subtitle: getRagneString(new Date(this.start), new Date(this.end)),
             content: [{
                 id: "" + this.id,
@@ -775,7 +775,7 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
                     + (actual_learning_context.credits == null ? (await this.getBlockList($axios, store, actual_learning_context, reference, credits, courses_list)) : "")
                     : ""
             }],
-            url: "learning_blocks/" + this.id,
+            url: "learning_sessions/" + this.id,
             method: "get"
         };
 
@@ -788,7 +788,7 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
         const tmp_element: HiglightBlockCardElements = {
             id: "" + this.id,
             group: this.school_year,
-            title: getCurrentElement(store, "block") + " " + this.number,
+            title: getCurrentElement(store, "session") + " " + this.number,
             subtitle: getRagneString(new Date(this.start), new Date(this.end)),
             status: status,
             selected: selected
@@ -930,7 +930,7 @@ class Grade implements GradeProps {
 
 type GradesParameters = {
     course_id: number,
-    block_id: number,
+    session_id: number,
     student_id: number,
     teacher_id?: number
 }
@@ -964,7 +964,7 @@ class CourseSectionsTeachings {
         }).id]);
     }
 
-    toCard(store: Store<any>, group: string, learning_block: string): GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
+    toCard(store: Store<any>, group: string, learning_session: string): GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
         const language: Language = store.state.language;
         return {
             id: "" + this.id,
@@ -982,7 +982,7 @@ class CourseSectionsTeachings {
                 type: "string",
                 content: getCurrentElement(store, "my_associated_teachings") + ": " + Array.from(this.my_teaching_refs).join(", ")
             }],
-            url: "project_courses/" + this.id + "/" + learning_block,
+            url: "project_courses/" + this.id + "/" + learning_session,
             method: "get"
         }
     }
@@ -1076,7 +1076,7 @@ class Student extends StudentSummary {
         }
     }
 
-    toTableRow(store: Store<any>, course_id: string, block_id: string, teacher_id?: number, grades?: boolean, final_grade?: Grade): CustomElement[] {
+    toTableRow(store: Store<any>, course_id: string, session_id: string, teacher_id?: number, grades?: boolean, final_grade?: Grade): CustomElement[] {
         const row_to_return: CustomElement[] = [{ //Da sistemare: rendere cliccabile
             id: this.id + "_name_surname",
             type: "string",
@@ -1106,7 +1106,7 @@ class Student extends StudentSummary {
                         title: this.name + " " + this.surname,
                         parameters: {
                             course_id: course_id,
-                            block_id: block_id,
+                            session_id: session_id,
                             student_id: this.id,
                             teacher_id: teacher_id
                         }
@@ -1129,7 +1129,7 @@ class Student extends StudentSummary {
                         title: this.name + " " + this.surname,
                         parameters: {
                             course_id: course_id,
-                            block_id: block_id,
+                            session_id: session_id,
                             student_id: this.id
                         }
                     },
@@ -1268,7 +1268,7 @@ class AnnouncementSummary implements AnnouncementSummaryProps {
 
 type AnnouncementParameters = {
     course_id: number,
-    block_id: number,
+    session_id: number,
     sections: string[],
     current_section_index: number,
     teacher_id?: number
@@ -1448,7 +1448,7 @@ type PropositionCharacteristics = {
     credits: number,
     area_id: string,
     growth_id: number,
-    block_id: number,
+    session_id: number,
     class_group: number
 };
 
@@ -1528,7 +1528,7 @@ class ModelProposition {
             credits: actual_proposition.credits,
             area_id: actual_proposition.area_id,
             growth_id: actual_proposition.growth_id,
-            block_id: actual_proposition.block_id,
+            session_id: actual_proposition.session_id,
             class_group: actual_proposition.class_group
         };
         this._students_distribution = {
@@ -1572,7 +1572,7 @@ class ModelProposition {
             credits: 0,
             area_id: "",
             growth_id: -1,
-            block_id: -1,
+            session_id: -1,
             class_group: -1,
             num_section: 0,
             min_students: 0,
@@ -1971,7 +1971,7 @@ type OpenToConstraint = {
 
 type AdminProjectClassProps = {
     course_id: number,
-    learning_block: number,
+    learning_session: number,
     group: number,
     teacher_ref: ResponseItem<{
         id: number
@@ -1988,7 +1988,7 @@ type AdminProjectClassProps = {
 
 class AdminProjectClass {
     course_id: number;
-    learning_block: number;
+    learning_session: number;
     group: number;
     teacher_id: number;
     teacher_name: string;
@@ -2000,7 +2000,7 @@ class AdminProjectClass {
 
     constructor(props: AdminProjectClassProps) {
         this.course_id = props.course_id;
-        this.learning_block = props.learning_block;
+        this.learning_session = props.learning_session;
         this.group = props.group;
         this.teacher_id = (props.teacher_ref.data as { id: number }).id;
         this.teacher_name = props.teacher_name;
@@ -2013,7 +2013,7 @@ class AdminProjectClass {
     
     toCard(store: Store<any>, path?: string): GeneralCardElements { // Da sistemare: vedere se usare Higlight...
         return {
-            id: "" + this.course_id + "_" + this.learning_block + "_" + this.group,
+            id: "" + this.course_id + "_" + this.learning_session + "_" + this.group,
             group: "",
             title: "Placeholder", // Da chiedere: chiedere a Pietro di mettere titolo
             content: [

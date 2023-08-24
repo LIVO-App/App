@@ -41,7 +41,7 @@ const login = async (payload: LoginInformation) => {
         if (!alert_open.value) {
             switch (payload.type) {
                 case "student":
-                    redirect += "learning_blocks";
+                    redirect += "learning_sessions";
                     tmp_index = 0;
                     break;
                 case "teacher":

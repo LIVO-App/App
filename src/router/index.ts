@@ -13,8 +13,8 @@ const routes: Array<RouteRecordRaw> = [
     redirect: '/auth'
   },
   {
-    path: '/learning_blocks',
-    name: 'learning_blocks',
+    path: '/learning_sessions',
+    name: 'learning_sessions',
     component: () => import('../views/LearningBlocks.vue')
   },
   {
@@ -28,8 +28,8 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/TmpLogout.vue')
   },
   {
-    path: '/learning_blocks/:id',
-    name: 'learning_block',
+    path: '/learning_sessions/:id',
+    name: 'learning_session',
     component: () => import('../views/StudentCourses.vue')
   },
   {
@@ -63,7 +63,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/ProjectCourses.vue')
   },
   {
-    path: '/project_courses/:course/:block',
+    path: '/project_courses/:course/:session',
     name: 'project_course',
     component: () => import('../views/ProjectClass.vue')
   },
@@ -88,7 +88,7 @@ const routes: Array<RouteRecordRaw> = [
     }*/
   },
   {
-    path: '/announcements/:course/:block',
+    path: '/announcements/:course/:session',
     name: 'announcement',
     component: () => import('../views/AnnouncementsPage.vue')
   },
@@ -113,8 +113,8 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/PropositionsHistory.vue')
   },
   {
-    path: '/learning_blocks_management', // Da sistemare: unire a /project_courses e sistemare link visibili ai vari utenti
-    name: 'learning_blocks_management',
+    path: '/learning_sessions_management', // Da sistemare: unire a /project_courses e sistemare link visibili ai vari utenti
+    name: 'learning_sessions_management',
     component: () => import('../views/ProjectCoursesHub.vue')
   },
   {

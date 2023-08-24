@@ -19,7 +19,7 @@
 
       <suspense>
         <template #default>
-          <learning-blocks-selection />
+          <learning-sessions-selection />
         </template>
         <template #fallback>
           <loading-component />
