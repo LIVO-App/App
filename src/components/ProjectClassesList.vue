@@ -38,12 +38,15 @@ import {
   MinimumCourseProps,
   MinimizedCourse,
   User,
+  AdminProjectClassProps,
+  AdminProjectClass,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { inject, reactive, ref } from "vue";
 import { useStore } from "vuex";
 import type { AxiosInstance } from "axios";
 import { executeLink, getCurrentElement } from "@/utils";
+import { useRoute } from "vue-router";
 
 type Indexes = {
   year: string;
@@ -104,25 +107,42 @@ const changeSelection = async () => {
     selectedChange();
     courses.cards[""] = await executeLink(
       $axios,
-      "/v1/students/" +
-        user.id +
-        "/project_classes?block_id=" +
-        learning_blocks.cards[selected_block_indexes.year][
-          selected_block_indexes.index
-        ].id +
-        "&token=" +
-        user.token,
+      $route.name == "announcements"
+        ? "/v1/students/" +
+            user.id +
+            "/project_classes?block_id=" +
+            learning_blocks.cards[selected_block_indexes.year][
+              selected_block_indexes.index
+            ].id +
+            "&token=" +
+            user.token
+        : "/v1/project_classes?block_id=" +
+            learning_blocks.cards[selected_block_indexes.year][
+              selected_block_indexes.index
+            ].id +
+            "&token=" +
+            user.token, // Da chiedere: cosa serve year
       (response: any) =>
-        response.data.data.map((a: MinimumCourseProps) =>
-          new MinimizedCourse(a).toCard(
-            store,
-            "/announcements/" +
-              a.id +
-              "/" +
-              learning_blocks.cards[selected_block_indexes.year][
-                selected_block_indexes.index
-              ].id
-          )
+        response.data.data.map(
+          (a: MinimumCourseProps | AdminProjectClassProps) =>
+            $route.name == "announcements"
+              ? new MinimizedCourse(a as MinimumCourseProps).toCard(
+                  // Da sistemare: finire
+                  store,
+                  "/announcements/" +
+                    (a as MinimumCourseProps).id +
+                    "/" +
+                    learning_blocks.cards[selected_block_indexes.year][
+                      selected_block_indexes.index
+                    ].id
+                )
+              : new AdminProjectClass(a as AdminProjectClassProps).toCard(
+                  store,
+                  "project_courses/" +
+                    (a as AdminProjectClassProps).course_id +
+                    "/" +
+                    (a as AdminProjectClassProps).learning_block
+                )
         )
     );
   }
@@ -139,6 +159,7 @@ const selectedChange = (
 const $axios: AxiosInstance | undefined = inject("$axios");
 const store = useStore();
 const user = User.getLoggedUser() as User;
+const $route = useRoute();
 
 const promises: Promise<any>[] = [];
 const learning_blocks: OrderedCardsList<HiglightBlockCardElements> = reactive({

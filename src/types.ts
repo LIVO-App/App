@@ -235,7 +235,7 @@ class MinimizedCourse implements MinimumCourseProps {
     toCard(store: Store<any>, path?: string): GeneralCardElements {
         const language: Language = store.state.language;
         return {
-            id: "" + hashCode(this.italian_title),
+            id: "" + this.id + "_" + this.section,
             group: "",
             content: [{
                 id: "title",
@@ -1076,7 +1076,7 @@ class Student extends StudentSummary {
         }
     }
 
-    toTableRow(store: Store<any>, course_id: string, block_id: string, teacher_id: number, final_grade?: Grade): CustomElement[] {
+    toTableRow(store: Store<any>, course_id: string, block_id: string, teacher_id?: number, grades?: boolean, final_grade?: Grade): CustomElement[] {
         const row_to_return: CustomElement[] = [{ //Da sistemare: rendere cliccabile
             id: this.id + "_name_surname",
             type: "string",
@@ -1086,27 +1086,6 @@ class Student extends StudentSummary {
             id: this.id + "_class",
             type: "string",
             content: this.ordinary_class.toString()
-        }, {
-            id: this.id + "_gardes", //Da sistemare: Mettere il controllo con future_course al passaggio a curriculum_v2
-            type: "icon",
-            linkType: "event",
-            content: {
-                event: "grades",
-                data: {
-                    title: this.name + " " + this.surname,
-                    parameters: {
-                        course_id: course_id,
-                        block_id: block_id,
-                        student_id: this.id,
-                        teacher_id: teacher_id
-                    }
-                },
-                icon: getIcon(store, "document_text")
-            }
-        }, {
-            id: this.id + "_final_grade",
-            type: "string",
-            content: final_grade != undefined ? "" + final_grade.grade : "-"
         }];
 
         if (this.learning_context_id != undefined) {
@@ -1114,6 +1093,48 @@ class Student extends StudentSummary {
                 id: this.id + "_learning_context",
                 type: "string",
                 content: this.learning_context_id
+            })
+        }
+        if (grades) {
+            tmp_row.push({
+                id: this.id + "_gardes", //Da sistemare: Mettere il controllo con future_course al passaggio a curriculum_v2
+                type: "icon",
+                linkType: "event",
+                content: {
+                    event: "grades",
+                    data: {
+                        title: this.name + " " + this.surname,
+                        parameters: {
+                            course_id: course_id,
+                            block_id: block_id,
+                            student_id: this.id,
+                            teacher_id: teacher_id
+                        }
+                    },
+                    icon: getIcon(store, "document_text")
+                }
+            }, {
+                id: this.id + "_final_grade",
+                type: "string",
+                content: final_grade != undefined ? "" + final_grade.grade : "-"
+            })
+        } else {
+            tmp_row.push({
+                id: this.id + "_edit",
+                type: "icon",
+                linkType: "event",
+                content: {
+                    event: "edit",
+                    data: {
+                        title: this.name + " " + this.surname,
+                        parameters: {
+                            course_id: course_id,
+                            block_id: block_id,
+                            student_id: this.id
+                        }
+                    },
+                    icon: getIcon(store, "pencil")
+                }
             })
         }
 
@@ -1303,11 +1324,6 @@ type SuccessLoginResponse = LoginResponse & {
     id: number
 }
 
-type FailLoginResponse = LoginResponse & {
-    user: boolean, // Da sistemare: potrebbe essere un problema di sicurezza
-    password: boolean,
-}
-
 type UserProps = {
     id: number,
     username: string,
@@ -1380,11 +1396,11 @@ class CourseModel {
         this.italian_title = props.italian_title;
         this.english_title = props.english_title;
         this.creation_school_year = props.creation_school_year;
-        this.project_class_confirmation_date = new Date(props.project_class_confirmation_date);
+        this.project_class_confirmation_date = new Date(props.project_class_confirmation_date); // Da sistemare: guardare quando undefined
         this.project_class_to_be_modified = props.project_class_to_be_modified;
         this.course_confirmation_date = new Date(props.course_confirmation_date);
         this.course_to_be_modified = props.course_to_be_modified;
-        // Da sistemare: chiedere a pietro di mettere modello di base qui (e/o chiedere se è id e fargli cambiare nome) insieme a proposer teacher
+        // Da sistemare: sistemare id card con id+anno e aggiungere proposer_teacher e certifying_admin quando Pietro finisce
     }
 
     toString(store: Store<any>) {
@@ -1436,7 +1452,7 @@ type PropositionCharacteristics = {
     class_group: number
 };
 
-type PropositionStudentsDistribution = { // Da sistemare: trovaqre nome comune
+type PropositionStudentsDistribution = { // Da sistemare: trovare nome comune
     num_section: number,
     min_students: number,
     max_students: number,
@@ -1953,6 +1969,74 @@ type OpenToConstraint = {
         [key in keyof string as `${Language}_title`]: string
     }
 
+type AdminProjectClassProps = {
+    course_id: number,
+    learning_block: number,
+    group: number,
+    teacher_ref: ResponseItem<{
+        id: number
+    }>,
+    teacher_name: string,
+    teacher_surname: string,
+    admin_ref: ResponseItem<{
+        id: number
+    }>,
+    admin_name: string,
+    admin_surname: string,
+    to_be_modified: string | null
+}
 
+class AdminProjectClass {
+    course_id: number;
+    learning_block: number;
+    group: number;
+    teacher_id: number;
+    teacher_name: string;
+    teacher_surname: string;
+    admin_id: number;
+    admin_name: string;
+    admin_surname: string;
+    to_be_modified?: string;
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, FailLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint }
+    constructor(props: AdminProjectClassProps) {
+        this.course_id = props.course_id;
+        this.learning_block = props.learning_block;
+        this.group = props.group;
+        this.teacher_id = (props.teacher_ref.data as { id: number }).id;
+        this.teacher_name = props.teacher_name;
+        this.teacher_surname = props.teacher_surname;
+        this.admin_id = (props.admin_ref.data as { id: number }).id;
+        this.admin_name = props.admin_name;
+        this.admin_surname = props.admin_surname;
+        this.to_be_modified = props.to_be_modified ?? undefined;
+    }
+    
+    toCard(store: Store<any>, path?: string): GeneralCardElements { // Da sistemare: vedere se usare Higlight...
+        return {
+            id: "" + this.course_id + "_" + this.learning_block + "_" + this.group,
+            group: "",
+            title: "Placeholder", // Da chiedere: chiedere a Pietro di mettere titolo
+            content: [
+                {
+                    id: "group",
+                    type: "string",
+                    content: getCurrentElement(store, "group") + ": " + this.group,
+                },
+                {
+                    id: "teacher",
+                    type: "string",
+                    content: getCurrentElement(store, "proposer_teacher") + ": " + this.teacher_name + " " + this.teacher_surname,
+                },
+                {
+                    id: "admin",
+                    type: "string",
+                    content: getCurrentElement(store, "certifying_admin") + ": " + this.admin_name + " " + this.admin_surname,
+                }
+            ],
+            url: path,
+            method: "get"
+        }
+    }
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass }

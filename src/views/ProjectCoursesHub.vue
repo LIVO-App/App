@@ -19,7 +19,7 @@
 
       <suspense>
         <template #default>
-          <announcements-selection-list />
+          <project-classes-list /> <!-- Da sistemare: da unire con ProjectCourses -->
         </template>
         <template #fallback>
           <loading-component />

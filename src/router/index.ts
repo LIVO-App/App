@@ -95,7 +95,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/announcements',
     name: 'announcements',
-    component: () => import('../views/GeneralAnnouncements.vue')
+    component: () => import('../views/ProjectCoursesHub.vue')
   },
   {
     path: '/ordinary_classes',
@@ -113,9 +113,9 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/PropositionsHistory.vue')
   },
   {
-    path: '/learning_blocks_management',
+    path: '/learning_blocks_management', // Da sistemare: unire a /project_courses e sistemare link visibili ai vari utenti
     name: 'learning_blocks_management',
-    component: () => import('../views/NotImplemented.vue')
+    component: () => import('../views/ProjectCoursesHub.vue')
   },
   {
     path: '/constraints_management',

@@ -34,7 +34,7 @@
       <ionic-element
         :element="buttons[5]"
         @signal_event="approve(false)"
-      /> <!-- Da sistemare: chiedere quando usare le DEL di project_class e course se c'è /approval -->
+      /> <!-- Da sistemare: sistemare /approval quando finito da Pietro -->
       <ionic-element
         :element="action == 'view' ? buttons[6] : buttons[7]"
         @signal_event="changeModality(action == 'view' ? 'edit' : 'view')"
@@ -185,6 +185,19 @@
             <ion-row>
               <ion-col>
                 <custom-select
+                  v-model="selected_block"
+                  :list="learning_blocks"
+                  :label="getCurrentElement(store, 'learning_blocks') + ':'"
+                  :aria_label="getCurrentElement(store, 'learning_blocks')"
+                  :placeholder="
+                    getCurrentElement(store, 'learning_blocks_choice')
+                  "
+                  :getCompleteName="learningBlockToString"
+                  :disabled="action == 'view'"
+                />
+              </ion-col>
+              <ion-col>
+                <custom-select
                   v-model="
                     castToCharacteristics(
                       course_proposition[pages[current_page_index]]
@@ -198,6 +211,8 @@
                   :disabled="action == 'view'"
                 />
               </ion-col>
+            </ion-row>
+            <ion-row>
               <ion-col>
                 <custom-select
                   v-model="
@@ -211,22 +226,7 @@
                   :placeholder="getCurrentElement(store, 'growth_choice')"
                   :getCompleteName="growthAreaToString"
                   :disabled="action == 'view'"
-                />
-              </ion-col>
-            </ion-row>
-            <ion-row>
-              <ion-col>
-                <custom-select
-                  v-model="selected_block"
-                  :list="learning_blocks"
-                  :label="getCurrentElement(store, 'learning_blocks') + ':'"
-                  :aria_label="getCurrentElement(store, 'learning_blocks')"
-                  :placeholder="
-                    getCurrentElement(store, 'learning_blocks_choice')
-                  "
-                  :getCompleteName="learningBlockToString"
-                  :disabled="action == 'view'"
-                />
+                /> <!-- Da sistemare: mettere lista di growth_areas -->
               </ion-col>
               <ion-col>
                 <custom-select
@@ -644,8 +644,8 @@ const go = (direction: boolean) => {
 const propose = () => {
   executeLink(
     $axios,
-    "/v1/propositions?token=" + user.token, // Da sistemare: sembra non funzionare con le sezioni multiple su project_teach (mette solo A)
-    edit_course_proposition, // Da sistemare: la proposta di corsi già esistenti crea errori nel server
+    "/v1/propositions?token=" + user.token,
+    edit_course_proposition,
     () => setupModalAndOpen("title"),
     "post",
     course_proposition.toProposition()
@@ -1077,7 +1077,7 @@ const edit_course_proposition = async (course_id?: number) => {
             (a: GrowthArea) =>
               a.italian_title == course.italian_growth_area &&
               a.english_title == course.english_growth_area
-          ); // Da sistemare: chiedere a Pietro per id
+          ); // Da sistemare: aspettare che Pietro metta id
           return tmp != undefined
             ? tmp
             : {
@@ -1095,7 +1095,7 @@ const edit_course_proposition = async (course_id?: number) => {
             (a: LearningArea) =>
               a.italian_title == course.italian_learning_area &&
               a.english_title == course.english_learning_area
-          ); // Da sistemare: chiedere a Pietro per id
+          ); // Da sistemare: aspettare che Pietro metta id
           return tmp != undefined
             ? tmp
             : {
@@ -1152,7 +1152,7 @@ const edit_course_proposition = async (course_id?: number) => {
 const changeModality = (new_action: Action) => {
   action.value = new_action;
   // Da sistemare: mettere X a liste
-  trigger.value++; // Da sistemare: mettere i trigger a tutti i parametri
+  trigger.value++;
 };
 const approve = (outcome = true) => {
   executeLink(
@@ -1390,7 +1390,7 @@ if ($axios != undefined) {
   }*/
   models = await executeLink(
     $axios,
-    "/v1/propositions?token=" + user.token, // Da sistemare: chiedere perchè vengono fuori anche modelli da confermare (se è giusto sistemare id per duplicati) e solamente quelli fatti dal professore (in caso ho sbagliato, qual è l'api?)
+    "/v1/propositions?recent_models=10&token=" + user.token, // Da sistemare: fare rework recent_models (mettere filtro su tutti i corsi)
     (response) =>
       response.data.data.map((a: CourseModelProps) => new CourseModel(a)),
     () => []
@@ -1409,7 +1409,7 @@ if ($axios != undefined) {
   );
   learning_blocks = await executeLink(
     $axios,
-    "/v1/learning_blocks?future_block=true",
+    "/v1/learning_blocks?future_block=true", // Da sistemare: aggiungere course_id quando Pietro finisce
     (response) => {
       const tmp_learning_blocks: LearningBlock[] = [];
 
@@ -1487,7 +1487,7 @@ if ($axios != undefined) {
     course_proposition.characteristics.block_id = new_block;
     groups = learning_blocks.map((a) => {
       return {
-        id: a.num_groups,
+        id: a.num_groups, // Da sistemare: mettere lista di gruppi
       };
     });
     trigger.value++;

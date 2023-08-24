@@ -220,7 +220,7 @@ export const store = createStore({
                             italian: "Corsi progetto",
                             english: "Project courses"
                         },
-                        url: '/project_courses',
+                        url: '/learning_blocks_management',
                         iconRef: "brief_case"
                     },
                     {
@@ -271,6 +271,14 @@ export const store = createStore({
                         url: '/course_proposition',
                         iconRef: "add_circle"
                     },
+                    { // Da sistemare: non deve apparire
+                        title: {
+                            italian: "Corsi progetto",
+                            english: "Project courses"
+                        },
+                        url: '/project_courses',
+                        iconRef: "add_circle"
+                    },
                     {
                         title: {
                             italian: "Impostazioni",
@@ -278,6 +286,14 @@ export const store = createStore({
                         },
                         url: '/settings',
                         iconRef: "settings"
+                    },
+                    { // Da sistemare: spostare in profilo quando verrà creato
+                        title: {
+                            italian: "Logout",
+                            english: "Logout"
+                        },
+                        url: '/logout',
+                        iconRef: "logout"
                     },
                     {
                         title: {
@@ -528,7 +544,8 @@ export const store = createStore({
                     school_years: "Anni scolastici",
                     no_school_years: "Nessun anno scolastico",
                     project_class_confirmation_date: "Data conferma classe progetto",
-                    course_confirmation_date: "Data conferma modello di corso"
+                    course_confirmation_date: "Data conferma modello di corso",
+                    edit: "Modifica",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -673,7 +690,8 @@ export const store = createStore({
                     no_teacher_proposition: "No teacher proposed",
                     school_years: "School years",
                     no_school_years: "No school years",
-                    project_class_confirmation_date: "Project class confirmation date"
+                    project_class_confirmation_date: "Project class confirmation date",
+                    edit: "Edit"
                 }
             },
             logged_user: false,

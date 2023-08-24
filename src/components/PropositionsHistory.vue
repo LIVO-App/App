@@ -132,7 +132,7 @@ const selected_year_index = ref(-1);
 
 await executeLink(
   $axios,
-  "/v1/teachers/" + actual_teacher_id + "/active_years",
+  "/v1/teachers/" + actual_teacher_id + "/active_years", // Da sistemare: trovare api per admin
   (response) => {
     school_years.cards[""] = response.data.data.map((a: any) =>
       {
