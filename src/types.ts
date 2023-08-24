@@ -127,9 +127,9 @@ class OrdinaryClassSummary implements OrdinaryClassSummaryProps {
 class Enrollment {
     private _enrollment: string
     private _editable: boolean
-    constructor(pending: string, learning_session: LearningBlock, reference = new Date(), open_enrollment = false) {
+    constructor(pending: string, learning_session: LearningSession, reference = new Date(), open_enrollment = false) {
         this._enrollment = pending;
-        this._editable = learning_session.getStatus(reference) == LearningBlockStatus.FUTURE && open_enrollment;
+        this._editable = learning_session.getStatus(reference) == LearningSessionStatus.FUTURE && open_enrollment;
     }
     get enrollment(): Date | boolean {
         if (this._enrollment === "true") {
@@ -191,12 +191,12 @@ type HiglightCardElements = CardElements & { // Da sistemare: unite con GeneralC
     selected: boolean
 }
 
-type HiglightBlockCardElements = HiglightCardElements & {
+type HiglightSessionCardElements = HiglightCardElements & {
     subtitle: string,
-    status: LearningBlockStatus
+    status: LearningSessionStatus
 }
 
-enum LearningBlockStatus {
+enum LearningSessionStatus {
     FUTURE,
     UPCOMING,
     CURRENT,
@@ -338,7 +338,7 @@ class CourseSummary extends CourseBase {
         this.group = courseObj.group;
     }
 
-    toCard(store: Store<any>, learning_session: LearningBlock, path?: string, method?: Method, open_enrollment = false, reference = new Date()): CourseCardElements {
+    toCard(store: Store<any>, learning_session: LearningSession, path?: string, method?: Method, open_enrollment = false, reference = new Date()): CourseCardElements {
         const language: Language = store.state.language;
         const tmp_enrollment = new Enrollment(this.pending, learning_session, reference, open_enrollment);
         const card: CourseCardElements = {
@@ -629,7 +629,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
     }
 }
 
-type LearningBlockProps = {
+type LearningSessionProps = {
     id: number;
     number: number;
     school_year: number;
@@ -638,7 +638,7 @@ type LearningBlockProps = {
     num_groups: number;
 }
 
-class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi numero blocchi
+class LearningSession implements LearningSessionProps { // Da sistemare: aggiungi numero blocchi
 
     id: number;
     number: number;
@@ -647,7 +647,7 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
     end: string;
     num_groups: number;
 
-    constructor(sessionObj: LearningBlockProps) {
+    constructor(sessionObj: LearningSessionProps) {
         this.id = sessionObj.id;
         this.number = sessionObj.number;
         this.school_year = sessionObj.school_year;
@@ -662,13 +662,13 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
         const tenDaysBefore = new Date(startDate);
         tenDaysBefore.setDate(tenDaysBefore.getDate() - 10);
 
-        return reference < tenDaysBefore ? LearningBlockStatus.FUTURE
-            : reference >= tenDaysBefore && reference < startDate ? LearningBlockStatus.UPCOMING
-                : reference >= startDate && reference <= endDate ? LearningBlockStatus.CURRENT
-                    : LearningBlockStatus.COMPLETED;
+        return reference < tenDaysBefore ? LearningSessionStatus.FUTURE
+            : reference >= tenDaysBefore && reference < startDate ? LearningSessionStatus.UPCOMING
+                : reference >= startDate && reference <= endDate ? LearningSessionStatus.CURRENT
+                    : LearningSessionStatus.COMPLETED;
     }
 
-    /*async getDividedCourseList(session: LearningBlock, learning_areas: LearningArea[], $axios: AxiosInstance, store : Store<any>) {
+    /*async getDividedCourseList(session: LearningSession, learning_areas: LearningArea[], $axios: AxiosInstance, store : Store<any>) {
         const language = store.state.language
         const courses : CourseSummary[] = (await $axios.get("/v1/courses?student_id=" + user_id + "&session_id=" + session.id)).data.data;
         let tmp_learning_area_id : string,
@@ -693,14 +693,14 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
         return course_list;
     }*/
 
-    async getBlockList($axios: AxiosInstance, store: Store<any>, learning_context?: LearningContextSummary, reference = new Date(), credits?: boolean, courses_list?: boolean): Promise<string> {
+    async getSessionList($axios: AxiosInstance, store: Store<any>, learning_context?: LearningContextSummary, reference = new Date(), credits?: boolean, courses_list?: boolean): Promise<string> {
 
         const language: Language = store.state.language;
         const user = User.getLoggedUser() as User;
 
         const status = this.getStatus(reference);
-        const put_credits = credits ?? status == LearningBlockStatus.FUTURE;
-        const put_courses_list = courses_list ?? (status == LearningBlockStatus.CURRENT || status == LearningBlockStatus.UPCOMING);
+        const put_credits = credits ?? status == LearningSessionStatus.FUTURE;
+        const put_courses_list = courses_list ?? (status == LearningSessionStatus.CURRENT || status == LearningSessionStatus.UPCOMING);
         const actual_learning_context = getActualLearningContext(store, learning_context);
         const courses: {
             [learning_area_id: string]: CourseSummary[]
@@ -732,7 +732,7 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
                         if (course.pending == "true") {
                             session_list += "<li>"
                                 + course[`${language}_title`]
-                                + ((status == LearningBlockStatus.CURRENT || status == LearningBlockStatus.UPCOMING) && course.section != null
+                                + ((status == LearningSessionStatus.CURRENT || status == LearningSessionStatus.UPCOMING) && course.section != null
                                     ? " - " + getCurrentElement(store, "section") + " " + course.section : "")
                                 + "</li>"; //Da sistemare: vedere se sezione è fissa o meno
                         }
@@ -759,7 +759,7 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
     async toCard($axios: AxiosInstance, store: Store<any>, learning_context?: LearningContextSummary, credits?: boolean, courses_list?: boolean, reference = new Date()): Promise<GeneralCardElements> {
 
         const status = this.getStatus(reference);
-        const put_credits = credits ?? status == LearningBlockStatus.FUTURE;
+        const put_credits = credits ?? status == LearningSessionStatus.FUTURE;
         const actual_learning_context: LearningContextSummary = getActualLearningContext(store, learning_context);
         const tmp_element: GeneralCardElements = {
             id: "" + this.id,
@@ -769,10 +769,10 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
             content: [{
                 id: "" + this.id,
                 type: "html",
-                content: status != LearningBlockStatus.COMPLETED || credits != undefined || courses_list != undefined ?
+                content: status != LearningSessionStatus.COMPLETED || credits != undefined || courses_list != undefined ?
                     (put_credits ? "<label>" + getCurrentElement(store, "constraints") + ":"
                         + (actual_learning_context.credits != null ? " " + (await this.getInscribedCredits($axios, store, actual_learning_context.id)) + "/" + actual_learning_context.credits : "") + "</label>" : "")
-                    + (actual_learning_context.credits == null ? (await this.getBlockList($axios, store, actual_learning_context, reference, credits, courses_list)) : "")
+                    + (actual_learning_context.credits == null ? (await this.getSessionList($axios, store, actual_learning_context, reference, credits, courses_list)) : "")
                     : ""
             }],
             url: "learning_sessions/" + this.id,
@@ -782,10 +782,10 @@ class LearningBlock implements LearningBlockProps { // Da sistemare: aggiungi nu
         return tmp_element;
     }
 
-    toHighlightCard(store: Store<any>, selected = false, reference = new Date()): HiglightBlockCardElements {
+    toHighlightCard(store: Store<any>, selected = false, reference = new Date()): HiglightSessionCardElements {
 
         const status = this.getStatus(reference);
-        const tmp_element: HiglightBlockCardElements = {
+        const tmp_element: HiglightSessionCardElements = {
             id: "" + this.id,
             group: this.school_year,
             title: getCurrentElement(store, "session") + " " + this.number,
@@ -2039,4 +2039,4 @@ class AdminProjectClass {
     }
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningBlockProps, LearningBlock, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightBlockCardElements, LearningBlockStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass }
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightSessionCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass }

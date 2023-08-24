@@ -32,9 +32,9 @@
             <ion-col v-if="status != undefined" size="auto">
               <ion-label
                 :color="
-                  status == LearningBlockStatus.CURRENT
+                  status == LearningSessionStatus.CURRENT
                     ? 'success'
-                    : status == LearningBlockStatus.UPCOMING
+                    : status == LearningSessionStatus.UPCOMING
                     ? 'medium'
                     : ''
                 "
@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { LearningBlockStatus } from "@/types";
+import { LearningSessionStatus } from "@/types";
 import { getCurrentElement } from "@/utils";
 import {
   IonItem,
@@ -77,7 +77,7 @@ const props = defineProps({
     required: true,
   },
   subtitle: String,
-  status: Number as PropType<LearningBlockStatus>,
+  status: Number as PropType<LearningSessionStatus>,
   selected: {
     type: Boolean,
     required: true,
@@ -86,9 +86,9 @@ const props = defineProps({
 defineEmits(["signal_event"]);
 
 const status_string: string =
-  props.status == LearningBlockStatus.CURRENT
+  props.status == LearningSessionStatus.CURRENT
     ? getCurrentElement(store, "current")
-    : props.status == LearningBlockStatus.UPCOMING
+    : props.status == LearningSessionStatus.UPCOMING
     ? getCurrentElement(store, "upcomoing")
     : "";
 </script>

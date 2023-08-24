@@ -1,5 +1,5 @@
 import { AxiosInstance, Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, HiglightBlockCardElements, LearningBlockStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, HiglightCardElements, Gender, GenderKeys } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, HiglightSessionCardElements, LearningSessionStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, HiglightCardElements, Gender, GenderKeys } from "./types";
 import { Store } from "vuex";
 
 // Da sistemare: togliere store come parametro e usare import { store } from ./store
@@ -29,7 +29,7 @@ function isHiglithCard(card: CardElements): card is HiglightCardElements {
     return "selected" in card;
 }
 
-function isHiglithBlock(card: CardElements): card is HiglightBlockCardElements {
+function isHiglithSession(card: CardElements): card is HiglightSessionCardElements {
     return "status" in card;
 }
 
@@ -106,22 +106,22 @@ function hashCode(str: string) {
     return hash;
 }
 
-function castStatus(store: Store<any>, status: string): LearningBlockStatus | null {
+function castStatus(store: Store<any>, status: string): LearningSessionStatus | null {
 
-    let cast: LearningBlockStatus | null = null;
+    let cast: LearningSessionStatus | null = null;
 
     switch (status) {
         case getCurrentElement(store, "current"):
-            cast = LearningBlockStatus.CURRENT;
+            cast = LearningSessionStatus.CURRENT;
             break;
         case getCurrentElement(store, "upcoming"):
-            cast = LearningBlockStatus.UPCOMING;
+            cast = LearningSessionStatus.UPCOMING;
             break;
         case getCurrentElement(store, "completed"):
-            cast = LearningBlockStatus.COMPLETED;
+            cast = LearningSessionStatus.COMPLETED;
             break;
         case getCurrentElement(store, "future"):
-            cast = LearningBlockStatus.FUTURE;
+            cast = LearningSessionStatus.FUTURE;
             break;
     }
 
@@ -151,4 +151,4 @@ function numberToSection(section: number) {
     return String.fromCharCode(65 + section);
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isHiglithCard, isHiglithBlock, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection }
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isHiglithCard, isHiglithSession, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection }

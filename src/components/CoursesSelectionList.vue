@@ -80,8 +80,8 @@ import {
   CourseSummaryProps,
   Language,
   LearningArea,
-  LearningBlock,
-  LearningBlockStatus,
+  LearningSession,
+  LearningSessionStatus,
   LearningContext,
   OrderedCardsList,
   RemainingCredits,
@@ -330,8 +330,8 @@ const remaining_courses: {
 } = {};
 
 let learning_areas: LearningArea[] = [];
-let learning_sessions: LearningBlock[];
-let learning_session: LearningBlock | undefined;
+let learning_sessions: LearningSession[];
+let learning_session: LearningSession | undefined;
 let learning_session_position: number;
 let description_title: string;
 let description_course_id: number;
@@ -349,7 +349,7 @@ if ($axios != undefined) {
   learning_sessions = await executeLink(
     $axios,
     "/v1/learning_sessions?year_of=" + learning_session_id,
-    (response) => response.data.data.map((a: any) => new LearningBlock(a)),
+    (response) => response.data.data.map((a: any) => new LearningSession(a)),
     () => []
   );
   learning_session_position = learning_sessions.findIndex(
@@ -455,13 +455,13 @@ if ($axios != undefined) {
                 ][tmp_course.group] = store.state.courses_per_group;
               }
               open_enrollment =
-                learning_session?.getStatus() == LearningBlockStatus.FUTURE &&
+                learning_session?.getStatus() == LearningSessionStatus.FUTURE &&
                 (learning_session_position == 0 ||
                   learning_sessions[learning_session_position - 1]?.getStatus() ==
-                    LearningBlockStatus.CURRENT);
+                    LearningSessionStatus.CURRENT);
               tmp_card = tmp_course.toCard(
                 store,
-                learning_session as LearningBlock,
+                learning_session as LearningSession,
                 open_enrollment
                   ? "/v1/students/" +
                       user.id +

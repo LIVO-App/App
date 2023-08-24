@@ -32,9 +32,9 @@
 <script setup lang="ts">
 import {
   GeneralCardElements,
-  LearningBlock,
+  LearningSession,
   OrderedCardsList,
-  HiglightBlockCardElements,
+  HiglightSessionCardElements,
   MinimumCourseProps,
   MinimizedCourse,
   User,
@@ -56,7 +56,7 @@ type Indexes = {
 const is_nothing_selected = () =>
   selected_session_indexes.year == "-1" && selected_session_indexes.index == -1;
 const find_session = (
-  learning_session: OrderedCardsList<HiglightBlockCardElements>,
+  learning_session: OrderedCardsList<HiglightSessionCardElements>,
   id?: string
 ): Indexes => {
   const years = Object.keys(learning_session.cards);
@@ -68,7 +68,7 @@ const find_session = (
   do {
     year = years[count];
     index = learning_session.cards[year].findIndex(
-      (a: HiglightBlockCardElements) => {
+      (a: HiglightSessionCardElements) => {
         if (id != undefined) {
           return a.id == id;
         } else {
@@ -162,7 +162,7 @@ const user = User.getLoggedUser() as User;
 const $route = useRoute();
 
 const promises: Promise<any>[] = [];
-const learning_sessions: OrderedCardsList<HiglightBlockCardElements> = reactive({
+const learning_sessions: OrderedCardsList<HiglightSessionCardElements> = reactive({
   order: [],
   cards: {},
 });
@@ -194,7 +194,7 @@ for (const year of school_years) {
           title: year,
         });
         learning_sessions.cards[year] = response.data.data.map((a: any) =>
-          new LearningBlock(a).toHighlightCard(store)
+          new LearningSession(a).toHighlightCard(store)
         );
       }
     )

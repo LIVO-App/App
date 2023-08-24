@@ -33,9 +33,9 @@
 <script setup lang="ts">
 import {
   GeneralCardElements,
-  LearningBlockStatus,
+  LearningSessionStatus,
   OrdinaryClassProps,
-  LearningBlock,
+  LearningSession,
   OrderedCardsList,
   User,
 } from "@/types";
@@ -79,7 +79,7 @@ let ordinary_classes: OrdinaryClassProps[],
   current_class: OrdinaryClassProps | undefined,
   current_school_year: number,
   tmp_element: GeneralCardElements | undefined,
-  learning_session: LearningBlock;
+  learning_session: LearningSession;
 
 if ($axios != undefined) {
   ordinary_classes = await executeLink(
@@ -114,7 +114,7 @@ if ($axios != undefined) {
             });
             learning_sessions.completed.cards[oc.school_year] = [];
             for (const session of response.data.data) {
-              learning_session = new LearningBlock(session);
+              learning_session = new LearningSession(session);
               learning_sessions.completed.cards[oc.school_year].push(
                 await learning_session.toCard($axios, store)
               );
@@ -130,24 +130,24 @@ if ($axios != undefined) {
         "/v1/learning_sessions?school_year=" + current_school_year,
         async (response) => {
           for (const session of response.data.data) {
-            learning_session = new LearningBlock(session);
+            learning_session = new LearningSession(session);
             tmp_element = await learning_session.toCard($axios, store);
 
             switch (learning_session.getStatus()) {
-              case LearningBlockStatus.FUTURE:
+              case LearningSessionStatus.FUTURE:
                 if (learning_sessions.future.cards["planned"] == null) {
                   learning_sessions.future.cards["planned"] = [tmp_element];
                 } else {
                   learning_sessions.future.cards["planned"].push(tmp_element);
                 }
                 break;
-              case LearningBlockStatus.UPCOMING:
+              case LearningSessionStatus.UPCOMING:
                 learning_sessions.upcoming.cards[""] = [tmp_element];
                 break;
-              case LearningBlockStatus.CURRENT:
+              case LearningSessionStatus.CURRENT:
                 learning_sessions.current.cards[""] = [tmp_element];
                 break;
-              case LearningBlockStatus.COMPLETED:
+              case LearningSessionStatus.COMPLETED:
                 if (
                   learning_sessions.completed.cards[session.school_year] ==
                   undefined

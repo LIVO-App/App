@@ -32,10 +32,10 @@
 <script setup lang="ts">
 import {
   GeneralCardElements,
-  LearningBlock,
+  LearningSession,
   OrderedCardsList,
   CourseSectionsTeachings,
-  HiglightBlockCardElements,
+  HiglightSessionCardElements,
   User,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
@@ -52,7 +52,7 @@ type Indexes = {
 const is_nothing_selected = () =>
   selected_session_indexes.year == "-1" && selected_session_indexes.index == -1;
 const find_session = (
-  learning_sessions: OrderedCardsList<HiglightBlockCardElements>,
+  learning_sessions: OrderedCardsList<HiglightSessionCardElements>,
   id?: string
 ): Indexes => {
   const years = Object.keys(learning_sessions.cards);
@@ -64,7 +64,7 @@ const find_session = (
   do {
     year = years[count];
     index = learning_sessions.cards[year].findIndex(
-      (a: HiglightBlockCardElements) => {
+      (a: HiglightSessionCardElements) => {
         if (id != undefined) {
           return a.id == id;
         } else {
@@ -205,7 +205,7 @@ const store = useStore();
 const user = User.getLoggedUser() as User;
 
 const promises: Promise<any>[] = [];
-const learning_sessions: OrderedCardsList<HiglightBlockCardElements> = reactive({
+const learning_sessions: OrderedCardsList<HiglightSessionCardElements> = reactive({
   order: [],
   cards: {},
 });
@@ -253,7 +253,7 @@ for (const year of teaching_years) {
           title: year,
         });
         learning_sessions.cards[year] = response.data.data.map((a: any) =>
-          new LearningBlock(a).toHighlightCard(store)
+          new LearningSession(a).toHighlightCard(store)
         );
       }
     )

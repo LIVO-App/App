@@ -192,7 +192,7 @@
                   :placeholder="
                     getCurrentElement(store, 'learning_sessions_choice')
                   "
-                  :getCompleteName="learningBlockToString"
+                  :getCompleteName="learningSessionToString"
                   :disabled="action == 'view'"
                 />
               </ion-col>
@@ -576,7 +576,7 @@ import {
   Pages,
   Teaching,
   StudyAddress,
-  LearningBlock,
+  LearningSession,
   PropositionTitles,
   PropositionCharacteristics,
   PropositionStudentsDistribution,
@@ -670,7 +670,7 @@ const learningContextToString = (learning_context: LearningContext) =>
   learning_context[`${language}_title`];
 const studyAddressToString = (study_address: StudyAddress) =>
   study_address[`${language}_title`];
-const learningBlockToString = (session: LearningBlock) =>
+const learningSessionToString = (session: LearningSession) =>
   session.number + " - " + session.school_year;
 const teacherToString = (teacher: Teacher) =>
   teacher.name + " " + teacher.surname;
@@ -1372,7 +1372,7 @@ let course_proposition = reactive(new ModelProposition());
 let models: CourseModel[] = [];
 let learning_areas: LearningArea[] = [];
 let growth_areas: GrowthArea[] = [];
-let learning_sessions: LearningBlock[] = [];
+let learning_sessions: LearningSession[] = [];
 let groups: { id: number }[] = [];
 let sections: boolean[] = reactive([]);
 
@@ -1411,12 +1411,12 @@ if ($axios != undefined) {
     $axios,
     "/v1/learning_sessions?future_session=true", // Da sistemare: aggiungere course_id quando Pietro finisce
     (response) => {
-      const tmp_learning_sessions: LearningBlock[] = [];
+      const tmp_learning_sessions: LearningSession[] = [];
 
-      let tmp_session: LearningBlock;
+      let tmp_session: LearningSession;
 
       for (const session of response.data.data) {
-        tmp_session = new LearningBlock(session);
+        tmp_session = new LearningSession(session);
         tmp_set.add(tmp_session.school_year);
         tmp_learning_sessions.push(tmp_session);
       }

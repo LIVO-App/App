@@ -29,7 +29,7 @@
           <template v-else>
             <template v-for="card in props.cards_list.cards['']">
               <highliht-card
-                v-if="isHiglithBlock(card)"
+                v-if="isHiglithSession(card)"
                 @signal_event="$emit('signal_event')"
                 :key="'highlight-session-card-' + card.id"
                 :id="card.id"
@@ -94,7 +94,7 @@
                 v-for="card in props.cards_list.cards[ordered_cards.key]"
               >
                 <highliht-card
-                  v-if="isHiglithBlock(card)"
+                  v-if="isHiglithSession(card)"
                   @signal_event="$emit('signal_event')"
                   :key="'teacher-session-card-' + card.id"
                   :id="card.id"
@@ -158,7 +158,7 @@ import {
 } from "@ionic/vue";
 import { PropType } from "vue";
 import { OrderedCardsList } from "../types";
-import { isGeneral, isCourse, isHiglithCard, isHiglithBlock } from "../utils";
+import { isGeneral, isCourse, isHiglithCard, isHiglithSession } from "../utils";
 
 const props = defineProps({
   title: String,

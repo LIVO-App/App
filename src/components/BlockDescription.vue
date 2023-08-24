@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import {
   GeneralCardElements,
-  LearningBlock,
+  LearningSession,
   LearningContextSummary,
 } from "@/types";
 import { executeLink, getIcon } from "@/utils";
@@ -67,7 +67,7 @@ if ($axios != undefined) {
     $axios,
     "/v1/learning_sessions/" + props.id,
     async (response) => {
-      head_content = await new LearningBlock(response.data.data).toCard(
+      head_content = await new LearningSession(response.data.data).toCard(
         $axios,
         store,
         props.learning_context,
