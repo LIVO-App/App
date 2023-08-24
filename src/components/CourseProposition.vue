@@ -1063,7 +1063,7 @@ const edit_course_proposition = async (course_id?: number) => {
   let growth_area: GrowthArea;
   let learning_area: LearningArea;
   if ($axios != undefined) {
-    if (course_id != undefined) {
+    if (course_id != undefined && !Number.isNaN(course_id)) {
       course = await executeLink(
         $axios,
         "/v1/courses/" + course_id + "?admin_info=true",

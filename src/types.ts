@@ -747,7 +747,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
         return session_list;
     }
 
-    async getInscribedCredits($axios: AxiosInstance, store: Store<any>, learning_context_id: string): Promise<number> {
+    async getSubscribedCredits($axios: AxiosInstance, store: Store<any>, learning_context_id: string): Promise<number> {
 
         const user = User.getLoggedUser() as User;
 
@@ -771,7 +771,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
                 type: "html",
                 content: status != LearningSessionStatus.COMPLETED || credits != undefined || courses_list != undefined ?
                     (put_credits ? "<label>" + getCurrentElement(store, "constraints") + ":"
-                        + (actual_learning_context.credits != null ? " " + (await this.getInscribedCredits($axios, store, actual_learning_context.id)) + "/" + actual_learning_context.credits : "") + "</label>" : "")
+                        + (actual_learning_context.credits != null ? " " + (await this.getSubscribedCredits($axios, store, actual_learning_context.id)) + "/" + actual_learning_context.credits : "") + "</label>" : "")
                     + (actual_learning_context.credits == null ? (await this.getSessionList($axios, store, actual_learning_context, reference, credits, courses_list)) : "")
                     : ""
             }],

@@ -123,7 +123,7 @@ const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
         store,
         course.enrollment,
         pathArray.join("/") +
-          (value === false ? "/inscribe?" : "/unscribe?") +
+          (value === false ? "/subscribe?" : "/unsubscribe?") +
           requestArray[1],
         course.enrollment.getChangingMethod()
       );
@@ -145,7 +145,7 @@ const changeEnrollment = async () => {
   const queryArray = requestArray[1].split("&");
   const learning_session_id = queryArray[0].split("=")[1];
   const action = pathArray[pathArray.length - 1];
-  const unscribe = action == "unscribe";
+  const unsubscribe = action == "unsubscribe";
   const groups = Object.keys(
     remaining_courses[selected_context.value][selected_area.value]
   );
@@ -181,7 +181,7 @@ const changeEnrollment = async () => {
           selected_area.value
         ] >= course.credits;
       if (
-        unscribe ||
+        unsubscribe ||
         (available_courses && available_area_credits) ||
         (available_courses && available_context_credits)
       ) {
@@ -195,21 +195,21 @@ const changeEnrollment = async () => {
 
             updateCourses(
               course,
-              isPending ? pendingDate : unscribe ? false : response.data ?? true
+              isPending ? pendingDate : unsubscribe ? false : response.data ?? true
             );
             if (!wasPending && !isPending) {
               remaining_courses[selected_context.value][selected_area.value][
                 course.group
-              ] += unscribe ? 1 : -1;
+              ] += unsubscribe ? 1 : -1;
               if (
                 typeof remaining_credits[selected_context.value] == "number"
               ) {
                 (remaining_credits[selected_context.value] as number) +=
-                  (unscribe ? 1 : -1) * course.credits;
+                  (unsubscribe ? 1 : -1) * course.credits;
               } else {
                 (remaining_credits[selected_context.value] as TmpList<number>)[
                   selected_area.value
-                ] += (unscribe ? 1 : -1) * course.credits;
+                ] += (unsubscribe ? 1 : -1) * course.credits;
               }
             }
             trigger.value++;
@@ -467,8 +467,8 @@ if ($axios != undefined) {
                       user.id +
                       "/" +
                       (tmp_course.pending !== "false"
-                        ? "unscribe"
-                        : "inscribe") +
+                        ? "unsubscribe"
+                        : "subscribe") +
                       "?course_id=" +
                       tmp_course.id +
                       "&session_id=" +
