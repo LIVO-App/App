@@ -31,7 +31,7 @@
               <highliht-card
                 v-if="isHiglithBlock(card)"
                 @signal_event="$emit('signal_event')"
-                :key="'highlight-block-card-' + card.id"
+                :key="'highlight-session-card-' + card.id"
                 :id="card.id"
                 :title="card.title"
                 :subtitle="card.subtitle"
@@ -96,7 +96,7 @@
                 <highliht-card
                   v-if="isHiglithBlock(card)"
                   @signal_event="$emit('signal_event')"
-                  :key="'teacher-block-card-' + card.id"
+                  :key="'teacher-session-card-' + card.id"
                   :id="card.id"
                   :title="card.title"
                   :subtitle="card.subtitle"

@@ -1,12 +1,12 @@
 <template>
   <ion-grid
-    ><!-- v-if="learning_blocks.loaded">-->
+    ><!-- v-if="learning_sessions.loaded">-->
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="getCurrentElement(store, 'learning_blocks')"
-          :emptiness_message="getCurrentElement(store, 'no_blocks')"
-          :cards_list="learning_blocks"
+          :title="getCurrentElement(store, 'learning_sessions')"
+          :emptiness_message="getCurrentElement(store, 'no_sessions')"
+          :cards_list="learning_sessions"
           @signal_event="changeSelection()"
         />
       </ion-col>
@@ -18,7 +18,7 @@
             getCurrentElement(
               store,
               is_nothing_selected()
-                ? 'student_learning_block_selection_message'
+                ? 'student_learning_session_selection_message'
                 : 'no_courses'
             )
           "
@@ -54,12 +54,12 @@ type Indexes = {
 };
 
 const is_nothing_selected = () =>
-  selected_block_indexes.year == "-1" && selected_block_indexes.index == -1;
-const find_block = (
-  learning_blocks: OrderedCardsList<HiglightBlockCardElements>,
+  selected_session_indexes.year == "-1" && selected_session_indexes.index == -1;
+const find_session = (
+  learning_session: OrderedCardsList<HiglightBlockCardElements>,
   id?: string
 ): Indexes => {
-  const years = Object.keys(learning_blocks.cards);
+  const years = Object.keys(learning_session.cards);
 
   let count = 0;
   let year: string;
@@ -67,7 +67,7 @@ const find_block = (
 
   do {
     year = years[count];
-    index = learning_blocks.cards[year].findIndex(
+    index = learning_session.cards[year].findIndex(
       (a: HiglightBlockCardElements) => {
         if (id != undefined) {
           return a.id == id;
@@ -86,39 +86,39 @@ const find_block = (
 };
 const changeSelection = async () => {
   if (
-    selected_block_indexes.year != "-1" &&
-    selected_block_indexes.index != -1
+    selected_session_indexes.year != "-1" &&
+    selected_session_indexes.index != -1
   ) {
     selectedChange();
   }
 
-  const tmp_selected = find_block(learning_blocks, store.state.event.data.id);
+  const tmp_selected = find_session(learning_sessions, store.state.event.data.id);
   if (
-    selected_block_indexes.year == tmp_selected.year &&
-    selected_block_indexes.index == tmp_selected.index
+    selected_session_indexes.year == tmp_selected.year &&
+    selected_session_indexes.index == tmp_selected.index
   ) {
-    selected_block_indexes = {
+    selected_session_indexes = {
       year: "-1",
       index: -1,
     };
     courses.cards[""] = [];
   } else {
-    selected_block_indexes = tmp_selected;
+    selected_session_indexes = tmp_selected;
     selectedChange();
     courses.cards[""] = await executeLink(
       $axios,
       $route.name == "announcements"
         ? "/v1/students/" +
             user.id +
-            "/project_classes?block_id=" +
-            learning_blocks.cards[selected_block_indexes.year][
-              selected_block_indexes.index
+            "/project_classes?session_id=" +
+            learning_sessions.cards[selected_session_indexes.year][
+              selected_session_indexes.index
             ].id +
             "&token=" +
             user.token
-        : "/v1/project_classes?block_id=" +
-            learning_blocks.cards[selected_block_indexes.year][
-              selected_block_indexes.index
+        : "/v1/project_classes?session_id=" +
+            learning_sessions.cards[selected_session_indexes.year][
+              selected_session_indexes.index
             ].id +
             "&token=" +
             user.token, // Da chiedere: cosa serve year
@@ -132,8 +132,8 @@ const changeSelection = async () => {
                   "/announcements/" +
                     (a as MinimumCourseProps).id +
                     "/" +
-                    learning_blocks.cards[selected_block_indexes.year][
-                      selected_block_indexes.index
+                    learning_sessions.cards[selected_session_indexes.year][
+                      selected_session_indexes.index
                     ].id
                 )
               : new AdminProjectClass(a as AdminProjectClassProps).toCard(
@@ -141,18 +141,18 @@ const changeSelection = async () => {
                   "project_courses/" +
                     (a as AdminProjectClassProps).course_id +
                     "/" +
-                    (a as AdminProjectClassProps).learning_block
+                    (a as AdminProjectClassProps).learning_session
                 )
         )
     );
   }
 };
 const selectedChange = (
-  year = selected_block_indexes.year,
-  index = selected_block_indexes.index,
-  value = !learning_blocks.cards[year][index].selected
+  year = selected_session_indexes.year,
+  index = selected_session_indexes.index,
+  value = !learning_sessions.cards[year][index].selected
 ) => {
-  learning_blocks.cards[year][index].selected = value;
+  learning_sessions.cards[year][index].selected = value;
   trigger.value++;
 };
 
@@ -162,7 +162,7 @@ const user = User.getLoggedUser() as User;
 const $route = useRoute();
 
 const promises: Promise<any>[] = [];
-const learning_blocks: OrderedCardsList<HiglightBlockCardElements> = reactive({
+const learning_sessions: OrderedCardsList<HiglightBlockCardElements> = reactive({
   order: [],
   cards: {},
 });
@@ -178,7 +178,7 @@ const school_years = await executeLink(
 );
 const trigger = ref(0);
 
-let selected_block_indexes: Indexes = reactive({
+let selected_session_indexes: Indexes = reactive({
   year: "-1",
   index: -1,
 });
@@ -187,13 +187,13 @@ for (const year of school_years) {
   promises.push(
     executeLink(
       $axios,
-      "/v1/learning_blocks?school_year=" + year,
+      "/v1/learning_sessions?school_year=" + year,
       (response) => {
-        learning_blocks.order.push({
+        learning_sessions.order.push({
           key: year,
           title: year,
         });
-        learning_blocks.cards[year] = response.data.data.map((a: any) =>
+        learning_sessions.cards[year] = response.data.data.map((a: any) =>
           new LearningBlock(a).toHighlightCard(store)
         );
       }

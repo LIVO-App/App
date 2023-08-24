@@ -3,7 +3,7 @@
     <ion-toolbar>
       <ion-grid>
         <ion-row class="ion-text-center ion-align-items-center">
-          <!-- Da sistemare: mettere select per far vedere progect_class se si ha anche il block_id -->
+          <!-- Da sistemare: mettere select per far vedere progect_class se si ha anche il session_id -->
           <ion-col>
             <ionic-element :element="elements.title"></ionic-element>
           </ion-col>

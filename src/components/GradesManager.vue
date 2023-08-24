@@ -106,8 +106,8 @@
                   parameters.teacher_id +
                   '&course_id=' +
                   parameters.course_id +
-                  '&block_id=' +
-                  parameters.block_id +
+                  '&session_id=' +
+                  parameters.session_id +
                   '&ita_description=' +
                   description +
                   '&eng_description=' +
@@ -235,8 +235,8 @@ if (props.grades != undefined) {
       props.parameters.student_id +
       "/grades?course_id=" +
       props.parameters.course_id +
-      "&block_id=" +
-      props.parameters.block_id +
+      "&session_id=" +
+      props.parameters.session_id +
       (props.parameters.teacher_id != undefined
         ? "&teacher_id=" + props.parameters.teacher_id
         : ""),

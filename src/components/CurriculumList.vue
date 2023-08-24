@@ -371,7 +371,7 @@ if ($axios != undefined) {
 
   await executeLink(
     $axios,
-    "/v1/learning_blocks/correspondence?student_id=" + reference_id,
+    "/v1/learning_sessions/correspondence?student_id=" + reference_id,
     (response) => {
       for (const correspondence of response.data.data) {
         if (year_correspondences[selected_year.value] == undefined) {
@@ -386,7 +386,7 @@ if ($axios != undefined) {
         }
         year_correspondences[selected_year.value][
           correspondence.course_id
-        ].push(correspondence.block_id);
+        ].push(correspondence.session_id);
       }
     },
     () => [],

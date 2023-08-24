@@ -135,8 +135,8 @@ const setupModalAndOpen = async (store: Store<any>) => {
           user.id +
           "&course_id=" +
           course_id +
-          "&block_id=" +
-          block_id +
+          "&session_id=" +
+          session_id +
           "&token=" +
           user.token,
         () => "",
@@ -180,7 +180,7 @@ const updateMessages = async () => {
     "/v1/project_classes/" +
       course_id +
       "/" +
-      block_id +
+      session_id +
       "/announcements?token=" +
       user.token +
       (user.user == "teacher" ? "&section=" + selected_section.value : ""),
@@ -204,7 +204,7 @@ const announcement_open = ref(false);
 const publishment_open = ref(false);
 const divided_path = window.location.pathname.split("/");
 const course_id = divided_path[divided_path.length - 2];
-const block_id = divided_path[divided_path.length - 1];
+const session_id = divided_path[divided_path.length - 1];
 const trigger = ref(0);
 const sections: { id: string }[] = [];
 const tmp_sections: Set<string> = new Set();
@@ -242,8 +242,8 @@ if ($axios != undefined) {
       $axios,
       "/v2/teachers/" +
         user.id +
-        "/my_project_classes?block_id=" +
-        block_id +
+        "/my_project_classes?session_id=" +
+        session_id +
         "&course_id=" +
         course_id +
         "&token=" +
@@ -255,8 +255,8 @@ if ($axios != undefined) {
       $axios,
       "/v2/teachers/" +
         user.id +
-        "/associated_project_classes?block_id=" +
-        block_id +
+        "/associated_project_classes?session_id=" +
+        session_id +
         "&course_id=" +
         course_id +
         "&token=" +

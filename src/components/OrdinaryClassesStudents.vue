@@ -1,6 +1,6 @@
 <template>
   <ion-grid
-    ><!-- v-if="learning_blocks.loaded">-->
+    ><!-- v-if="learning_sessions.loaded">-->
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card

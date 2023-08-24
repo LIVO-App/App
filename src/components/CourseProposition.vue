@@ -185,12 +185,12 @@
             <ion-row>
               <ion-col>
                 <custom-select
-                  v-model="selected_block"
-                  :list="learning_blocks"
-                  :label="getCurrentElement(store, 'learning_blocks') + ':'"
-                  :aria_label="getCurrentElement(store, 'learning_blocks')"
+                  v-model="selected_session"
+                  :list="learning_sessions"
+                  :label="getCurrentElement(store, 'learning_sessions') + ':'"
+                  :aria_label="getCurrentElement(store, 'learning_sessions')"
                   :placeholder="
-                    getCurrentElement(store, 'learning_blocks_choice')
+                    getCurrentElement(store, 'learning_sessions_choice')
                   "
                   :getCompleteName="learningBlockToString"
                   :disabled="action == 'view'"
@@ -242,8 +242,8 @@
                   :placeholder="
                     getCurrentElement(
                       store,
-                      selected_block == -1
-                        ? 'learning_block_needed'
+                      selected_session == -1
+                        ? 'learning_session_needed'
                         : 'group_choice'
                     )
                   "
@@ -670,8 +670,8 @@ const learningContextToString = (learning_context: LearningContext) =>
   learning_context[`${language}_title`];
 const studyAddressToString = (study_address: StudyAddress) =>
   study_address[`${language}_title`];
-const learningBlockToString = (block: LearningBlock) =>
-  block.number + " - " + block.school_year;
+const learningBlockToString = (session: LearningBlock) =>
+  session.number + " - " + session.school_year;
 const teacherToString = (teacher: Teacher) =>
   teacher.name + " " + teacher.surname;
 const castToTitles = (titles: any) => titles as PropositionTitles;
@@ -1114,7 +1114,7 @@ const edit_course_proposition = async (course_id?: number) => {
           credits: course.credits,
           area_id: learning_area.id,
           growth_id: growth_area.id,
-          block_id: -1,
+          session_id: -1,
           class_group: -1,
           num_section: 0,
           min_students: course.min_students,
@@ -1159,8 +1159,8 @@ const approve = (outcome = true) => {
     $axios,
     "/v1/propositions/approval?course_id=" +
       course_proposition.id +
-      "&block_id=" +
-      course_proposition.characteristics.block_id +
+      "&session_id=" +
+      course_proposition.characteristics.session_id +
       "&approved=" +
       outcome +
       "&token=" +
@@ -1273,7 +1273,7 @@ const buttons: CustomElement[] = [
     },
   },
 ];
-const selected_block = ref(-1);
+const selected_session = ref(-1);
 const addition = ref(false);
 const presidium = ref(false);
 const main_study_year = ref(false);
@@ -1372,7 +1372,7 @@ let course_proposition = reactive(new ModelProposition());
 let models: CourseModel[] = [];
 let learning_areas: LearningArea[] = [];
 let growth_areas: GrowthArea[] = [];
-let learning_blocks: LearningBlock[] = [];
+let learning_sessions: LearningBlock[] = [];
 let groups: { id: number }[] = [];
 let sections: boolean[] = reactive([]);
 
@@ -1407,21 +1407,21 @@ if ($axios != undefined) {
     (response) => response.data.data,
     () => []
   );
-  learning_blocks = await executeLink(
+  learning_sessions = await executeLink(
     $axios,
-    "/v1/learning_blocks?future_block=true", // Da sistemare: aggiungere course_id quando Pietro finisce
+    "/v1/learning_sessions?future_session=true", // Da sistemare: aggiungere course_id quando Pietro finisce
     (response) => {
-      const tmp_learning_blocks: LearningBlock[] = [];
+      const tmp_learning_sessions: LearningBlock[] = [];
 
-      let tmp_block: LearningBlock;
+      let tmp_session: LearningBlock;
 
-      for (const block of response.data.data) {
-        tmp_block = new LearningBlock(block);
-        tmp_set.add(tmp_block.school_year);
-        tmp_learning_blocks.push(tmp_block);
+      for (const session of response.data.data) {
+        tmp_session = new LearningBlock(session);
+        tmp_set.add(tmp_session.school_year);
+        tmp_learning_sessions.push(tmp_session);
       }
 
-      return tmp_learning_blocks;
+      return tmp_learning_sessions;
     },
     () => []
   );
@@ -1483,9 +1483,9 @@ if ($axios != undefined) {
     () => []
   );
 
-  watch(selected_block, (new_block) => {
-    course_proposition.characteristics.block_id = new_block;
-    groups = learning_blocks.map((a) => {
+  watch(selected_session, (new_session) => {
+    course_proposition.characteristics.session_id = new_session;
+    groups = learning_sessions.map((a) => {
       return {
         id: a.num_groups, // Da sistemare: mettere lista di gruppi
       };

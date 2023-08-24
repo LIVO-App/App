@@ -26,7 +26,7 @@
     </ion-modal>
     <suspense v-if="$route.params.id != undefined">
       <template #default>
-        <block-description
+        <session-description
           :key="trigger"
           :id="$route.params.id"
           :learning_context="
@@ -143,7 +143,7 @@ const changeEnrollment = async () => {
   const requestArray = store.state.request.url.split("?");
   const pathArray = requestArray[0].split("/");
   const queryArray = requestArray[1].split("&");
-  const learning_block_id = queryArray[0].split("=")[1];
+  const learning_session_id = queryArray[0].split("=")[1];
   const action = pathArray[pathArray.length - 1];
   const unscribe = action == "unscribe";
   const groups = Object.keys(
@@ -159,7 +159,7 @@ const changeEnrollment = async () => {
 
   while (tmp_course == undefined && count < groups.length) {
     tmp_course = courses.cards[groups[count]].find(
-      (c) => c.id == "" + learning_block_id
+      (c) => c.id == "" + learning_session_id
     );
     count++;
   }
@@ -295,7 +295,7 @@ const $axios: AxiosInstance | undefined = inject("$axios");
 const $route = useRoute();
 const language: Language = store.state.language;
 const user = User.getLoggedUser() as User;
-const learning_block_id: string = $route.params.id as string;
+const learning_session_id: string = $route.params.id as string;
 
 const all_courses: {
   [key: string]: CardsList<CourseCardElements>;
@@ -330,9 +330,9 @@ const remaining_courses: {
 } = {};
 
 let learning_areas: LearningArea[] = [];
-let learning_blocks: LearningBlock[];
-let learning_block: LearningBlock | undefined;
-let learning_block_position: number;
+let learning_sessions: LearningBlock[];
+let learning_session: LearningBlock | undefined;
+let learning_session_position: number;
 let description_title: string;
 let description_course_id: number;
 let selected_context: Ref<string>;
@@ -346,24 +346,24 @@ let course_correspondences: {
 let tmp_card;
 
 if ($axios != undefined) {
-  learning_blocks = await executeLink(
+  learning_sessions = await executeLink(
     $axios,
-    "/v1/learning_blocks?year_of=" + learning_block_id,
+    "/v1/learning_sessions?year_of=" + learning_session_id,
     (response) => response.data.data.map((a: any) => new LearningBlock(a)),
     () => []
   );
-  learning_block_position = learning_blocks.findIndex(
-    (a) => a.id == parseInt(learning_block_id)
+  learning_session_position = learning_sessions.findIndex(
+    (a) => a.id == parseInt(learning_session_id)
   );
-  learning_block = learning_blocks[learning_block_position];
+  learning_session = learning_sessions[learning_session_position];
 
-  if (learning_block != undefined) {
+  if (learning_session != undefined) {
     learning_contexts = await executeLink(
       $axios,
       "/v1/learning_contexts?student_id=" +
         user.id +
-        "&block_id=" +
-        learning_block_id,
+        "&session_id=" +
+        learning_session_id,
       (response) => {
         const tmp_contexts: LearningContext[] = [];
 
@@ -385,8 +385,8 @@ if ($axios != undefined) {
 
     learning_areas = await executeLink(
       $axios,
-      "/v1/learning_areas?all_data=true&credits=true&block_id=" +
-        learning_block_id,
+      "/v1/learning_areas?all_data=true&credits=true&session_id=" +
+        learning_session_id,
       (response) => response.data.data,
       () => []
     );
@@ -396,8 +396,8 @@ if ($axios != undefined) {
       $axios,
       "/v2/courses?student_id=" +
         user.id +
-        "&block_id=" +
-        learning_block_id +
+        "&session_id=" +
+        learning_session_id +
         "&token=" +
         user.token,
       (response) => response.data.data,
@@ -409,8 +409,8 @@ if ($axios != undefined) {
       $axios,
       "/v1/learning_contexts/correspondence?student_id=" +
         user.id +
-        "&block_id=" +
-        learning_block_id,
+        "&session_id=" +
+        learning_session_id,
       (response) => {
         let course_props,
           tmp_course: CourseSummary,
@@ -455,13 +455,13 @@ if ($axios != undefined) {
                 ][tmp_course.group] = store.state.courses_per_group;
               }
               open_enrollment =
-                learning_block?.getStatus() == LearningBlockStatus.FUTURE &&
-                (learning_block_position == 0 ||
-                  learning_blocks[learning_block_position - 1]?.getStatus() ==
+                learning_session?.getStatus() == LearningBlockStatus.FUTURE &&
+                (learning_session_position == 0 ||
+                  learning_sessions[learning_session_position - 1]?.getStatus() ==
                     LearningBlockStatus.CURRENT);
               tmp_card = tmp_course.toCard(
                 store,
-                learning_block as LearningBlock,
+                learning_session as LearningBlock,
                 open_enrollment
                   ? "/v1/students/" +
                       user.id +
@@ -471,8 +471,8 @@ if ($axios != undefined) {
                         : "inscribe") +
                       "?course_id=" +
                       tmp_course.id +
-                      "&block_id=" +
-                      learning_block_id +
+                      "&session_id=" +
+                      learning_session_id +
                       "&context_id=" +
                       tmp_learning_context.id
                   : undefined,

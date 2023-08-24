@@ -180,7 +180,7 @@ const updateStudents = async () => {
     "/v1/project_classes/" +
       course_id +
       "/" +
-      block_id +
+      session_id +
       "/components?section=" +
       selected_section.value +
       (user.user == "teacher" ? "&teacher_id=" + user.id : "") +
@@ -200,8 +200,8 @@ const updateStudents = async () => {
           student.id +
           "/grades?course_id=" +
           course_id +
-          "&block_id=" +
-          block_id +
+          "&session_id=" +
+          session_id +
           "&teacher_id=" +
           user.id,
         (response: any) =>
@@ -219,7 +219,7 @@ const updateStudents = async () => {
       student.toTableRow(
         store,
         course_id,
-        block_id,
+        session_id,
         user.user == "teacher" ? user.id : undefined,
         user.user == "teacher",
         final_grade
@@ -254,7 +254,7 @@ const grades_open = ref(false);
 const description_open = ref(false);
 const divided_path = window.location.pathname.split("/");
 const course_id = divided_path[divided_path.length - 2];
-const block_id = divided_path[divided_path.length - 1];
+const session_id = divided_path[divided_path.length - 1];
 const trigger = ref(0);
 const grades: {
   [key: string]: Grade[];
@@ -273,7 +273,7 @@ const buttons: CustomElement[] = [
     type: "icon",
     linkType: "request",
     content: {
-      url: "/announcements/" + course_id + "/" + block_id, // Da sistemare: vedere se anche admin può vedere e/o mandare messaggi
+      url: "/announcements/" + course_id + "/" + session_id, // Da sistemare: vedere se anche admin può vedere e/o mandare messaggi
       method: "get",
       icon: getIcon(store, "mail"), // Da sistemare: mettere in alto e fare popup
     },
@@ -320,8 +320,8 @@ if ($axios != undefined) {
       $axios,
       "/v2/teachers/" +
         user.id +
-        "/my_project_classes?block_id=" +
-        block_id +
+        "/my_project_classes?session_id=" +
+        session_id +
         "&course_id=" +
         course_id +
         "&token=" +
@@ -333,8 +333,8 @@ if ($axios != undefined) {
       $axios,
       "/v2/teachers/" +
         user.id +
-        "/associated_project_classes?block_id=" +
-        block_id +
+        "/associated_project_classes?session_id=" +
+        session_id +
         "&course_id=" +
         course_id +
         "&token=" +
@@ -358,7 +358,7 @@ if ($axios != undefined) {
       "/v1/project_classes/" +
         course_id +
         "/" +
-        block_id +
+        session_id +
         "/sections?token=" +
         user.token,
       (response) => {

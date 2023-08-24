@@ -1,29 +1,29 @@
 <template>
   <ion-grid
-    ><!-- v-if="learning_blocks.loaded">-->
+    ><!-- v-if="learning_sessions.loaded">-->
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
           :title="getCurrentElement(store, 'current')"
-          :emptiness_message="no_blocks"
-          :cards_list="learning_blocks.current"
+          :emptiness_message="no_session"
+          :cards_list="learning_sessions.current"
         />
         <list-card
           :title="getCurrentElement(store, 'future')"
-          :emptiness_message="no_blocks"
-          :cards_list="learning_blocks.future"
+          :emptiness_message="no_session"
+          :cards_list="learning_sessions.future"
         />
       </ion-col>
       <ion-col size="12" size-md="6">
         <list-card
           :title="getCurrentElement(store, 'upcoming')"
-          :emptiness_message="no_blocks"
-          :cards_list="learning_blocks.upcoming"
+          :emptiness_message="no_session"
+          :cards_list="learning_sessions.upcoming"
         />
         <list-card
           :title="getCurrentElement(store, 'completed')"
-          :emptiness_message="no_blocks"
-          :cards_list="learning_blocks.completed"
+          :emptiness_message="no_session"
+          :cards_list="learning_sessions.completed"
         />
       </ion-col>
     </ion-row>
@@ -49,7 +49,7 @@ const $axios: AxiosInstance | undefined = inject("$axios");
 const store = useStore();
 const user = User.getLoggedUser() as User;
 
-const learning_blocks: {
+const learning_sessions: {
   current: OrderedCardsList<GeneralCardElements>;
   future: OrderedCardsList<GeneralCardElements>;
   upcoming: OrderedCardsList<GeneralCardElements>;
@@ -73,13 +73,13 @@ const learning_blocks: {
   },
 });
 const promises: Promise<any>[] = [];
-const no_blocks = getCurrentElement(store, "no_blocks");
+const no_session = getCurrentElement(store, "no_sessions");
 
 let ordinary_classes: OrdinaryClassProps[],
   current_class: OrdinaryClassProps | undefined,
   current_school_year: number,
   tmp_element: GeneralCardElements | undefined,
-  learning_block: LearningBlock;
+  learning_session: LearningBlock;
 
 if ($axios != undefined) {
   ordinary_classes = await executeLink(
@@ -106,68 +106,68 @@ if ($axios != undefined) {
       promises.push(
         executeLink(
           $axios,
-          "/v1/learning_blocks?school_year=" + oc.school_year,
+          "/v1/learning_sessions?school_year=" + oc.school_year,
           async (response) => {
-            learning_blocks.completed.order.push({
+            learning_sessions.completed.order.push({
               key: oc.school_year,
               title: oc.school_year,
             });
-            learning_blocks.completed.cards[oc.school_year] = [];
-            for (const block of response.data.data) {
-              learning_block = new LearningBlock(block);
-              learning_blocks.completed.cards[oc.school_year].push(
-                await learning_block.toCard($axios, store)
+            learning_sessions.completed.cards[oc.school_year] = [];
+            for (const session of response.data.data) {
+              learning_session = new LearningBlock(session);
+              learning_sessions.completed.cards[oc.school_year].push(
+                await learning_session.toCard($axios, store)
               );
             }
           },
-          () => console.error("Learning blocks not retrieved")
+          () => console.error("Learning sessions not retrieved")
         )
       );
     }
     promises.push(
       executeLink(
         $axios,
-        "/v1/learning_blocks?school_year=" + current_school_year,
+        "/v1/learning_sessions?school_year=" + current_school_year,
         async (response) => {
-          for (const block of response.data.data) {
-            learning_block = new LearningBlock(block);
-            tmp_element = await learning_block.toCard($axios, store);
+          for (const session of response.data.data) {
+            learning_session = new LearningBlock(session);
+            tmp_element = await learning_session.toCard($axios, store);
 
-            switch (learning_block.getStatus()) {
+            switch (learning_session.getStatus()) {
               case LearningBlockStatus.FUTURE:
-                if (learning_blocks.future.cards["planned"] == null) {
-                  learning_blocks.future.cards["planned"] = [tmp_element];
+                if (learning_sessions.future.cards["planned"] == null) {
+                  learning_sessions.future.cards["planned"] = [tmp_element];
                 } else {
-                  learning_blocks.future.cards["planned"].push(tmp_element);
+                  learning_sessions.future.cards["planned"].push(tmp_element);
                 }
                 break;
               case LearningBlockStatus.UPCOMING:
-                learning_blocks.upcoming.cards[""] = [tmp_element];
+                learning_sessions.upcoming.cards[""] = [tmp_element];
                 break;
               case LearningBlockStatus.CURRENT:
-                learning_blocks.current.cards[""] = [tmp_element];
+                learning_sessions.current.cards[""] = [tmp_element];
                 break;
               case LearningBlockStatus.COMPLETED:
                 if (
-                  learning_blocks.completed.cards[block.school_year] ==
+                  learning_sessions.completed.cards[session.school_year] ==
                   undefined
                 ) {
-                  learning_blocks.completed.cards[block.school_year] = [
+                  learning_sessions.completed.cards[session.school_year] = [
                     tmp_element,
                   ];
                 } else {
-                  learning_blocks.completed.cards[block.school_year].push(
+                  learning_sessions.completed.cards[session.school_year].push(
                     tmp_element
                   );
                 }
                 break;
             }
           }
-          learning_blocks.completed.order.push({
+          learning_sessions.completed.order.push({
             key: current_school_year,
             title: current_school_year,
           });
-          learning_blocks.future.order = learning_blocks.future.order.concat(
+          learning_sessions.future.order = learning_sessions.future.order.concat(
             {
               key: "open_enrollment",
               title: getCurrentElement(store, "open_enrollment"),
@@ -177,14 +177,14 @@ if ($axios != undefined) {
               title: getCurrentElement(store, "planned"),
             }
           );
-          tmp_element = learning_blocks.future.cards["planned"].shift();
-          learning_blocks.future.cards["open_enrollment"] =
+          tmp_element = learning_sessions.future.cards["planned"].shift();
+          learning_sessions.future.cards["open_enrollment"] =
             tmp_element != undefined ? [tmp_element] : [];
         }
       )
     );
     await Promise.all(promises); /*.then(() => {
-      learning_blocks.loaded = true;
+      learning_sessions.loaded = true;
     });*/
   } else {
     console.error("Connection failed");

@@ -1,6 +1,6 @@
 <template>
   <ion-grid
-    ><!-- v-if="learning_blocks.loaded">-->
+    ><!-- v-if="learning_sessions.loaded">-->
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
@@ -18,7 +18,7 @@
             getCurrentElement(
               store,
               is_nothing_selected()
-                ? 'teacher_learning_block_selection_message'
+                ? 'teacher_learning_session_selection_message'
                 : 'no_project_classes'
             )
           "
@@ -47,7 +47,7 @@ import { executeLink, getCurrentElement } from "@/utils";
 
 const is_nothing_selected = () =>
   selected_year_index.value == -1;
-const find_block = (
+const find_session = (
   school_years: OrderedCardsList<HiglightCardElements>,
   id?: string
 ) => school_years.cards[""].findIndex(
@@ -74,7 +74,7 @@ const changeSelection = async () => {
     selectedChange();
   }
 
-  const tmp_selected = find_block(school_years, store.state.event.data.id);
+  const tmp_selected = find_session(school_years, store.state.event.data.id);
   if (
     selected_year_index.value == tmp_selected
   ) {

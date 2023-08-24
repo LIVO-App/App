@@ -65,7 +65,7 @@ let head_content: GeneralCardElements;
 if ($axios != undefined) {
   await executeLink(
     $axios,
-    "/v1/learning_blocks/" + props.id,
+    "/v1/learning_sessions/" + props.id,
     async (response) => {
       head_content = await new LearningBlock(response.data.data).toCard(
         $axios,
