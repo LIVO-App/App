@@ -638,7 +638,7 @@ type LearningSessionProps = {
     num_groups: number;
 }
 
-class LearningSession implements LearningSessionProps { // Da sistemare: aggiungi numero blocchi
+class LearningSession implements LearningSessionProps { // Da sistemare: aggiungi numero sessioni
 
     id: number;
     number: number;
