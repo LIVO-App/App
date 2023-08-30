@@ -48,10 +48,10 @@ import { executeLink, getCurrentElement } from "@/utils";
 const is_nothing_selected = () =>
   selected_year_index.value == -1;
 const find_session = (
-  school_years: OrderedCardsList<HiglightCardElements>,
+  school_years: OrderedCardsList<GeneralCardElements>,
   id?: string
 ) => school_years.cards[""].findIndex(
-    (a: HiglightCardElements) => {
+    (a: GeneralCardElements) => {
       if (id != undefined) {
         return a.id == id;
       } else {
@@ -105,7 +105,7 @@ const $axios: AxiosInstance | undefined = inject("$axios");
 const store = useStore();
 const user = User.getLoggedUser() as User;
 
-const school_years: OrderedCardsList<HiglightCardElements> = reactive({
+const school_years: OrderedCardsList<GeneralCardElements> = reactive({
   order: [],
   cards: {},
 });
@@ -134,13 +134,23 @@ await executeLink(
   $axios,
   "/v1/teachers/" + actual_teacher_id + "/active_years", // Da sistemare: trovare api per admin
   (response) => {
+    let id: string;
+    
     school_years.cards[""] = response.data.data.map((a: any) =>
       {
-        return {
-            id: "" + a.year,
+        id = "" + a.year;
+
+        return { // Da sistemare: creare il suo oggetto
+            id: id,
             group: "",
             title: "" + a.year,
-            selected: false
+            selected: false,
+            link: {
+              event: 'change_selection',
+              data: {
+                  id: id,
+              },
+            }
         }
       }
     );

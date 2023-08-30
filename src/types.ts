@@ -80,12 +80,19 @@ class OrdinaryClassSummary implements OrdinaryClassSummaryProps {
         return this.study_year + " " + this.address + (section ? " " + this.section : "") + (school_year ? " " + this.school_year : "");
     }
 
-    toHighlightCard(store: Store<any>, section = true, school_year = false, selected = false): HiglightCardElements {
+    toCard(section = true, school_year = false, selected = false): GeneralCardElements {
+        const id = this.toString(section, school_year);
         return {
-            id: this.toString(section, school_year),
+            id: id,
             group: this.school_year,
             title: this.toString(section, school_year),
-            selected: selected
+            selected: selected,
+            link: {
+                event: 'change_selection',
+                data: {
+                    id: id,
+                },
+            }
         };
     }
 }
@@ -179,7 +186,7 @@ type GeneralCardElements = CardElements & {
     id: string | number,
     title?: string,
     subtitle?: string,
-    content: CustomElement[],
+    content?: CustomElement[],
     side_element?: CustomElement,
     selected?: boolean,
     link?: LinkParameters,

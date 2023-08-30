@@ -45,9 +45,6 @@
 import {
   GeneralCardElements,
   OrderedCardsList,
-  HiglightCardElements,
-  MinimumCourseProps,
-  MinimizedCourse,
   OrdinaryClassSummary,
   StudentSummaryProps,
   StudentSummary,
@@ -67,7 +64,7 @@ type Indexes = {
 const is_nothing_selected = () =>
   selected_class_indexes.year == "-1" && selected_class_indexes.index == -1;
 const find_class = (
-  ordinary_class: OrderedCardsList<HiglightCardElements>,
+  ordinary_class: OrderedCardsList<GeneralCardElements>,
   id?: string
 ): Indexes => {
   const years = Object.keys(ordinary_class.cards);
@@ -78,7 +75,7 @@ const find_class = (
 
   do {
     year = years[count];
-    index = ordinary_class.cards[year].findIndex((a: HiglightCardElements) => {
+    index = ordinary_class.cards[year].findIndex((a: GeneralCardElements) => {
       if (id != undefined) {
         return a.id == id;
       } else {
@@ -94,7 +91,7 @@ const find_class = (
   };
 };
 const changeSelection = async () => {
-  let tmp_class: HiglightCardElements;
+  let tmp_class: GeneralCardElements;
 
   if (
     selected_class_indexes.year != "-1" &&
@@ -165,7 +162,7 @@ const store = useStore();
 const user = User.getLoggedUser() as User;
 
 const promises: Promise<any>[] = [];
-const ordinary_classes: OrderedCardsList<HiglightCardElements> = reactive({
+const ordinary_classes: OrderedCardsList<GeneralCardElements> = reactive({
   order: [],
   cards: {},
 });
@@ -207,8 +204,6 @@ for (const year of school_years) {
         "&token=" +
         user.token,
       (response) => {
-        console.log(response);
-
         ordinary_classes.order.push({
           key: year,
           title: year,
@@ -229,7 +224,7 @@ for (const year of school_years) {
           all_sections[year][class_key].push({ id: ordinary_class.section });
           if (add_class) {
             ordinary_classes.cards[year].push(
-              ordinary_class.toHighlightCard(store, false)
+              ordinary_class.toCard(false)
             );
           }
         }
@@ -238,7 +233,6 @@ for (const year of school_years) {
   );
 }
 await Promise.all(promises);
-console.log(all_sections);
 
 watch(selected_section, async (new_section) => {
   if (new_section != undefined && new_section != "") {

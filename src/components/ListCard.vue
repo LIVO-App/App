@@ -38,14 +38,6 @@
                 :status="card.status"
                 :selected="card.selected"
               />
-              <highliht-card
-                v-else-if="isHiglithCard(card)"
-                @signal_event="$emit('signal_event')"
-                :key="'highlight-card-' + card.id"
-                :id="card.id"
-                :title="card.title"
-                :selected="card.selected"
-              />
               <course-card
                 v-else-if="isCourse(card)"
                 @execute_link="$emit('execute_link')"
@@ -104,14 +96,6 @@
                   :status="card.status"
                   :selected="card.selected"
                 />
-                <highliht-card
-                  v-else-if="isHiglithCard(card)"
-                  @signal_event="$emit('signal_event')"
-                  :key="'highlight-card-' + card.id"
-                  :id="card.id"
-                  :title="card.title"
-                  :selected="card.selected"
-                />
                 <course-card
                   v-else-if="isCourse(card)"
                   @execute_link="$emit('execute_link')"
@@ -160,7 +144,7 @@ import {
 } from "@ionic/vue";
 import { PropType } from "vue";
 import { OrderedCardsList } from "../types";
-import { isGeneral, isCourse, isHiglithCard, isHiglithSession } from "../utils";
+import { isGeneral, isCourse, isHiglithSession } from "../utils";
 
 const props = defineProps({
   title: String,
