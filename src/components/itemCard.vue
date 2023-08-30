@@ -2,18 +2,36 @@
   <ion-item lines="none">
     <!-- Da sistemare: spostare item in ListCard -->
     <ion-card
-      color="tertiary"
+      :color="selected ? 'primary' : 'tertiary'"
       style="width: 100%"
-      :button="button"
-      :href="button && isGet ? url : undefined"
+      :button="link != undefined"
+      :href="
+        link != undefined && isRequest(link) && isGet ? link.url : undefined
+      "
       @click="
         () => {
-          if (button && !isGet) {
-            store.state.request = {
-              url: url,
-              method: method,
-            };
-            $emit('execute_link');
+          if (link != undefined) {
+            if (isEvent(link)) {
+              store.state.event =
+                selected != undefined
+                  ? {
+                      name: 'change_selection',
+                      data: {
+                        id: id,
+                      },
+                    }
+                  : {
+                      name: link.event,
+                      data: link.data,
+                    };
+              $emit('signal_event');
+            } else if (!isGet) {
+              store.state.request = {
+                url: link.url,
+                method: link.method,
+              };
+              $emit('execute_link');
+            }
           }
         }
       "
@@ -23,8 +41,15 @@
         <ion-card-subtitle v-if="subtitle != undefined">{{
           subtitle
         }}</ion-card-subtitle>
+        <ionic-element
+          v-if="content != undefined && side_element != undefined"
+          :element="side_element"
+          @execute_link="$emit('execute_link')"
+          @signal_event="$emit('signal_event')"
+        />
+        <!-- Da sistemare: da vedere se va bene così e basta -->
       </ion-card-header>
-      <ion-card-content>
+      <ion-card-content v-if="content != undefined">
         <ion-grid v-if="side_element != undefined">
           <ion-row>
             <ion-col>
@@ -63,7 +88,8 @@
 </template>
 
 <script setup lang="ts">
-import { CustomElement } from "@/types";
+import { CustomElement, LinkParameters } from "@/types";
+import { isRequest, isEvent } from "@/utils";
 import {
   IonItem,
   IonCard,
@@ -75,26 +101,28 @@ import {
   IonRow,
   IonCol,
 } from "@ionic/vue";
-import { Method } from "axios";
 import { PropType } from "vue";
 import { useStore } from "vuex";
 
 const store = useStore();
 
 const props = defineProps({
-  title: String,
-  subtitle: String,
-  content: {
-    type: Array<CustomElement>,
+  id: {
+    type: String || Number,
     required: true,
   },
+  title: String,
+  subtitle: String,
+  content: Array<CustomElement>,
   side_element: Object as PropType<CustomElement>,
-  url: String,
-  method: String as PropType<Method>,
+  selected: Boolean,
+  link: Object as PropType<LinkParameters>,
 });
 defineEmits(["execute_link", "signal_event"]);
-const button = props.url != undefined && props.url != "";
-const isGet = button && props.method == "get";
+const isGet =
+  props.link != undefined &&
+  isRequest(props.link) &&
+  props.link.method == "get";
 </script>
 
 <style>

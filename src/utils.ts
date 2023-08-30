@@ -1,5 +1,5 @@
 import { AxiosInstance, Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, HiglightSessionCardElements, LearningSessionStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, HiglightCardElements, Gender, GenderKeys } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, HiglightSessionCardElements, LearningSessionStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, HiglightCardElements, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters } from "./types";
 import { Store } from "vuex";
 
 // Da sistemare: togliere store come parametro e usare import { store } from ./store
@@ -151,4 +151,12 @@ function numberToSection(section: number) {
     return String.fromCharCode(65 + section);
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isHiglithCard, isHiglithSession, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection }
+function isEvent(link: LinkParameters): link is EventParameters {
+    return "event" in link;
+}
+
+function isRequest(link: LinkParameters): link is RequestParameters {
+    return "url" in link;
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isHiglithCard, isHiglithSession, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest }

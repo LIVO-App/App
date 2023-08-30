@@ -62,12 +62,13 @@
                 @execute_link="$emit('execute_link')"
                 @signal_event="$emit('signal_event')"
                 :key="'card-general-' + card.id"
+                :id="card.id"
                 :title="card.title"
                 :subtitle="card.subtitle"
                 :content="card.content"
                 :side_element="card.side_element"
-                :url="card.url"
-                :method="card.method"
+                :selected="card.selected"
+                :link="card.link"
               />
             </template>
           </template>
@@ -127,12 +128,13 @@
                   @execute_link="$emit('execute_link')"
                   @signal_event="$emit('signal_event')"
                   :key="'card-general-' + card.id"
+                  :id="card.id"
                   :title="card.title"
                   :subtitle="card.subtitle"
                   :content="card.content"
                   :side_element="card.side_element"
-                  :url="card.url"
-                  :method="card.method"
+                  :selected="card.selected"
+                  :link="card.link"
                 />
               </template>
             </template>

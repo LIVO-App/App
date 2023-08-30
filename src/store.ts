@@ -546,6 +546,7 @@ export const store = createStore({
                     project_class_confirmation_date: "Data conferma classe progetto",
                     course_confirmation_date: "Data conferma modello di corso",
                     edit: "Modifica",
+                    no_elements: "Nessun elemento",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -691,7 +692,8 @@ export const store = createStore({
                     school_years: "School years",
                     no_school_years: "No school years",
                     project_class_confirmation_date: "Project class confirmation date",
-                    edit: "Edit"
+                    edit: "Edit",
+                    no_elements: "No elements",
                 }
             },
             logged_user: false,

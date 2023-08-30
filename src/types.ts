@@ -118,8 +118,10 @@ class OrdinaryClassSummary implements OrdinaryClassSummaryProps {
                 type: "html",
                 content: this.study_year + " " + this.address
             }],
-            url: path,
-            method: "get"
+            link: path != undefined ? {
+                url: path,
+                method: "get"
+            } : undefined
         }
     }
 }*/
@@ -166,7 +168,7 @@ class Enrollment {
     }
 }
 
-type CardElements = {
+type CardElements = { // Da sistemare: sistemare quando tolti gli altri type-card
     id: string,
     group: any,
     url?: string,
@@ -174,10 +176,13 @@ type CardElements = {
 }
 
 type GeneralCardElements = CardElements & {
+    id: string | number,
     title?: string,
     subtitle?: string,
+    content: CustomElement[],
     side_element?: CustomElement,
-    content: CustomElement[]
+    selected?: boolean,
+    link?: LinkParameters,
 }
 
 type CourseCardElements = CardElements & {
@@ -246,8 +251,10 @@ class MinimizedCourse implements MinimumCourseProps {
                 type: "string",
                 content: getCurrentElement(store, "section") + ": " + this.section
             }],
-            url: path,
-            method: "get"
+            link: path != undefined ? {
+                url: path,
+                method: "get"
+            } : undefined
         }
     }
 }
@@ -418,8 +425,10 @@ class CurriculumCourse extends CourseBase {
                 type: "html",
                 content: this[`${language}_title`]
             }],
-            url: path,
-            method: path != undefined ? (method ?? "get") : undefined
+            link: path != undefined ? {
+                url: path,
+                method: method ?? "get"
+            } : undefined
         }
     }
 
@@ -775,8 +784,10 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
                     + (actual_learning_context.credits == null ? (await this.getSessionList($axios, store, actual_learning_context, reference, credits, courses_list)) : "")
                     : ""
             }],
-            url: "learning_sessions/" + this.id,
-            method: "get"
+            link: {
+                url: "learning_sessions/" + this.id,
+                method: "get"
+            }
         };
 
         return tmp_element;
@@ -818,6 +829,8 @@ type EventParameters = {
         [key: string]: any
     }
 }
+
+type LinkParameters = RequestParameters | EventParameters;
 
 type RequestIcon = RequestParameters & {
     icon: IconAlternatives
@@ -863,11 +876,13 @@ type ElementType = "string" | "html" | "icon" | "title" | "string_icon";
 
 type LinkType = "request" | "event";
 
+type ContentType = string | IconAlternatives | RequestIcon | EventIcon | RequestString | EventString | RequestStringIcon | EventStringIcon;
+
 type CustomElement = {
     id: string,
     type: ElementType,
     linkType?: LinkType,
-    content: string | IconAlternatives | RequestIcon | EventIcon | RequestString | EventString | RequestStringIcon | EventStringIcon
+    content: ContentType
 }
 
 type GradeProps = {
@@ -982,8 +997,10 @@ class CourseSectionsTeachings {
                 type: "string",
                 content: getCurrentElement(store, "my_associated_teachings") + ": " + Array.from(this.my_teaching_refs).join(", ")
             }],
-            url: "project_courses/" + this.id + "/" + learning_session,
-            method: "get"
+            link: {
+                url: "project_courses/" + this.id + "/" + learning_session,
+                method: "get"
+            }
         }
     }
 }
@@ -1038,8 +1055,10 @@ class StudentSummary implements StudentSummaryProps {
                 type: "string",
                 content: this.name + " " + this.surname
             }],
-            url: path,
-            method: "get"
+            link: {
+                url: path,
+                method: "get"
+            }
         }
     }
 }
@@ -1429,8 +1448,10 @@ class CourseModel {
                 type: "string",
                 content: getCurrentElement(store, "course_confirmation_date") + ": " + toDateString(this.course_confirmation_date)
             }],
-            url: "/course_proposition?" + (view ? "view" + "=" + this.id : ""), // Da sistemare: mettere guardia che sistema il link, salvando le cose sulla sessione
-            method: "get"
+            link: {
+                url: "/course_proposition?" + (view ? "view" + "=" + this.id : ""), // Da sistemare: mettere guardia che sistema il link, salvando le cose sulla sessione
+                method: "get"
+            }
         }
     }
 }
@@ -2010,7 +2031,7 @@ class AdminProjectClass {
         this.admin_surname = props.admin_surname;
         this.to_be_modified = props.to_be_modified ?? undefined;
     }
-    
+
     toCard(store: Store<any>, path?: string): GeneralCardElements { // Da sistemare: vedere se usare Higlight...
         return {
             id: "" + this.course_id + "_" + this.learning_session + "_" + this.group,
@@ -2033,10 +2054,19 @@ class AdminProjectClass {
                     content: getCurrentElement(store, "certifying_admin") + ": " + this.admin_name + " " + this.admin_surname,
                 }
             ],
-            url: path,
-            method: "get"
+            link: path != undefined ? {
+                url: path,
+                method: "get"
+            } : undefined
         }
     }
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightSessionCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, Role, OrderedCardsList, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass }
+type CardListDescription = {
+    title?: string,
+    emptiness_message: string,
+    cards_list: OrderedCardsList,
+    on_click?: () => any
+}
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightSessionCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, Role, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, LinkType, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }
