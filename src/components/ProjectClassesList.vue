@@ -182,7 +182,7 @@ for (const year of school_years) {
         });
         learning_sessions.cards[year] = [];
         for (const learning_session of response.data.data) {
-          learning_sessions.cards[year].push(await new LearningSession(learning_session).toCard(undefined,undefined,undefined,new Date(),false));
+          learning_sessions.cards[year].push(await new LearningSession(learning_session).toCard(false));
         }
       }
     )

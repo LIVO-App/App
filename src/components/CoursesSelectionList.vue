@@ -213,9 +213,7 @@ const changeEnrollment = async () => {
           }
           trigger.value++;
         },
-        (err) => console.error(err),
-        undefined,
-        undefined
+        (err) => console.error(err)
       );
     } else {
       if (!available_courses) {

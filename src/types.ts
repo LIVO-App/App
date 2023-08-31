@@ -763,7 +763,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
             () => 0);
     }
 
-    async toCard(learning_context?: LearningContextSummary, credits?: boolean, courses_list?: boolean, reference = new Date(), selected?: boolean): Promise<GeneralCardElements> { // Da sistemare: mettere selected all'inizio quando verrà tolto $axios e store
+    async toCard(selected?: boolean, learning_context?: LearningContextSummary, credits?: boolean, courses_list?: boolean, reference = new Date()): Promise<GeneralCardElements> { // Da sistemare: mettere selected all'inizio quando verrà tolto $axios e store
 
         const status = this.getStatus(reference);
         const put_credits = credits ?? status == LearningSessionStatus.FUTURE;

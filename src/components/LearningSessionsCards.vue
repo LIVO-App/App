@@ -99,7 +99,7 @@ if (current_class != undefined) {
           for (const session of response.data.data) {
             learning_session = new LearningSession(session);
             learning_sessions.completed.cards[oc.school_year].push(
-              await learning_session.toCard()
+              await learning_session.toCard(undefined)
             );
           }
         },
@@ -113,7 +113,7 @@ if (current_class != undefined) {
       async (response) => {
         for (const session of response.data.data) {
           learning_session = new LearningSession(session);
-          tmp_element = await learning_session.toCard();
+          tmp_element = await learning_session.toCard(undefined);
 
           switch (learning_session.getStatus()) {
             case LearningSessionStatus.FUTURE:
