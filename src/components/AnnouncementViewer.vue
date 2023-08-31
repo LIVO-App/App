@@ -22,17 +22,13 @@
 </template>
 
 <script setup lang="ts">
-import { CustomElement, User } from "@/types";
+import { CustomElement } from "@/types";
 import { executeLink, getIcon } from "@/utils";
 import { IonHeader, IonToolbar, IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { AxiosInstance } from "axios";
-import { inject } from "vue";
 import { useStore } from "vuex";
 
 const store = useStore();
-const $axios: AxiosInstance | undefined = inject("$axios");
 const language = store.state.language;
-const user = User.getLoggedUser() as User;
 
 const props = defineProps({
   title: {
@@ -66,8 +62,7 @@ const elements: {
 };
 
 const content: CustomElement = await executeLink(
-  $axios,
-  "/v1/announcements/" + props.id + "?token=" + user.token,
+  "/v1/announcements/" + props.id,
   (response) => {
     return {
       id: "content",

@@ -96,8 +96,7 @@ import {
   toSummary,
 } from "@/utils";
 import { IonAlert, IonModal, IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { AxiosInstance } from "axios";
-import { inject, Ref, ref, watch } from "vue";
+import { Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { Store, useStore } from "vuex";
 
@@ -164,73 +163,70 @@ const changeEnrollment = async () => {
     count++;
   }
 
-  if ($axios != undefined) {
-    if (tmp_course != undefined) {
-      course = tmp_course;
-      available_courses =
-        remaining_courses[selected_context.value][selected_area.value][
-          tmp_course.group
-        ] -
-          1 >=
-        0;
-      available_area_credits =
-        typeof remaining_credits[selected_context.value] == "number" &&
-        (remaining_credits[selected_context.value] as number) >= course.credits;
-      available_context_credits =
-        (remaining_credits[selected_context.value] as TmpList<number>)[
-          selected_area.value
-        ] >= course.credits;
-      if (
-        unsubscribe ||
-        (available_courses && available_area_credits) ||
-        (available_courses && available_context_credits)
-      ) {
-        await executeLink(
-          $axios,
-          undefined,
-          (response: any) => {
-            const pendingDate = new Date(response.data.data ?? "no date");
-            const wasPending = course.enrollment.isPending();
-            const isPending = !isNaN(pendingDate.getTime());
+  if (tmp_course != undefined) {
+    course = tmp_course;
+    available_courses =
+      remaining_courses[selected_context.value][selected_area.value][
+        tmp_course.group
+      ] -
+        1 >=
+      0;
+    available_area_credits =
+      typeof remaining_credits[selected_context.value] == "number" &&
+      (remaining_credits[selected_context.value] as number) >= course.credits;
+    available_context_credits =
+      (remaining_credits[selected_context.value] as TmpList<number>)[
+        selected_area.value
+      ] >= course.credits;
+    if (
+      unsubscribe ||
+      (available_courses && available_area_credits) ||
+      (available_courses && available_context_credits)
+    ) {
+      await executeLink(
+        undefined,
+        (response: any) => {
+          const pendingDate = new Date(response.data.data ?? "no date");
+          const wasPending = course.enrollment.isPending();
+          const isPending = !isNaN(pendingDate.getTime());
 
-            updateCourses(
-              course,
-              isPending ? pendingDate : unsubscribe ? false : response.data ?? true
-            );
-            if (!wasPending && !isPending) {
-              remaining_courses[selected_context.value][selected_area.value][
-                course.group
-              ] += unsubscribe ? 1 : -1;
-              if (
-                typeof remaining_credits[selected_context.value] == "number"
-              ) {
-                (remaining_credits[selected_context.value] as number) +=
-                  (unsubscribe ? 1 : -1) * course.credits;
-              } else {
-                (remaining_credits[selected_context.value] as TmpList<number>)[
-                  selected_area.value
-                ] += (unsubscribe ? 1 : -1) * course.credits;
-              }
+          updateCourses(
+            course,
+            isPending
+              ? pendingDate
+              : unsubscribe
+              ? false
+              : response.data ?? true
+          );
+          if (!wasPending && !isPending) {
+            remaining_courses[selected_context.value][selected_area.value][
+              course.group
+            ] += unsubscribe ? 1 : -1;
+            if (typeof remaining_credits[selected_context.value] == "number") {
+              (remaining_credits[selected_context.value] as number) +=
+                (unsubscribe ? 1 : -1) * course.credits;
+            } else {
+              (remaining_credits[selected_context.value] as TmpList<number>)[
+                selected_area.value
+              ] += (unsubscribe ? 1 : -1) * course.credits;
             }
-            trigger.value++;
-          },
-          (err) => console.error(err),
-          undefined,
-          undefined,
-          store
-        );
-      } else {
-        if (!available_courses) {
-          return new Promise(() => setAlertAndOpen("max_courses"));
-        } else {
-          return new Promise(() => setAlertAndOpen("max_credits"));
-        }
-      }
+          }
+          trigger.value++;
+        },
+        (err) => console.error(err),
+        undefined,
+        undefined,
+        store
+      );
     } else {
-      console.error("Course not found");
+      if (!available_courses) {
+        return new Promise(() => setAlertAndOpen("max_courses"));
+      } else {
+        return new Promise(() => setAlertAndOpen("max_credits"));
+      }
     }
   } else {
-    console.error("Connection failed");
+    console.error("Course not found");
   }
 };
 const getCorrectName = (option: LearningArea) => option[`${language}_title`];
@@ -291,7 +287,6 @@ const showCourses = (
 };
 
 const store: Store<any> = useStore();
-const $axios: AxiosInstance | undefined = inject("$axios");
 const $route = useRoute();
 const language: Language = store.state.language;
 const user = User.getLoggedUser() as User;
@@ -328,11 +323,17 @@ const remaining_courses: {
     };
   };
 } = {};
+const learning_sessions: LearningSession[] = await executeLink(
+  "/v1/learning_sessions?year_of=" + learning_session_id,
+  (response) => response.data.data.map((a: any) => new LearningSession(a)),
+  () => []
+);
+const learning_session_position = learning_sessions.findIndex(
+  (a) => a.id == parseInt(learning_session_id)
+);
+const learning_session = learning_session_position != -1 ? learning_sessions[learning_session_position] : undefined;
 
 let learning_areas: LearningArea[] = [];
-let learning_sessions: LearningSession[];
-let learning_session: LearningSession | undefined;
-let learning_session_position: number;
 let description_title: string;
 let description_course_id: number;
 let selected_context: Ref<string>;
@@ -345,205 +346,175 @@ let course_correspondences: {
 }[];
 let tmp_card;
 
-if ($axios != undefined) {
-  learning_sessions = await executeLink(
-    $axios,
-    "/v1/learning_sessions?year_of=" + learning_session_id,
-    (response) => response.data.data.map((a: any) => new LearningSession(a)),
+if (learning_session != undefined) {
+  learning_contexts = await executeLink(
+    "/v1/learning_contexts?student_id=" +
+      user.id +
+      "&session_id=" +
+      learning_session_id,
+    (response) => {
+      const tmp_contexts: LearningContext[] = [];
+
+      for (const learning_context of response.data.data) {
+        if (
+          store.state.excluded_learning_contexts_id.findIndex(
+            (a: number) => a != learning_context.id
+          ) != -1
+        ) {
+          tmp_contexts.push(learning_context);
+        }
+      }
+
+      return tmp_contexts;
+    },
     () => []
   );
-  learning_session_position = learning_sessions.findIndex(
-    (a) => a.id == parseInt(learning_session_id)
+  selected_context = ref(learning_contexts[0].id);
+
+  learning_areas = await executeLink(
+    "/v1/learning_areas?all_data=true&credits=true&session_id=" +
+      learning_session_id,
+    (response) => response.data.data,
+    () => []
   );
-  learning_session = learning_sessions[learning_session_position];
+  selected_area.value = learning_areas.length > 0 ? learning_areas[0].id : "";
 
-  if (learning_session != undefined) {
-    learning_contexts = await executeLink(
-      $axios,
-      "/v1/learning_contexts?student_id=" +
-        user.id +
-        "&session_id=" +
-        learning_session_id,
-      (response) => {
-        const tmp_contexts: LearningContext[] = [];
+  tmp_courses = await executeLink(
+    "/v2/courses?student_id=" + user.id + "&session_id=" + learning_session_id,
+    (response) => response.data.data,
+    () => []
+  );
+  courses_ids = tmp_courses.map((a: CourseSummaryProps) => a.id);
 
-        for (const learning_context of response.data.data) {
-          if (
-            store.state.excluded_learning_contexts_id.findIndex(
-              (a: number) => a != learning_context.id
-            ) != -1
-          ) {
-            tmp_contexts.push(learning_context);
-          }
-        }
+  await executeLink(
+    "/v1/learning_contexts/correspondence?student_id=" +
+      user.id +
+      "&session_id=" +
+      learning_session_id,
+    (response) => {
+      let course_props,
+        tmp_course: CourseSummary,
+        tmp_learning_area: LearningArea | undefined,
+        open_enrollment,
+        learning_context_index,
+        tmp_learning_context: LearningContext;
 
-        return tmp_contexts;
-      },
-      () => []
-    );
-    selected_context = ref(learning_contexts[0].id);
-
-    learning_areas = await executeLink(
-      $axios,
-      "/v1/learning_areas?all_data=true&credits=true&session_id=" +
-        learning_session_id,
-      (response) => response.data.data,
-      () => []
-    );
-    selected_area.value = learning_areas.length > 0 ? learning_areas[0].id : "";
-
-    tmp_courses = await executeLink(
-      $axios,
-      "/v2/courses?student_id=" +
-        user.id +
-        "&session_id=" +
-        learning_session_id +
-        "&token=" +
-        user.token,
-      (response) => response.data.data,
-      () => []
-    );
-    courses_ids = tmp_courses.map((a: CourseSummaryProps) => a.id);
-
-    await executeLink(
-      $axios,
-      "/v1/learning_contexts/correspondence?student_id=" +
-        user.id +
-        "&session_id=" +
-        learning_session_id,
-      (response) => {
-        let course_props,
-          tmp_course: CourseSummary,
-          tmp_learning_area: LearningArea | undefined,
-          open_enrollment,
-          learning_context_index,
-          tmp_learning_context: LearningContext;
-
-        course_correspondences = response.data.data;
-        for (const correspondence of course_correspondences) {
-          course_props = tmp_courses.find(
-            (a) => a.id == correspondence.course_id
+      course_correspondences = response.data.data;
+      for (const correspondence of course_correspondences) {
+        course_props = tmp_courses.find(
+          (a) => a.id == correspondence.course_id
+        );
+        learning_context_index = learning_contexts.findIndex(
+          (a) => a.id == correspondence.context_id
+        );
+        if (course_props != undefined && learning_context_index != -1) {
+          tmp_learning_context = learning_contexts[learning_context_index];
+          tmp_course = new CourseSummary(course_props);
+          tmp_learning_area = learning_areas.find(
+            (a) =>
+              a.id == (tmp_course.learning_area_ref.data as { id: string }).id
           );
-          learning_context_index = learning_contexts.findIndex(
-            (a) => a.id == correspondence.context_id
-          );
-          if (course_props != undefined && learning_context_index != -1) {
-            tmp_learning_context = learning_contexts[learning_context_index];
-            tmp_course = new CourseSummary(course_props);
-            tmp_learning_area = learning_areas.find(
-              (a) =>
-                a.id == (tmp_course.learning_area_ref.data as { id: string }).id
-            );
-            if (tmp_learning_area != undefined) {
-              if (all_courses[tmp_learning_context.id] == undefined) {
-                remaining_courses[tmp_learning_context.id] = {};
-                all_courses[tmp_learning_context.id] = {};
-                for (const learning_area of learning_areas) {
-                  remaining_courses[tmp_learning_context.id][
-                    tmp_learning_area.id
-                  ] = {};
-                  all_courses[tmp_learning_context.id][learning_area.id] = [];
-                }
-              }
-              if (
+          if (tmp_learning_area != undefined) {
+            if (all_courses[tmp_learning_context.id] == undefined) {
+              remaining_courses[tmp_learning_context.id] = {};
+              all_courses[tmp_learning_context.id] = {};
+              for (const learning_area of learning_areas) {
                 remaining_courses[tmp_learning_context.id][
                   tmp_learning_area.id
-                ][tmp_course.group] == undefined
-              ) {
-                remaining_courses[tmp_learning_context.id][
-                  tmp_learning_area.id
-                ][tmp_course.group] = store.state.courses_per_group;
+                ] = {};
+                all_courses[tmp_learning_context.id][learning_area.id] = [];
               }
-              open_enrollment =
-                learning_session?.getStatus() == LearningSessionStatus.FUTURE &&
-                (learning_session_position == 0 ||
-                  learning_sessions[learning_session_position - 1]?.getStatus() ==
-                    LearningSessionStatus.CURRENT);
-              tmp_card = tmp_course.toCard(
-                store,
-                learning_session as LearningSession,
-                open_enrollment
-                  ? "/v1/students/" +
-                      user.id +
-                      "/" +
-                      (tmp_course.pending !== "false"
-                        ? "unsubscribe"
-                        : "subscribe") +
-                      "?course_id=" +
-                      tmp_course.id +
-                      "&session_id=" +
-                      learning_session_id +
-                      "&context_id=" +
-                      tmp_learning_context.id
-                  : undefined,
-                undefined,
-                open_enrollment
-              );
+            }
+            if (
               remaining_courses[tmp_learning_context.id][tmp_learning_area.id][
                 tmp_course.group
-              ] -= tmp_card.enrollment.enrollment ? 1 : 0;
-              all_courses[tmp_learning_context.id][tmp_learning_area.id].push(
-                tmp_card
-              );
-              if (tmp_learning_context.credits != null) {
-                if (remaining_credits[tmp_learning_context.id] == undefined) {
-                  remaining_credits[tmp_learning_context.id] =
-                    tmp_learning_context.credits;
-                }
-                if (tmp_course.pending === "true") {
-                  (remaining_credits[tmp_learning_context.id] as number) -=
-                    tmp_course.credits;
-                }
-                //remaining_credits[tmp_learning_context.id] = tmp_courses.reduce((a,b) => b.pending === "true" && b.learning_context_id == tmp_learning_context.id ? a - b.credits : a,tmp_learning_context.credits);
-              } else {
-                if (remaining_credits[tmp_learning_context.id] == undefined) {
-                  remaining_credits[tmp_learning_context.id] = {};
-                }
-                if (
-                  (
-                    remaining_credits[
-                      tmp_learning_context.id
-                    ] as TmpList<number>
-                  )[tmp_learning_area.id] == undefined
-                ) {
-                  (
-                    remaining_credits[
-                      tmp_learning_context.id
-                    ] as TmpList<number>
-                  )[tmp_learning_area.id] = tmp_learning_area.credits as number;
-                }
-                if (tmp_course.pending === "true") {
-                  (
-                    remaining_credits[
-                      tmp_learning_context.id
-                    ] as TmpList<number>
-                  )[tmp_learning_area.id] -= tmp_course.credits;
-                }
-                //(remaining_credits[tmp_learning_context.id] as TmpList<number>)[tmp_learning_area.id] = tmp_courses.reduce((a,b) => b.pending === "true" ? a - b.credits : a,tmp_learning_area.credits);
+              ] == undefined
+            ) {
+              remaining_courses[tmp_learning_context.id][tmp_learning_area.id][
+                tmp_course.group
+              ] = store.state.courses_per_group;
+            }
+            open_enrollment =
+              learning_session?.getStatus() == LearningSessionStatus.FUTURE &&
+              (learning_session_position == 0 ||
+                learning_sessions[learning_session_position - 1]?.getStatus() ==
+                  LearningSessionStatus.CURRENT);
+            tmp_card = tmp_course.toCard(
+              store,
+              learning_session as LearningSession,
+              open_enrollment
+                ? "/v1/students/" +
+                    user.id +
+                    "/" +
+                    (tmp_course.pending !== "false"
+                      ? "unsubscribe"
+                      : "subscribe") +
+                    "?course_id=" +
+                    tmp_course.id +
+                    "&session_id=" +
+                    learning_session_id +
+                    "&context_id=" +
+                    tmp_learning_context.id
+                : undefined,
+              undefined,
+              open_enrollment
+            );
+            remaining_courses[tmp_learning_context.id][tmp_learning_area.id][
+              tmp_course.group
+            ] -= tmp_card.enrollment.enrollment ? 1 : 0;
+            all_courses[tmp_learning_context.id][tmp_learning_area.id].push(
+              tmp_card
+            );
+            if (tmp_learning_context.credits != null) {
+              if (remaining_credits[tmp_learning_context.id] == undefined) {
+                remaining_credits[tmp_learning_context.id] =
+                  tmp_learning_context.credits;
               }
+              if (tmp_course.pending === "true") {
+                (remaining_credits[tmp_learning_context.id] as number) -=
+                  tmp_course.credits;
+              }
+              //remaining_credits[tmp_learning_context.id] = tmp_courses.reduce((a,b) => b.pending === "true" && b.learning_context_id == tmp_learning_context.id ? a - b.credits : a,tmp_learning_context.credits);
+            } else {
+              if (remaining_credits[tmp_learning_context.id] == undefined) {
+                remaining_credits[tmp_learning_context.id] = {};
+              }
+              if (
+                (remaining_credits[tmp_learning_context.id] as TmpList<number>)[
+                  tmp_learning_area.id
+                ] == undefined
+              ) {
+                (remaining_credits[tmp_learning_context.id] as TmpList<number>)[
+                  tmp_learning_area.id
+                ] = tmp_learning_area.credits as number;
+              }
+              if (tmp_course.pending === "true") {
+                (remaining_credits[tmp_learning_context.id] as TmpList<number>)[
+                  tmp_learning_area.id
+                ] -= tmp_course.credits;
+              }
+              //(remaining_credits[tmp_learning_context.id] as TmpList<number>)[tmp_learning_area.id] = tmp_courses.reduce((a,b) => b.pending === "true" ? a - b.credits : a,tmp_learning_area.credits);
             }
           }
         }
-      },
-      (err) => console.error(err),
-      "post",
-      {
-        courses: courses_ids,
       }
-    );
-    showCourses();
+    },
+    (err) => console.error(err),
+    "post",
+    {
+      courses: courses_ids,
+    }
+  );
+  showCourses();
 
-    watch(selected_context, (new_context) => {
-      showCourses(new_context);
-      trigger.value++;
-    });
-    watch(selected_area, (new_area) => {
-      showCourses(selected_context.value, new_area);
-      trigger.value++;
-    });
-  }
-} else {
-  console.error("Connection failed");
+  watch(selected_context, (new_context) => {
+    showCourses(new_context);
+    trigger.value++;
+  });
+  watch(selected_area, (new_area) => {
+    showCourses(selected_context.value, new_area);
+    trigger.value++;
+  });
 }
 </script>
 

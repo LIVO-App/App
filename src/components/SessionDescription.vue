@@ -45,14 +45,12 @@ import {
   IonTitle,
   IonText,
 } from "@ionic/vue";
-import { AxiosInstance } from "axios";
-import { inject, PropType } from "vue";
+import { PropType } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
 const store = useStore();
 const $router = useRouter();
-const $axios: AxiosInstance | undefined = inject("$axios");
 const props = defineProps({
   id: {
     type: String,
@@ -62,23 +60,13 @@ const props = defineProps({
 });
 let head_content: GeneralCardElements;
 
-if ($axios != undefined) {
-  await executeLink(
-    $axios,
-    "/v1/learning_sessions/" + props.id,
-    async (response) => {
-      head_content = await new LearningSession(response.data.data).toCard(
-        store,
-        $axios,
-        props.learning_context,
-        true,
-        false
-      );
-    }
+await executeLink("/v1/learning_sessions/" + props.id, async (response) => {
+  head_content = await new LearningSession(response.data.data).toCard(
+    props.learning_context,
+    true,
+    false
   );
-} else {
-  console.error("Connection failed");
-}
+});
 </script>
 
 <style>

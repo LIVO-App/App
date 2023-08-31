@@ -40,12 +40,10 @@ import {
   User,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { inject, reactive } from "vue";
+import { reactive } from "vue";
 import { useStore } from "vuex";
-import type { AxiosInstance } from "axios";
 import { executeLink, getCurrentElement, getCurrentSchoolYear } from "@/utils";
 
-const $axios: AxiosInstance | undefined = inject("$axios");
 const store = useStore();
 const user = User.getLoggedUser() as User;
 
@@ -74,121 +72,104 @@ const learning_sessions: {
 });
 const promises: Promise<any>[] = [];
 const no_session = getCurrentElement(store, "no_sessions");
+const ordinary_classes: OrdinaryClassProps[] = await executeLink(
+  "/v1/ordinary_classes?student_id=" + user.id,
+  (response) => response.data.data
+);
+const current_class = ordinary_classes.shift();
+const current_school_year =
+  current_class != undefined
+    ? current_class.school_year
+    : getCurrentSchoolYear();
 
-let ordinary_classes: OrdinaryClassProps[],
-  current_class: OrdinaryClassProps | undefined,
-  current_school_year: number,
-  tmp_element: GeneralCardElements | undefined,
+let tmp_element: GeneralCardElements | undefined,
   learning_session: LearningSession;
 
-if ($axios != undefined) {
-  ordinary_classes = await executeLink(
-    $axios,
-    "/v1/ordinary_classes?student_id=" + user.id,
-    (response) => response.data.data
-  ); /* = [{
-    study_year_id: 1,
-    study_address_id: "BIO",
-    school_year: 2021
-  },{
-    study_year_id: 2,
-    study_address_id: "BIO",
-    school_year: 2022
-  }];
-  ordinary_classes.sort((a,b) => a.school_year < b.school_year ? 1 : a.school_year > b.school_year ? -1 : 0);*/
-  current_class = ordinary_classes.shift();
-  current_school_year =
-    current_class != undefined
-      ? current_class.school_year
-      : getCurrentSchoolYear();
-  if (current_class != undefined) {
-    for (const oc of ordinary_classes) {
-      promises.push(
-        executeLink(
-          $axios,
-          "/v1/learning_sessions?school_year=" + oc.school_year,
-          async (response) => {
-            learning_sessions.completed.order.push({
-              key: oc.school_year,
-              title: oc.school_year,
-            });
-            learning_sessions.completed.cards[oc.school_year] = [];
-            for (const session of response.data.data) {
-              learning_session = new LearningSession(session);
-              learning_sessions.completed.cards[oc.school_year].push(
-                await learning_session.toCard(store, $axios)
-              );
-            }
-          },
-          () => console.error("Learning sessions not retrieved")
-        )
-      );
-    }
+if (current_class != undefined) {
+  for (const oc of ordinary_classes) {
     promises.push(
       executeLink(
-        $axios,
-        "/v1/learning_sessions?school_year=" + current_school_year,
+        "/v1/learning_sessions?school_year=" + oc.school_year,
         async (response) => {
+          learning_sessions.completed.order.push({
+            key: oc.school_year,
+            title: oc.school_year,
+          });
+          learning_sessions.completed.cards[oc.school_year] = [];
           for (const session of response.data.data) {
             learning_session = new LearningSession(session);
-            tmp_element = await learning_session.toCard(store, $axios);
-
-            switch (learning_session.getStatus()) {
-              case LearningSessionStatus.FUTURE:
-                if (learning_sessions.future.cards["planned"] == null) {
-                  learning_sessions.future.cards["planned"] = [tmp_element];
-                } else {
-                  learning_sessions.future.cards["planned"].push(tmp_element);
-                }
-                break;
-              case LearningSessionStatus.UPCOMING:
-                learning_sessions.upcoming.cards[""] = [tmp_element];
-                break;
-              case LearningSessionStatus.CURRENT:
-                learning_sessions.current.cards[""] = [tmp_element];
-                break;
-              case LearningSessionStatus.COMPLETED:
-                if (
-                  learning_sessions.completed.cards[session.school_year] ==
-                  undefined
-                ) {
-                  learning_sessions.completed.cards[session.school_year] = [
-                    tmp_element,
-                  ];
-                } else {
-                  learning_sessions.completed.cards[session.school_year].push(
-                    tmp_element
-                  );
-                }
-                break;
-            }
+            learning_sessions.completed.cards[oc.school_year].push(
+              await learning_session.toCard()
+            );
           }
-          learning_sessions.completed.order.push({
-            key: current_school_year,
-            title: current_school_year,
-          });
-          learning_sessions.future.order = learning_sessions.future.order.concat(
-            {
-              key: "open_enrollment",
-              title: getCurrentElement(store, "open_enrollment"),
-            },
-            {
-              key: "planned",
-              title: getCurrentElement(store, "planned"),
-            }
-          );
-          tmp_element = learning_sessions.future.cards["planned"].shift();
-          learning_sessions.future.cards["open_enrollment"] =
-            tmp_element != undefined ? [tmp_element] : [];
-        }
+        },
+        () => console.error("Learning sessions not retrieved")
       )
     );
-    await Promise.all(promises); /*.then(() => {
+  }
+  promises.push(
+    executeLink(
+      "/v1/learning_sessions?school_year=" + current_school_year,
+      async (response) => {
+        for (const session of response.data.data) {
+          learning_session = new LearningSession(session);
+          tmp_element = await learning_session.toCard();
+
+          switch (learning_session.getStatus()) {
+            case LearningSessionStatus.FUTURE:
+              if (learning_sessions.future.cards["planned"] == null) {
+                learning_sessions.future.cards["planned"] = [tmp_element];
+              } else {
+                learning_sessions.future.cards["planned"].push(tmp_element);
+              }
+              break;
+            case LearningSessionStatus.UPCOMING:
+              learning_sessions.upcoming.cards[""] = [tmp_element];
+              break;
+            case LearningSessionStatus.CURRENT:
+              learning_sessions.current.cards[""] = [tmp_element];
+              break;
+            case LearningSessionStatus.COMPLETED:
+              if (
+                learning_sessions.completed.cards[session.school_year] ==
+                undefined
+              ) {
+                learning_sessions.completed.cards[session.school_year] = [
+                  tmp_element,
+                ];
+              } else {
+                learning_sessions.completed.cards[session.school_year].push(
+                  tmp_element
+                );
+              }
+              break;
+          }
+        }
+        learning_sessions.completed.order.push({
+          key: current_school_year,
+          title: current_school_year,
+        });
+        learning_sessions.future.order = learning_sessions.future.order.concat(
+          {
+            key: "open_enrollment",
+            title: getCurrentElement(store, "open_enrollment"),
+          },
+          {
+            key: "planned",
+            title: getCurrentElement(store, "planned"),
+          }
+        );
+        tmp_element = learning_sessions.future.cards["planned"].shift();
+        learning_sessions.future.cards["open_enrollment"] =
+          tmp_element != undefined ? [tmp_element] : [];
+      }
+    )
+  );
+  await Promise.all(promises); /*.then(() => {
       learning_sessions.loaded = true;
     });*/
-  } else {
-    console.error("Connection failed");
-  }
+} else {
+  console.error("Connection failed");
 }
 </script>
 

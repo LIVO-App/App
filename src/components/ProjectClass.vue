@@ -89,8 +89,7 @@ import {
 } from "@/types";
 import { executeLink, getCurrentElement, getIcon } from "@/utils";
 import { IonModal, IonAlert } from "@ionic/vue";
-import { AxiosInstance } from "axios";
-import { inject, ref, Ref, watch } from "vue";
+import { ref, watch } from "vue";
 import { Store, useStore } from "vuex";
 
 type AvailableModal =
@@ -142,7 +141,6 @@ const closeModal = (window: AvailableModal) => {
 };
 const add_grade = async () => {
   executeLink(
-    $axios,
     undefined,
     (response) => {
       const split_url = store.state.request.url.split("/");
@@ -174,16 +172,13 @@ const add_grade = async () => {
 
 const updateStudents = async () => {
   const students: Student[] = await executeLink(
-    $axios,
     "/v1/project_classes/" +
       course_id +
       "/" +
       session_id +
       "/components?section=" +
       selected_section.value +
-      (user.user == "teacher" ? "&teacher_id=" + user.id : "") +
-      "&token=" +
-      user.token, //Da sistemare: creare link per pagina per gestire assoc_class e togliere teacher_id
+      (user.user == "teacher" ? "&teacher_id=" + user.id : ""), //Da sistemare: creare link per pagina per gestire assoc_class e togliere teacher_id
     (response) => response.data.data.map((a: any) => new Student(a)),
     () => []
   );
@@ -193,7 +188,6 @@ const updateStudents = async () => {
     final_grade = undefined;
     if (user.user == "teacher") {
       grades[student.id] = await executeLink(
-        $axios,
         "/v1/students/" +
           student.id +
           "/grades?course_id=" +
@@ -227,7 +221,6 @@ const updateStudents = async () => {
 };
 
 const store = useStore();
-const $axios: AxiosInstance | undefined = inject("$axios");
 const user = User.getLoggedUser() as User;
 
 const firstRow: CustomElement[] = [
@@ -290,9 +283,9 @@ const buttons: CustomElement[] = [
     },
   },
 ];
+const selected_section = ref("");
 
 let table_data: CustomElement[][] = [];
-let selected_section: Ref<string>;
 let grades_title: string;
 let grades_parameters: GradesParameters;
 let final_grade: Grade | undefined;
@@ -300,81 +293,67 @@ let student_grades: Grade[] | undefined;
 let description_title: string;
 let description_course_id: GradesParameters;
 
-if ($axios != undefined) {
-  if (user.user == "teacher") {
-    firstRow.push(
-      {
-        id: "gardes",
-        type: "string",
-        content: getCurrentElement(store, "grades"),
-      },
-      {
-        id: "final_grade",
-        type: "string",
-        content: getCurrentElement(store, "final_grade"),
-      }
-    );
-    await executeLink(
-      $axios,
-      "/v2/teachers/" +
-        user.id +
-        "/my_project_classes?session_id=" +
-        session_id +
-        "&course_id=" +
-        course_id +
-        "&token=" +
-        user.token,
-      (response) =>
-        response.data.data.map((a: any) => tmp_sections.add(a.section))
-    );
-    await executeLink(
-      $axios,
-      "/v2/teachers/" +
-        user.id +
-        "/associated_project_classes?session_id=" +
-        session_id +
-        "&course_id=" +
-        course_id +
-        "&token=" +
-        user.token,
-      (response) =>
-        response.data.data.map((a: any) => tmp_sections.add(a.section))
-    );
-    for (const section of tmp_sections) {
-      sections.push({
-        id: section,
-      });
-    }
-  } else {
-    firstRow.push({
-      id: "edit",
+if (user.user == "teacher") {
+  firstRow.push(
+    {
+      id: "gardes",
       type: "string",
-      content: getCurrentElement(store, "edit"),
+      content: getCurrentElement(store, "grades"),
+    },
+    {
+      id: "final_grade",
+      type: "string",
+      content: getCurrentElement(store, "final_grade"),
+    }
+  );
+  await executeLink(
+    "/v2/teachers/" +
+      user.id +
+      "/my_project_classes?session_id=" +
+      session_id +
+      "&course_id=" +
+      course_id,
+    (response) =>
+      response.data.data.map((a: any) => tmp_sections.add(a.section))
+  );
+  await executeLink(
+    "/v2/teachers/" +
+      user.id +
+      "/associated_project_classes?session_id=" +
+      session_id +
+      "&course_id=" +
+      course_id,
+    (response) =>
+      response.data.data.map((a: any) => tmp_sections.add(a.section))
+  );
+  for (const section of tmp_sections) {
+    sections.push({
+      id: section,
     });
-    await executeLink(
-      $axios,
-      "/v1/project_classes/" +
-        course_id +
-        "/" +
-        session_id +
-        "/sections?token=" +
-        user.token,
-      (response) =>
-        response.data.data.map((a: any) =>
-          sections.push({
-            id: a.section,
-          })
-        )
-    );
   }
-  selected_section = ref(sections[0].id);
-
-  await updateStudents();
-  watch(selected_section, async () => {
-    await updateStudents();
-    trigger.value++;
+} else {
+  firstRow.push({
+    id: "edit",
+    type: "string",
+    content: getCurrentElement(store, "edit"),
   });
+  await executeLink(
+    "/v1/project_classes/" + course_id + "/" + session_id + "/sections",
+    (response) =>
+      response.data.data.map((a: any) =>
+        sections.push({
+          id: a.section,
+        })
+      )
+  );
 }
+selected_section.value = sections[0].id;
+
+await updateStudents();
+watch(selected_section, async () => {
+  await updateStudents();
+  trigger.value++;
+});
 </script>
 
 <style>

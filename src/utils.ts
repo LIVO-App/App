@@ -1,6 +1,7 @@
-import { AxiosInstance, Method } from "axios";
+import { Method } from "axios";
 import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters } from "./types";
 import { Store } from "vuex";
+import { $axios } from "./plugins/axios";
 
 // Da sistemare: togliere store come parametro e usare import { store } from ./store
 
@@ -25,26 +26,31 @@ function isCourse(card: CardElements): card is CourseCardElements {
     return "credits" in card;
 }
 
-async function executeLink($axios: AxiosInstance | undefined, url?: string | undefined, success = (response: any) => response, fail: (err: string) => any = (err: string) => err, method?: Method, body?: { [key: string]: any }, store?: Store<any>) {
+async function executeLink(url?: string | undefined, success = (response: any) => response, fail: (err: string) => any = (err: string) => err, method?: Method, body?: { [key: string]: any }, store?: Store<any>) {
 
     const toExecute = url ?? store?.state.request.url;
     const howExecute = method ?? store?.state.request.method ?? "get";
+    const options = {
+        headers: {
+            "x-access-token": sessionStorage.getItem("token") ?? ""
+        }
+    };
 
     let request;
 
     if ($axios != undefined && toExecute != undefined) {
         switch (howExecute) {
             case "get":
-                request = $axios.get(toExecute);
+                request = $axios.get(toExecute, options);
                 break;
             case "post":
-                request = $axios.post(toExecute, body);
+                request = $axios.post(toExecute, body, options);
                 break;
             case "put":
-                request = $axios.put(toExecute, body);
+                request = $axios.put(toExecute, body, options);
                 break;
             case "delete":
-                request = $axios.delete(toExecute);
+                request = $axios.delete(toExecute, options);
                 break;
             default:
                 return new Promise(() => "Method not defined");

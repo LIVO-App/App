@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts" setup>
-import { GeneralCardElements, StudentInformation, User } from "@/types";
+import { GeneralCardElements, StudentInformation } from "@/types";
 import { executeLink, getIcon } from "@/utils";
 import {
   IonGrid,
@@ -50,13 +50,10 @@ import {
   IonImg,
   IonTitle,
 } from "@ionic/vue";
-import { AxiosInstance } from "axios";
-import { computed, inject } from "vue";
+import { computed } from "vue";
 import { useStore } from "vuex";
 
 const store = useStore();
-const $axios: AxiosInstance | undefined = inject("$axios");
-const user = User.getLoggedUser() as User;
 const props = defineProps({
   id: {
     type: String,
@@ -67,8 +64,7 @@ const props = defineProps({
 const image = computed(() => require("../assets/person.png"));
 
 const student: StudentInformation = await executeLink(
-  $axios,
-  "/v1/students/" + props.id + "?token=" + user.token,
+  "/v1/students/" + props.id,
   (response) => new StudentInformation(response.data.data)
 );
 const student_card: GeneralCardElements = student.toCard(store);

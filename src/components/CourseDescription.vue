@@ -46,13 +46,9 @@ import {
   IonRow,
   IonCol,
 } from "@ionic/vue";
-import { AxiosInstance } from "axios";
-import { inject } from "vue";
 import { useStore } from "vuex";
 
 const store = useStore();
-const $axios: AxiosInstance | undefined = inject("$axios");
-const user = store.state.user;
 
 const props = defineProps({
   title: {
@@ -90,19 +86,15 @@ const elements: {
   },
 };
 
-let course: Course | null;
+const course = await executeLink(
+  "/v1/courses/" + props.course_id,
+  (response) => new Course(response.data.data),
+  () => null
+);
 let courseCard: GeneralCardElements;
 
-if ($axios != undefined) {
-  course = await executeLink(
-    $axios,
-    "/v1/courses/" + props.course_id,
-    (response) => new Course($axios, user, response.data.data),
-    () => null
-  );
-  if (course != null) {
-    courseCard = course.toCard(store);
-  }
+if (course != null) {
+  courseCard = course.toCard(store);
 }
 </script>
 

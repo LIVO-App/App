@@ -38,9 +38,8 @@ import {
   User,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { inject, reactive, ref } from "vue";
+import { reactive, ref } from "vue";
 import { useStore } from "vuex";
-import type { AxiosInstance } from "axios";
 import { executeLink, getCurrentElement } from "@/utils";
 
 type Indexes = {
@@ -116,7 +115,6 @@ const changeSelection = async () => {
     selected_session_indexes = tmp_selected;
     selectedChange();
     await executeLink(
-      $axios,
       "/v1/teachers/" +
         user.id +
         "/my_project_classes?session_id=" +
@@ -152,7 +150,6 @@ const changeSelection = async () => {
         )
     );
     await executeLink(
-      $axios,
       "/v1/teachers/" +
         user.id +
         "/associated_project_classes?session_id=" +
@@ -199,7 +196,6 @@ const selectedChange = (
   trigger.value++;
 };
 
-const $axios: AxiosInstance | undefined = inject("$axios");
 const store = useStore();
 const user = User.getLoggedUser() as User;
 
@@ -229,7 +225,6 @@ const courses: OrderedCardsList<GeneralCardElements> = reactive({
   },
 });
 const teaching_years = await executeLink(
-  $axios,
   "/v1/teachers/" + user.id + "/active_years",
   (response: any) => response.data.data.map((a: any) => a.year),
   () => []
@@ -244,7 +239,6 @@ let selected_session_indexes: Indexes = reactive({
 for (const year of teaching_years) {
   promises.push(
     executeLink(
-      $axios,
       "/v1/learning_sessions?school_year=" + year,
       async (response) => {
         learning_sessions.order.push({
@@ -253,7 +247,7 @@ for (const year of teaching_years) {
         });
         learning_sessions.cards[year] = [];
         for (const learning_session of response.data.data) {
-          learning_sessions.cards[year].push(await new LearningSession(learning_session).toCard(store,undefined,undefined,undefined,undefined,new Date(),false));
+          learning_sessions.cards[year].push(await new LearningSession(learning_session).toCard(undefined,undefined,undefined,new Date(),false));
         }
         
       }

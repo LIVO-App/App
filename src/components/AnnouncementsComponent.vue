@@ -90,8 +90,7 @@ import {
 } from "@/types";
 import { executeLink, getCurrentElement, getIcon } from "@/utils";
 import { IonModal, IonAlert } from "@ionic/vue";
-import { AxiosInstance } from "axios";
-import { inject, ref, Ref, watch } from "vue";
+import { ref, Ref, watch } from "vue";
 import { Store, useStore } from "vuex";
 
 type availableModal =
@@ -130,15 +129,12 @@ const setupModalAndOpen = async (store: Store<any>) => {
       break;
     case "publish":
       await executeLink(
-        $axios,
         "/v1/announcements?teacher_id=" +
           user.id +
           "&course_id=" +
           course_id +
           "&session_id=" +
-          session_id +
-          "&token=" +
-          user.token,
+          session_id,
         () => "",
         (err) => {
           console.error(err);
@@ -176,13 +172,11 @@ const closeModal = (window: availableModal) => {
 
 const updateMessages = async () => {
   messages.cards[""] = await executeLink(
-    $axios,
     "/v1/project_classes/" +
       course_id +
       "/" +
       session_id +
-      "/announcements?token=" +
-      user.token +
+      "/announcements?" +
       (user.user == "teacher" ? "&section=" + selected_section.value : ""),
     (response) =>
       response.data.data.map((a: AnnouncementSummaryProps) =>
@@ -197,7 +191,6 @@ const updateMessages = async () => {
 };
 
 const store = useStore();
-const $axios: AxiosInstance | undefined = inject("$axios");
 const user = User.getLoggedUser() as User;
 
 const announcement_open = ref(false);
@@ -236,48 +229,40 @@ let selected_section: Ref<string>;
 let announcement_title: string;
 let announcement_id: string;
 
-if ($axios != undefined) {
-  if (user.user == "teacher") {
-    await executeLink(
-      $axios,
-      "/v2/teachers/" +
-        user.id +
-        "/my_project_classes?session_id=" +
-        session_id +
-        "&course_id=" +
-        course_id +
-        "&token=" +
-        user.token,
-      (response) =>
-        response.data.data.map((a: any) => tmp_sections.add(a.section))
-    );
-    await executeLink(
-      $axios,
-      "/v2/teachers/" +
-        user.id +
-        "/associated_project_classes?session_id=" +
-        session_id +
-        "&course_id=" +
-        course_id +
-        "&token=" +
-        user.token,
-      (response) =>
-        response.data.data.map((a: any) => tmp_sections.add(a.section))
-    );
+if (user.user == "teacher") {
+  await executeLink(
+    "/v2/teachers/" +
+      user.id +
+      "/my_project_classes?session_id=" +
+      session_id +
+      "&course_id=" +
+      course_id,
+    (response) =>
+      response.data.data.map((a: any) => tmp_sections.add(a.section))
+  );
+  await executeLink(
+    "/v2/teachers/" +
+      user.id +
+      "/associated_project_classes?session_id=" +
+      session_id +
+      "&course_id=" +
+      course_id,
+    (response) =>
+      response.data.data.map((a: any) => tmp_sections.add(a.section))
+  );
 
-    for (const section of tmp_sections) {
-      sections.push({
-        id: section,
-      });
-    }
-    selected_section = ref(sections[0].id);
-    watch(selected_section, async () => {
-      await updateMessages();
+  for (const section of tmp_sections) {
+    sections.push({
+      id: section,
     });
   }
-
-  await updateMessages();
+  selected_section = ref(sections[0].id);
+  watch(selected_section, async () => {
+    await updateMessages();
+  });
 }
+
+await updateMessages();
 </script>
 
 <style>

@@ -76,7 +76,7 @@
         v-model="final_grade"
         :aria-label="getCurrentElement(store, 'final_grade')"
         class="ion-padding-start"
-      ></ion-checkbox> <!-- Da sistemare: mettere popup "Sei sicuro?" -->
+      ></ion-checkbox> <!-- Da sistemare: controllare perchè non funziona nella tabella e mettere popup "Sei sicuro?" -->
     </div>
     <div class="ion-text-center">
       <ion-button
@@ -115,9 +115,7 @@
                   '&grade=' +
                   grade +
                   '&final=' +
-                  final_grade +
-                  '&token=' +
-                  user.token,
+                  final_grade,
                 method: 'post',
               };
               $emit('execute_link');
@@ -133,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { CustomElement, Grade, GradeProps, GradesParameters, User } from "@/types";
+import { CustomElement, Grade, GradeProps, GradesParameters } from "@/types";
 import { executeLink, getCurrentElement, getIcon } from "@/utils";
 import {
   IonHeader,
@@ -148,8 +146,7 @@ import {
   IonCheckbox,
   IonButton,
 } from "@ionic/vue";
-import { AxiosInstance } from "axios";
-import { inject, PropType, Ref, ref } from "vue";
+import { PropType, Ref, ref } from "vue";
 import { useStore } from "vuex";
 
 const push_grade = (grade: Grade) => {
@@ -160,8 +157,6 @@ const push_grade = (grade: Grade) => {
 };
 
 const store = useStore();
-const $axios: AxiosInstance | undefined = inject("$axios");
-const user = User.getLoggedUser() as User;
 
 const props = defineProps({
   title: {
@@ -230,7 +225,6 @@ if (props.grades != undefined) {
   });
 } else {
   actual_grades = await executeLink(
-    $axios,
     "/v1/students/" +
       props.parameters.student_id +
       "/grades?course_id=" +

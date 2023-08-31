@@ -51,9 +51,8 @@ import {
   User,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { inject, reactive, Ref, ref, watch } from "vue";
+import { reactive, Ref, ref, watch } from "vue";
 import { useStore } from "vuex";
-import type { AxiosInstance } from "axios";
 import { executeLink, getCurrentElement } from "@/utils";
 
 type Indexes = {
@@ -139,7 +138,6 @@ const getStudents = async () => {
       selected_class_indexes.index
     ].id.split(" ");
   return await executeLink(
-    $axios,
     "/v1/ordinary_classes/" +
       class_keys[0] +
       "/" +
@@ -147,9 +145,7 @@ const getStudents = async () => {
       "/components?section=" +
       selected_section.value +
       "&school_year=" +
-      selected_class_indexes.year +
-      "&token=" +
-      user.token,
+      selected_class_indexes.year,
     (response: any) =>
       response.data.data.map((a: StudentSummaryProps) =>
         new StudentSummary(a).toCard(store, "/students/" + a.id)
@@ -157,7 +153,6 @@ const getStudents = async () => {
   );
 };
 
-const $axios: AxiosInstance | undefined = inject("$axios");
 const store = useStore();
 const user = User.getLoggedUser() as User;
 
@@ -171,7 +166,6 @@ const students: OrderedCardsList<GeneralCardElements> = reactive({
   cards: {},
 });
 const school_years = await executeLink(
-  $axios,
   "/v1/teachers/" + user.id + "/active_years",
   (response: any) => response.data.data.map((a: any) => a.year),
   () => []
@@ -196,13 +190,10 @@ let sections: { id: string }[] = [];
 for (const year of school_years) {
   promises.push(
     executeLink(
-      $axios,
       "/v1/teachers/" +
         user.id +
         "/my_ordinary_classes?school_year=" +
-        year +
-        "&token=" +
-        user.token,
+        year,
       (response) => {
         ordinary_classes.order.push({
           key: year,

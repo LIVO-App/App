@@ -697,27 +697,6 @@ export const store = createStore({
                 }
             },
             logged_user: false,
-            /*
-            user: {
-                id: 1,
-                username: "Student1",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjEsInVzZXJuYW1lIjoiU3R1ZGVudDEiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY5MDU1MjY1MiwiZXhwIjoxNjkwNjM5MDUyfQ.h5TN0M40v8jnNzVOP8JeQfpH3vMsii8RD1JXgdJq18Y",
-                user: "student",
-            },//*/
-            /*
-            user: {
-                id: 1,
-                username: "Teacher1",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiU3R1ZGVudDIiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTY4ODM2OTkwOCwiZXhwIjoxNjg4NDU2MzA4fQ.XYjUjhxj_HjkPy-V7ntbGf2Hww8Y8kiS_mes-fC7D7U",
-                user: "teacher",
-            },//*/
-            /*
-            user: {
-                id: 2,
-                username: "Teacher2",
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOjIsInVzZXJuYW1lIjoiVGVhY2hlcjIiLCJyb2xlIjoidGVhY2hlciIsImlhdCI6MTY5MDU1NDg2NiwiZXhwIjoxNjkwNjQxMjY2fQ.8OB2mx0ERnOkChC5Jn0IwptWUSXOPC-v8OiFb1cULys",
-                user: "teacher",
-            },//*/
             request: {},
             event: {},
             hours_per_credit: 6,

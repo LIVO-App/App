@@ -1,6 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router';
+import { $axios } from './plugins/axios'
+import { store } from "./store";
 
 import { IonicVue } from '@ionic/vue';
 
@@ -51,31 +53,10 @@ import '@ionic/vue/css/display.css';
 /* Theme variables */
 import './theme/variables.css';
 
-import axios from 'axios'
-//import axios from './plugins/axios'
-import { store } from "./store";
-//import VueSession from 'vue-session'
-
-//axios.ts replacement
-const options: {
-  baseUrl?: string
-  token?: string
-} = {
-  baseUrl: "http://localhost:5000/api",
-};
-
-const $axios = axios.create({
-  baseURL: options.baseUrl,
-  headers: {
-    Authorization: options.token ? `Bearer ${options.token}` : '',
-  }
-})
-
 const app = createApp(App)
   .use(store)
   .use(IonicVue)
   .use(router)
-  //.use(VueSession)
   /*.use(axios, {
       baseUrl: 'https://cataas.com/',
   })*/

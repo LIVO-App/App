@@ -31,10 +31,8 @@
     />
     <template v-if="user.user == 'admin'">
       <ionic-element :element="buttons[4]" @signal_event="approve()" />
-      <ionic-element
-        :element="buttons[5]"
-        @signal_event="approve(false)"
-      /> <!-- Da sistemare: sistemare /approval quando finito da Pietro -->
+      <ionic-element :element="buttons[5]" @signal_event="approve(false)" />
+      <!-- Da sistemare: sistemare /approval quando finito da Pietro -->
       <ionic-element
         :element="action == 'view' ? buttons[6] : buttons[7]"
         @signal_event="changeModality(action == 'view' ? 'edit' : 'view')"
@@ -226,7 +224,8 @@
                   :placeholder="getCurrentElement(store, 'growth_choice')"
                   :getCompleteName="growthAreaToString"
                   :disabled="action == 'view'"
-                /> <!-- Da sistemare: mettere lista di growth_areas -->
+                />
+                <!-- Da sistemare: mettere lista di growth_areas -->
               </ion-col>
               <ion-col>
                 <custom-select
@@ -300,9 +299,7 @@
                 <ion-text>
                   {{ getCurrentElement(store, "students_per_section") }}:
                 </ion-text>
-                <template
-                  v-if="action != 'view'"
-                >
+                <template v-if="action != 'view'">
                   <custom-select
                     :key="trigger + '_select'"
                     v-model="selected_teaching"
@@ -337,7 +334,12 @@
             "
           >
             <ion-grid>
-              <template v-if="action != 'view' && pages[current_page_index] == 'access_object'">
+              <template
+                v-if="
+                  action != 'view' &&
+                  pages[current_page_index] == 'access_object'
+                "
+              >
                 <ion-row>
                   <ion-col>
                     <custom-select
@@ -619,8 +621,7 @@ import {
   IonList,
   IonItem,
 } from "@ionic/vue";
-import { AxiosInstance } from "axios";
-import { inject, reactive, ref, Ref, watch } from "vue";
+import { reactive, ref, Ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
@@ -642,8 +643,7 @@ const go = (direction: boolean) => {
 };
 const propose = () => {
   executeLink(
-    $axios,
-    "/v1/propositions?token=" + user.token,
+    "/v1/propositions",
     edit_course_proposition,
     () => setupModalAndOpen("title"),
     "post",
@@ -1061,92 +1061,84 @@ const edit_course_proposition = async (course_id?: number) => {
   let course: Course;
   let growth_area: GrowthArea;
   let learning_area: LearningArea;
-  if ($axios != undefined) {
-    if (course_id != undefined && !Number.isNaN(course_id)) {
-      course = await executeLink(
-        $axios,
-        "/v1/courses/" + course_id + "?admin_info=true",
-        (response) => new Course($axios, user, response.data.data)
-      );
-      growth_area = await executeLink(
-        $axios,
-        "/v1/growth_areas",
-        (response) => {
-          const tmp = response.data.data.find(
-            (a: GrowthArea) =>
-              a.italian_title == course.italian_growth_area &&
-              a.english_title == course.english_growth_area
-          ); // Da sistemare: aspettare che Pietro metta id
-          return tmp != undefined
-            ? tmp
-            : {
-                id: -1,
-                italian_title: "",
-                english_title: "",
-              };
-        }
-      );
-      learning_area = await executeLink(
-        $axios,
-        "/v1/learning_areas",
-        (response) => {
-          const tmp = response.data.data.find(
-            (a: LearningArea) =>
-              a.italian_title == course.italian_learning_area &&
-              a.english_title == course.english_learning_area
-          ); // Da sistemare: aspettare che Pietro metta id
-          return tmp != undefined
-            ? tmp
-            : {
-                id: -1,
-                italian_title: "",
-                english_title: "",
-              };
-        }
-      );
-      course_proposition = reactive(
-        new ModelProposition({
-          course_id: course_id,
-          italian_title: course.italian_title,
-          english_title: course.english_title,
-          up_hours: course.up_hours,
-          credits: course.credits,
-          area_id: learning_area.id,
-          growth_id: growth_area.id,
-          session_id: -1,
-          class_group: -1,
-          num_section: 0,
-          min_students: course.min_students,
-          max_students: course.max_students,
-          teaching_list: course.teaching_list.map((a) => a.id),
-          italian_descr: course.italian_description,
-          english_descr: course.english_description,
-          italian_exp_l: course.italian_expected_learning_results,
-          english_exp_l: course.english_expected_learning_results,
-          italian_cri: course.italian_criterions,
-          english_cri: course.english_criterions,
-          italian_act: course.italian_activities,
-          english_act: course.english_activities,
-          access_object: course.access_object,
-          teacher_list: [],
-        })
-      );
-      for (const teaching of course_proposition.students_distribution
-        .teaching_list) {
-        addTeaching(teaching);
+  if (course_id != undefined && !Number.isNaN(course_id)) {
+    course = await executeLink(
+      "/v1/courses/" + course_id + "?admin_info=true",
+      (response) => new Course(response.data.data)
+    );
+    growth_area = await executeLink("/v1/growth_areas", (response) => {
+      const tmp = response.data.data.find(
+        (a: GrowthArea) =>
+          a.italian_title == course.italian_growth_area &&
+          a.english_title == course.english_growth_area
+      ); // Da sistemare: aspettare che Pietro metta id
+      return tmp != undefined
+        ? tmp
+        : {
+            id: -1,
+            italian_title: "",
+            english_title: "",
+          };
+    });
+    learning_area = await executeLink(
+      "/v1/learning_areas",
+      (response) => {
+        const tmp = response.data.data.find(
+          (a: LearningArea) =>
+            a.italian_title == course.italian_learning_area &&
+            a.english_title == course.english_learning_area
+        ); // Da sistemare: aspettare che Pietro metta id
+        return tmp != undefined
+          ? tmp
+          : {
+              id: -1,
+              italian_title: "",
+              english_title: "",
+            };
       }
-      for (const learning_context_id in course_proposition.access_object) {
-        for (const access_object of course_proposition.access_object[
-          learning_context_id
-        ]) {
-          addAccess(learning_context_id, access_object);
-        }
-      }
-    } else {
-      course_proposition = reactive(new ModelProposition());
+    );
+    course_proposition = reactive(
+      new ModelProposition({
+        course_id: course_id,
+        italian_title: course.italian_title,
+        english_title: course.english_title,
+        up_hours: course.up_hours,
+        credits: course.credits,
+        area_id: learning_area.id,
+        growth_id: growth_area.id,
+        session_id: -1,
+        class_group: -1,
+        num_section: 0,
+        min_students: course.min_students,
+        max_students: course.max_students,
+        teaching_list: course.teaching_list.map((a) => a.id),
+        italian_descr: course.italian_description,
+        english_descr: course.english_description,
+        italian_exp_l: course.italian_expected_learning_results,
+        english_exp_l: course.english_expected_learning_results,
+        italian_cri: course.italian_criterions,
+        english_cri: course.english_criterions,
+        italian_act: course.italian_activities,
+        english_act: course.english_activities,
+        access_object: course.access_object,
+        teacher_list: [],
+      })
+    );
+    for (const teaching of course_proposition.students_distribution
+      .teaching_list) {
+      addTeaching(teaching);
     }
-    trigger.value++;
+    for (const learning_context_id in course_proposition.access_object) {
+      for (const access_object of course_proposition.access_object[
+        learning_context_id
+      ]) {
+        addAccess(learning_context_id, access_object);
+      }
+    }
+  } else {
+    course_proposition = reactive(new ModelProposition());
   }
+  trigger.value++;
 };
 const changeModality = (new_action: Action) => {
   action.value = new_action;
@@ -1155,19 +1147,15 @@ const changeModality = (new_action: Action) => {
 };
 const approve = (outcome = true) => {
   executeLink(
-    $axios,
     "/v1/propositions/approval?course_id=" +
       course_proposition.id +
       "&session_id=" +
       course_proposition.characteristics.session_id +
       "&approved=" +
-      outcome +
-      "&token=" +
-      user.token,
+      outcome,
     () => {
       // Da sistemare: controlla risposta e apri modal
       console.log(outcome ? "Accettato" : "Rifiutato");
-      
     },
     () => {
       // Da sistemare: controlla risposta e apri modal
@@ -1181,7 +1169,6 @@ const approve = (outcome = true) => {
 );*/
 
 const store = useStore();
-const $axios: AxiosInstance | undefined = inject("$axios");
 const user = User.getLoggedUser() as User;
 const language: Language = store.state.language;
 const languages: Language[] = store.state.languages;
@@ -1375,169 +1362,159 @@ let learning_sessions: LearningSession[] = [];
 let groups: { id: number }[] = [];
 let sections: boolean[] = reactive([]);
 
-if ($axios != undefined) {
-  /*switch (pages[current_page_index.value]) { // Da sistemare: caricare una volta i vari contenuti
-    case "teaching_list":
-      
-      break;
-    case "access_object":
-    case "teacher_list":
-      
-      break;
-    default:
-      break;
-  }*/
-  models = await executeLink(
-    $axios,
-    "/v1/propositions?recent_models=10&token=" + user.token, // Da sistemare: fare rework recent_models (mettere filtro su tutti i corsi)
-    (response) =>
-      response.data.data.map((a: CourseModelProps) => new CourseModel(a)),
-    () => []
-  );
-  learning_areas = await executeLink(
-    $axios,
-    "/v1/learning_areas?all_data=true",
-    (response) => response.data.data,
-    () => []
-  );
-  growth_areas = await executeLink(
-    $axios,
-    "/v1/growth_areas",
-    (response) => response.data.data,
-    () => []
-  );
-  learning_sessions = await executeLink(
-    $axios,
-    "/v1/learning_sessions?future_session=true", // Da sistemare: aggiungere course_id quando Pietro finisce
-    (response) => {
-      const tmp_learning_sessions: LearningSession[] = [];
+/*switch (pages[current_page_index.value]) { // Da sistemare: caricare una volta i vari contenuti
+  case "teaching_list":
+    
+    break;
+  case "access_object":
+  case "teacher_list":
+    
+    break;
+  default:
+    break;
+}*/
+models = await executeLink(
+  "/v1/propositions?recent_models=10", // Da sistemare: fare rework recent_models (mettere filtro su tutti i corsi)
+  (response) =>
+    response.data.data.map((a: CourseModelProps) => new CourseModel(a)),
+  () => []
+);
+learning_areas = await executeLink(
+  "/v1/learning_areas?all_data=true",
+  (response) => response.data.data,
+  () => []
+);
+growth_areas = await executeLink(
+  "/v1/growth_areas",
+  (response) => response.data.data,
+  () => []
+);
+learning_sessions = await executeLink(
+  "/v1/learning_sessions?future_session=true", // Da sistemare: aggiungere course_id quando Pietro finisce
+  (response) => {
+    const tmp_learning_sessions: LearningSession[] = [];
 
-      let tmp_session: LearningSession;
+    let tmp_session: LearningSession;
 
-      for (const session of response.data.data) {
-        tmp_session = new LearningSession(session);
-        tmp_set.add(tmp_session.school_year);
-        tmp_learning_sessions.push(tmp_session);
-      }
-
-      return tmp_learning_sessions;
-    },
-    () => []
-  );
-  teachings.available = await executeLink(
-    $axios,
-    "/v1/teachings?all_data=true",
-    (response) => {
-      return response.data.data.map((a: TeachingProps) => new Teaching(a));
-    },
-    () => []
-  );
-
-  learning_contexts.available = await executeLink(
-    $axios,
-    "/v1/learning_contexts",
-    (response) => {
-      const tmp_contexts: LearningContext[] = [];
-
-      for (const learning_context of response.data.data) {
-        if (
-          store.state.excluded_learning_contexts_id.findIndex(
-            (a: number) => a != learning_context.id
-          ) != -1
-        ) {
-          tmp_contexts.push(learning_context);
-        }
-      }
-
-      return tmp_contexts;
-    },
-    () => []
-  );
-  await executeLink(
-    $axios,
-    "/v1/study_addresses",
-    (response) => {
-      for (const context of learning_contexts.available) {
-        study_addresses.available[context.id] = [];
-        study_years.available[context.id] = {};
-        for (const address of response.data.data) {
-          study_addresses.available[context.id].push(address);
-          study_years.available[context.id][address.id] = Array.from(
-            { length: address.max_classes },
-            (value, index) => {
-              return {
-                id: index + 1,
-              };
-            }
-          );
-        }
-      }
-    },
-    () => []
-  );
-  teachers.available = await executeLink(
-    $axios,
-    "/v1/teachers?token=" + user.token,
-    (response) => response.data.data.map((a: TeacherProps) => new Teacher(a)),
-    () => []
-  );
-
-  watch(selected_session, (new_session) => {
-    course_proposition.characteristics.session_id = new_session;
-    groups = learning_sessions.map((a) => {
-      return {
-        id: a.num_groups, // Da sistemare: mettere lista di gruppi
-      };
-    });
-    trigger.value++;
-  });
-  watch(selected_learning_context, (new_learning_context) => {
-    if (
-      new_learning_context != undefined &&
-      study_addresses.available[new_learning_context] != undefined &&
-      study_addresses.available[new_learning_context].findIndex(
-        (a) => a.id == selected_study_address.value
-      ) == -1
-    ) {
-      selected_study_address.value = "";
+    for (const session of response.data.data) {
+      tmp_session = new LearningSession(session);
+      tmp_set.add(tmp_session.school_year);
+      tmp_learning_sessions.push(tmp_session);
     }
-    trigger.value++;
-  });
-  watch(selected_study_address, (new_study_address) => {
-    let tmp_study_address;
 
-    if (
-      new_study_address != "" &&
-      (tmp_study_address = study_addresses.available[
-        selected_learning_context.value
-      ].find((a) => a.id == new_study_address)) != undefined &&
-      selected_study_year.value > tmp_study_address.max_classes
-    ) {
-      selected_study_year.value = 0;
+    return tmp_learning_sessions;
+  },
+  () => []
+);
+teachings.available = await executeLink(
+  "/v1/teachings?all_data=true",
+  (response) => {
+    return response.data.data.map((a: TeachingProps) => new Teaching(a));
+  },
+  () => []
+);
+
+learning_contexts.available = await executeLink(
+  "/v1/learning_contexts",
+  (response) => {
+    const tmp_contexts: LearningContext[] = [];
+
+    for (const learning_context of response.data.data) {
+      if (
+        store.state.excluded_learning_contexts_id.findIndex(
+          (a: number) => a != learning_context.id
+        ) != -1
+      ) {
+        tmp_contexts.push(learning_context);
+      }
     }
-    trigger.value++;
-  });
-  watch(num_section, (n) => {
-    let actual_n: number;
 
-    if (n != "") {
-      actual_n = parseInt(n);
-      course_proposition.students_distribution.num_section = actual_n;
-      if (sections.length > actual_n) {
-        sections.splice(actual_n);
-      } else if (sections.length < actual_n) {
-        sections = reactive(
-          sections.concat(new Array(actual_n - sections.length).fill(false))
+    return tmp_contexts;
+  },
+  () => []
+);
+await executeLink(
+  "/v1/study_addresses",
+  (response) => {
+    for (const context of learning_contexts.available) {
+      study_addresses.available[context.id] = [];
+      study_years.available[context.id] = {};
+      for (const address of response.data.data) {
+        study_addresses.available[context.id].push(address);
+        study_years.available[context.id][address.id] = Array.from(
+          { length: address.max_classes },
+          (value, index) => {
+            return {
+              id: index + 1,
+            };
+          }
         );
       }
     }
+  },
+  () => []
+);
+teachers.available = await executeLink(
+  "/v1/teachers",
+  (response) => response.data.data.map((a: TeacherProps) => new Teacher(a)),
+  () => []
+);
+
+watch(selected_session, (new_session) => {
+  course_proposition.characteristics.session_id = new_session;
+  groups = learning_sessions.map((a) => {
+    return {
+      id: a.num_groups, // Da sistemare: mettere lista di gruppi
+    };
   });
-  watch(selected_model, () => {
-    edit_course_proposition(selected_model.value);
-    trigger.value++;
-  });
-  selected_model.value = parseInt($route.query[action.value] as string);
-}
+  trigger.value++;
+});
+watch(selected_learning_context, (new_learning_context) => {
+  if (
+    new_learning_context != undefined &&
+    study_addresses.available[new_learning_context] != undefined &&
+    study_addresses.available[new_learning_context].findIndex(
+      (a) => a.id == selected_study_address.value
+    ) == -1
+  ) {
+    selected_study_address.value = "";
+  }
+  trigger.value++;
+});
+watch(selected_study_address, (new_study_address) => {
+  let tmp_study_address;
+
+  if (
+    new_study_address != "" &&
+    (tmp_study_address = study_addresses.available[
+      selected_learning_context.value
+    ].find((a) => a.id == new_study_address)) != undefined &&
+    selected_study_year.value > tmp_study_address.max_classes
+  ) {
+    selected_study_year.value = 0;
+  }
+  trigger.value++;
+});
+watch(num_section, (n) => {
+  let actual_n: number;
+
+  if (n != "") {
+    actual_n = parseInt(n);
+    course_proposition.students_distribution.num_section = actual_n;
+    if (sections.length > actual_n) {
+      sections.splice(actual_n);
+    } else if (sections.length < actual_n) {
+      sections = reactive(
+        sections.concat(new Array(actual_n - sections.length).fill(false))
+      );
+    }
+  }
+});
+watch(selected_model, () => {
+  edit_course_proposition(selected_model.value);
+  trigger.value++;
+});
+selected_model.value = parseInt($route.query[action.value] as string);
 </script>
 
 <style></style>

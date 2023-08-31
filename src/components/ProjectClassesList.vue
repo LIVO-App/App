@@ -41,9 +41,8 @@ import {
   AdminProjectClass,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { inject, reactive, ref } from "vue";
+import { reactive, ref } from "vue";
 import { useStore } from "vuex";
-import type { AxiosInstance } from "axios";
 import { executeLink, getCurrentElement } from "@/utils";
 import { useRoute } from "vue-router";
 
@@ -105,22 +104,17 @@ const changeSelection = async () => {
     selected_session_indexes = tmp_selected;
     selectedChange();
     courses.cards[""] = await executeLink(
-      $axios,
       $route.name == "announcements"
         ? "/v1/students/" +
             user.id +
             "/project_classes?session_id=" +
             learning_sessions.cards[selected_session_indexes.year][
               selected_session_indexes.index
-            ].id +
-            "&token=" +
-            user.token
+            ].id
         : "/v1/project_classes?session_id=" +
             learning_sessions.cards[selected_session_indexes.year][
               selected_session_indexes.index
-            ].id +
-            "&token=" +
-            user.token, // Da chiedere: cosa serve year
+            ].id, // Da chiedere: cosa serve year
       (response: any) =>
         response.data.data.map(
           (a: MinimumCourseProps | AdminProjectClassProps) =>
@@ -155,7 +149,6 @@ const selectedChange = (
   trigger.value++;
 };
 
-const $axios: AxiosInstance | undefined = inject("$axios");
 const store = useStore();
 const user = User.getLoggedUser() as User;
 const $route = useRoute();
@@ -170,7 +163,6 @@ const courses: OrderedCardsList<GeneralCardElements> = reactive({
   cards: {},
 });
 const school_years = await executeLink(
-  $axios,
   "/v1/ordinary_classes?student_id=" + user.id,
   (response: any) => response.data.data.map((a: any) => a.school_year),
   () => []
@@ -185,7 +177,6 @@ let selected_session_indexes: Indexes = reactive({
 for (const year of school_years) {
   promises.push(
     executeLink(
-      $axios,
       "/v1/learning_sessions?school_year=" + year,
       async (response) => {
         learning_sessions.order.push({
@@ -194,7 +185,7 @@ for (const year of school_years) {
         });
         learning_sessions.cards[year] = [];
         for (const learning_session of response.data.data) {
-          learning_sessions.cards[year].push(await new LearningSession(learning_session).toCard(store,undefined,undefined,undefined,undefined,new Date(),false));
+          learning_sessions.cards[year].push(await new LearningSession(learning_session).toCard(undefined,undefined,undefined,new Date(),false));
         }
       }
     )

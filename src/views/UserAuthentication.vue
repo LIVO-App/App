@@ -23,8 +23,7 @@ import { executeLink, getCurrentElement } from "@/utils";
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonAlert } from "@ionic/vue";
 import { useStore } from "vuex";
 import { LoginInformation, User } from "@/types";
-import { AxiosInstance } from "axios";
-import { inject, ref } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const login = async (payload: LoginInformation) => {
@@ -53,7 +52,7 @@ const login = async (payload: LoginInformation) => {
                     tmp_index = 0;
                     break;
             }
-            await executeLink($axios,"/v1/auth/" + payload.type + "_login",
+            await executeLink("/v1/auth/" + payload.type + "_login",
             async (response) => {
 
                 const tmp_user: {
@@ -80,7 +79,6 @@ const login = async (payload: LoginInformation) => {
     } catch (error) {
         alert_information.message = getCurrentElement(store,"server_error");
         alert_open.value = true;
-        
     }
 };
 const closeAlert = () => alert_open.value = false;
@@ -104,7 +102,6 @@ const checkParameters = (payload: LoginInformation, login_parameters: {[key: str
 };
 
 const store = useStore();
-const $axios: AxiosInstance | undefined = inject("$axios");
 const $router = useRouter();
 
 const alert_open = ref(false);

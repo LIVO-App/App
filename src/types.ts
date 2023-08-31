@@ -1,5 +1,6 @@
-import { AxiosInstance, Method } from "axios";
+import { Method } from "axios";
 import { Store } from "vuex";
+import { store } from "./store";
 import { executeLink, getActualLearningContext, getCurrentElement, getCurrentSchoolYear, getEnrollmentIcon, getGender, getIcon, getRagneString, getStatusColor, getStatusString, hashCode, numberToSection, toDateString } from "./utils";
 
 type Language = "italian" | "english";
@@ -512,7 +513,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
     //teacher_list: TeacherProposition[]; 
     //Da sistemare: sistemare teacher_list e usare access_object, teaching_list e proposer_teacher_id per description
 
-    constructor($axios: AxiosInstance, user: User, courseObj: CourseProps) {
+    constructor(courseObj: CourseProps) {
         super(courseObj);
         this.creation_date = new Date(courseObj.creation_date);
         this.up_hours = courseObj.up_hours;
@@ -538,10 +539,10 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
         this.italian_description = courseObj.italian_description;
         this.english_description = courseObj.english_description;
         this.teaching_list = [];
-        executeLink($axios, "/v1/courses/" + this.id + "/teachings",
+        executeLink("/v1/courses/" + this.id + "/teachings",
             response => this.teaching_list = response.data.data.map((a: TeachingProps) => new Teaching(a)));
         this.access_object = {};
-        executeLink($axios, "/v1/courses/" + this.id + "/opento",
+        executeLink("/v1/courses/" + this.id + "/opento",
             response => {
                 let learning_context_id;
                 for (const constraint of (response.data.data as OpenToConstraint[])) {
@@ -674,7 +675,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
                     : LearningSessionStatus.COMPLETED;
     }
 
-    /*async getDividedCourseList(session: LearningSession, learning_areas: LearningArea[], $axios: AxiosInstance, store : Store<any>) {
+    /*async getDividedCourseList(session: LearningSession, learning_areas: LearningArea[], store : Store<any>) {
         const language = store.state.language
         const courses : CourseSummary[] = (await $axios.get("/v1/courses?student_id=" + user_id + "&session_id=" + session.id)).data.data;
         let tmp_learning_area_id : string,
@@ -699,7 +700,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
         return course_list;
     }*/
 
-    async getSessionList($axios: AxiosInstance, store: Store<any>, learning_context?: LearningContextSummary, reference = new Date(), credits?: boolean, courses_list?: boolean): Promise<string> {
+    async getSessionList(learning_context?: LearningContextSummary, reference = new Date(), credits?: boolean, courses_list?: boolean): Promise<string> {
 
         const language: Language = store.state.language;
         const user = User.getLoggedUser() as User;
@@ -711,14 +712,14 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
         const courses: {
             [learning_area_id: string]: CourseSummary[]
         } = {};
-        const learning_areas = await executeLink($axios, "/v1/learning_areas?all_data=true&session_id=" + this.id + "&credits=" + put_credits,
+        const learning_areas = await executeLink("/v1/learning_areas?all_data=true&session_id=" + this.id + "&credits=" + put_credits,
             response => response.data.data,
             () => []);
 
         let courses_presence: boolean;
         let session_list = put_courses_list ? "" : "<ul>";
 
-        await executeLink($axios, "/v1/courses?student_id=" + user.id + "&context_id=" + actual_learning_context.id + "&session_id=" + this.id,
+        await executeLink("/v1/courses?student_id=" + user.id + "&context_id=" + actual_learning_context.id + "&session_id=" + this.id,
             response => (response.data.data as CourseSummaryProps[]).map(x => {
                 const course = new CourseSummary(x);
                 const learning_area_id = (course.learning_area_ref.data as { id: string }).id;
@@ -753,16 +754,16 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
         return session_list;
     }
 
-    async getSubscribedCredits($axios: AxiosInstance, store: Store<any>, learning_context_id: string): Promise<number> {
+    async getSubscribedCredits(learning_context_id: string): Promise<number> {
 
         const user = User.getLoggedUser() as User;
 
-        return await executeLink($axios, "/v1/courses?student_id=" + user.id + "&session_id=" + this.id + "&context_id=" + learning_context_id,
+        return await executeLink("/v1/courses?student_id=" + user.id + "&session_id=" + this.id + "&context_id=" + learning_context_id,
             response => response.data.data.reduce((a: number, b: CourseSummaryProps) => a + (b.pending == "true" ? b.credits : 0), 0),
             () => 0);
     }
 
-    async toCard(store: Store<any>, $axios?: AxiosInstance, learning_context?: LearningContextSummary, credits?: boolean, courses_list?: boolean, reference = new Date(), selected?: boolean): Promise<GeneralCardElements> { // Da sistemare: mettere selected all'inizio quando verrà tolto $axios e store
+    async toCard(learning_context?: LearningContextSummary, credits?: boolean, courses_list?: boolean, reference = new Date(), selected?: boolean): Promise<GeneralCardElements> { // Da sistemare: mettere selected all'inizio quando verrà tolto $axios e store
 
         const status = this.getStatus(reference);
         const put_credits = credits ?? status == LearningSessionStatus.FUTURE;
@@ -772,13 +773,13 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
             group: this.school_year,
             title: getCurrentElement(store, "session") + " " + this.number,
             subtitle: getRagneString(new Date(this.start), new Date(this.end)),
-            content: $axios != undefined && selected == undefined ? [{
+            content: selected == undefined ? [{
                 id: "" + this.id,
                 type: "html",
                 content: status != LearningSessionStatus.COMPLETED || credits != undefined || courses_list != undefined ?
                     (put_credits ? "<label>" + getCurrentElement(store, "constraints") + ":"
-                        + (actual_learning_context.credits != null ? " " + (await this.getSubscribedCredits($axios, store, actual_learning_context.id)) + "/" + actual_learning_context.credits : "") + "</label>" : "")
-                    + (actual_learning_context.credits == null ? (await this.getSessionList($axios, store, actual_learning_context, reference, credits, courses_list)) : "")
+                        + (actual_learning_context.credits != null ? " " + (await this.getSubscribedCredits(actual_learning_context.id)) + "/" + actual_learning_context.credits : "") + "</label>" : "")
+                    + (actual_learning_context.credits == null ? (await this.getSessionList(actual_learning_context, reference, credits, courses_list)) : "")
                     : ""
             }] : undefined,
             side_element: selected != undefined ? {

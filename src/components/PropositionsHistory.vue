@@ -38,9 +38,8 @@ import {
   CourseModelProps,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { inject, reactive, ref } from "vue";
+import { reactive, ref } from "vue";
 import { useStore } from "vuex";
-import type { AxiosInstance } from "axios";
 import { executeLink, getCurrentElement } from "@/utils";
 
 const is_nothing_selected = () =>
@@ -91,7 +90,6 @@ const selectedChange = (
   trigger.value++;
 };
 
-const $axios: AxiosInstance | undefined = inject("$axios");
 const store = useStore();
 const user = User.getLoggedUser() as User;
 
@@ -111,8 +109,7 @@ const year_propositions: OrderedCardsList<GeneralCardElements> = reactive({
 });
 const trigger = ref(0);
 const propositions: CourseModel[] = await executeLink(
-  $axios,
-  "/v1/propositions?token=" + user.token, // Da sistemare: /v1/propositions?token=<token teacher2> da due corsi (id: 5) uguali
+  "/v1/propositions", // Da sistemare: /v1/propositions?token=<token teacher2> da due corsi (id: 5) uguali
   (response: any) => response.data.data.map((a: CourseModelProps) => new CourseModel(a)), // Due modelli con titoli diversi non dovrebbero avere id diversi?
   () => []
 );
@@ -120,7 +117,6 @@ const actual_teacher_id = user.id;
 const selected_year_index = ref(-1);
 
 await executeLink(
-  $axios,
   "/v1/teachers/" + actual_teacher_id + "/active_years", // Da sistemare: trovare api per admin
   (response) => {
     let id: string;
