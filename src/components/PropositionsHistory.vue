@@ -4,8 +4,8 @@
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="getCurrentElement(store, 'school_years')"
-          :emptiness_message="getCurrentElement(store, 'no_school_years')"
+          :title="getCurrentElement('school_years')"
+          :emptiness_message="getCurrentElement('no_school_years')"
           :cards_list="school_years"
           @signal_event="changeSelection()"
         />
@@ -13,10 +13,9 @@
       <ion-col size="12" size-md="6">
         <list-card
           :key="trigger"
-          :title="getCurrentElement(store, 'courses')"
+          :title="getCurrentElement('courses')"
           :emptiness_message="
             getCurrentElement(
-              store,
               is_nothing_selected()
                 ? 'teacher_learning_session_selection_message'
                 : 'no_project_classes'
@@ -77,7 +76,7 @@ const changeSelection = async () => {
     
     for (const proposition of propositions) {
       if (proposition.creation_school_year == parseInt(school_years.cards[""][selected_year_index.value].id)) {
-        year_propositions.cards[""].push(proposition.toCard(store,user,true));
+        year_propositions.cards[""].push(proposition.toCard(user,true));
       }
     }
   }

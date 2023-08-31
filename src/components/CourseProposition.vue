@@ -41,16 +41,16 @@
     <custom-select
       v-model="selected_model"
       :list="models"
-      :label="getCurrentElement(store, 'reference_model') + ':'"
-      :aria_label="getCurrentElement(store, 'reference_model')"
-      :placeholder="getCurrentElement(store, 'possible_models')"
+      :label="getCurrentElement('reference_model') + ':'"
+      :aria_label="getCurrentElement('reference_model')"
+      :placeholder="getCurrentElement('possible_models')"
       :getCompleteName="modelToString"
       :disabled="action != 'propose'"
     />
     <ion-card :key="trigger">
       <ion-card-header color="primary">
         <ion-card-title color="tertiary" class="ion-text-center">{{
-          getCurrentElement(store, pages[current_page_index])
+          getCurrentElement(pages[current_page_index])
         }}</ion-card-title>
       </ion-card-header>
       <ion-card-content style="overflow-y: auto">
@@ -73,8 +73,8 @@
                       `${language}_title`
                     ]
                   "
-                  :label="getCurrentElement(store, language)"
-                  :aria-label="getCurrentElement(store, language)"
+                  :label="getCurrentElement(language)"
+                  :aria-label="getCurrentElement(language)"
                   fill="outline"
                   class="ion-margin-vertical"
                   :readonly="action == 'view'"
@@ -85,8 +85,8 @@
                   v-model="
                     castToLanguageObj(course_proposition[pages[current_page_index]])[`${language}_descr exp_l cri act`]
                   "
-                  :label="getCurrentElement(store, language)"
-                  :aria-label="getCurrentElement(store, language)"
+                  :label="getCurrentElement(language)"
+                  :aria-label="getCurrentElement(language)"
                   fill="outline"
                   class="ion-margin-vertical"
                 />-->
@@ -97,8 +97,8 @@
                       course_proposition[pages[current_page_index]]
                     )[`${language}_descr`]
                   "
-                  :label="getCurrentElement(store, language)"
-                  :aria-label="getCurrentElement(store, language)"
+                  :label="getCurrentElement(language)"
+                  :aria-label="getCurrentElement(language)"
                   fill="outline"
                   class="ion-margin-vertical"
                   :readonly="action == 'view'"
@@ -112,8 +112,8 @@
                       course_proposition[pages[current_page_index]]
                     )[`${language}_exp_l`]
                   "
-                  :label="getCurrentElement(store, language)"
-                  :aria-label="getCurrentElement(store, language)"
+                  :label="getCurrentElement(language)"
+                  :aria-label="getCurrentElement(language)"
                   fill="outline"
                   class="ion-margin-vertical"
                   :readonly="action == 'view'"
@@ -125,8 +125,8 @@
                       course_proposition[pages[current_page_index]]
                     )[`${language}_cri`]
                   "
-                  :label="getCurrentElement(store, language)"
-                  :aria-label="getCurrentElement(store, language)"
+                  :label="getCurrentElement(language)"
+                  :aria-label="getCurrentElement(language)"
                   fill="outline"
                   class="ion-margin-vertical"
                   :readonly="action == 'view'"
@@ -138,8 +138,8 @@
                       course_proposition[pages[current_page_index]]
                     )[`${language}_act`]
                   "
-                  :label="getCurrentElement(store, language)"
-                  :aria-label="getCurrentElement(store, language)"
+                  :label="getCurrentElement(language)"
+                  :aria-label="getCurrentElement(language)"
                   fill="outline"
                   class="ion-margin-vertical"
                   :readonly="action == 'view'"
@@ -157,8 +157,8 @@
                       course_proposition[pages[current_page_index]]
                     ).credits
                   "
-                  :label="getCurrentElement(store, 'credits')"
-                  :aria-label="getCurrentElement(store, 'credits')"
+                  :label="getCurrentElement('credits')"
+                  :aria-label="getCurrentElement('credits')"
                   fill="outline"
                   class="ion-margin-vertical"
                   :readonly="action == 'view'"
@@ -172,8 +172,8 @@
                       course_proposition[pages[current_page_index]]
                     ).up_hours
                   "
-                  :label="getCurrentElement(store, 'up_hours')"
-                  :aria-label="getCurrentElement(store, 'up_hours')"
+                  :label="getCurrentElement('up_hours')"
+                  :aria-label="getCurrentElement('up_hours')"
                   fill="outline"
                   class="ion-margin-vertical"
                   :readonly="action == 'view'"
@@ -185,11 +185,9 @@
                 <custom-select
                   v-model="selected_session"
                   :list="learning_sessions"
-                  :label="getCurrentElement(store, 'learning_sessions') + ':'"
-                  :aria_label="getCurrentElement(store, 'learning_sessions')"
-                  :placeholder="
-                    getCurrentElement(store, 'learning_sessions_choice')
-                  "
+                  :label="getCurrentElement('learning_sessions') + ':'"
+                  :aria_label="getCurrentElement('learning_sessions')"
+                  :placeholder="getCurrentElement('learning_sessions_choice')"
                   :getCompleteName="learningSessionToString"
                   :disabled="action == 'view'"
                 />
@@ -202,9 +200,9 @@
                     ).area_id
                   "
                   :list="learning_areas"
-                  :label="getCurrentElement(store, 'learning_area') + ':'"
-                  :aria_label="getCurrentElement(store, 'learning_area')"
-                  :placeholder="getCurrentElement(store, 'area_choice')"
+                  :label="getCurrentElement('learning_area') + ':'"
+                  :aria_label="getCurrentElement('learning_area')"
+                  :placeholder="getCurrentElement('area_choice')"
                   :getCompleteName="learningAreaToString"
                   :disabled="action == 'view'"
                 />
@@ -219,9 +217,9 @@
                     ).growth_id
                   "
                   :list="growth_areas"
-                  :label="getCurrentElement(store, 'growth_area') + ':'"
-                  :aria_label="getCurrentElement(store, 'growth_area')"
-                  :placeholder="getCurrentElement(store, 'growth_choice')"
+                  :label="getCurrentElement('growth_area') + ':'"
+                  :aria_label="getCurrentElement('growth_area')"
+                  :placeholder="getCurrentElement('growth_choice')"
                   :getCompleteName="growthAreaToString"
                   :disabled="action == 'view'"
                 />
@@ -236,11 +234,10 @@
                     ).class_group
                   "
                   :list="groups"
-                  :label="getCurrentElement(store, 'group') + ':'"
-                  :aria_label="getCurrentElement(store, 'group')"
+                  :label="getCurrentElement('group') + ':'"
+                  :aria_label="getCurrentElement('group')"
                   :placeholder="
                     getCurrentElement(
-                      store,
                       selected_session == -1
                         ? 'learning_session_needed'
                         : 'group_choice'
@@ -259,14 +256,14 @@
                 <ion-input
                   type="number"
                   v-model="num_section"
-                  :label="getCurrentElement(store, 'num_section')"
-                  :aria-label="getCurrentElement(store, 'num_section')"
+                  :label="getCurrentElement('num_section')"
+                  :aria-label="getCurrentElement('num_section')"
                   fill="outline"
                   class="ion-margin-vertical"
                   :readonly="action == 'view'"
                 />
                 <ion-text>
-                  {{ getCurrentElement(store, "students_per_section") }}:
+                  {{ getCurrentElement("students_per_section") }}:
                 </ion-text>
                 <ion-input
                   type="number"
@@ -275,8 +272,8 @@
                       course_proposition[pages[current_page_index]]
                     ).min_students
                   "
-                  :label="getCurrentElement(store, 'min_students')"
-                  :aria-label="getCurrentElement(store, 'min_students')"
+                  :label="getCurrentElement('min_students')"
+                  :aria-label="getCurrentElement('min_students')"
                   fill="outline"
                   class="ion-margin-vertical"
                   :readonly="action == 'view'"
@@ -288,8 +285,8 @@
                       course_proposition[pages[current_page_index]]
                     ).max_students
                   "
-                  :label="getCurrentElement(store, 'max_students')"
-                  :aria-label="getCurrentElement(store, 'max_students')"
+                  :label="getCurrentElement('max_students')"
+                  :aria-label="getCurrentElement('max_students')"
                   fill="outline"
                   class="ion-margin-vertical"
                   :readonly="action == 'view'"
@@ -297,16 +294,16 @@
               </ion-col>
               <ion-col>
                 <ion-text>
-                  {{ getCurrentElement(store, "students_per_section") }}:
+                  {{ getCurrentElement("students_per_section") }}:
                 </ion-text>
                 <template v-if="action != 'view'">
                   <custom-select
                     :key="trigger + '_select'"
                     v-model="selected_teaching"
                     :list="teachings.available"
-                    :label="getCurrentElement(store, 'teaching') + ':'"
-                    :aria_label="getCurrentElement(store, 'teaching')"
-                    :placeholder="getCurrentElement(store, 'teaching_choices')"
+                    :label="getCurrentElement('teaching') + ':'"
+                    :aria_label="getCurrentElement('teaching')"
+                    :placeholder="getCurrentElement('teaching_choices')"
                     :getCompleteName="teachingToString"
                   />
                   <ion-button
@@ -315,13 +312,13 @@
                     color="primary"
                     fill="solid"
                   >
-                    {{ getCurrentElement(store, "add") }}
+                    {{ getCurrentElement("add") }}
                   </ion-button>
                 </template>
                 <list-card
                   :key="trigger + '_list'"
                   :cards_list="teachings_cards"
-                  :emptiness_message="getCurrentElement(store, 'no_teachings')"
+                  :emptiness_message="getCurrentElement('no_teachings')"
                   @signal_event="removeElement('teachings')"
                 />
               </ion-col>
@@ -345,12 +342,10 @@
                     <custom-select
                       v-model="selected_learning_context"
                       :list="learning_contexts.available"
-                      :label="
-                        getCurrentElement(store, 'learning_context') + ':'
-                      "
-                      :aria_label="getCurrentElement(store, 'learning_context')"
+                      :label="getCurrentElement('learning_context') + ':'"
+                      :aria_label="getCurrentElement('learning_context')"
                       :placeholder="
-                        getCurrentElement(store, 'learning_context_choice')
+                        getCurrentElement('learning_context_choice')
                       "
                       :getCompleteName="learningContextToString"
                     />
@@ -363,12 +358,12 @@
                         study_addresses.available[selected_learning_context] ??
                         []
                       "
-                      :label="getCurrentElement(store, 'study_address') + ':'"
-                      :aria_label="getCurrentElement(store, 'study_address')"
+                      :label="getCurrentElement('study_address') + ':'"
+                      :aria_label="getCurrentElement('study_address')"
                       :placeholder="
                         selected_learning_context != ''
-                          ? getCurrentElement(store, 'study_address_choice')
-                          : getCurrentElement(store, 'learning_context_needed')
+                          ? getCurrentElement('study_address_choice')
+                          : getCurrentElement('learning_context_needed')
                       "
                       :getCompleteName="studyAddressToString"
                     />
@@ -385,11 +380,10 @@
                             ] ?? []
                           : []
                       "
-                      :label="getCurrentElement(store, 'study_year') + ':'"
-                      :aria_label="getCurrentElement(store, 'study_year')"
+                      :label="getCurrentElement('study_year') + ':'"
+                      :aria_label="getCurrentElement('study_year')"
                       :placeholder="
                         getCurrentElement(
-                          store,
                           selected_study_address != undefined
                             ? 'study_year_choice'
                             : 'study_address_needed'
@@ -400,18 +394,18 @@
                   <ion-col>
                     <ion-checkbox
                       v-model="presidium"
-                      :aria-label="getCurrentElement(store, 'presidium')"
+                      :aria-label="getCurrentElement('presidium')"
                       class="ion-padding-start"
                       label-placement="start"
-                      >{{ getCurrentElement(store, "presidium") }}</ion-checkbox
+                      >{{ getCurrentElement("presidium") }}</ion-checkbox
                     >
                     <ion-checkbox
                       v-model="main_study_year"
-                      :aria-label="getCurrentElement(store, 'main_study_year')"
+                      :aria-label="getCurrentElement('main_study_year')"
                       class="ion-padding-start"
                       label-placement="start"
                       >{{
-                        getCurrentElement(store, "main_study_year")
+                        getCurrentElement("main_study_year")
                       }}</ion-checkbox
                     >
                   </ion-col>
@@ -424,9 +418,9 @@
                       :key="trigger + '_teacher'"
                       v-model="selected_teacher"
                       :list="teachers.available"
-                      :label="getCurrentElement(store, 'teacher') + ':'"
-                      :aria_label="getCurrentElement(store, 'teacher')"
-                      :placeholder="getCurrentElement(store, 'teacher_choice')"
+                      :label="getCurrentElement('teacher') + ':'"
+                      :aria_label="getCurrentElement('teacher')"
+                      :placeholder="getCurrentElement('teacher_choice')"
                       :getCompleteName="teacherToString"
                     />
                   </ion-col>
@@ -440,11 +434,11 @@
                   <ion-col>
                     <ion-checkbox
                       v-model="main_teacher"
-                      :aria-label="getCurrentElement(store, 'main_teacher')"
+                      :aria-label="getCurrentElement('main_teacher')"
                       class="ion-padding-start"
                       label-placement="start"
                       >{{
-                        getCurrentElement(store, "main_teacher")
+                        getCurrentElement("main_teacher")
                       }}</ion-checkbox
                     >
                   </ion-col>
@@ -452,10 +446,10 @@
                 <ion-row>
                   <ion-col>
                     <ion-text
-                      >{{ getCurrentElement(store, "sections") }}:
+                      >{{ getCurrentElement("sections") }}:
                       {{
                         parseInt(num_section) <= 0
-                          ? getCurrentElement(store, "num_section_needed")
+                          ? getCurrentElement("num_section_needed")
                           : ""
                       }}</ion-text
                     >
@@ -491,7 +485,7 @@
                     color="primary"
                     fill="solid"
                   >
-                    {{ getCurrentElement(store, "add") }}
+                    {{ getCurrentElement("add") }}
                   </ion-button>
                 </ion-col>
               </ion-row>
@@ -506,7 +500,6 @@
                     "
                     :emptiness_message="
                       getCurrentElement(
-                        store,
                         pages[current_page_index] == 'access_object'
                           ? 'no_access_proposition'
                           : 'no_teacher_proposition'
@@ -554,7 +547,7 @@
                 color="primary"
                 fill="solid"
               >
-                {{ getCurrentElement(store, "propose") }}
+                {{ getCurrentElement("propose") }}
               </ion-button>
             </ion-col>
           </ion-row>
@@ -600,7 +593,9 @@ import {
 } from "@/types";
 import {
   executeLink,
+  getAviableLanguages,
   getCurrentElement,
+  getCurrentLanguage,
   getIcon,
   numberToSection,
 } from "@/utils";
@@ -629,7 +624,7 @@ type AvailableModal = Pages | "teacher_info";
 type ListTypes = "teachings" | "access" | "teachers";
 type Action = "view" | "edit" | "propose";
 
-const modelToString = (model: CourseModel) => model.toString(store);
+const modelToString = (model: CourseModel) => model.toString();
 const learningAreaToString = (learning_area: LearningArea) =>
   learning_area[`${language}_title`];
 const growthAreaToString = (growth_area: GrowthArea) =>
@@ -703,7 +698,7 @@ const addTeaching = (id?: string) => {
     course_proposition.students_distribution.teaching_list.push(teaching.id);
 
     teachings_cards.cards[""].push(
-      teaching.toCard(store, action.value == "view")
+      teaching.toCard(action.value == "view")
     );
 
     teachings.selected.push(teaching);
@@ -794,7 +789,6 @@ const addAccess = (
     }
     access_propositions_cards.cards[learning_context.id].push(
       tmp_access_proposition.toCard(
-        store,
         actual_learning_context_id,
         action.value == "view"
       )
@@ -883,7 +877,7 @@ const addTeacher = (proposition_teacher?: PropositionTeacher) => {
     course_proposition.teacher_list.push(teacher_proposition.toTeacherObj());
 
     teachers_cards.cards[""].push(
-      teacher_proposition.toCard(store, action.value == "view")
+      teacher_proposition.toCard(action.value == "view")
     );
 
     teachers.selected.push(teacher);
@@ -1080,23 +1074,20 @@ const edit_course_proposition = async (course_id?: number) => {
             english_title: "",
           };
     });
-    learning_area = await executeLink(
-      "/v1/learning_areas",
-      (response) => {
-        const tmp = response.data.data.find(
-          (a: LearningArea) =>
-            a.italian_title == course.italian_learning_area &&
-            a.english_title == course.english_learning_area
-        ); // Da sistemare: aspettare che Pietro metta id
-        return tmp != undefined
-          ? tmp
-          : {
-              id: -1,
-              italian_title: "",
-              english_title: "",
-            };
-      }
-    );
+    learning_area = await executeLink("/v1/learning_areas", (response) => {
+      const tmp = response.data.data.find(
+        (a: LearningArea) =>
+          a.italian_title == course.italian_learning_area &&
+          a.english_title == course.english_learning_area
+      ); // Da sistemare: aspettare che Pietro metta id
+      return tmp != undefined
+        ? tmp
+        : {
+            id: -1,
+            italian_title: "",
+            english_title: "",
+          };
+    });
     course_proposition = reactive(
       new ModelProposition({
         course_id: course_id,
@@ -1170,17 +1161,17 @@ const approve = (outcome = true) => {
 
 const store = useStore();
 const user = User.getLoggedUser() as User;
-const language: Language = store.state.language;
-const languages: Language[] = store.state.languages;
+const language = getCurrentLanguage();
+const languages = getAviableLanguages();
 const $route = useRoute();
 
 const trigger = ref(0);
 const selected_model = ref(0);
 const alert_open = ref(false);
 const alert_information = {
-  title: getCurrentElement(store, "error"),
+  title: getCurrentElement("error"),
   message: "",
-  buttons: [getCurrentElement(store, "ok")],
+  buttons: [getCurrentElement("ok")],
 };
 const pages = ModelProposition.getProps("pages");
 const current_page_index = ref(0);
@@ -1191,7 +1182,7 @@ const buttons: CustomElement[] = [
     linkType: "event",
     content: {
       event: "back",
-      icon: getIcon(store, "arrow_back"),
+      icon: getIcon("arrow_back"),
     },
   },
   {
@@ -1200,7 +1191,7 @@ const buttons: CustomElement[] = [
     linkType: "event",
     content: {
       event: "next",
-      icon: getIcon(store, "arrow_forward"),
+      icon: getIcon("arrow_forward"),
     },
   },
   {
@@ -1209,7 +1200,7 @@ const buttons: CustomElement[] = [
     linkType: "event",
     content: {
       event: "teacher_info",
-      icon: getIcon(store, "information_circle"),
+      icon: getIcon("information_circle"),
     },
   },
   {
@@ -1219,7 +1210,7 @@ const buttons: CustomElement[] = [
     content: {
       url: "/propositions_history",
       method: "get",
-      icon: getIcon(store, "archive"), // Da sistemare: mettere in alto e fare popup
+      icon: getIcon("archive"), // Da sistemare: mettere in alto e fare popup
     },
   },
   {
@@ -1228,7 +1219,7 @@ const buttons: CustomElement[] = [
     linkType: "event",
     content: {
       event: "approve",
-      icon: getIcon(store, "checkmark"),
+      icon: getIcon("checkmark"),
     },
   },
   {
@@ -1237,7 +1228,7 @@ const buttons: CustomElement[] = [
     linkType: "event",
     content: {
       event: "reject",
-      icon: getIcon(store, "close"),
+      icon: getIcon("close"),
     },
   },
   {
@@ -1246,7 +1237,7 @@ const buttons: CustomElement[] = [
     linkType: "event",
     content: {
       event: "edit",
-      icon: getIcon(store, "pencil"),
+      icon: getIcon("pencil"),
     },
   },
   {
@@ -1255,7 +1246,7 @@ const buttons: CustomElement[] = [
     linkType: "event",
     content: {
       event: "view",
-      icon: getIcon(store, "eye"),
+      icon: getIcon("eye"),
     },
   },
 ];

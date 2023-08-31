@@ -23,12 +23,10 @@
 
 <script setup lang="ts">
 import { CustomElement } from "@/types";
-import { executeLink, getIcon } from "@/utils";
+import { executeLink, getCurrentLanguage, getIcon } from "@/utils";
 import { IonHeader, IonToolbar, IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { useStore } from "vuex";
 
-const store = useStore();
-const language = store.state.language;
+const language = getCurrentLanguage();
 
 const props = defineProps({
   title: {
@@ -51,7 +49,7 @@ const elements: {
     linkType: "event",
     content: {
       event: "close",
-      icon: getIcon(store, "close"),
+      icon: getIcon("close"),
     },
   },
   title: {

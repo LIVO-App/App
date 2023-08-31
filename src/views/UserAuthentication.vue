@@ -9,7 +9,7 @@
     ></ion-alert>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>{{ getCurrentElement(store,"auth") }}</ion-title>
+        <ion-title>{{ getCurrentElement("auth") }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true" class="ion-padding">
@@ -71,13 +71,13 @@ const login = async (payload: LoginInformation) => {
                 store.state.menuIndex = tmp_index;
                 $router.push(redirect);
             },() => {
-                alert_information.message = getCurrentElement(store,"wrong_username_or_password");
+                alert_information.message = getCurrentElement("wrong_username_or_password");
                 alert_open.value = true;
                 
             },"post",login_parameters);
         }
     } catch (error) {
-        alert_information.message = getCurrentElement(store,"server_error");
+        alert_information.message = getCurrentElement("server_error");
         alert_open.value = true;
     }
 };
@@ -88,10 +88,10 @@ const checkParameters = (payload: LoginInformation, login_parameters: {[key: str
         case "teacher":
         case "admin":
             if (payload.parameters.username == undefined || payload.parameters.username == "") {
-                alert_information.message = getCurrentElement(store,"no_username");
+                alert_information.message = getCurrentElement("no_username");
                 alert_open.value = true;
             } else if (payload.parameters.password == undefined || payload.parameters.password == "") {
-                alert_information.message = getCurrentElement(store,"no_password");
+                alert_information.message = getCurrentElement("no_password");
                 alert_open.value = true;
             } else {
                 login_parameters.username = payload.parameters.username;
@@ -106,9 +106,9 @@ const $router = useRouter();
 
 const alert_open = ref(false);
 const alert_information = {
-  title: getCurrentElement(store, "error"),
+  title: getCurrentElement("error"),
   message: "",
-  buttons: [getCurrentElement(store, "ok")],
+  buttons: [getCurrentElement("ok")],
 };
 </script>
 

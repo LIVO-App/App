@@ -4,8 +4,8 @@
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="getCurrentElement(store, 'classes')"
-          :emptiness_message="getCurrentElement(store, 'no_classes')"
+          :title="getCurrentElement('classes')"
+          :emptiness_message="getCurrentElement('no_classes')"
           :cards_list="ordinary_classes"
           @signal_event="changeSelection()"
         />
@@ -15,20 +15,19 @@
           v-if="user.user == 'teacher'"
           v-model="selected_section"
           :list="sections"
-          :label="getCurrentElement(store, 'section') + ':'"
-          :aria_label="getCurrentElement(store, 'section')"
+          :label="getCurrentElement('section') + ':'"
+          :aria_label="getCurrentElement('section')"
           :placeholder="
             is_nothing_selected()
-              ? getCurrentElement(store, 'no_sections')
-              : getCurrentElement(store, 'section_choice')
+              ? getCurrentElement('no_sections')
+              : getCurrentElement('section_choice')
           "
         ></custom-select>
         <list-card
           :key="trigger"
-          :title="getCurrentElement(store, 'students')"
+          :title="getCurrentElement('students')"
           :emptiness_message="
             getCurrentElement(
-              store,
               is_nothing_selected()
                 ? 'ordinary_class_selection_message'
                 : 'no_students'
@@ -148,7 +147,7 @@ const getStudents = async () => {
       selected_class_indexes.year,
     (response: any) =>
       response.data.data.map((a: StudentSummaryProps) =>
-        new StudentSummary(a).toCard(store, "/students/" + a.id)
+        new StudentSummary(a).toCard("/students/" + a.id)
       )
   );
 };

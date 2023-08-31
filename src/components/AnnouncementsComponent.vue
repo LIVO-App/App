@@ -20,7 +20,7 @@
             :current_section_index="
               sections.findIndex((a) => a.id == selected_section)
             "
-            @signal_event="setupModalAndOpen(store)"
+            @signal_event="setupModalAndOpen()"
             @close="closeModal('publish_announcement')"
           />
         </template>
@@ -53,24 +53,24 @@
         v-for="button in buttons"
         :key="button.id"
         :element="button"
-        @signal_event="setupModalAndOpen(store)"
+        @signal_event="setupModalAndOpen()"
       />
     </div>
     <custom-select
       v-if="user.user == 'teacher'"
       v-model="selected_section"
       :list="sections"
-      :label="getCurrentElement(store, 'section') + ':'"
-      :aria_label="getCurrentElement(store, 'section')"
-      :placeholder="getCurrentElement(store, 'section_choice')"
+      :label="getCurrentElement('section') + ':'"
+      :aria_label="getCurrentElement('section')"
+      :placeholder="getCurrentElement('section_choice')"
     ></custom-select>
     <suspense>
       <template #default>
         <list-card
           :key="trigger"
           :cards_list="messages"
-          :emptiness_message="getCurrentElement(store, 'no_messages')"
-          @signal_event="setupModalAndOpen(store)"
+          :emptiness_message="getCurrentElement('no_messages')"
+          @signal_event="setupModalAndOpen()"
         />
       </template>
       <template #fallback>
@@ -91,7 +91,7 @@ import {
 import { executeLink, getCurrentElement, getIcon } from "@/utils";
 import { IonModal, IonAlert } from "@ionic/vue";
 import { ref, Ref, watch } from "vue";
-import { Store, useStore } from "vuex";
+import { useStore } from "vuex";
 
 type availableModal =
   | "announcement"
@@ -100,7 +100,7 @@ type availableModal =
   | "no_selected_sections"
   | "publish";
 
-const setupModalAndOpen = async (store: Store<any>) => {
+const setupModalAndOpen = async () => {
   const window: availableModal = store.state.event.name;
   const failed_sections: string[] = [];
 
@@ -115,16 +115,12 @@ const setupModalAndOpen = async (store: Store<any>) => {
       break;
     case "empty_titles_or_messages":
       alert_information.message = getCurrentElement(
-        store,
         "empty_titles_or_messages"
       );
       alert_open.value = true;
       break;
     case "no_selected_sections": // Da sistemare: non ha funzionato
-      alert_information.message = getCurrentElement(
-        store,
-        "no_selected_sections"
-      );
+      alert_information.message = getCurrentElement("no_selected_sections");
       alert_open.value = true;
       break;
     case "publish":
@@ -150,7 +146,7 @@ const setupModalAndOpen = async (store: Store<any>) => {
       );
       if (failed_sections.length > 0) {
         alert_information.message =
-          getCurrentElement(store, "message_not_sent_sections") +
+          getCurrentElement("message_not_sent_sections") +
           ": " +
           failed_sections.join(" ");
         alert_open.value = true;
@@ -180,7 +176,7 @@ const updateMessages = async () => {
       (user.user == "teacher" ? "&section=" + selected_section.value : ""),
     (response) =>
       response.data.data.map((a: AnnouncementSummaryProps) =>
-        new AnnouncementSummary(a).toCard(store)
+        new AnnouncementSummary(a).toCard()
       ),
     (err) => {
       console.log(err);
@@ -208,15 +204,15 @@ const buttons: CustomElement[] = [
     linkType: "event",
     content: {
       event: "publish_announcement",
-      icon: getIcon(store, "add"),
+      icon: getIcon("add"),
     },
   },
 ];
 const alert_open = ref(false);
 const alert_information = {
-  title: getCurrentElement(store, "error"),
+  title: getCurrentElement("error"),
   message: "",
-  buttons: [getCurrentElement(store, "ok")],
+  buttons: [getCurrentElement("ok")],
 };
 const messages: OrderedCardsList = {
   order: [],

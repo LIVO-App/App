@@ -2,7 +2,7 @@
   <div class="ion-padding">
     <ion-card>
       <!--<ion-card-header>
-        <ion-card-title>{{ getCurrentElement(store,login_type) }}</ion-card-title>
+        <ion-card-title>{{ getCurrentElement(login_type) }}</ion-card-title>
       </ion-card-header>-->
       <ion-card-content>
         <template v-if="login_type == 'student'">
@@ -10,14 +10,14 @@
             <ion-input
               v-model="user_information['student'].username"
               type="text"
-              :label="getCurrentElement(store, 'username')"
+              :label="getCurrentElement('username')"
             ></ion-input>
           </ion-item>
           <ion-item>
             <ion-input
               v-model="user_information['student'].password"
               type="password"
-              :label="getCurrentElement(store, 'password')"
+              :label="getCurrentElement('password')"
             ></ion-input>
           </ion-item>
         </template>
@@ -26,14 +26,14 @@
             <ion-input
               v-model="user_information['teacher'].username"
               type="text"
-              :label="getCurrentElement(store, 'username')"
+              :label="getCurrentElement('username')"
             ></ion-input>
           </ion-item>
           <ion-item>
             <ion-input
               v-model="user_information['teacher'].password"
               type="password"
-              :label="getCurrentElement(store, 'password')"
+              :label="getCurrentElement('password')"
             ></ion-input>
           </ion-item>
         </template>
@@ -42,14 +42,14 @@
             <ion-input
               v-model="user_information['admin'].username"
               type="text"
-              :label="getCurrentElement(store, 'username')"
+              :label="getCurrentElement('username')"
             ></ion-input>
           </ion-item>
           <ion-item>
             <ion-input
               v-model="user_information['admin'].password"
               type="password"
-              :label="getCurrentElement(store, 'password')"
+              :label="getCurrentElement('password')"
             ></ion-input>
           </ion-item>
         </template>
@@ -68,7 +68,7 @@
           "
           expand="block"
           class="ion-margin-vertical"
-          >{{ getCurrentElement(store, "login") }}</ion-button
+          >{{ getCurrentElement("login") }}</ion-button
         >
         <!-- Da sistemare: google login -->
         <div style="border-top: 1px solid var(--ion-color-dark)">
@@ -81,7 +81,7 @@
                     color="primary"
                     :fill="login_type == 'student' ? 'solid' : 'outline'"
                 >
-                    {{ getCurrentElement(store, "student") }}
+                    {{ getCurrentElement("student") }}
                 </ion-button>
                 </ion-col>
                 <ion-col>
@@ -91,7 +91,7 @@
                     color="primary"
                     :fill="login_type == 'teacher' ? 'solid' : 'outline'"
                 >
-                    {{ getCurrentElement(store, "teacher") }}
+                    {{ getCurrentElement("teacher") }}
                 </ion-button>
                 </ion-col>
                 <ion-col>
@@ -101,7 +101,7 @@
                     color="primary"
                     :fill="login_type == 'admin' ? 'solid' : 'outline'"
                 >
-                    {{ getCurrentElement(store, "admin") }}
+                    {{ getCurrentElement("admin") }}
                 </ion-button>
                 </ion-col>
             </ion-row>
@@ -128,7 +128,6 @@ import {
   IonCol,
 } from "@ionic/vue";
 import { Ref, ref } from "vue";
-import { useStore } from "vuex";
 
 const changeType = (type: UserType) => {
   for (const key in user_information[login_type.value]) {
@@ -139,8 +138,6 @@ const changeType = (type: UserType) => {
   }
   login_type.value = type;
 }
-
-const store = useStore();
 
 const login_type: Ref<UserType> = ref("student");
 const user_information: {

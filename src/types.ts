@@ -1,7 +1,7 @@
 import { Method } from "axios";
 import { Store } from "vuex";
 import { store } from "./store";
-import { executeLink, getActualLearningContext, getCurrentElement, getCurrentSchoolYear, getEnrollmentIcon, getGender, getIcon, getRagneString, getStatusColor, getStatusString, hashCode, numberToSection, toDateString } from "./utils";
+import { executeLink, getActualLearningContext, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getEnrollmentIcon, getGender, getIcon, getRagneString, getStatusColor, getStatusString, hashCode, numberToSection, toDateString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -116,8 +116,8 @@ class OrdinaryClassSummary implements OrdinaryClassSummaryProps {
         this.study_year = (classObj.study_year_ref.data as {id: number}).id;
     }
 
-    toCard(store : Store<any>, path? : string) : GeneralCardElements {
-        const language : Language = store.state.language;
+    toCard(path? : string) : GeneralCardElements {
+        const language = getCurrentLanguage();
         return {
             id: this.study_year + "_" + this.address,
             group: "",
@@ -169,10 +169,10 @@ class Enrollment {
     getChangingMethod(): Method {
         return this.enrollment ? "delete" : "post";
     }
-    toString(store: Store<any>): string {
-        return this.isPending() ? getCurrentElement(store, "pending")
-            : (this.enrollment === true ? getCurrentElement(store, "enrolled")
-                : getCurrentElement(store, "not_enrolled"))
+    toString(): string {
+        return this.isPending() ? getCurrentElement("pending")
+            : (this.enrollment === true ? getCurrentElement("enrolled")
+                : getCurrentElement("not_enrolled"))
     }
 }
 
@@ -235,8 +235,8 @@ class MinimizedCourse implements MinimumCourseProps {
         this.english_title = course.english_title;
     }
 
-    toCard(store: Store<any>, path?: string): GeneralCardElements {
-        const language: Language = store.state.language;
+    toCard(path?: string): GeneralCardElements {
+        const language = getCurrentLanguage();
         return {
             id: "" + this.id + "_" + this.section,
             group: "",
@@ -247,7 +247,7 @@ class MinimizedCourse implements MinimumCourseProps {
             }, {
                 id: "section",
                 type: "string",
-                content: getCurrentElement(store, "section") + ": " + this.section
+                content: getCurrentElement("section") + ": " + this.section
             }],
             link: path != undefined ? {
                 url: path,
@@ -343,8 +343,8 @@ class CourseSummary extends CourseBase {
         this.group = courseObj.group;
     }
 
-    toCard(store: Store<any>, learning_session: LearningSession, path?: string, method?: Method, open_enrollment = false, reference = new Date()): CourseCardElements {
-        const language: Language = store.state.language;
+    toCard(learning_session: LearningSession, path?: string, method?: Method, open_enrollment = false, reference = new Date()): CourseCardElements {
+        const language = getCurrentLanguage();
         const tmp_enrollment = new Enrollment(this.pending, learning_session, reference, open_enrollment);
         const card: CourseCardElements = {
             id: "" + this.id,
@@ -354,7 +354,7 @@ class CourseSummary extends CourseBase {
             content: [{
                 id: this.id + "_credits",
                 type: "string",
-                content: getCurrentElement(store, "credits") + ": " + this.credits
+                content: getCurrentElement("credits") + ": " + this.credits
             }, {
                 id: this.id + "_title",
                 type: "string",
@@ -365,12 +365,12 @@ class CourseSummary extends CourseBase {
                         title: this[`${language}_title`],
                         course_id: this.id,
                     },
-                    text: this[`${language}_title`] + (this.section != null ? " - " + getCurrentElement(store, "section") + ": " + this.section : "")
+                    text: this[`${language}_title`] + (this.section != null ? " - " + getCurrentElement("section") + ": " + this.section : "")
                 }
             }, {
                 id: this.id + "_enrollment",
                 type: "string",
-                content: tmp_enrollment.toString(store)
+                content: tmp_enrollment.toString()
             }]
         }
         if (path != undefined) {
@@ -378,7 +378,7 @@ class CourseSummary extends CourseBase {
                 id: this.id + "_change_enrollment",
                 type: "icon",
                 linkType: "request",
-                content: getEnrollmentIcon(store, tmp_enrollment, path, method)
+                content: getEnrollmentIcon(tmp_enrollment, path, method)
             });
         }
         return card;
@@ -413,8 +413,8 @@ class CurriculumCourse extends CourseBase {
         this.intermediate_grades = this.intermediate_grades.concat(grades);
     }*/
 
-    toCard(store: Store<any>, path?: string, method?: Method): GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
-        const language: Language = store.state.language;
+    toCard(path?: string, method?: Method): GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
+        const language = getCurrentLanguage();
         return {
             id: "" + this.id,
             group: "",
@@ -430,8 +430,8 @@ class CurriculumCourse extends CourseBase {
         }
     }
 
-    toTableRow(store: Store<any>, session_id: number, student_id: number, teacher_id?: number): CustomElement[] {
-        const language: Language = store.state.language;
+    toTableRow(session_id: number, student_id: number, teacher_id?: number): CustomElement[] {
+        const language = getCurrentLanguage();
         return [
             {
                 id: this.id + "_title",
@@ -472,7 +472,7 @@ class CurriculumCourse extends CourseBase {
                             teacher_id: teacher_id
                         }
                     },
-                    icon: getIcon(store, "document_text")
+                    icon: getIcon("document_text")
                 }
             }, {
                 id: this.id + "_final_grade",
@@ -560,9 +560,9 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             });
     }
 
-    toCard(store: Store<any>): GeneralCardElements {
+    toCard(): GeneralCardElements {
 
-        const language: Language = store.state.language;
+        const language = getCurrentLanguage();
         const hours_per_credit: number = store.state.hours_per_credit;
         return {
             id: "" + this.id,
@@ -574,7 +574,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             }, {
                 id: this.id + "_expected_learning_resuts_title",
                 type: "title",
-                content: getCurrentElement(store, "expected_learning_results").toUpperCase()
+                content: getCurrentElement("expected_learning_results").toUpperCase()
             }, {
                 id: this.id + "_expected_learning_resuts",
                 type: "html",
@@ -582,7 +582,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             }, {
                 id: this.id + "_criterions_title",
                 type: "title",
-                content: getCurrentElement(store, "criterions").toUpperCase()
+                content: getCurrentElement("criterions").toUpperCase()
             }, {
                 id: this.id + "_criterions",
                 type: "html",
@@ -590,7 +590,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             }, {
                 id: this.id + "_activities_title",
                 type: "title",
-                content: getCurrentElement(store, "activities").toUpperCase()
+                content: getCurrentElement("activities").toUpperCase()
             }, {
                 id: this.id + "_activities",
                 type: "html",
@@ -598,39 +598,39 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             }, {
                 id: this.id + "_technical_information",
                 type: "title",
-                content: getCurrentElement(store, "technical_information").toUpperCase()
+                content: getCurrentElement("technical_information").toUpperCase()
             }, {
                 id: this.id + "_learning_area",
                 type: "html",
-                content: "<b>" + getCurrentElement(store, "learning_area") + "</b>: " + this[`${language}_learning_area`]
+                content: "<b>" + getCurrentElement("learning_area") + "</b>: " + this[`${language}_learning_area`]
             }, {
                 id: this.id + "_growth_area",
                 type: "html",
-                content: "<b>" + getCurrentElement(store, "growth_area") + "</b>: " + this[`${language}_growth_area`]
+                content: "<b>" + getCurrentElement("growth_area") + "</b>: " + this[`${language}_growth_area`]
             }, {
                 id: this.id + "_credits",
                 type: "html",
-                content: "<b>" + getCurrentElement(store, "credits") + "</b>: " + this.credits + "(" + (this.credits * hours_per_credit) + " " + getCurrentElement(store, "hours") + ")"
+                content: "<b>" + getCurrentElement("credits") + "</b>: " + this.credits + "(" + (this.credits * hours_per_credit) + " " + getCurrentElement("hours") + ")"
             }, {
                 id: this.id + "_up_hours",
                 type: "html",
-                content: "<b>" + getCurrentElement(store, "up_hours") + "</b>: " + this.up_hours + " " + getCurrentElement(store, "hours")
+                content: "<b>" + getCurrentElement("up_hours") + "</b>: " + this.up_hours + " " + getCurrentElement("hours")
             }, {
                 id: this.id + "_creation_date",
                 type: "html",
-                content: "<b>" + getCurrentElement(store, "creation_date") + "</b>: " + this.creation_date.toLocaleDateString("en-GB")
+                content: "<b>" + getCurrentElement("creation_date") + "</b>: " + this.creation_date.toLocaleDateString("en-GB")
             }, {
                 id: this.id + "_students_number",
                 type: "html",
-                content: "<b>" + getCurrentElement(store, "students_number") + "</b>: " + this.min_students + " - " + this.max_students
+                content: "<b>" + getCurrentElement("students_number") + "</b>: " + this.min_students + " - " + this.max_students
             }, {
                 id: this.id + "_proposer_teacher",
                 type: "html",
-                content: "<b>" + getCurrentElement(store, "proposer_teacher") + "</b>: " + this.teacher_name + this.teacher_surname
+                content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.teacher_name + this.teacher_surname
             }/*,{
                 id: this.id + "_certifying_admin",
                 type: "html",
-                content: "<b>" + getCurrentElement(store,"certifying_admin") + "</b>: " + this.admin_name + this.admin_surname
+                content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.admin_name + this.admin_surname
             }*/] //Da sistemare: limitare a teacher e admin
         }
     }
@@ -675,8 +675,8 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
                     : LearningSessionStatus.COMPLETED;
     }
 
-    /*async getDividedCourseList(session: LearningSession, learning_areas: LearningArea[], store : Store<any>) {
-        const language = store.state.language
+    /*async getDividedCourseList(session: LearningSession, learning_areas: LearningArea[]) {
+        const language = getCurrentLanguage();
         const courses : CourseSummary[] = (await $axios.get("/v1/courses?student_id=" + user_id + "&session_id=" + session.id)).data.data;
         let tmp_learning_area_id : string,
             tmp_learning_area : LearningArea | undefined,
@@ -702,13 +702,13 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
 
     async getSessionList(learning_context?: LearningContextSummary, reference = new Date(), credits?: boolean, courses_list?: boolean): Promise<string> {
 
-        const language: Language = store.state.language;
+        const language = getCurrentLanguage();
         const user = User.getLoggedUser() as User;
 
         const status = this.getStatus(reference);
         const put_credits = credits ?? status == LearningSessionStatus.FUTURE;
         const put_courses_list = courses_list ?? (status == LearningSessionStatus.CURRENT || status == LearningSessionStatus.UPCOMING);
-        const actual_learning_context = getActualLearningContext(store, learning_context);
+        const actual_learning_context = getActualLearningContext(learning_context);
         const courses: {
             [learning_area_id: string]: CourseSummary[]
         } = {};
@@ -730,7 +730,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
             }));
 
         for (const area of learning_areas) {
-            session_list += (put_courses_list ? "<label>" : "<li>") + area[`${store.state.language as Language}_title`] + ": " + (put_credits ? (courses[area.id] != undefined ? courses[area.id].filter(course => course.pending == "true").reduce((pv, cv) => pv + cv.credits, 0) : 0) + "/" + area.credits : "") + (put_courses_list ? "</label>" : "</li>");
+            session_list += (put_courses_list ? "<label>" : "<li>") + area[`${language}_title`] + ": " + (put_credits ? (courses[area.id] != undefined ? courses[area.id].filter(course => course.pending == "true").reduce((pv, cv) => pv + cv.credits, 0) : 0) + "/" + area.credits : "") + (put_courses_list ? "</label>" : "</li>");
             if (put_courses_list) {
                 courses_presence = courses[area.id] != undefined && courses[area.id].length > 0;
                 session_list += courses_presence ? "<ul>" : "<br />";
@@ -740,7 +740,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
                             session_list += "<li>"
                                 + course[`${language}_title`]
                                 + ((status == LearningSessionStatus.CURRENT || status == LearningSessionStatus.UPCOMING) && course.section != null
-                                    ? " - " + getCurrentElement(store, "section") + " " + course.section : "")
+                                    ? " - " + getCurrentElement("section") + " " + course.section : "")
                                 + "</li>"; //Da sistemare: vedere se sezione è fissa o meno
                         }
                     }
@@ -767,17 +767,17 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
 
         const status = this.getStatus(reference);
         const put_credits = credits ?? status == LearningSessionStatus.FUTURE;
-        const actual_learning_context: LearningContextSummary = getActualLearningContext(store, learning_context);
+        const actual_learning_context: LearningContextSummary = getActualLearningContext(learning_context);
         const tmp_element: GeneralCardElements = {
             id: "" + this.id,
             group: this.school_year,
-            title: getCurrentElement(store, "session") + " " + this.number,
+            title: getCurrentElement("session") + " " + this.number,
             subtitle: getRagneString(new Date(this.start), new Date(this.end)),
             content: selected == undefined ? [{
                 id: "" + this.id,
                 type: "html",
                 content: status != LearningSessionStatus.COMPLETED || credits != undefined || courses_list != undefined ?
-                    (put_credits ? "<label>" + getCurrentElement(store, "constraints") + ":"
+                    (put_credits ? "<label>" + getCurrentElement("constraints") + ":"
                         + (actual_learning_context.credits != null ? " " + (await this.getSubscribedCredits(actual_learning_context.id)) + "/" + actual_learning_context.credits : "") + "</label>" : "")
                     + (actual_learning_context.credits == null ? (await this.getSessionList(actual_learning_context, reference, credits, courses_list)) : "")
                     : ""
@@ -789,7 +789,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
                     name: getStatusColor(status),
                     type: "var"
                 },
-                content: getStatusString(store, status)
+                content: getStatusString(status)
             } : undefined,
             selected: selected,
             link: selected == undefined ? {
@@ -918,8 +918,8 @@ class Grade implements GradeProps {
         this.id = hashCode(this.publication.toISOString());
     }
 
-    toCard(store: Store<any>): GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
-        const language: Language = store.state.language;
+    toCard(): GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
+        const language = getCurrentLanguage();
         return {
             id: "" + this.id,
             group: "",
@@ -931,12 +931,12 @@ class Grade implements GradeProps {
         }
     }
 
-    toTableRow(store: Store<any>): CustomElement[] {
-        const language: Language = store.state.language;
+    toTableRow(): CustomElement[] {
+        const language = getCurrentLanguage();
         return [{
             id: this.id + "_description",
             type: "html",
-            content: this[`${language}_description`] + (this.final ? " <b>[" + getCurrentElement(store, "final") + "]</b>" : "") //Da sistemare: visualizzazione migliore voto finale
+            content: this[`${language}_description`] + (this.final ? " <b>[" + getCurrentElement("final") + "]</b>" : "") //Da sistemare: visualizzazione migliore voto finale
         }, {
             id: this.id + "_pubblication",
             type: "string",
@@ -985,8 +985,8 @@ class CourseSectionsTeachings {
         }).id]);
     }
 
-    toCard(store: Store<any>, group: string, learning_session: string): GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
-        const language: Language = store.state.language;
+    toCard(group: string, learning_session: string): GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
+        const language = getCurrentLanguage();
         return {
             id: "" + this.id,
             group: group,
@@ -997,11 +997,11 @@ class CourseSectionsTeachings {
             }, {
                 id: this.id + "_sections",
                 type: "string",
-                content: getCurrentElement(store, "sections") + ": " + Array.from(this.sections).join(", ")
+                content: getCurrentElement("sections") + ": " + Array.from(this.sections).join(", ")
             }, {
                 id: this.id + "_my_associated_teachings",
                 type: "string",
-                content: getCurrentElement(store, "my_associated_teachings") + ": " + Array.from(this.my_teaching_refs).join(", ")
+                content: getCurrentElement("my_associated_teachings") + ": " + Array.from(this.my_teaching_refs).join(", ")
             }],
             link: {
                 url: "project_courses/" + this.id + "/" + learning_session,
@@ -1051,8 +1051,7 @@ class StudentSummary implements StudentSummaryProps {
         this.surname = student.surname;
     }
 
-    toCard(store: Store<any>, path: string): GeneralCardElements {
-        store.state //dummy use
+    toCard(path: string): GeneralCardElements {
         return {
             id: "" + this.id,
             group: "",
@@ -1084,8 +1083,7 @@ class Student extends StudentSummary {
         })
     }
 
-    toCard(store: Store<any>): GeneralCardElements { // Da sistemare: per visualizzazione tabella a telefono
-        store.state //dummy use
+    toCard(): GeneralCardElements { // Da sistemare: per visualizzazione tabella a telefono
         return {
             id: "" + this.id,
             group: "",
@@ -1101,7 +1099,7 @@ class Student extends StudentSummary {
         }
     }
 
-    toTableRow(store: Store<any>, course_id: string, session_id: string, teacher_id?: number, grades?: boolean, final_grade?: Grade): CustomElement[] {
+    toTableRow(course_id: string, session_id: string, teacher_id?: number, grades?: boolean, final_grade?: Grade): CustomElement[] {
         const row_to_return: CustomElement[] = [{ //Da sistemare: rendere cliccabile
             id: this.id + "_name_surname",
             type: "string",
@@ -1136,7 +1134,7 @@ class Student extends StudentSummary {
                             teacher_id: teacher_id
                         }
                     },
-                    icon: getIcon(store, "document_text")
+                    icon: getIcon("document_text")
                 }
             }, {
                 id: this.id + "_final_grade",
@@ -1158,7 +1156,7 @@ class Student extends StudentSummary {
                             student_id: this.id
                         }
                     },
-                    icon: getIcon(store, "pencil")
+                    icon: getIcon("pencil")
                 }
             })
         }
@@ -1196,7 +1194,7 @@ class StudentInformation extends StudentSummary {
         });
     }
 
-    toCard(store: Store<any>): GeneralCardElements {
+    toCard(): GeneralCardElements {
         return {
             id: "" + this.username,
             title: this.username,
@@ -1204,31 +1202,31 @@ class StudentInformation extends StudentSummary {
             content: [{
                 id: this.id + "_name",
                 type: "string",
-                content: getCurrentElement(store, "name") + ": " + this.name
+                content: getCurrentElement("name") + ": " + this.name
             }, {
                 id: this.id + "_surname",
                 type: "string",
-                content: getCurrentElement(store, "surname") + ": " + this.surname
+                content: getCurrentElement("surname") + ": " + this.surname
             }, {
                 id: this.id + "_gender",
                 type: "string",
-                content: getCurrentElement(store, "gender") + ": " + getGender(store, this.gender)
+                content: getCurrentElement("gender") + ": " + getGender(this.gender)
             }, {
                 id: this.id + "_birth_date",
                 type: "string",
-                content: getCurrentElement(store, "birth_date") + ": " + toDateString(this.birth_date)
+                content: getCurrentElement("birth_date") + ": " + toDateString(this.birth_date)
             }, {
                 id: this.id + "_address",
                 type: "string",
-                content: getCurrentElement(store, "address") + ": " + this.address
+                content: getCurrentElement("address") + ": " + this.address
             }, {
                 id: this.id + "_email",
                 type: "string",
-                content: getCurrentElement(store, "email") + ": " + this.email
+                content: getCurrentElement("email") + ": " + this.email
             }, {
                 id: this.id + "_class",
                 type: "string",
-                content: getCurrentElement(store, "class") + ": " + this.ordinary_class.toString()
+                content: getCurrentElement("class") + ": " + this.ordinary_class.toString()
             }]
         }
     }
@@ -1265,8 +1263,8 @@ class AnnouncementSummary implements AnnouncementSummaryProps {
         this.english_title = props.english_title;
     }
 
-    toCard(store: Store<any>): GeneralCardElements {
-        const language: Language = store.state.language;
+    toCard(): GeneralCardElements {
+        const language = getCurrentLanguage();
         return {
             id: "" + this.id,
             group: "",
@@ -1285,7 +1283,7 @@ class AnnouncementSummary implements AnnouncementSummaryProps {
             }, {
                 id: this.id + "_publishment",
                 type: "string",
-                content: getCurrentElement(store, "publishment") + ": " + toDateString(this.publishment)
+                content: getCurrentElement("publishment") + ": " + toDateString(this.publishment)
             }]
         }
     }
@@ -1428,13 +1426,13 @@ class CourseModel {
         // Da sistemare: sistemare id card con id+anno e aggiungere proposer_teacher e certifying_admin quando Pietro finisce
     }
 
-    toString(store: Store<any>) {
-        const language: Language = store.state.language;
+    toString() {
+        const language = getCurrentLanguage();
         return this[`${language}_title`] + " - " + this.creation_school_year;
     }
 
-    toCard(store: Store<any>, user: User, view = false): GeneralCardElements { // Da sistemare: evidenziare quando project_class_to_be_modified | course_to_be_modified una volta unita HiglightCard a GeneralCardElements
-        const language: Language = store.state.language;
+    toCard(user: User, view = false): GeneralCardElements { // Da sistemare: evidenziare quando project_class_to_be_modified | course_to_be_modified una volta unita HiglightCard a GeneralCardElements
+        const language = getCurrentLanguage();
 
         return {
             id: "" + this.id,
@@ -1448,11 +1446,11 @@ class CourseModel {
             content: [{
                 id: this.id + "_project_class_confirmation_date",
                 type: "string",
-                content: getCurrentElement(store, "project_class_confirmation_date") + ": " + toDateString(this.project_class_confirmation_date)
+                content: getCurrentElement("project_class_confirmation_date") + ": " + toDateString(this.project_class_confirmation_date)
             }, {
                 id: this.id + "_course_confirmation_date",
                 type: "string",
-                content: getCurrentElement(store, "course_confirmation_date") + ": " + toDateString(this.course_confirmation_date)
+                content: getCurrentElement("course_confirmation_date") + ": " + toDateString(this.course_confirmation_date)
             }],
             link: {
                 url: "/course_proposition?" + (view ? "view" + "=" + this.id : ""), // Da sistemare: mettere guardia che sistema il link, salvando le cose sulla sessione
@@ -1784,8 +1782,8 @@ class Teaching {
         this.english_description = props.english_description;
     }
 
-    toCard(store: Store<any>, disabled = false): GeneralCardElements {
-        const language: Language = store.state.language;
+    toCard(disabled = false): GeneralCardElements {
+        const language = getCurrentLanguage();
         return {
             id: this.id,
             group: "",
@@ -1798,7 +1796,7 @@ class Teaching {
                     data: {
                         id: this.id,
                     },
-                    icon: getIcon(store, "close"),
+                    icon: getIcon("close"),
                 },
             },
             content: [
@@ -1834,8 +1832,8 @@ class AccessProposition {
         this.main_study_year = main_study_year;
     }
 
-    toCard(store: Store<any>, learning_context_id: string, disabled = false): GeneralCardElements {
-        const language: Language = store.state.language;
+    toCard(learning_context_id: string, disabled = false): GeneralCardElements {
+        const language = getCurrentLanguage();
 
         return {
             id: this.study_address.id + "_" + this.study_year,
@@ -1851,7 +1849,7 @@ class AccessProposition {
                         study_address_id: this.study_address.id,
                         study_year: this.study_year,
                     },
-                    icon: getIcon(store, "close"),
+                    icon: getIcon("close"),
                 },
             },
             content: [
@@ -1863,12 +1861,12 @@ class AccessProposition {
                 {
                     id: "presidium",
                     type: "string",
-                    content: getCurrentElement(store, "presidium") + ": " + this.presidium,
+                    content: getCurrentElement("presidium") + ": " + this.presidium,
                 },
                 {
                     id: "main_study_year",
                     type: "string",
-                    content: getCurrentElement(store, "main_study_year") + ": " + this.main_study_year,
+                    content: getCurrentElement("main_study_year") + ": " + this.main_study_year,
                 },
             ],
         }
@@ -1938,7 +1936,7 @@ class TeacherProposition {
         }
     }
 
-    toCard(store: Store<any>, disabled = false): GeneralCardElements {
+    toCard(disabled = false): GeneralCardElements {
         return {
             id: "" + this.teacher.id,
             group: "",
@@ -1951,7 +1949,7 @@ class TeacherProposition {
                     data: {
                         id: this.teacher.id,
                     },
-                    icon: getIcon(store, "close"),
+                    icon: getIcon("close"),
                 },
             },
             content: [
@@ -1964,14 +1962,14 @@ class TeacherProposition {
                         data: {
                             teacher_id: this.teacher.id,
                         },
-                        icon: getIcon(store, "information_circle"),
-                        text: this.teacher.name + " " + this.teacher.surname + (this.main ? " [" + getCurrentElement(store, "main_teacher") + "]" : "")
+                        icon: getIcon("information_circle"),
+                        text: this.teacher.name + " " + this.teacher.surname + (this.main ? " [" + getCurrentElement("main_teacher") + "]" : "")
                     },
                 },
                 {
                     id: "sections",
                     type: "string",
-                    content: getCurrentElement(store, "sections") + ": " + this.sections.join(", "),
+                    content: getCurrentElement("sections") + ": " + this.sections.join(", "),
                 },
             ],
         }
@@ -2038,7 +2036,7 @@ class AdminProjectClass {
         this.to_be_modified = props.to_be_modified ?? undefined;
     }
 
-    toCard(store: Store<any>, path?: string): GeneralCardElements { // Da sistemare: vedere se usare Higlight...
+    toCard(path?: string): GeneralCardElements { // Da sistemare: vedere se usare Higlight...
         return {
             id: "" + this.course_id + "_" + this.learning_session + "_" + this.group,
             group: "",
@@ -2047,17 +2045,17 @@ class AdminProjectClass {
                 {
                     id: "group",
                     type: "string",
-                    content: getCurrentElement(store, "group") + ": " + this.group,
+                    content: getCurrentElement("group") + ": " + this.group,
                 },
                 {
                     id: "teacher",
                     type: "string",
-                    content: getCurrentElement(store, "proposer_teacher") + ": " + this.teacher_name + " " + this.teacher_surname,
+                    content: getCurrentElement("proposer_teacher") + ": " + this.teacher_name + " " + this.teacher_surname,
                 },
                 {
                     id: "admin",
                     type: "string",
-                    content: getCurrentElement(store, "certifying_admin") + ": " + this.admin_name + " " + this.admin_surname,
+                    content: getCurrentElement("certifying_admin") + ": " + this.admin_name + " " + this.admin_surname,
                 }
             ],
             link: path != undefined ? {

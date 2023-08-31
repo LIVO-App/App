@@ -20,7 +20,7 @@
             :grades="student_grades"
             @close="closeModal('grades')"
             @execute_link="add_grade()"
-            @signal_event="setupModalAndOpen(store)"
+            @signal_event="setupModalAndOpen()"
           />
         </template>
         <template #fallback>
@@ -50,16 +50,16 @@
         v-for="button in buttons"
         :key="button.id"
         :element="button"
-        @signal_event="setupModalAndOpen(store)"
+        @signal_event="setupModalAndOpen()"
         @execute_link="$router.push(store.state.request.url)"
       />
     </div>
     <custom-select
       v-model="selected_section"
       :list="sections"
-      :label="getCurrentElement(store, 'section') + ':'"
-      :aria_label="getCurrentElement(store, 'section')"
-      :placeholder="getCurrentElement(store, 'section_choice')"
+      :label="getCurrentElement('section') + ':'"
+      :aria_label="getCurrentElement('section')"
+      :placeholder="getCurrentElement('section_choice')"
     ></custom-select>
     <suspense>
       <template #default>
@@ -68,7 +68,7 @@
           :data="table_data"
           :first_row="firstRow"
           :column_sizes="column_sizes"
-          @signal_event="setupModalAndOpen(store)"
+          @signal_event="setupModalAndOpen()"
         />
       </template>
       <template #fallback>
@@ -98,7 +98,7 @@ type AvailableModal =
   | "empty_descriptions"
   | "grade_value_error";
 
-const setupModalAndOpen = (store: Store<any>) => {
+const setupModalAndOpen = () => {
   const window: AvailableModal = store.state.event.name;
 
   switch (window) {
@@ -110,13 +110,12 @@ const setupModalAndOpen = (store: Store<any>) => {
       break;
     case "empty_descriptions":
       alert_information.message = getCurrentElement(
-        store,
         "empty_descriptions"
       );
       alert_open.value = true;
       break;
     case "grade_value_error":
-      alert_information.message = getCurrentElement(store, "grade_value_error");
+      alert_information.message = getCurrentElement("grade_value_error");
       alert_open.value = true;
       break;
     case "course_details":
@@ -163,10 +162,7 @@ const add_grade = async () => {
         trigger.value++;
       }
     },
-    (err) => console.error(err),
-    undefined,
-    undefined,
-    store
+    (err) => console.error(err)
   );
 };
 
@@ -209,7 +205,6 @@ const updateStudents = async () => {
     }
     table_data.push(
       student.toTableRow(
-        store,
         course_id,
         session_id,
         user.user == "teacher" ? user.id : undefined,
@@ -227,17 +222,17 @@ const firstRow: CustomElement[] = [
   {
     id: "student",
     type: "string",
-    content: getCurrentElement(store, "student"),
+    content: getCurrentElement("student"),
   },
   {
     id: "learning_context",
     type: "string",
-    content: getCurrentElement(store, "learning_context"),
+    content: getCurrentElement("learning_context"),
   },
   {
     id: "class",
     type: "string",
-    content: getCurrentElement(store, "class"),
+    content: getCurrentElement("class"),
   },
 ];
 const column_sizes = [5, 2, 1, 2, 2];
@@ -252,9 +247,9 @@ const grades: {
 } = {};
 const alert_open = ref(false);
 const alert_information = {
-  title: getCurrentElement(store, "error"),
+  title: getCurrentElement("error"),
   message: "",
-  buttons: [getCurrentElement(store, "ok")],
+  buttons: [getCurrentElement("ok")],
 };
 const sections: { id: string }[] = [];
 const tmp_sections: Set<string> = new Set();
@@ -266,7 +261,7 @@ const buttons: CustomElement[] = [
     content: {
       url: "/announcements/" + course_id + "/" + session_id, // Da sistemare: vedere se anche admin può vedere e/o mandare messaggi
       method: "get",
-      icon: getIcon(store, "mail"), // Da sistemare: mettere in alto e fare popup
+      icon: getIcon("mail"), // Da sistemare: mettere in alto e fare popup
     },
   },
   {
@@ -279,7 +274,7 @@ const buttons: CustomElement[] = [
         title: "", // Da sistemare: mettere titolo quando ce l'avrà anche la pagina
         course_id: parseInt(course_id),
       },
-      icon: getIcon(store, "information_circle"),
+      icon: getIcon("information_circle"),
     },
   },
 ];
@@ -298,12 +293,12 @@ if (user.user == "teacher") {
     {
       id: "gardes",
       type: "string",
-      content: getCurrentElement(store, "grades"),
+      content: getCurrentElement("grades"),
     },
     {
       id: "final_grade",
       type: "string",
-      content: getCurrentElement(store, "final_grade"),
+      content: getCurrentElement("final_grade"),
     }
   );
   await executeLink(
@@ -335,7 +330,7 @@ if (user.user == "teacher") {
   firstRow.push({
     id: "edit",
     type: "string",
-    content: getCurrentElement(store, "edit"),
+    content: getCurrentElement("edit"),
   });
   await executeLink(
     "/v1/project_classes/" + course_id + "/" + session_id + "/sections",

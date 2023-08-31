@@ -37,13 +37,13 @@
     </ion-modal>
     <div class="ion-padding-horizontal">
       <ion-title class="ion-padding-bottom">{{
-        getCurrentElement(store, "progression")
+        getCurrentElement("progression")
       }}</ion-title>
       <template v-if="Array.isArray(credits_progression[selected_context])">
         <ion-list>
           <ion-item>
             <ion-label class="ion-padding-horizontal"
-              >{{ getCurrentElement(store, "context_credits") }}:</ion-label
+              >{{ getCurrentElement("context_credits") }}:</ion-label
             >
             <ion-label>{{
               castToStringArray(credits_progression[selected_context]).join("/")
@@ -53,7 +53,7 @@
       </template>
       <template v-else>
         <ion-title size="small" class="ion-padding-bottom"
-          ><b>{{ getCurrentElement(store, "area_credits") }}</b></ion-title
+          ><b>{{ getCurrentElement("area_credits") }}</b></ion-title
         >
         <ion-list>
           <ion-item
@@ -78,9 +78,9 @@
           <custom-select
             v-model="selected_year"
             :list="school_years"
-            :label="getCurrentElement(store, 'school_year') + ':'"
-            :aria_label="getCurrentElement(store, 'school_year')"
-            :placeholder="getCurrentElement(store, 'school_year_choice')"
+            :label="getCurrentElement('school_year') + ':'"
+            :aria_label="getCurrentElement('school_year')"
+            :placeholder="getCurrentElement('school_year_choice')"
           />
           <!-- Da sistemare: aggiungere "All" -->
         </ion-col>
@@ -88,9 +88,9 @@
           <custom-select
             v-model="selected_context"
             :list="learning_contexts"
-            :label="getCurrentElement(store, 'learning_context') + ':'"
-            :aria_label="getCurrentElement(store, 'learning_context')"
-            :placeholder="getCurrentElement(store, 'learning_context_choice')"
+            :label="getCurrentElement('learning_context') + ':'"
+            :aria_label="getCurrentElement('learning_context')"
+            :placeholder="getCurrentElement('learning_context_choice')"
             :getCompleteName="getContextAcronym"
           />
         </ion-col>
@@ -103,7 +103,7 @@
           :data="tableData"
           :first_row="firstRow"
           :column_sizes="column_sizes"
-          @signal_event="SetupModalAndOpen(store)"
+          @signal_event="SetupModalAndOpen()"
         ></ionic-table>
       </template>
       <template #fallback>
@@ -126,7 +126,7 @@ import {
   TmpList,
   User,
 } from "@/types";
-import { executeLink, getCurrentElement } from "@/utils";
+import { executeLink, getCurrentElement, getCurrentLanguage } from "@/utils";
 import {
   IonModal,
   IonGrid,
@@ -142,7 +142,7 @@ import { Store, useStore } from "vuex";
 
 type availableModal = "grades" | "course_details";
 
-const SetupModalAndOpen = (store: Store<any>) => {
+const SetupModalAndOpen = () => {
   const window: availableModal = store.state.event.name;
   switch (window) {
     case "grades":
@@ -200,7 +200,6 @@ const updateTable = (
     if (year_correspondences[selected_year.value][course.id].length > 0) {
       tableData.push(
         course.toTableRow(
-          store,
           year_correspondences[selected_year.value][course.id][
             year_correspondences[selected_year.value][course.id].length - 1
           ],
@@ -221,7 +220,7 @@ const castToTmpList = (obj: TmpList<string[]> | string[]) =>
 
 const store = useStore();
 const user = User.getLoggedUser() as User;
-const language: Language = store.state.language;
+const language = getCurrentLanguage();
 const props = defineProps({
   student_id: String,
 });
@@ -235,32 +234,32 @@ const firstRow: CustomElement[] = [
   {
     id: "title",
     type: "string",
-    content: getCurrentElement(store, "course"),
+    content: getCurrentElement("course"),
   },
   {
     id: "section",
     type: "string",
-    content: getCurrentElement(store, "section"),
+    content: getCurrentElement("section"),
   },
   {
     id: "credits",
     type: "string",
-    content: getCurrentElement(store, "credits"),
+    content: getCurrentElement("credits"),
   },
   {
     id: "learning_area",
     type: "string",
-    content: getCurrentElement(store, "learning_area"),
+    content: getCurrentElement("learning_area"),
   },
   {
     id: "gardes",
     type: "string",
-    content: getCurrentElement(store, "grades"),
+    content: getCurrentElement("grades"),
   },
   {
     id: "final_grade",
     type: "string",
-    content: getCurrentElement(store, "final_grade"),
+    content: getCurrentElement("final_grade"),
   },
 ];
 const column_sizes = [4, 1, 1, 2, 2, 2];

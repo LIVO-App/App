@@ -21,8 +21,8 @@
       <ion-input
         type="text"
         v-model="italian_title"
-        :label="getCurrentElement(store, 'title')"
-        :aria-label="getCurrentElement(store, 'title')"
+        :label="getCurrentElement('title')"
+        :aria-label="getCurrentElement('title')"
         color="primary"
         style="color: var(--ion-color-primary)"
         fill="outline"
@@ -32,8 +32,8 @@
       <ion-input
         type="text"
         v-model="italian_message"
-        :label="getCurrentElement(store, 'message')"
-        :aria-label="getCurrentElement(store, 'message')"
+        :label="getCurrentElement('message')"
+        :aria-label="getCurrentElement('message')"
         color="primary"
         style="color: var(--ion-color-primary)"
         fill="outline"
@@ -41,7 +41,7 @@
       ></ion-input
       ><!--Da sistemare: mettere italiano e inglese-->
       <ion-label color="primary"
-        >{{ getCurrentElement(store, "sections") }}:</ion-label
+        >{{ getCurrentElement("sections") }}:</ion-label
       >
       <ion-list class="ion-margin-top">
         <ion-item
@@ -70,7 +70,7 @@
           }
         "
       >
-        {{ getCurrentElement(store, "publish") }}
+        {{ getCurrentElement("publish") }}
       </ion-button>
     </div>
   </div>
@@ -160,13 +160,13 @@ const elements: {
     linkType: "event",
     content: {
       event: "close",
-      icon: getIcon(store, "close"),
+      icon: getIcon("close"),
     },
   },
   title: {
     id: "title",
     type: "title",
-    content: getCurrentElement(store, "announcement_publishment"),
+    content: getCurrentElement("announcement_publishment"),
   },
 };
 </script>

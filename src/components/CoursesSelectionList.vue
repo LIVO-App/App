@@ -44,9 +44,9 @@
           <custom-select
             v-model="selected_context"
             :list="learning_contexts"
-            :label="getCurrentElement(store, 'learning_context') + ':'"
-            :aria_label="getCurrentElement(store, 'learning_context')"
-            :placeholder="getCurrentElement(store, 'learning_context_choice')"
+            :label="getCurrentElement('learning_context') + ':'"
+            :aria_label="getCurrentElement('learning_context')"
+            :placeholder="getCurrentElement('learning_context_choice')"
             :getCompleteName="getContextAxronym"
           />
         </ion-col>
@@ -66,7 +66,7 @@
       :key="trigger"
       @execute_link="changeEnrollment()"
       @signal_event="openModal()"
-      :emptiness_message="getCurrentElement(store, 'noCourses')"
+      :emptiness_message="getCurrentElement('noCourses')"
       v-model:cards_list="courses"
     />
   </div>
@@ -92,6 +92,7 @@ import {
 import {
   executeLink,
   getCurrentElement,
+  getCurrentLanguage,
   getEnrollmentIcon,
   toSummary,
 } from "@/utils";
@@ -117,9 +118,8 @@ const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
   for (const context_reference of contexts_to_edit) {
     if (context_reference.context_id == selected_context.value) {
       course.enrollment.enrollment = value;
-      course.content[2].content = course.enrollment.toString(store);
+      course.content[2].content = course.enrollment.toString();
       course.content[3].content = getEnrollmentIcon(
-        store,
         course.enrollment,
         pathArray.join("/") +
           (value === false ? "/subscribe?" : "/unsubscribe?") +
@@ -215,8 +215,7 @@ const changeEnrollment = async () => {
         },
         (err) => console.error(err),
         undefined,
-        undefined,
-        store
+        undefined
       );
     } else {
       if (!available_courses) {
@@ -234,13 +233,11 @@ const setAlertAndOpen = (type: AvailableModal) => {
   switch (type) {
     case "max_credits":
       alert_information.message = getCurrentElement(
-        store,
         "maximum_credits_error"
       );
       break;
     case "max_courses":
       alert_information.message = getCurrentElement(
-        store,
         "maximum_courses_error"
       );
       break;
@@ -275,7 +272,7 @@ const showCourses = (
     if (courses.cards[course.group] == undefined) {
       courses.order.push({
         key: course.group,
-        title: getCurrentElement(store, "group") + " " + course.group,
+        title: getCurrentElement("group") + " " + course.group,
       });
       courses.cards[course.group] = [];
     }
@@ -288,7 +285,7 @@ const showCourses = (
 
 const store: Store<any> = useStore();
 const $route = useRoute();
-const language: Language = store.state.language;
+const language = getCurrentLanguage();
 const user = User.getLoggedUser() as User;
 const learning_session_id: string = $route.params.id as string;
 
@@ -301,16 +298,16 @@ const courses: OrderedCardsList<CourseCardElements> = {
 };
 const trigger = ref(0);
 const remaining_credits: RemainingCredits<number> = {};
-const learning_area = getCurrentElement(store, "learning_area");
+const learning_area = getCurrentElement("learning_area");
 const placeholder =
-  getCurrentElement(store, "select") +
+  getCurrentElement("select") +
   (language == "italian" ? " l'" : " the ") +
   learning_area;
 const openAlert = ref(false);
 const alert_information = {
-  title: getCurrentElement(store, "error"),
+  title: getCurrentElement("error"),
   message: "",
-  buttons: [getCurrentElement(store, "ok")],
+  buttons: [getCurrentElement("ok")],
 };
 const selected_area = ref("");
 const description_open = ref(false);
@@ -440,7 +437,6 @@ if (learning_session != undefined) {
                 learning_sessions[learning_session_position - 1]?.getStatus() ==
                   LearningSessionStatus.CURRENT);
             tmp_card = tmp_course.toCard(
-              store,
               learning_session as LearningSession,
               open_enrollment
                 ? "/v1/students/" +

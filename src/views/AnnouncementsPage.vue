@@ -3,7 +3,7 @@
     <outer-header
       :title="
         store.state.menu[user.user][store.state.menuIndex].title[
-          store.state.language
+          language
         ]
       "
     />
@@ -12,7 +12,7 @@
       <inner-header
         :title="
           store.state.menu[user.user][store.state.menuIndex].title[
-            store.state.language
+            language
           ]
         "
       />
@@ -31,11 +31,14 @@
   
   <script setup lang="ts">
 import { User } from "@/types";
+import { getCurrentLanguage } from "@/utils";
 import { IonContent, IonPage } from "@ionic/vue";
 import { useStore } from "vuex";
 
 const store = useStore();
 const user = User.getLoggedUser() as User;
+const language = getCurrentLanguage();
+// Da sistemare: vedere se si può caricare diversi componenti con uno solo per rimuovere tutte le view con componente singolo
 </script>
   
   <style scoped>

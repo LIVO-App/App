@@ -24,7 +24,7 @@
     ></ionic-table> <!-- Da sistemare: cambiare e mettere card -->
     <div class="ion-text-center ion-padding-bottom">
       <ion-text color="primary"
-        >{{ getCurrentElement(store, "intermediate_arithmetic_mean") }}:
+        >{{ getCurrentElement("intermediate_arithmetic_mean") }}:
         {{ mean }}</ion-text
       >
     </div>
@@ -32,7 +32,7 @@
   <template v-else>
     <div class="ion-text-center ion-padding">
       <ion-text color="primary">{{
-        getCurrentElement(store, "no_grades")
+        getCurrentElement("no_grades")
       }}</ion-text>
     </div>
   </template>
@@ -42,13 +42,13 @@
   >
     <div class="ion-padding-bottom">
       <ion-title color="primary">{{
-        getCurrentElement(store, "grade_insertion")
+        getCurrentElement("grade_insertion")
       }}</ion-title>
       <ion-input
         type="text"
         v-model="description"
-        :label="getCurrentElement(store, 'description')"
-        :aria-label="getCurrentElement(store, 'description')"
+        :label="getCurrentElement('description')"
+        :aria-label="getCurrentElement('description')"
         color="primary"
         style="color: var(--ion-color-primary)"
         fill="outline"
@@ -58,8 +58,8 @@
       <ion-input
         type="number"
         v-model="grade"
-        :label="getCurrentElement(store, 'grade')"
-        :aria-label="getCurrentElement(store, 'grade')"
+        :label="getCurrentElement('grade')"
+        :aria-label="getCurrentElement('grade')"
         color="primary"
         style="color: var(--ion-color-primary)"
         fill="outline"
@@ -67,14 +67,14 @@
       ></ion-input>
       <ion-label
         position="floating"
-        :aria-label="getCurrentElement(store, 'final_grade')"
+        :aria-label="getCurrentElement('final_grade')"
         color="primary"
         style="color: var(--ion-color-primary)"
-        >{{ getCurrentElement(store, "final_grade") }}</ion-label
+        >{{ getCurrentElement("final_grade") }}</ion-label
       >
       <ion-checkbox
         v-model="final_grade"
-        :aria-label="getCurrentElement(store, 'final_grade')"
+        :aria-label="getCurrentElement('final_grade')"
         class="ion-padding-start"
       ></ion-checkbox> <!-- Da sistemare: controllare perchè non funziona nella tabella e mettere popup "Sei sicuro?" -->
     </div>
@@ -124,7 +124,7 @@
           }
         "
       >
-        {{ getCurrentElement(store, "insert_grade") }}
+        {{ getCurrentElement("insert_grade") }}
       </ion-button>
     </div>
   </div>
@@ -153,7 +153,7 @@ const push_grade = (grade: Grade) => {
   if (grade.final) {
     final.value = true;
   }
-  tableData.push(grade.toTableRow(store));
+  tableData.push(grade.toTableRow());
 };
 
 const store = useStore();
@@ -180,7 +180,7 @@ const elements: {
     linkType: "event",
     content: {
       event: "close",
-      icon: getIcon(store, "close"),
+      icon: getIcon("close"),
     },
   },
   title: {
@@ -193,17 +193,17 @@ const first_row: CustomElement[] = [
   {
     id: "description",
     type: "string",
-    content: getCurrentElement(store, "description"),
+    content: getCurrentElement("description"),
   },
   {
     id: "date",
     type: "string",
-    content: getCurrentElement(store, "date"),
+    content: getCurrentElement("date"),
   },
   {
     id: "evaluation",
     type: "string",
-    content: getCurrentElement(store, "evaluation"),
+    content: getCurrentElement("evaluation"),
   },
 ];
 const column_sizes = [6, 3, 3];

@@ -4,7 +4,6 @@ import { ElementsList, IconAlternatives, IconsList, Language, LearningContextSum
 import { Method } from "axios";
 
 declare module '@vue/runtime-core' {
-  //Declare your own store states
   interface State {
     menu: Menu,
     menuIndex: number,

@@ -7,8 +7,8 @@
             @click="$router.go(-1)"
             aria-hidden="true"
             class="ion-padding-end"
-            :ios="getIcon(store, 'arrow_back').ios"
-            :md="getIcon(store, 'arrow_back').md"
+            :ios="getIcon('arrow_back').ios"
+            :md="getIcon('arrow_back').md"
           ></ion-icon>
           <!-- Da sistemare: freccetta -->
         </ion-col>
@@ -51,9 +51,7 @@ import {
   IonTitle,
 } from "@ionic/vue";
 import { computed } from "vue";
-import { useStore } from "vuex";
 
-const store = useStore();
 const props = defineProps({
   id: {
     type: String,
@@ -67,7 +65,7 @@ const student: StudentInformation = await executeLink(
   "/v1/students/" + props.id,
   (response) => new StudentInformation(response.data.data)
 );
-const student_card: GeneralCardElements = student.toCard(store);
+const student_card: GeneralCardElements = student.toCard();
 </script>
 
 <style>

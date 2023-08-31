@@ -46,9 +46,6 @@ import {
   IonRow,
   IonCol,
 } from "@ionic/vue";
-import { useStore } from "vuex";
-
-const store = useStore();
 
 const props = defineProps({
   title: {
@@ -71,7 +68,7 @@ const elements: {
     linkType: "event",
     content: {
       event: "close",
-      icon: getIcon(store, "close"),
+      icon: getIcon("close"),
     },
   },
   title: {
@@ -82,7 +79,7 @@ const elements: {
   course_information_not_found: {
     id: "course_information_not_found",
     type: "string",
-    content: getCurrentElement(store, "course_information_not_found"),
+    content: getCurrentElement("course_information_not_found"),
   },
 };
 
@@ -94,7 +91,7 @@ const course = await executeLink(
 let courseCard: GeneralCardElements;
 
 if (course != null) {
-  courseCard = course.toCard(store);
+  courseCard = course.toCard();
 }
 </script>
 

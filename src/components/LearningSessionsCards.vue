@@ -4,24 +4,24 @@
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="getCurrentElement(store, 'current')"
+          :title="getCurrentElement('current')"
           :emptiness_message="no_session"
           :cards_list="learning_sessions.current"
         />
         <list-card
-          :title="getCurrentElement(store, 'future')"
+          :title="getCurrentElement('future')"
           :emptiness_message="no_session"
           :cards_list="learning_sessions.future"
         />
       </ion-col>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="getCurrentElement(store, 'upcoming')"
+          :title="getCurrentElement('upcoming')"
           :emptiness_message="no_session"
           :cards_list="learning_sessions.upcoming"
         />
         <list-card
-          :title="getCurrentElement(store, 'completed')"
+          :title="getCurrentElement('completed')"
           :emptiness_message="no_session"
           :cards_list="learning_sessions.completed"
         />
@@ -71,7 +71,7 @@ const learning_sessions: {
   },
 });
 const promises: Promise<any>[] = [];
-const no_session = getCurrentElement(store, "no_sessions");
+const no_session = getCurrentElement("no_sessions");
 const ordinary_classes: OrdinaryClassProps[] = await executeLink(
   "/v1/ordinary_classes?student_id=" + user.id,
   (response) => response.data.data
@@ -152,11 +152,11 @@ if (current_class != undefined) {
         learning_sessions.future.order = learning_sessions.future.order.concat(
           {
             key: "open_enrollment",
-            title: getCurrentElement(store, "open_enrollment"),
+            title: getCurrentElement("open_enrollment"),
           },
           {
             key: "planned",
-            title: getCurrentElement(store, "planned"),
+            title: getCurrentElement("planned"),
           }
         );
         tmp_element = learning_sessions.future.cards["planned"].shift();

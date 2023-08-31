@@ -4,8 +4,8 @@
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="getCurrentElement(store, 'learning_sessions')"
-          :emptiness_message="getCurrentElement(store, 'no_sessions')"
+          :title="getCurrentElement('learning_sessions')"
+          :emptiness_message="getCurrentElement('no_sessions')"
           :cards_list="learning_sessions"
           @signal_event="changeSelection()"
         />
@@ -13,10 +13,9 @@
       <ion-col size="12" size-md="6">
         <list-card
           :key="trigger"
-          :title="getCurrentElement(store, 'courses')"
+          :title="getCurrentElement('courses')"
           :emptiness_message="
             getCurrentElement(
-              store,
               is_nothing_selected()
                 ? 'student_learning_session_selection_message'
                 : 'no_courses'
@@ -121,7 +120,6 @@ const changeSelection = async () => {
             $route.name == "announcements"
               ? new MinimizedCourse(a as MinimumCourseProps).toCard(
                   // Da sistemare: finire
-                  store,
                   "/announcements/" +
                     (a as MinimumCourseProps).id +
                     "/" +
@@ -130,7 +128,6 @@ const changeSelection = async () => {
                     ].id
                 )
               : new AdminProjectClass(a as AdminProjectClassProps).toCard(
-                  store,
                   "project_courses/" +
                     (a as AdminProjectClassProps).course_id +
                     "/" +

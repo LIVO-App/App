@@ -1,10 +1,10 @@
 <template>
   <ion-page>
-    <outer-header :subtitle="getCurrentElement(store, 'subtitle')" />
+    <outer-header :subtitle="getCurrentElement('subtitle')" />
     <!--:title="store.state.menu[user.user][store.state.menuIndex].title[store.state.language]" />-->
 
     <ion-content :fullscreen="true">
-      <inner-header :subtitle="getCurrentElement(store, 'subtitle')" />
+      <inner-header :subtitle="getCurrentElement('subtitle')" />
       <!--:title="store.state.menu[user.user][store.state.menuIndex].title[store.state.language]" />-->
 
       <suspense>

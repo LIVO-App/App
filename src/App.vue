@@ -28,10 +28,10 @@
                   <ion-icon
                     aria-hidden="true"
                     class="ion-padding-end"
-                    :ios="getIcon(store, p.iconRef).ios"
-                    :md="getIcon(store, p.iconRef).md"
+                    :ios="getIcon(p.iconRef).ios"
+                    :md="getIcon(p.iconRef).md"
                   ></ion-icon>
-                  <ion-label>{{ p.title[store.state.language] }}</ion-label>
+                  <ion-label>{{ p.title[getCurrentLanguage()] }}</ion-label>
                 </ion-item>
               </template>
             </ion-menu-toggle>
@@ -62,7 +62,7 @@ import { computed } from "vue";
 import { useStore } from "vuex";
 
 import { Menu, User } from "./types";
-import { getIcon } from "./utils";
+import { getCurrentLanguage, getIcon } from "./utils";
 
 const image = computed(() => require("./assets/Logo_LIVO_Campus_POS_RGB.png"));
 const castToUser = (user: User | undefined) => user as User;
@@ -70,6 +70,7 @@ const castToUser = (user: User | undefined) => user as User;
 const store = useStore();
 const menu: Menu = store.state.menu;
 const user = User.getLoggedUser();
+const language = getCurrentLanguage();
 
 let path = window.location.pathname;
 let tmp_index: number;

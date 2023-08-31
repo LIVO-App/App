@@ -1,9 +1,7 @@
 import { Method } from "axios";
 import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters } from "./types";
-import { Store } from "vuex";
 import { $axios } from "./plugins/axios";
-
-// Da sistemare: togliere store come parametro e usare import { store } from ./store
+import { store } from "./store"
 
 function getCompleteSchoolYear(year: number) {
     return year + " - " + (year + 1);
@@ -26,10 +24,10 @@ function isCourse(card: CardElements): card is CourseCardElements {
     return "credits" in card;
 }
 
-async function executeLink(url?: string | undefined, success = (response: any) => response, fail: (err: string) => any = (err: string) => err, method?: Method, body?: { [key: string]: any }, store?: Store<any>) {
+async function executeLink(url?: string | undefined, success = (response: any) => response, fail: (err: string) => any = (err: string) => err, method?: Method, body?: { [key: string]: any }) {
 
-    const toExecute = url ?? store?.state.request.url;
-    const howExecute = method ?? store?.state.request.method ?? "get";
+    const toExecute = url ?? store.state.request.url;
+    const howExecute = method ?? store.state.request.method ?? "get";
     const options = {
         headers: {
             "x-access-token": sessionStorage.getItem("token") ?? ""
@@ -55,9 +53,11 @@ async function executeLink(url?: string | undefined, success = (response: any) =
             default:
                 return new Promise(() => "Method not defined");
         }
+        store.state.request = {};
         return request.then(success)
             .catch(fail);
     } else {
+        store.state.request = {};
         return new Promise((resolve, reject) => {
             console.error("No axios instance or url defined");
             reject(fail("No axios instance or url defined"));
@@ -65,17 +65,17 @@ async function executeLink(url?: string | undefined, success = (response: any) =
     }
 }
 
-function getEnrollmentIcon(store: Store<any>, enrollment: Enrollment, path: string, method?: Method): RequestIcon {
+function getEnrollmentIcon(enrollment: Enrollment, path: string, method?: Method): RequestIcon {
     return {
         url: path,
         method: enrollment.editable ?
             (method ?? enrollment.getChangingMethod())
             : (method ?? "get"),
-        icon: enrollment.enrollment === false ? getIcon(store, "add") : getIcon(store, "close")
+        icon: enrollment.enrollment === false ? getIcon("add") : getIcon("close")
     }
 }
 
-function getCurrentElement(store: Store<any>, key: string) {
+function getCurrentElement(key: string) {
 
     const language: Language = store.state.language;
     const elements: ElementsList = store.state.elements;
@@ -83,7 +83,7 @@ function getCurrentElement(store: Store<any>, key: string) {
     return elements[language][key];
 }
 
-function getIcon(store: Store<any>, key: string) {
+function getIcon(key: string) {
 
     const icons: IconsList = store.state.icons;
 
@@ -104,21 +104,21 @@ function hashCode(str: string) {
     return hash;
 }
 
-function castStatus(store: Store<any>, status: string): LearningSessionStatus | null {
+function castStatus(status: string): LearningSessionStatus | null {
 
     let cast: LearningSessionStatus | null = null;
 
     switch (status) {
-        case getCurrentElement(store, "current"):
+        case getCurrentElement("current"):
             cast = LearningSessionStatus.CURRENT;
             break;
-        case getCurrentElement(store, "upcoming"):
+        case getCurrentElement("upcoming"):
             cast = LearningSessionStatus.UPCOMING;
             break;
-        case getCurrentElement(store, "completed"):
+        case getCurrentElement("completed"):
             cast = LearningSessionStatus.COMPLETED;
             break;
-        case getCurrentElement(store, "future"):
+        case getCurrentElement("future"):
             cast = LearningSessionStatus.FUTURE;
             break;
     }
@@ -126,7 +126,7 @@ function castStatus(store: Store<any>, status: string): LearningSessionStatus | 
     return cast;
 }
 
-function getActualLearningContext(store: Store<any>, learning_context: LearningContextSummary | undefined): LearningContextSummary {
+function getActualLearningContext(learning_context: LearningContextSummary | undefined): LearningContextSummary {
     return learning_context ?? store.state.main_learning_context;
 }
 
@@ -141,8 +141,8 @@ function toDateString(date: Date) {
     return date.toLocaleDateString("en-GB");
 }
 
-function getGender(store: Store<any>, key: Gender) {
-    return getCurrentElement(store, GenderKeys[key]);
+function getGender(key: Gender) {
+    return getCurrentElement(GenderKeys[key]);
 }
 
 function numberToSection(section: number) {
@@ -157,11 +157,11 @@ function isRequest(link: LinkParameters): link is RequestParameters {
     return "url" in link;
 }
 
-function getStatusString(store: Store<any>, status: LearningSessionStatus) {
+function getStatusString(status: LearningSessionStatus) {
     return status == LearningSessionStatus.CURRENT
-        ? getCurrentElement(store, "current")
+        ? getCurrentElement("current")
         : status == LearningSessionStatus.UPCOMING
-            ? getCurrentElement(store, "upcomoing")
+            ? getCurrentElement("upcomoing")
             : "";
 }
 
@@ -173,4 +173,12 @@ function getStatusColor(status: LearningSessionStatus) {
             : ""
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor }
+function getCurrentLanguage(): Language {
+    return store.state.language;
+}
+
+function getAviableLanguages(): Language[] {
+    return store.state.languages;
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages }

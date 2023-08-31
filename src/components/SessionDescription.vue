@@ -6,8 +6,8 @@
           @click="$router.go(-1)"
           aria-hidden="true"
           class="ion-padding-end"
-          :ios="getIcon(store, 'arrow_back').ios"
-          :md="getIcon(store, 'arrow_back').md"
+          :ios="getIcon('arrow_back').ios"
+          :md="getIcon('arrow_back').md"
         ></ion-icon>
         <!-- Da sistemare: freccetta -->
       </ion-col>
@@ -47,9 +47,7 @@ import {
 } from "@ionic/vue";
 import { PropType } from "vue";
 import { useRouter } from "vue-router";
-import { useStore } from "vuex";
 
-const store = useStore();
 const $router = useRouter();
 const props = defineProps({
   id: {
