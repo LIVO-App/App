@@ -58,7 +58,7 @@ import {
   IonRouterOutlet,
   IonSplitPane,
 } from "@ionic/vue";
-import { computed, reactive, watch } from "vue";
+import { computed } from "vue";
 import { useStore } from "vuex";
 
 import { Menu, User } from "./types";

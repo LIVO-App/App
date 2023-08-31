@@ -593,7 +593,6 @@ import {
   PropositionActivities,
   PropositionCriterions,
   Course,
-  CourseProps,
   AccessObject,
   PropositionTeacher,
 } from "@/types";
@@ -621,9 +620,9 @@ import {
   IonItem,
 } from "@ionic/vue";
 import { AxiosInstance } from "axios";
-import { computed, inject, reactive, ref, Ref, watch } from "vue";
+import { inject, reactive, ref, Ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { Store, useStore } from "vuex";
+import { useStore } from "vuex";
 
 type AvailableModal = Pages | "teacher_info";
 type ListTypes = "teachings" | "access" | "teachers";

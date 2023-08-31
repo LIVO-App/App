@@ -58,14 +58,6 @@ const find_session = (
     }
   );
 const changeSelection = async () => {
-  const tmp_propositions: {
-    "": {
-      [key: number]: CourseModel;
-    };
-  } = {
-    "": {},
-  };
-
   if (
     selected_year_index.value != -1
   ) {

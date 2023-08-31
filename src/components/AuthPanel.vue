@@ -113,22 +113,20 @@
 </template>
 
 <script setup lang="ts">
-import { LoginInformation, UserType } from "@/types";
+import { UserType } from "@/types";
 import { getCurrentElement } from "@/utils";
 import {
   IonCard,
-  IonCardHeader,
+  //IonCardHeader,
   IonCardContent,
-  IonCardTitle,
+  //IonCardTitle,
   IonItem,
-  IonLabel,
   IonInput,
   IonButton,
   IonGrid,
   IonRow,
   IonCol,
 } from "@ionic/vue";
-import { key } from "ionicons/icons";
 import { Ref, ref } from "vue";
 import { useStore } from "vuex";
 

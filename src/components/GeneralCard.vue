@@ -100,7 +100,6 @@
 import { CustomElement, LinkParameters } from "@/types";
 import { isRequest, isEvent } from "@/utils";
 import {
-  IonItem,
   IonCard,
   IonCardHeader,
   IonCardTitle,

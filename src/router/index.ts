@@ -129,7 +129,7 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from) => {
+router.beforeEach((to) => {
 
   const user = User.getLoggedUser();
   
@@ -138,7 +138,7 @@ router.beforeEach((to, from) => {
   } else if (user != undefined) {
     if (to.name !== 'auth' && to.name !== 'logout' && (store.state.menu as Menu)[user.user].findIndex(
       (page) => page.url.split("/")[1] === to.path.split("/")[1]
-    ) == -1 || to.name === 'auth') { // Da sistemare: controllare quando ci sarà persistenza
+    ) == -1 || to.name === 'auth') { // Da sistemare: cambiare quando verrà sistemato menu
       return false;
     } else if (to.name === 'logout') {
       logout();
