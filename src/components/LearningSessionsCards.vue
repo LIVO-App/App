@@ -116,7 +116,7 @@ if ($axios != undefined) {
             for (const session of response.data.data) {
               learning_session = new LearningSession(session);
               learning_sessions.completed.cards[oc.school_year].push(
-                await learning_session.toCard($axios, store)
+                await learning_session.toCard(store, $axios)
               );
             }
           },
@@ -131,7 +131,7 @@ if ($axios != undefined) {
         async (response) => {
           for (const session of response.data.data) {
             learning_session = new LearningSession(session);
-            tmp_element = await learning_session.toCard($axios, store);
+            tmp_element = await learning_session.toCard(store, $axios);
 
             switch (learning_session.getStatus()) {
               case LearningSessionStatus.FUTURE:

@@ -160,8 +160,6 @@ const add_grade = async () => {
         student_pos = table_data.findIndex(
           (a: CustomElement[]) => a[0].id == student_id + "_name_surname"
         );
-        console.log(student_pos);
-        console.log(table_data[student_pos]);
         table_data[student_pos][table_data[student_pos].length - 1].content =
           grade;
         trigger.value++;
@@ -361,17 +359,13 @@ if ($axios != undefined) {
         session_id +
         "/sections?token=" +
         user.token,
-      (response) => {
-        console.log(response.data.data);
-        return response.data.data.map((a: any) =>
+      (response) =>
+        response.data.data.map((a: any) =>
           sections.push({
             id: a.section,
           })
         )
-      }
     );
-    console.log(sections);
-    
   }
   selected_section = ref(sections[0].id);
 

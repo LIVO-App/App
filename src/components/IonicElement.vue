@@ -1,13 +1,19 @@
 <template>
   <template v-if="element.linkType == undefined || element.type == 'html'">
-    <ion-label v-if="element.type == 'string'">{{ element.content }}</ion-label>
+    <ion-label
+      v-if="element.type == 'string'"
+      :color="element.color != undefined ? element.color.name : undefined"
+      >{{ element.content }}</ion-label
+    >
     <div v-if="element.type == 'html'" v-html="element.content"></div>
     <ion-icon
       v-else-if="element.type == 'icon'"
       :ios="castIconAlternatives(element.content).ios"
       :md="castIconAlternatives(element.content).md"
-    ></ion-icon>
-    <ion-label v-else-if="element.type == 'title'"
+    ></ion-icon> <!-- Da sistemare: mettere il colore alle icone -->
+    <ion-label
+      v-else-if="element.type == 'title'"
+      :color="element.color != undefined ? element.color.name : undefined"
       ><h2>{{ element.content }}</h2></ion-label
     >
   </template>
@@ -41,6 +47,7 @@
     </ion-button>
     <ion-label
       v-else-if="element.type == 'string'"
+      :color="element.color != undefined ? element.color.name : undefined"
       @click="
         () => {
           if (!disabled && element.linkType == 'request') {
@@ -62,7 +69,9 @@
       {{ castEventString(element.content).text }}
     </ion-label>
     <template v-else-if="element.type == 'string_icon'">
-      <ion-label>
+      <ion-label
+        :color="element.color != undefined ? element.color.name : undefined"
+      >
         {{ castEventStringIcon(element.content).text }}
       </ion-label>
       <ion-button
@@ -128,7 +137,19 @@ const props = defineProps({
   disabled: Boolean, // Da sistemare: aggiornare posti dove viene usato
 });
 defineEmits(["execute_link", "signal_event"]);
+
+/*const color: string =
+  props.element.color != undefined
+    ? props.element.color.type == "var"
+      ? getComputedStyle(document.documentElement).getPropertyValue(
+          props.element.color.name
+        )
+      : props.element.color.name
+    : "";*/
 </script>
 
-<style>
+<style scoped>
+/*.textColor {
+  color: v-bind("color");
+}*/
 </style>

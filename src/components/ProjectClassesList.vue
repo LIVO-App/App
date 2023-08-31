@@ -34,7 +34,6 @@ import {
   GeneralCardElements,
   LearningSession,
   OrderedCardsList,
-  HiglightSessionCardElements,
   MinimumCourseProps,
   MinimizedCourse,
   User,
@@ -56,7 +55,7 @@ type Indexes = {
 const is_nothing_selected = () =>
   selected_session_indexes.year == "-1" && selected_session_indexes.index == -1;
 const find_session = (
-  learning_session: OrderedCardsList<HiglightSessionCardElements>,
+  learning_session: OrderedCardsList<GeneralCardElements>,
   id?: string
 ): Indexes => {
   const years = Object.keys(learning_session.cards);
@@ -68,7 +67,7 @@ const find_session = (
   do {
     year = years[count];
     index = learning_session.cards[year].findIndex(
-      (a: HiglightSessionCardElements) => {
+      (a: GeneralCardElements) => {
         if (id != undefined) {
           return a.id == id;
         } else {
@@ -162,7 +161,7 @@ const user = User.getLoggedUser() as User;
 const $route = useRoute();
 
 const promises: Promise<any>[] = [];
-const learning_sessions: OrderedCardsList<HiglightSessionCardElements> = reactive({
+const learning_sessions: OrderedCardsList<GeneralCardElements> = reactive({
   order: [],
   cards: {},
 });
@@ -188,14 +187,15 @@ for (const year of school_years) {
     executeLink(
       $axios,
       "/v1/learning_sessions?school_year=" + year,
-      (response) => {
+      async (response) => {
         learning_sessions.order.push({
           key: year,
           title: year,
         });
-        learning_sessions.cards[year] = response.data.data.map((a: any) =>
-          new LearningSession(a).toHighlightCard(store)
-        );
+        learning_sessions.cards[year] = [];
+        for (const learning_session of response.data.data) {
+          learning_sessions.cards[year].push(await new LearningSession(learning_session).toCard(store,undefined,undefined,undefined,undefined,new Date(),false));
+        }
       }
     )
   );

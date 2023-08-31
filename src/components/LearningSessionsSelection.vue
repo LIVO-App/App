@@ -35,7 +35,6 @@ import {
   LearningSession,
   OrderedCardsList,
   CourseSectionsTeachings,
-  HiglightSessionCardElements,
   User,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
@@ -52,7 +51,7 @@ type Indexes = {
 const is_nothing_selected = () =>
   selected_session_indexes.year == "-1" && selected_session_indexes.index == -1;
 const find_session = (
-  learning_sessions: OrderedCardsList<HiglightSessionCardElements>,
+  learning_sessions: OrderedCardsList<GeneralCardElements>,
   id?: string
 ): Indexes => {
   const years = Object.keys(learning_sessions.cards);
@@ -64,7 +63,7 @@ const find_session = (
   do {
     year = years[count];
     index = learning_sessions.cards[year].findIndex(
-      (a: HiglightSessionCardElements) => {
+      (a: GeneralCardElements) => {
         if (id != undefined) {
           return a.id == id;
         } else {
@@ -205,7 +204,7 @@ const store = useStore();
 const user = User.getLoggedUser() as User;
 
 const promises: Promise<any>[] = [];
-const learning_sessions: OrderedCardsList<HiglightSessionCardElements> = reactive({
+const learning_sessions: OrderedCardsList<GeneralCardElements> = reactive({
   order: [],
   cards: {},
 });
@@ -247,14 +246,16 @@ for (const year of teaching_years) {
     executeLink(
       $axios,
       "/v1/learning_sessions?school_year=" + year,
-      (response) => {
+      async (response) => {
         learning_sessions.order.push({
           key: year,
           title: year,
         });
-        learning_sessions.cards[year] = response.data.data.map((a: any) =>
-          new LearningSession(a).toHighlightCard(store)
-        );
+        learning_sessions.cards[year] = [];
+        for (const learning_session of response.data.data) {
+          learning_sessions.cards[year].push(await new LearningSession(learning_session).toCard(store,undefined,undefined,undefined,undefined,new Date(),false));
+        }
+        
       }
     )
   );

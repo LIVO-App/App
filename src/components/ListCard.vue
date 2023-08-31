@@ -27,41 +27,31 @@
             }}</ion-label>
           </ion-item>
           <template v-else>
-            <template v-for="card in props.cards_list.cards['']">
-              <highliht-card
-                v-if="isHiglithSession(card)"
-                @signal_event="$emit('signal_event')"
-                :key="'highlight-session-card-' + card.id"
-                :id="card.id"
-                :title="card.title"
-                :subtitle="card.subtitle"
-                :status="card.status"
-                :selected="card.selected"
-              />
-              <course-card
-                v-else-if="isCourse(card)"
-                @execute_link="$emit('execute_link')"
-                @signal_event="$emit('signal_event')"
-                :key="'card-course-' + card.id"
-                :credits="card.credits"
-                :content="card.content"
-                :enrollment="card.enrollment"
-                :url="card.url"
-                :method="card.method"
-              />
-              <item-card
-                v-else-if="isGeneral(card)"
-                @execute_link="$emit('execute_link')"
-                @signal_event="$emit('signal_event')"
-                :key="'card-general-' + card.id"
-                :id="card.id"
-                :title="card.title"
-                :subtitle="card.subtitle"
-                :content="card.content"
-                :side_element="card.side_element"
-                :selected="card.selected"
-                :link="card.link"
-              />
+            <template v-for="card in props.cards_list.cards['']" :key="card.id">
+              <ion-item lines="none">
+                <course-card
+                  v-if="isCourse(card)"
+                  @execute_link="$emit('execute_link')"
+                  @signal_event="$emit('signal_event')"
+                  :credits="card.credits"
+                  :content="card.content"
+                  :enrollment="card.enrollment"
+                  :url="card.url"
+                  :method="card.method"
+                />
+                <general-card
+                  v-else-if="isGeneral(card)"
+                  @execute_link="$emit('execute_link')"
+                  @signal_event="$emit('signal_event')"
+                  :id="card.id"
+                  :title="card.title"
+                  :subtitle="card.subtitle"
+                  :content="card.content"
+                  :side_element="card.side_element"
+                  :selected="card.selected"
+                  :link="card.link"
+                />
+              </ion-item>
             </template>
           </template>
         </template>
@@ -85,41 +75,32 @@
             <template v-else>
               <template
                 v-for="card in props.cards_list.cards[ordered_cards.key]"
+                :key="card.id"
               >
-                <highliht-card
-                  v-if="isHiglithSession(card)"
-                  @signal_event="$emit('signal_event')"
-                  :key="'teacher-session-card-' + card.id"
-                  :id="card.id"
-                  :title="card.title"
-                  :subtitle="card.subtitle"
-                  :status="card.status"
-                  :selected="card.selected"
-                />
-                <course-card
-                  v-else-if="isCourse(card)"
-                  @execute_link="$emit('execute_link')"
-                  @signal_event="$emit('signal_event')"
-                  :key="'card-course-' + card.id"
-                  :credits="card.credits"
-                  :content="card.content"
-                  :enrollment="card.enrollment"
-                  :url="card.url"
-                  :method="card.method"
-                />
-                <item-card
-                  v-else-if="isGeneral(card)"
-                  @execute_link="$emit('execute_link')"
-                  @signal_event="$emit('signal_event')"
-                  :key="'card-general-' + card.id"
-                  :id="card.id"
-                  :title="card.title"
-                  :subtitle="card.subtitle"
-                  :content="card.content"
-                  :side_element="card.side_element"
-                  :selected="card.selected"
-                  :link="card.link"
-                />
+                <ion-item lines="none">
+                  <course-card
+                    v-if="isCourse(card)"
+                    @execute_link="$emit('execute_link')"
+                    @signal_event="$emit('signal_event')"
+                    :credits="card.credits"
+                    :content="card.content"
+                    :enrollment="card.enrollment"
+                    :url="card.url"
+                    :method="card.method"
+                  />
+                  <general-card
+                    v-else-if="isGeneral(card)"
+                    @execute_link="$emit('execute_link')"
+                    @signal_event="$emit('signal_event')"
+                    :id="card.id"
+                    :title="card.title"
+                    :subtitle="card.subtitle"
+                    :content="card.content"
+                    :side_element="card.side_element"
+                    :selected="card.selected"
+                    :link="card.link"
+                  />
+                </ion-item>
               </template>
             </template>
           </ion-item-group>
@@ -144,7 +125,7 @@ import {
 } from "@ionic/vue";
 import { PropType } from "vue";
 import { OrderedCardsList } from "../types";
-import { isGeneral, isCourse, isHiglithSession } from "../utils";
+import { isGeneral, isCourse } from "../utils";
 
 const props = defineProps({
   title: String,

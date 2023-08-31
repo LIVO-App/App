@@ -33,8 +33,6 @@
 import {
   GeneralCardElements,
   OrderedCardsList,
-  CourseSectionsTeachings,
-  HiglightCardElements,
   User,
   CourseModel,
   CourseModelProps,
@@ -126,7 +124,6 @@ const propositions: CourseModel[] = await executeLink(
   (response: any) => response.data.data.map((a: CourseModelProps) => new CourseModel(a)), // Due modelli con titoli diversi non dovrebbero avere id diversi?
   () => []
 );
-console.log(propositions);
 const actual_teacher_id = user.id;
 const selected_year_index = ref(-1);
 

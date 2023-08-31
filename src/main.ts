@@ -8,7 +8,7 @@ import OuterHeader from "./components/OuterHeader.vue";
 import InnerHeader from "./components/InnerHeader.vue";
 import LearningSessionsCards from "./components/LearningSessionsCards.vue";
 import ListCard from "./components/ListCard.vue";
-import ItemCard from "./components/itemCard.vue";
+import GeneralCard from "./components/GeneralCard.vue";
 import LoadingComponent from "./components/LoadingComponent.vue";
 import SessionDescription from "./components/SessionDescription.vue";
 import CoursesSelectionList from "./components/CoursesSelectionList.vue";
@@ -20,7 +20,6 @@ import IonicTable from "./components/IonicTable.vue";
 import GradesManager from "./components/GradesManager.vue";
 import CourseDescription from "./components/CourseDescription.vue";
 import LearningSessionsSelection from "./components/LearningSessionsSelection.vue";
-import HighlihtCard from "./components/HighlihtCard.vue";
 import ProjectClass from "./components/ProjectClass.vue";
 import AnnouncementsComponent from "./components/AnnouncementsComponent.vue";
 import AnnouncementViewer from "./components/AnnouncementViewer.vue";
@@ -85,7 +84,7 @@ const app = createApp(App)
   .component("InnerHeader", InnerHeader)
   .component("LearningSessionsCards", LearningSessionsCards)
   .component("ListCard", ListCard)
-  .component("ItemCard", ItemCard)
+  .component("GeneralCard", GeneralCard)
   .component("LoadingComponent", LoadingComponent)
   .component("SessionDescription", SessionDescription)
   .component("CoursesSelectionList", CoursesSelectionList)
@@ -97,7 +96,6 @@ const app = createApp(App)
   .component("GradesManager", GradesManager)
   .component("CourseDescription", CourseDescription)
   .component("LearningSessionsSelection", LearningSessionsSelection)
-  .component("HighlihtCard", HighlihtCard)
   .component("ProjectClass", ProjectClass)
   .component("AnnouncementsComponent", AnnouncementsComponent)
   .component("AnnouncementViewer", AnnouncementViewer)

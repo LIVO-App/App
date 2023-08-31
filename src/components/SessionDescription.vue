@@ -68,8 +68,8 @@ if ($axios != undefined) {
     "/v1/learning_sessions/" + props.id,
     async (response) => {
       head_content = await new LearningSession(response.data.data).toCard(
-        $axios,
         store,
+        $axios,
         props.learning_context,
         true,
         false

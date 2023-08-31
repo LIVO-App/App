@@ -1,6 +1,6 @@
 import { AxiosInstance, Method } from "axios";
 import { Store } from "vuex";
-import { executeLink, getActualLearningContext, getCurrentElement, getCurrentSchoolYear, getEnrollmentIcon, getGender, getIcon, getRagneString, hashCode, numberToSection, toDateString } from "./utils";
+import { executeLink, getActualLearningContext, getCurrentElement, getCurrentSchoolYear, getEnrollmentIcon, getGender, getIcon, getRagneString, getStatusColor, getStatusString, hashCode, numberToSection, toDateString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -196,16 +196,6 @@ type CourseCardElements = CardElements & {
     credits: number,
     content: CustomElement[],
     enrollment: Enrollment
-}
-
-type HiglightCardElements = CardElements & { // Da sistemare: unite con GeneralCardElements ora che ha side_element
-    title: string,
-    selected: boolean
-}
-
-type HiglightSessionCardElements = HiglightCardElements & {
-    subtitle: string,
-    status: LearningSessionStatus
 }
 
 enum LearningSessionStatus {
@@ -772,7 +762,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
             () => 0);
     }
 
-    async toCard($axios: AxiosInstance, store: Store<any>, learning_context?: LearningContextSummary, credits?: boolean, courses_list?: boolean, reference = new Date()): Promise<GeneralCardElements> {
+    async toCard(store: Store<any>, $axios?: AxiosInstance, learning_context?: LearningContextSummary, credits?: boolean, courses_list?: boolean, reference = new Date(), selected?: boolean): Promise<GeneralCardElements> { // Da sistemare: mettere selected all'inizio quando verrà tolto $axios e store
 
         const status = this.getStatus(reference);
         const put_credits = credits ?? status == LearningSessionStatus.FUTURE;
@@ -782,7 +772,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
             group: this.school_year,
             title: getCurrentElement(store, "session") + " " + this.number,
             subtitle: getRagneString(new Date(this.start), new Date(this.end)),
-            content: [{
+            content: $axios != undefined && selected == undefined ? [{
                 id: "" + this.id,
                 type: "html",
                 content: status != LearningSessionStatus.COMPLETED || credits != undefined || courses_list != undefined ?
@@ -790,26 +780,26 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
                         + (actual_learning_context.credits != null ? " " + (await this.getSubscribedCredits($axios, store, actual_learning_context.id)) + "/" + actual_learning_context.credits : "") + "</label>" : "")
                     + (actual_learning_context.credits == null ? (await this.getSessionList($axios, store, actual_learning_context, reference, credits, courses_list)) : "")
                     : ""
-            }],
-            link: {
+            }] : undefined,
+            side_element: selected != undefined ? {
+                id: "status",
+                type: "string",
+                color: {
+                    name: getStatusColor(status),
+                    type: "var"
+                },
+                content: getStatusString(store, status)
+            } : undefined,
+            selected: selected,
+            link: selected == undefined ? {
                 url: "learning_sessions/" + this.id,
                 method: "get"
+            } : {
+                event: "change_selection",
+                data: {
+                    id: this.id,
+                },
             }
-        };
-
-        return tmp_element;
-    }
-
-    toHighlightCard(store: Store<any>, selected = false, reference = new Date()): HiglightSessionCardElements {
-
-        const status = this.getStatus(reference);
-        const tmp_element: HiglightSessionCardElements = {
-            id: "" + this.id,
-            group: this.school_year,
-            title: getCurrentElement(store, "session") + " " + this.number,
-            subtitle: getRagneString(new Date(this.start), new Date(this.end)),
-            status: status,
-            selected: selected
         };
 
         return tmp_element;
@@ -885,10 +875,18 @@ type LinkType = "request" | "event";
 
 type ContentType = string | IconAlternatives | RequestIcon | EventIcon | RequestString | EventString | RequestStringIcon | EventStringIcon;
 
+type ColorType = "var" | "text" | "hex";
+
+type ColorObject = {
+    name: string,
+    type: ColorType
+};
+
 type CustomElement = {
     id: string,
     type: ElementType,
     linkType?: LinkType,
+    color?: ColorObject,
     content: ContentType
 }
 
@@ -2076,4 +2074,4 @@ type CardListDescription = {
     on_click?: () => any
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, HiglightCardElements, HiglightSessionCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, Role, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, LinkType, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, Role, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, LinkType, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }

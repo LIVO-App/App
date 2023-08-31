@@ -1,5 +1,5 @@
 import { AxiosInstance, Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, HiglightSessionCardElements, LearningSessionStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters } from "./types";
 import { Store } from "vuex";
 
 // Da sistemare: togliere store come parametro e usare import { store } from ./store
@@ -23,10 +23,6 @@ function isGeneral(card: CardElements): card is GeneralCardElements {
 
 function isCourse(card: CardElements): card is CourseCardElements {
     return "credits" in card;
-}
-
-function isHiglithSession(card: CardElements): card is HiglightSessionCardElements {
-    return "status" in card;
 }
 
 async function executeLink($axios: AxiosInstance | undefined, url?: string | undefined, success = (response: any) => response, fail: (err: string) => any = (err: string) => err, method?: Method, body?: { [key: string]: any }, store?: Store<any>) {
@@ -155,4 +151,20 @@ function isRequest(link: LinkParameters): link is RequestParameters {
     return "url" in link;
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, isHiglithSession, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest }
+function getStatusString(store: Store<any>, status: LearningSessionStatus) {
+    return status == LearningSessionStatus.CURRENT
+        ? getCurrentElement(store, "current")
+        : status == LearningSessionStatus.UPCOMING
+            ? getCurrentElement(store, "upcomoing")
+            : "";
+}
+
+function getStatusColor(status: LearningSessionStatus) {
+    return status == LearningSessionStatus.CURRENT
+        ? "success"
+        : status == LearningSessionStatus.UPCOMING
+            ? "medium"
+            : ""
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor }
