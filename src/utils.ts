@@ -1,5 +1,5 @@
 import { Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters, CardListDescription, SingleCardList, MultipleCardList, CardListBuilder, CustomSelectDescription, MultipleCustomSelect, CustomSelectBuilder } from "./types";
 import { $axios } from "./plugins/axios";
 import { store } from "./store"
 
@@ -181,4 +181,24 @@ function getAviableLanguages(): Language[] {
     return store.state.languages;
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages }
+function isSingleCardList(obj: CardListDescription): obj is SingleCardList {
+    return "card_list" in obj;
+}
+
+function isMultipleCardList(obj: CardListDescription): obj is MultipleCardList {
+    return "card_lists" in obj;
+}
+
+function isCardListBuilder(obj: CardListDescription): obj is CardListBuilder {
+    return "func" in obj;
+}
+
+function isMultipleCustomSelect(obj: CustomSelectDescription): obj is MultipleCustomSelect {
+    return "possibilities" in obj;
+}
+
+function isCustomSelectBuilder(obj: CustomSelectDescription): obj is CustomSelectBuilder {
+    return "func" in obj;
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, isSingleCardList, isMultipleCardList, isCardListBuilder, isMultipleCustomSelect, isCustomSelectBuilder }

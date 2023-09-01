@@ -116,7 +116,7 @@ const store = useStore();
 
 const props = defineProps({
   id: {
-    type: String || Number,
+    type: String,
     required: true,
   },
   title: String,

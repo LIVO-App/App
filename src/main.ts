@@ -33,6 +33,7 @@ import OverallStudentDescription from "./components/OverallStudentDescription.vu
 import AuthPanel from "./components/AuthPanel.vue";
 import CourseProposition from "./components/CourseProposition.vue";
 import PropositionsHistory from "./components/PropositionsHistory.vue";
+import DoubleCardList from "./components/DoubleCardList.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -87,7 +88,8 @@ const app = createApp(App)
   .component("OverallStudentDescription", OverallStudentDescription)
   .component("AuthPanel", AuthPanel)
   .component("CourseProposition", CourseProposition)
-  .component("PropositionsHistory", PropositionsHistory);
+  .component("PropositionsHistory", PropositionsHistory)
+  .component("DoubleCardList",DoubleCardList);
 
 router.isReady().then(() => {
   app.mount('#app');

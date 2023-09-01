@@ -184,7 +184,6 @@ type CardElements = { // Da sistemare: sistemare quando tolti gli altri type-car
 }
 
 type GeneralCardElements = CardElements & {
-    id: string | number,
     title?: string,
     subtitle?: string,
     content?: CustomElement[],
@@ -2069,8 +2068,45 @@ class AdminProjectClass {
 type CardListDescription = {
     title?: string,
     emptiness_message: string,
-    cards_list: OrderedCardsList,
-    on_click?: () => any
+    no_choice_message?: string
 }
 
-export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, Role, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, LinkType, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }
+type SingleCardList<T = CardElements> = CardListDescription & {
+    cards_list: OrderedCardsList<T>
+}
+
+type MultipleCardList<T = CardElements> = CardListDescription & {
+    cards_lists: {
+        [key: string | number]: {
+            [key: string]: OrderedCardsList<T>
+        }[]
+    }
+}
+
+type CardListBuilder = CardListDescription & {
+    func: Function,
+    params: any[]
+}
+
+type CustomSelectDescription = {
+    label: string,
+    emptiness_message: string,
+    no_choice_message: string,
+};
+
+type MultipleCustomSelect = CustomSelectDescription & {
+    possibilities: {
+        [key: string | number]: {
+            [key: string | number]: {
+                id: string
+            }
+        }
+    }
+};
+
+type CustomSelectBuilder = CustomSelectDescription & {
+    func: Function,
+    params: any[]
+};
+
+export { Language, Menu, MenuItem, MenuTitle, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, Role, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, LinkType, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription, SingleCardList, MultipleCardList, CardListBuilder, CustomSelectDescription, MultipleCustomSelect, CustomSelectBuilder }

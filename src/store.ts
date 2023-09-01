@@ -547,6 +547,7 @@ export const store = createStore({
                     course_confirmation_date: "Data conferma modello di corso",
                     edit: "Modifica",
                     no_elements: "Nessun elemento",
+                    side_element_selection_message: "Seleziona elemento nella lista a fianco per quelli associati",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -694,6 +695,7 @@ export const store = createStore({
                     project_class_confirmation_date: "Project class confirmation date",
                     edit: "Edit",
                     no_elements: "No elements",
+                    side_element_selection_message: "Select an element in the side list to see the associated ones",
                 }
             },
             logged_user: false,
