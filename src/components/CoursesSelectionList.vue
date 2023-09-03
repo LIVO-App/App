@@ -78,7 +78,6 @@ import {
   CourseCardElements,
   CourseSummary,
   CourseSummaryProps,
-  Language,
   LearningArea,
   LearningSession,
   LearningSessionStatus,

@@ -90,7 +90,7 @@ import {
 import { executeLink, getCurrentElement, getIcon } from "@/utils";
 import { IonModal, IonAlert } from "@ionic/vue";
 import { ref, watch } from "vue";
-import { Store, useStore } from "vuex";
+import { useStore } from "vuex";
 
 type AvailableModal =
   | "grades"

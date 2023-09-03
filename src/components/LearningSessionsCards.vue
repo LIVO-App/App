@@ -41,10 +41,8 @@ import {
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { reactive } from "vue";
-import { useStore } from "vuex";
 import { executeLink, getCurrentElement, getCurrentSchoolYear } from "@/utils";
 
-const store = useStore();
 const user = User.getLoggedUser() as User;
 
 const learning_sessions: {

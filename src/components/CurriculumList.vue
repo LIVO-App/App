@@ -118,7 +118,6 @@ import {
   CurriculumCourse,
   CustomElement,
   GradesParameters,
-  Language,
   LearningArea,
   LearningContext,
   Progression,
@@ -138,7 +137,7 @@ import {
   IonItem,
 } from "@ionic/vue";
 import { ref, watch } from "vue";
-import { Store, useStore } from "vuex";
+import { useStore } from "vuex";
 
 type availableModal = "grades" | "course_details";
 

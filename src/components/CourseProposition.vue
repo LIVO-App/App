@@ -561,7 +561,6 @@
 <script setup lang="ts">
 import {
   CourseModelProps,
-  Language,
   ModelProposition,
   User,
   LearningArea,
