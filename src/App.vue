@@ -13,25 +13,31 @@
             </ion-list-header>
 
             <ion-menu-toggle :auto-hide="false">
-              <template v-if="store.state.logged_user || (user = User.getLoggedUser()) != undefined">
+              <template
+                v-if="
+                  (user = store.state.user ?? User.getLoggedUser()) != undefined
+                "
+              >
                 <ion-item
-                  v-for="(p, i) in menu[castToUser(user = User.getLoggedUser()).user]"
+                  v-for="(p, i) in getMenu(castToUser(user))"
                   :key="i"
-                  @click="store.state.menuIndex = i"
+                  @click="selectTitle(castToUser(user), i)"
                   router-direction="root"
-                  :router-link="p.url"
+                  :router-link="{ name: p.url_names[castToUser(user).user][0] }"
                   lines="none"
                   :detail="false"
                   class="hydrated"
-                  :class="{ selected: store.state.menuIndex === i }"
+                  :class="{ selected: menu.index === i }"
                 >
                   <ion-icon
                     aria-hidden="true"
                     class="ion-padding-end"
-                    :ios="getIcon(p.iconRef).ios"
-                    :md="getIcon(p.iconRef).md"
+                    :ios="getIcon(p.icon_ref).ios"
+                    :md="getIcon(p.icon_ref).md"
                   ></ion-icon>
-                  <ion-label>{{ p.title[getCurrentLanguage()] }}</ion-label>
+                  <ion-label>{{
+                    getCurrentElement(menu.order[castToUser(user).user][i])
+                  }}</ion-label>
                 </ion-item>
               </template>
             </ion-menu-toggle>
@@ -59,28 +65,60 @@ import {
   IonSplitPane,
 } from "@ionic/vue";
 import { computed } from "vue";
+import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
-import { Menu, User } from "./types";
-import { getCurrentLanguage, getIcon } from "./utils";
+import { Menu, MenuItem, User } from "./types";
+import { getCurrentElement, getIcon } from "./utils";
 
 const image = computed(() => require("./assets/Logo_LIVO_Campus_POS_RGB.png"));
 const castToUser = (user: User | undefined) => user as User;
+const getMenu = (user: User) => {
+  const complete_menu: MenuItem[] = [];
+
+  let tmp_item: MenuItem | undefined;
+
+  for (const item_title of menu.order[user.user]) {
+    tmp_item = menu.items[item_title];
+    if (tmp_item != undefined) {
+      complete_menu.push(tmp_item);
+    }
+  }
+
+  return complete_menu;
+};
+const selectTitle = (user: User, index: number) => {
+  store.state.menu.index = index;
+  sessionStorage.setItem("selected_item", menu.order[user.user][index]);
+};
 
 const store = useStore();
+const $route = useRoute();
 const menu: Menu = store.state.menu;
 const user = User.getLoggedUser();
-const language = getCurrentLanguage();
+const items_titles = Object.keys(menu.items);
+const selected_item = sessionStorage.getItem("selected_item");
 
-let path = window.location.pathname;
-let tmp_index: number;
+let tmp_index = -1;
+let count = 0;
 
-if (user != undefined && path !== undefined) {
-  path = path.split("/")[1];
-  tmp_index = menu[user.user].findIndex(
-    (page) => page.url.split("/")[1] === path
-  );
-  store.state.menuIndex = tmp_index != -1 ? tmp_index : 0;
+if (user != undefined) {
+  if (selected_item != undefined) {
+    tmp_index = menu.order[user.user].findIndex((a) => a == selected_item);
+  } else if ($route.name !== undefined) {
+    do {
+      tmp_index = menu.items[items_titles[count++]].url_names[
+        user.user
+      ].findIndex((a) => a == $route.name);
+    } while (tmp_index == -1 && count < items_titles.length);
+  }
+  store.state.menu.index =
+    tmp_index != -1
+      ? tmp_index
+      : menu.order[user.user].findIndex(
+          (a) => a == menu.default_item[user.user]
+        );
+  sessionStorage.setItem("selected_item", menu.order[user.user][tmp_index]);
 }
 </script>
 

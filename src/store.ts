@@ -50,7 +50,7 @@ import { UserProps } from "./types";
 
 export const store = createStore({
     mutations: {
-        edit_user(state: any, user: UserProps | undefined) {
+        editUser(state: any, user: UserProps | undefined) {
             state.user = user;
         },
         setLoggedUser(state: any, logged: boolean) {
@@ -59,10 +59,10 @@ export const store = createStore({
     },
     actions: {
         login({ commit }, user) {
-            commit("edit_user", user);
+            commit("editUser", user);
         },
         logout({ commit }) {
-            commit("edit_user", undefined);
+            commit("editUser", undefined);
         },
         signalLogin({ commit }) {
             commit("setLoggedUser", true);
@@ -74,238 +74,141 @@ export const store = createStore({
     state() {
         return {
             menu: {
-                "student": [ // Da sistemare: spostare traduzioni, mettere riferimenti a title e fare rework del menu
-                    {
-                        title: {
-                            italian: "Sessioni di apprendimento",
-                            english: "Learning sessions"
+                items: {
+                    "learning_sessions": {
+                        url_names: {
+                            "student": ["learning_sessions", "learning_session"],
                         },
-                        url: '/learning_sessions',
-                        iconRef: "easel"
+                        icon_ref: "easel"
                     },
-                    {
-                        title: {
-                            italian: "Curriculum",
-                            english: "Curriculum"
+                    "curriculum": {
+                        url_names: {
+                            "student": ["curriculum"],
                         },
-                        url: '/curriculum',
-                        iconRef: "school"
+                        icon_ref: "school"
                     },
-                    {
-                        title: {
-                            italian: "ObenBadge",
-                            english: "OpenBadges"
+                    "obenbadges": {
+                        url_names: {
+                            "student": ["obenbadges"],
+                            "admin": ["openbadges"],
                         },
-                        url: '/openbadges',
-                        iconRef: "ribbon"
+                        icon_ref: "ribbon"
                     },
-                    {
-                        title: {
-                            italian: "Cittadinanza attiva",
-                            english: "Citizenship report"
+                    "citizenship_report": {
+                        url_names: {
+                            "student": ["citizenship_report"],
+                            "admin": ["citizenship_report"],
                         },
-                        url: '/citizenship_report',
-                        iconRef: "clipboard"
+                        icon_ref: "clipboard"
                     },
-                    {
-                        title: {
-                            italian: "Annunci",
-                            english: "Announcements"
+                    "announcements": {
+                        url_names: {
+                            "student": ["announcements", "announcement"],
                         },
-                        url: '/announcements',
-                        iconRef: "mail"
+                        icon_ref: "mail"
                     },
-                    {
-                        title: {
-                            italian: "Impostazioni",
-                            english: "Settings"
+                    "project_courses": {
+                        url_names: {
+                            "teacher": ["project_courses", "project_course", "announcements", "student"],
+                            "admin": ["project_courses_hub", "project_course", "student"]
                         },
-                        url: '/settings',
-                        iconRef: "settings"
+                        icon_ref: "brief_case"
                     },
-                    { // Da sistemare: spostare in profilo quando verrà creato
-                        title: {
-                            italian: "Logout",
-                            english: "Logout"
+                    "ordinary_classes": {
+                        url_names: {
+                            "teacher": ["ordinary_classes", "student"],
+                            "admin": ["ordinary_classes", "student"]
                         },
-                        url: '/logout',
-                        iconRef: "logout"
+                        icon_ref: "people"
                     },
-                    {
-                        title: {
-                            italian: "Info",
-                            english: "Info"
+                    "course_proposal": {
+                        url_names: {
+                            "teacher": ["course_proposal", "propositions_history"],
                         },
-                        url: '/info',
-                        iconRef: "information_circle"
+                        icon_ref: "add_circle"
+                    },
+                    "course_proposals": {
+                        url_names: {
+                            "admin": ["propositions_history", "course_proposal"],
+                        },
+                        icon_ref: "archive"
+                    },
+                    "learning_sessions_management": {
+                        url_names: {
+                            "admin": ["learning_sessions_management"], // Da sistemare: non è detto che userò questa pagina, dato che non c'è una seconda lista
+                        },
+                        icon_ref: "calendar"
+                    },
+                    "constraints_management": {
+                        url_names: {
+                            "admin": ["constraints_management"]
+                        },
+                        icon_ref: "link"
+                    },
+                    "settings": {
+                        url_names: {
+                            "student": ["settings"],
+                            "teacher": ["settings"],
+                            "admin": ["settings"]
+                        },
+                        icon_ref: "settings"
+                    },
+                    "logout": { // Da sistemare: spostare in profilo quando verrà creato
+                        url_names: {
+                            "student": ["logout"],
+                            "teacher": ["logout"],
+                            "admin": ["logout"]
+                        },
+                        icon_ref: "logout"
+                    },
+                    "info": {
+                        url_names: {
+                            "student": ["info"],
+                            "teacher": ["info"],
+                            "admin": ["info"]
+                        },
+                        icon_ref: "information_circle"
                     }
-                ],
-                "teacher": [
-                    {
-                        title: {
-                            italian: "Corsi progetto",
-                            english: "Project courses"
-                        },
-                        url: '/project_courses',
-                        iconRef: "brief_case"
-                    },
-                    {
-                        title: {
-                            italian: "Classi ordinarie",
-                            english: "Ordinary classes"
-                        },
-                        url: '/ordinary_classes',
-                        iconRef: "people"
-                    },
-                    {
-                        title: {
-                            italian: "Proposta corso",
-                            english: "Course propose"
-                        },
-                        url: '/course_proposition',
-                        iconRef: "add_circle"
-                    },
-                    { // Da sistemare: non deve apparire
-                        title: {
-                            italian: "Annunci",
-                            english: "Announcements"
-                        },
-                        url: '/announcements',
-                        iconRef: "mail"
-                    },
-                    { // Da sistemare: non deve apparire
-                        title: {
-                            italian: "Studenti",
-                            english: "Students"
-                        },
-                        url: '/students',
-                        iconRef: "people"
-                    },
-                    { // Da sistemare: non deve apparire
-                        title: {
-                            italian: "Proposte corsi",
-                            english: "Courses propositions"
-                        },
-                        url: '/propositions_history',
-                        iconRef: "archive"
-                    },
-                    { // Da sistemare: spostare in profilo quando verrà creato
-                        title: {
-                            italian: "Logout",
-                            english: "Logout"
-                        },
-                        url: '/logout',
-                        iconRef: "logout"
-                    },
-                    {
-                        title: {
-                            italian: "Impostazioni",
-                            english: "Settings"
-                        },
-                        url: '/settings',
-                        iconRef: "settings"
-                    },
-                    {
-                        title: {
-                            italian: "Info",
-                            english: "Info"
-                        },
-                        url: '/info',
-                        iconRef: "information_circle"
-                    }
-                ],
-                "admin": [
-                    {
-                        title: {
-                            italian: "Corsi progetto",
-                            english: "Project courses"
-                        },
-                        url: '/learning_sessions_management',
-                        iconRef: "brief_case"
-                    },
-                    {
-                        title: {
-                            italian: "Proposte corsi",
-                            english: "Courses propositions"
-                        },
-                        url: '/propositions_history',
-                        iconRef: "archive"
-                    },
-                    {
-                        title: {
-                            italian: "Classi ordinarie",
-                            english: "Ordinary classes"
-                        },
-                        url: '/ordinary_classes',
-                        iconRef: "people"
-                    },
-                    {
-                        title: {
-                            italian: "Cittadinanza attiva",
-                            english: "Citizenship report"
-                        },
-                        url: '/citizenship_report',
-                        iconRef: "clipboard"
-                    },
-                    {
-                        title: {
-                            italian: "Gestione sessioni di apprendimento",
-                            english: "Learning sessions management"
-                        },
-                        url: '/learning_sessions_management',
-                        iconRef: "calendar"
-                    },
-                    {
-                        title: {
-                            italian: "Gestione vincoli",
-                            english: "Constraints management"
-                        },
-                        url: '/constraints_management',
-                        iconRef: "link"
-                    },
-                    { // Da sistemare: non deve apparire
-                        title: {
-                            italian: "Proposta corso",
-                            english: "Course propose"
-                        },
-                        url: '/course_proposition',
-                        iconRef: "add_circle"
-                    },
-                    { // Da sistemare: non deve apparire
-                        title: {
-                            italian: "Corsi progetto",
-                            english: "Project courses"
-                        },
-                        url: '/project_courses',
-                        iconRef: "add_circle"
-                    },
-                    {
-                        title: {
-                            italian: "Impostazioni",
-                            english: "Settings"
-                        },
-                        url: '/settings',
-                        iconRef: "settings"
-                    },
-                    { // Da sistemare: spostare in profilo quando verrà creato
-                        title: {
-                            italian: "Logout",
-                            english: "Logout"
-                        },
-                        url: '/logout',
-                        iconRef: "logout"
-                    },
-                    {
-                        title: {
-                            italian: "Info",
-                            english: "Info"
-                        },
-                        url: '/info',
-                        iconRef: "information_circle"
-                    }
-                ]
+                },
+                order: {
+                    "student": [
+                        "learning_sessions",
+                        "announcements",
+                        "curriculum",
+                        "obenbadges",
+                        "citizenship_report",
+                        "settings",
+                        "logout",
+                        "info"
+                    ],
+                    "teacher": [
+                        "project_courses",
+                        "course_proposal",
+                        "ordinary_classes",
+                        "settings",
+                        "logout",
+                        "info"
+                    ],
+                    "admin": [
+                        "project_courses",
+                        "ordinary_classes",
+                        "course_proposals",
+                        "learning_sessions_management",
+                        "constraints_management",
+                        "citizenship_report",
+                        "obenbadges",
+                        "settings",
+                        "logout",
+                        "info"
+                    ]
+                },
+                default_item: {
+                    student: "learning_sessions",
+                    teacher: "project_courses",
+                    admin: "project_courses_hub"
+                },
+                index: 0,
             },
-            menuIndex: 0,
             icons: {
                 easel: {
                     ios: easelOutline,
@@ -547,6 +450,19 @@ export const store = createStore({
                     course_confirmation_date: "Data conferma modello di corso",
                     edit: "Modifica",
                     no_elements: "Nessun elemento",
+                    curriculum: "Curriculum",
+                    obenbadges: "ObenBadge",
+                    citizenship_report: "Cittadinanza attiva",
+                    announcements: "Annunci",
+                    settings: "Impostazioni",
+                    logout: "Logout",
+                    project_courses: "Corsi progetto",
+                    ordinary_classes: "Classi ordinarie",
+                    course_proposal: "Proposta corso",
+                    course_proposals: "Proposte di corsi",
+                    learning_sessions_management: "Gestione sessioni di apprendimento",
+                    constraints_management: "Gestione vincoli",
+                    info: "Info",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -694,6 +610,19 @@ export const store = createStore({
                     project_class_confirmation_date: "Project class confirmation date",
                     edit: "Edit",
                     no_elements: "No elements",
+                    curriculum: "Curriculum",
+                    obenbadges: "OpenBadges",
+                    citizenship_report: "Citizenship report",
+                    announcements: "Announcements",
+                    settings: "Settings",
+                    logout: "Logout",
+                    project_courses: "Project courses",
+                    ordinary_classes: "Ordinary classes",
+                    course_proposal: "Course proposal",
+                    course_proposals: "Course proposals",
+                    learning_sessions_management: "Learning sessions management",
+                    constraints_management: "Constraints management",
+                    info: "Info",
                 }
             },
             logged_user: false,

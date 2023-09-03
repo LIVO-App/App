@@ -6,11 +6,10 @@ import { Method } from "axios";
 declare module '@vue/runtime-core' {
   interface State {
     menu: Menu,
-    menuIndex: number,
     icons: IconsList,
     language: Language,
     elements: ElementsList,
-    user: UserProps | undefined,
+    user: User | undefined,
     request: {
       url: string,
       method: Method,

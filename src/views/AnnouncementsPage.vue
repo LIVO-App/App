@@ -1,21 +1,9 @@
 <template>
   <ion-page>
-    <outer-header
-      :title="
-        store.state.menu[user.user][store.state.menuIndex].title[
-          language
-        ]
-      "
-    />
+    <outer-header :title="title" />
 
     <ion-content :fullscreen="true">
-      <inner-header
-        :title="
-          store.state.menu[user.user][store.state.menuIndex].title[
-            language
-          ]
-        "
-      />
+      <inner-header :title="title" />
 
       <suspense>
         <template #default>
@@ -30,14 +18,15 @@
 </template>
   
   <script setup lang="ts">
-import { User } from "@/types";
-import { getCurrentLanguage } from "@/utils";
+import { Menu, User } from "@/types";
+import { getCurrentElement } from "@/utils";
 import { IonContent, IonPage } from "@ionic/vue";
 import { useStore } from "vuex";
 
 const store = useStore();
 const user = User.getLoggedUser() as User;
-const language = getCurrentLanguage();
+const menu: Menu = store.state.menu;
+const title = getCurrentElement(menu.order[user.user][menu.index]);
 // Da sistemare: vedere se si può caricare diversi componenti con uno solo per rimuovere tutte le view con componente singolo
 </script>
   
