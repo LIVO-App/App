@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { IonSelect, IonSelectOption, IonLabel } from "@ionic/vue";
+import { IonSelect, IonSelectOption } from "@ionic/vue";
 import { PropType } from "vue";
 
 const props = defineProps({

@@ -445,3 +445,7 @@ http://ionicframework.com/docs/theming/ */
 ion-split-pane {
   --side-max-width: 250px;
 }
+
+.title_font {
+  font-size: 32px !important;
+}

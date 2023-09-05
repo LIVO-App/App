@@ -3,6 +3,7 @@
     <ion-label
       v-if="element.type == 'string'"
       :color="element.color != undefined ? element.color.name : undefined"
+      :class="actual_class"
       >{{ element.content }}</ion-label
     >
     <div v-if="element.type == 'html'" v-html="element.content"></div>
@@ -10,10 +11,12 @@
       v-else-if="element.type == 'icon'"
       :ios="castIconAlternatives(element.content).ios"
       :md="castIconAlternatives(element.content).md"
+      :class="actual_class"
     ></ion-icon> <!-- Da sistemare: mettere il colore alle icone -->
     <ion-label
       v-else-if="element.type == 'title'"
       :color="element.color != undefined ? element.color.name : undefined"
+      :class="actual_class"
       ><h2>{{ element.content }}</h2></ion-label
     >
   </template>
@@ -39,6 +42,7 @@
           }
         }
       "
+      :class="actual_class"
     >
       <ion-icon
         :ios="castRequestIcon(element.content).icon.ios"
@@ -65,12 +69,14 @@
           }
         }
       "
+      :class="actual_class"
     >
       {{ castEventString(element.content).text }}
     </ion-label>
     <template v-else-if="element.type == 'string_icon'">
       <ion-label
         :color="element.color != undefined ? element.color.name : undefined"
+        :class="actual_class"
       >
         {{ castEventStringIcon(element.content).text }}
       </ion-label>
@@ -95,6 +101,7 @@
             }
           }
         "
+        :class="actual_class"
       >
         <ion-icon
           :ios="castRequestIcon(element.content).icon.ios"
@@ -134,10 +141,12 @@ const props = defineProps({
     type: Object as PropType<CustomElement>,
     required: true,
   },
+  class: String, // Da sistemare: mettere anche oggetto e vedere come sistemare oggetti multipli
   disabled: Boolean, // Da sistemare: aggiornare posti dove viene usato
 });
 defineEmits(["execute_link", "signal_event"]);
 
+const actual_class = props.class ?? "";
 /*const color: string =
   props.element.color != undefined
     ? props.element.color.type == "var"

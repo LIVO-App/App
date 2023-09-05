@@ -4,55 +4,70 @@
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="{
-            text: getCurrentElement('current'),
-            color: 'white'
-          }"
+          :title="
+            getCustomMessage('title', getCurrentElement('current'), 'string', {
+              name: 'white',
+              type: 'text',
+            })
+          "
           :emptiness_message="no_session"
           :cards_list="learning_sessions.current"
           :colors="{
             list_borders: 'white',
             background: 'current',
             text: 'white',
-            dividers: 'white'
+            dividers: 'white',
           }"
         />
         <list-card
-          :title="{
-            text: getCurrentElement('future')
-          }"
+          :title="
+            getCustomMessage('title', getCurrentElement('future'), 'string', {
+              name: 'white',
+              type: 'text',
+            })
+          "
           :emptiness_message="no_session"
           :cards_list="learning_sessions.future"
           :colors="{
             background: 'warning',
             dividers_text: 'black',
             list_borders: 'white',
-            dividers: 'white'
+            dividers: 'white',
           }"
         />
       </ion-col>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="{
-            text: getCurrentElement('upcoming'),
-            color: 'primary'
-          }"
+          :title="
+            getCustomMessage('title', getCurrentElement('upcoming'), 'string', {
+              name: 'white',
+              type: 'text',
+            })
+          "
           :colors="{
             list_borders: 'white',
             background: 'danger',
-            dividers: 'white'
+            dividers: 'white',
           }"
           :emptiness_message="no_session"
           :cards_list="learning_sessions.upcoming"
         />
         <list-card
-          :title="{
-            text: getCurrentElement('completed')
-          }"
+          :title="
+            getCustomMessage(
+              'title',
+              getCurrentElement('completed'),
+              'string',
+              {
+                name: 'white',
+                type: 'text',
+              }
+            )
+          "
           :colors="{
             list_borders: 'white',
             background: 'completed',
-            dividers: 'white'
+            dividers: 'white',
           }"
           :emptiness_message="no_session"
           :cards_list="learning_sessions.completed"
@@ -70,10 +85,16 @@ import {
   LearningSession,
   OrderedCardsList,
   User,
+  CustomElement,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { reactive } from "vue";
-import { executeLink, getCurrentElement, getCurrentSchoolYear } from "@/utils";
+import {
+  executeLink,
+  getCurrentElement,
+  getCurrentSchoolYear,
+  getCustomMessage,
+} from "@/utils";
 
 const user = User.getLoggedUser() as User;
 
@@ -101,9 +122,7 @@ const learning_sessions: {
   },
 });
 const promises: Promise<any>[] = [];
-const no_session = {
-  text: getCurrentElement("no_sessions")
-};
+const no_session: CustomElement = getCustomMessage("emptiness_message",getCurrentElement("no_sessions"));
 const ordinary_classes: OrdinaryClassProps[] = await executeLink(
   "/v1/ordinary_classes?student_id=" + user.id,
   (response) => response.data.data
@@ -125,9 +144,7 @@ if (current_class != undefined) {
         async (response) => {
           learning_sessions.completed.order.push({
             key: oc.school_year,
-            title: {
-              text: oc.school_year,
-            },
+            title: getCustomMessage("title", oc.school_year),
           });
           learning_sessions.completed.cards[oc.school_year] = [];
           for (const session of response.data.data) {
@@ -181,22 +198,19 @@ if (current_class != undefined) {
         }
         learning_sessions.completed.order.push({
           key: current_school_year,
-          title: {
-            text: current_school_year,
-          },
+          title: getCustomMessage("title", current_school_year),
         });
         learning_sessions.future.order = learning_sessions.future.order.concat(
           {
             key: "open_enrollment",
-            title: {
-              text: getCurrentElement("open_enrollment"),
-            },
+            title: getCustomMessage(
+              "title",
+              getCurrentElement("open_enrollment")
+            ),
           },
           {
             key: "planned",
-            title: {
-              text: getCurrentElement("planned"),
-            },
+            title: getCustomMessage("title", getCurrentElement("planned")),
           }
         );
         tmp_element = learning_sessions.future.cards["planned"].shift();

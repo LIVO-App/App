@@ -69,9 +69,12 @@
         <list-card
           :key="trigger"
           :cards_list="messages"
-          :emptiness_message="{
-            text: getCurrentElement('no_announcements')
-          }"
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement('no_announcements')
+            )
+          "
           @signal_event="setupModalAndOpen()"
         />
       </template>
@@ -90,7 +93,12 @@ import {
   OrderedCardsList,
   User,
 } from "@/types";
-import { executeLink, getCurrentElement, getIcon } from "@/utils";
+import {
+  executeLink,
+  getCurrentElement,
+  getCustomMessage,
+  getIcon,
+} from "@/utils";
 import { IonModal, IonAlert } from "@ionic/vue";
 import { ref, Ref, watch } from "vue";
 import { useStore } from "vuex";
@@ -116,9 +124,7 @@ const setupModalAndOpen = async () => {
       publishment_open.value = true;
       break;
     case "empty_titles_or_messages":
-      alert_information.message = getCurrentElement(
-        "empty_titles_or_messages"
-      );
+      alert_information.message = getCurrentElement("empty_titles_or_messages");
       alert_open.value = true;
       break;
     case "no_selected_sections": // Da sistemare: non ha funzionato

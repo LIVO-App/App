@@ -318,9 +318,12 @@
                 <list-card
                   :key="trigger + '_list'"
                   :cards_list="teachings_cards"
-                  :emptiness_message="{
-                    text: getCurrentElement('no_teachings')
-                  }"
+                  :emptiness_message="
+                    getCustomMessage(
+                      'emptiness_message',
+                      getCurrentElement('no_teachings')
+                    )
+                  "
                   @signal_event="removeElement('teachings')"
                 />
               </ion-col>
@@ -406,9 +409,7 @@
                       :aria-label="getCurrentElement('main_study_year')"
                       class="ion-padding-start"
                       label-placement="start"
-                      >{{
-                        getCurrentElement("main_study_year")
-                      }}</ion-checkbox
+                      >{{ getCurrentElement("main_study_year") }}</ion-checkbox
                     >
                   </ion-col>
                 </ion-row>
@@ -439,9 +440,7 @@
                       :aria-label="getCurrentElement('main_teacher')"
                       class="ion-padding-start"
                       label-placement="start"
-                      >{{
-                        getCurrentElement("main_teacher")
-                      }}</ion-checkbox
+                      >{{ getCurrentElement("main_teacher") }}</ion-checkbox
                     >
                   </ion-col>
                 </ion-row>
@@ -500,13 +499,16 @@
                         ? access_propositions_cards
                         : teachers_cards
                     "
-                    :emptiness_message="{
-                      text: getCurrentElement(
-                        pages[current_page_index] == 'access_object'
-                          ? 'no_access_proposition'
-                          : 'no_teacher_proposition'
+                    :emptiness_message="
+                      getCustomMessage(
+                        'emptiness_message',
+                        getCurrentElement(
+                          pages[current_page_index] == 'access_object'
+                            ? 'no_access_proposition'
+                            : 'no_teacher_proposition'
+                        )
                       )
-                    }"
+                    "
                     @signal_event="
                       removeElement(
                         pages[current_page_index] == 'access_object'
@@ -597,6 +599,7 @@ import {
   getAviableLanguages,
   getCurrentElement,
   getCurrentLanguage,
+  getCustomMessage,
   getIcon,
   numberToSection,
 } from "@/utils";
@@ -698,9 +701,7 @@ const addTeaching = (id?: string) => {
 
     course_proposition.students_distribution.teaching_list.push(teaching.id);
 
-    teachings_cards.cards[""].push(
-      teaching.toCard(action.value == "view")
-    );
+    teachings_cards.cards[""].push(teaching.toCard(action.value == "view"));
 
     teachings.selected.push(teaching);
     teachings.available.splice(tmp_teaching_index, 1);
@@ -781,9 +782,7 @@ const addAccess = (
     if (access_propositions_cards.cards[learning_context.id] == undefined) {
       access_propositions_cards.order.push({
         key: learning_context.id,
-        title: {
-          text: learning_context[`${language}_title`]
-        },
+        title: getCustomMessage("title", learning_context[`${language}_title`]),
       });
       access_propositions_cards.order.sort((a, b) =>
         a.key == b.key ? 0 : a.key > b.key ? 1 : -1

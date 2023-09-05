@@ -4,12 +4,15 @@
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="{
-            text: getCurrentElement('learning_sessions')
-          }"
-          :emptiness_message="{
-            text: getCurrentElement('no_sessions')
-          }"
+          :title="
+            getCustomMessage('title', getCurrentElement('learning_sessions'))
+          "
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement('no_sessions')
+            )
+          "
           :cards_list="learning_sessions"
           @signal_event="changeSelection()"
         />
@@ -17,16 +20,17 @@
       <ion-col size="12" size-md="6">
         <list-card
           :key="trigger"
-          :title="{
-            text: getCurrentElement('courses')
-          }"
-          :emptiness_message="{
-            text: getCurrentElement(
-              is_nothing_selected()
-                ? 'teacher_learning_session_selection_message'
-                : 'no_project_classes'
+          :title="getCustomMessage('title', getCurrentElement('courses'))"
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement(
+                is_nothing_selected()
+                  ? 'teacher_learning_session_selection_message'
+                  : 'no_project_classes'
+              )
             )
-          }"
+          "
           :cards_list="is_nothing_selected() ? empty_courses : courses"
         />
       </ion-col>
@@ -45,8 +49,7 @@ import {
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { reactive, ref } from "vue";
 import { useStore } from "vuex";
-import { executeLink, getCurrentElement } from "@/utils";
-import { text } from "ionicons/icons";
+import { executeLink, getCurrentElement, getCustomMessage } from "@/utils";
 
 type Indexes = {
   year: string;
@@ -104,7 +107,10 @@ const changeSelection = async () => {
     selectedChange();
   }
 
-  const tmp_selected = find_session(learning_sessions, store.state.event.data.id);
+  const tmp_selected = find_session(
+    learning_sessions,
+    store.state.event.data.id
+  );
   if (
     selected_session_indexes.year == tmp_selected.year &&
     selected_session_indexes.index == tmp_selected.index
@@ -216,15 +222,14 @@ const courses: OrderedCardsList<GeneralCardElements> = reactive({
   order: [
     {
       key: "teacher",
-      title: {
-        text: getCurrentElement("teacher"),
-      },
+      title: getCustomMessage("title", getCurrentElement("teacher")),
     },
     {
       key: "associated",
-      title: {
-        text: getCurrentElement("my_associated_teachings"),
-      },
+      title: getCustomMessage(
+        "title",
+        getCurrentElement("my_associated_teachings")
+      ),
     },
   ],
   cards: {
@@ -251,15 +256,14 @@ for (const year of teaching_years) {
       async (response) => {
         learning_sessions.order.push({
           key: year,
-          title: {
-            text: year
-          },
+          title: getCustomMessage("title", year),
         });
         learning_sessions.cards[year] = [];
         for (const learning_session of response.data.data) {
-          learning_sessions.cards[year].push(await new LearningSession(learning_session).toCard(false));
+          learning_sessions.cards[year].push(
+            await new LearningSession(learning_session).toCard(false)
+          );
         }
-        
       }
     )
   );

@@ -4,11 +4,9 @@
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="{
-            text: getCurrentElement('school_years')
-          }"
+          :title="getCustomMessage('title', getCurrentElement('school_years'))"
           :emptiness_message="{
-            text: getCurrentElement('no_school_years')
+            text: getCurrentElement('no_school_years'),
           }"
           :cards_list="school_years"
           @signal_event="changeSelection()"
@@ -17,17 +15,17 @@
       <ion-col size="12" size-md="6">
         <list-card
           :key="trigger"
-          :title="{
-            text: getCurrentElement('courses')
-          }"
+          :title="getCustomMessage('title', getCurrentElement('courses'))"
           :emptiness_message="{
             text: getCurrentElement(
               is_nothing_selected()
                 ? 'teacher_learning_session_selection_message'
                 : 'no_project_classes'
-            )
+            ),
           }"
-          :cards_list="is_nothing_selected() ? empty_propositions : year_propositions"
+          :cards_list="
+            is_nothing_selected() ? empty_propositions : year_propositions
+          "
         />
       </ion-col>
     </ion-row>
@@ -45,34 +43,27 @@ import {
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { reactive, ref } from "vue";
 import { useStore } from "vuex";
-import { executeLink, getCurrentElement } from "@/utils";
-import { text } from "ionicons/icons";
+import { executeLink, getCurrentElement, getCustomMessage } from "@/utils";
 
-const is_nothing_selected = () =>
-  selected_year_index.value == -1;
+const is_nothing_selected = () => selected_year_index.value == -1;
 const find_session = (
   school_years: OrderedCardsList<GeneralCardElements>,
   id?: string
-) => school_years.cards[""].findIndex(
-    (a: GeneralCardElements) => {
-      if (id != undefined) {
-        return a.id == id;
-      } else {
-        return a.selected;
-      }
+) =>
+  school_years.cards[""].findIndex((a: GeneralCardElements) => {
+    if (id != undefined) {
+      return a.id == id;
+    } else {
+      return a.selected;
     }
-  );
+  });
 const changeSelection = async () => {
-  if (
-    selected_year_index.value != -1
-  ) {
+  if (selected_year_index.value != -1) {
     selectedChange();
   }
 
   const tmp_selected = find_session(school_years, store.state.event.data.id);
-  if (
-    selected_year_index.value == tmp_selected
-  ) {
+  if (selected_year_index.value == tmp_selected) {
     selected_year_index.value = -1;
     year_propositions.cards = {
       "": [],
@@ -80,10 +71,13 @@ const changeSelection = async () => {
   } else {
     selected_year_index.value = tmp_selected;
     selectedChange();
-    
+
     for (const proposition of propositions) {
-      if (proposition.creation_school_year == parseInt(school_years.cards[""][selected_year_index.value].id)) {
-        year_propositions.cards[""].push(proposition.toCard(user,true));
+      if (
+        proposition.creation_school_year ==
+        parseInt(school_years.cards[""][selected_year_index.value].id)
+      ) {
+        year_propositions.cards[""].push(proposition.toCard(user, true));
       }
     }
   }
@@ -116,7 +110,8 @@ const year_propositions: OrderedCardsList<GeneralCardElements> = reactive({
 const trigger = ref(0);
 const propositions: CourseModel[] = await executeLink(
   "/v1/propositions", // Da sistemare: /v1/propositions?token=<token teacher2> da due corsi (id: 5) uguali
-  (response: any) => response.data.data.map((a: CourseModelProps) => new CourseModel(a)), // Due modelli con titoli diversi non dovrebbero avere id diversi?
+  (response: any) =>
+    response.data.data.map((a: CourseModelProps) => new CourseModel(a)), // Due modelli con titoli diversi non dovrebbero avere id diversi?
   () => []
 );
 const actual_teacher_id = user.id;
@@ -126,25 +121,24 @@ await executeLink(
   "/v1/teachers/" + actual_teacher_id + "/active_years", // Da sistemare: trovare api per admin
   (response) => {
     let id: string;
-    
-    school_years.cards[""] = response.data.data.map((a: any) =>
-      {
-        id = "" + a.year;
 
-        return { // Da sistemare: creare il suo oggetto
+    school_years.cards[""] = response.data.data.map((a: any) => {
+      id = "" + a.year;
+
+      return {
+        // Da sistemare: creare il suo oggetto
+        id: id,
+        group: "",
+        title: "" + a.year,
+        selected: false,
+        link: {
+          event: "change_selection",
+          data: {
             id: id,
-            group: "",
-            title: "" + a.year,
-            selected: false,
-            link: {
-              event: 'change_selection',
-              data: {
-                  id: id,
-              },
-            }
-        }
-      }
-    );
+          },
+        },
+      };
+    });
   }
 );
 </script>

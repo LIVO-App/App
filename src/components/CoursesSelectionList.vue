@@ -66,9 +66,9 @@
       :key="trigger"
       @execute_link="changeEnrollment()"
       @signal_event="openModal()"
-      :emptiness_message="{
-        text: getCurrentElement('noCourses')
-      }"
+      :emptiness_message="
+        getCustomMessage('emptiness_message', getCurrentElement('noCourses'))
+      "
       v-model:cards_list="courses"
     />
   </div>
@@ -94,11 +94,11 @@ import {
   executeLink,
   getCurrentElement,
   getCurrentLanguage,
+  getCustomMessage,
   getEnrollmentIcon,
   toSummary,
 } from "@/utils";
 import { IonAlert, IonModal, IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { text } from "ionicons/icons";
 import { Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { Store, useStore } from "vuex";
@@ -232,14 +232,10 @@ const getCorrectName = (option: LearningArea) => option[`${language}_title`];
 const setAlertAndOpen = (type: AvailableModal) => {
   switch (type) {
     case "max_credits":
-      alert_information.message = getCurrentElement(
-        "maximum_credits_error"
-      );
+      alert_information.message = getCurrentElement("maximum_credits_error");
       break;
     case "max_courses":
-      alert_information.message = getCurrentElement(
-        "maximum_courses_error"
-      );
+      alert_information.message = getCurrentElement("maximum_courses_error");
       break;
   }
   openAlert.value = true;
@@ -272,9 +268,10 @@ const showCourses = (
     if (courses.cards[course.group] == undefined) {
       courses.order.push({
         key: course.group,
-        title: {
-          text: getCurrentElement("group") + " " + course.group
-        },
+        title: getCustomMessage(
+          "title",
+          getCurrentElement("group") + " " + course.group
+        ),
       });
       courses.cards[course.group] = [];
     }
@@ -330,7 +327,10 @@ const learning_sessions: LearningSession[] = await executeLink(
 const learning_session_position = learning_sessions.findIndex(
   (a) => a.id == parseInt(learning_session_id)
 );
-const learning_session = learning_session_position != -1 ? learning_sessions[learning_session_position] : undefined;
+const learning_session =
+  learning_session_position != -1
+    ? learning_sessions[learning_session_position]
+    : undefined;
 
 let learning_areas: LearningArea[] = [];
 let description_title: string;

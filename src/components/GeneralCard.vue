@@ -44,16 +44,14 @@
       <ion-grid class="ion-no-margin">
         <ion-row class="ion-align-items-center">
           <ion-col size="auto">
-            <ion-card-title v-if="title != undefined" :color="title.color"
-              ><b>{{ title.text }}</b></ion-card-title
-            >
+            <ion-card-title v-if="title != undefined"
+              ><b><ionic-element :element="title" /></b
+            ></ion-card-title>
           </ion-col>
           <ion-col size="5">
-            <ion-card-subtitle
-              v-if="subtitle != undefined"
-              :color="subtitle.color"
-              >{{ subtitle.text }}</ion-card-subtitle
-            >
+            <ion-card-subtitle v-if="subtitle != undefined"
+              ><ionic-element :element="subtitle"
+            /></ion-card-subtitle>
           </ion-col>
           <ion-col size="1"></ion-col>
           <ion-col size="2">
@@ -105,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { CustomElement, CustomText, LinkParameters } from "@/types";
+import { CustomElement, LinkParameters } from "@/types";
 import { isRequest, isEvent } from "@/utils";
 import {
   IonCard,
@@ -127,8 +125,8 @@ const props = defineProps({
     type: String || Number,
     required: true,
   },
-  title: Object as PropType<CustomText>,
-  subtitle: Object as PropType<CustomText>,
+  title: Object as PropType<CustomElement>,
+  subtitle: Object as PropType<CustomElement>,
   content: Array<CustomElement>,
   side_element: Object as PropType<CustomElement>,
   selected: Boolean,
