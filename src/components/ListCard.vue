@@ -213,8 +213,10 @@ import {
 } from "@ionic/vue";
 import { PropType } from "vue";
 import {
+  CardElements,
   ColorObject,
   ColorType,
+  CourseCardElements,
   CustomElement,
   OrderedCardsList,
 } from "../types";
@@ -261,13 +263,16 @@ defineEmits(["execute_link", "signal_event"]);
 const actual_emptiness_message = JSON.parse(
   JSON.stringify(props.emptiness_message)
 );
-const actual_cards_list = JSON.parse(JSON.stringify(props.cards_list));
+const actual_cards_list: OrderedCardsList<CardElements> = JSON.parse(
+  JSON.stringify(props.cards_list)
+);
 const background_color =
   props.colors != undefined && props.colors.background != undefined
     ? "" + props.colors.background.name
     : undefined;
+const groups = Object.keys(actual_cards_list.cards);
 
-let actual_title, actual_subtitle;
+let actual_title, actual_subtitle, tmp_card;
 let tmp_color: ColorObject | undefined = undefined;
 
 if (props.title != undefined) {
@@ -297,41 +302,42 @@ actual_emptiness_message.color = adjustColor(
   props.emptiness_message?.colors?.text?.name,
   props.colors?.text?.name
 );
-for (const group of Object.keys(actual_cards_list.cards)) {
-  for (const card of actual_cards_list.cards[group]) {
-    if (isGeneral(card)) {
-      if (card.title != undefined) {
+for (const group in groups) {
+  for (const card in actual_cards_list.cards[groups[group]]) {
+    tmp_card = actual_cards_list.cards[groups[group]][card];
+    if (isGeneral(tmp_card)) {
+      if (tmp_card.title != undefined) {
         tmp_color = adjustColor(
-          card.title.colors?.text != undefined
-            ? card.title.colors.text.type
+          tmp_card.title.colors?.text != undefined
+            ? tmp_card.title.colors.text.type
             : props.colors?.text?.type,
-          card.title.colors?.text?.name,
+          tmp_card.title.colors?.text?.name,
           props.colors?.text?.name
         );
         if (tmp_color != undefined) {
-          if (card.title.colors == undefined) {
-            card.title.colors = {};
+          if (tmp_card.title.colors == undefined) {
+            tmp_card.title.colors = {};
           }
-          card.title.colors.text = tmp_color;
+          tmp_card.title.colors.text = tmp_color;
         }
       }
-      if (card.subtitle != undefined) {
+      if (tmp_card.subtitle != undefined) {
         tmp_color = adjustColor(
-          card.subtitle.colors?.text != undefined
-            ? card.subtitle.colors.text.type
+          tmp_card.subtitle.colors?.text != undefined
+            ? tmp_card.subtitle.colors.text.type
             : props.colors?.text?.type,
-          card.subtitle.colors?.text?.name,
+          tmp_card.subtitle.colors?.text?.name,
           props.colors?.text?.name
         );
         if (tmp_color != undefined) {
-          if (card.subtitle.colors == undefined) {
-            card.subtitle.colors = {};
+          if (tmp_card.subtitle.colors == undefined) {
+            tmp_card.subtitle.colors = {};
           }
-          card.subtitle.colors.text = tmp_color;
+          tmp_card.subtitle.colors.text = tmp_color;
         }
       }
-      if (card.content != undefined) {
-        for (const element of card.content) {
+      if (tmp_card.content != undefined) {
+        for (const element of tmp_card.content) {
           tmp_color = adjustColor(
             element.colors?.text != undefined
               ? element.colors.text.type
@@ -347,22 +353,30 @@ for (const group of Object.keys(actual_cards_list.cards)) {
           }
         }
       }
-    } else if (isCourse(card)) {
-      console.log("Ciaone",card);
+    } else if (isCourse(tmp_card)) {
+      tmp_card.enrollment = (
+        props.cards_list.cards[groups[group]][card] as CourseCardElements
+      ).enrollment;
     }
   }
 }
 for (const ordered_cards of actual_cards_list.order) {
-  ordered_cards.title.color = adjustColor(
-    ordered_cards.title.color != undefined
-      ? ordered_cards.title.color?.type
+  tmp_color = adjustColor(
+    ordered_cards.title.colors?.text != undefined
+      ? ordered_cards.title.colors.text.type
       : props.colors?.dividers_text != undefined
       ? props.colors?.dividers_text.type
       : props.colors?.background?.type,
-    ordered_cards.title.color?.name,
+    ordered_cards.title.colors?.text?.name,
     props.colors?.dividers_text?.name,
     props.colors?.background?.name
   );
+  if (tmp_color != undefined) {
+    if (ordered_cards.title.colors == undefined) {
+      ordered_cards.title.colors = {};
+    }
+    ordered_cards.title.colors.text = tmp_color;
+  }
 }
 </script>
 
