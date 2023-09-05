@@ -7,32 +7,56 @@
           :title="
             getCustomMessage('title', getCurrentElement('current'), 'string', {
               name: 'white',
-              type: 'text',
+              type: 'var',
             })
           "
           :emptiness_message="no_session"
           :cards_list="learning_sessions.current"
           :colors="{
-            list_borders: 'white',
-            background: 'current',
-            text: 'white',
-            dividers: 'white',
+            list_borders: {
+              name: 'white',
+              type: 'var'
+            },
+            background: {
+              name: 'current',
+              type: 'var'
+            },
+            text: {
+              name: 'white',
+              type: 'var'
+            },
+            dividers: {
+              name: 'white',
+              type: 'var'
+            },
           }"
         />
         <list-card
           :title="
             getCustomMessage('title', getCurrentElement('future'), 'string', {
               name: 'white',
-              type: 'text',
+              type: 'var',
             })
           "
           :emptiness_message="no_session"
           :cards_list="learning_sessions.future"
           :colors="{
-            background: 'warning',
-            dividers_text: 'black',
-            list_borders: 'white',
-            dividers: 'white',
+            background: {
+              name: 'warning',
+              type: 'var'
+            },
+            dividers_text: {
+              name: 'black',
+              type: 'var'
+            },
+            list_borders: {
+              name: 'white',
+              type: 'var'
+            },
+            dividers: {
+              name: 'white',
+              type: 'var'
+            },
           }"
         />
       </ion-col>
@@ -41,14 +65,26 @@
           :title="
             getCustomMessage('title', getCurrentElement('upcoming'), 'string', {
               name: 'white',
-              type: 'text',
+              type: 'var',
             })
           "
           :colors="{
-            list_borders: 'white',
-            background: 'danger',
-            text: 'white',
-            dividers: 'white',
+            list_borders: {
+              name: 'white',
+              type: 'var'
+            },
+            background: {
+              name: 'danger',
+              type: 'var'
+            },
+            text: {
+              name: 'white',
+              type: 'var'
+            },
+            dividers: {
+              name: 'white',
+              type: 'var'
+            },
           }"
           :emptiness_message="no_session"
           :cards_list="learning_sessions.upcoming"
@@ -61,15 +97,27 @@
               'string',
               {
                 name: 'white',
-                type: 'text',
+                type: 'var',
               }
             )
           "
           :colors="{
-            list_borders: 'white',
-            background: 'completed',
-            text: 'white',
-            dividers: 'white',
+            list_borders: {
+              name: 'white',
+              type: 'var'
+            },
+            background: {
+              name: 'completed',
+              type: 'var'
+            },
+            text: {
+              name: 'white',
+              type: 'var'
+            },
+            dividers: {
+              name: 'white',
+              type: 'var'
+            },
           }"
           :emptiness_message="no_session"
           :cards_list="learning_sessions.completed"

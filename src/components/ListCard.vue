@@ -1,12 +1,17 @@
 <template>
   <ion-card
-    :color="colors?.background"
+    :color="
+      colors?.background.type == 'var' ? colors?.background.name : undefined
+    "
     :class="{
       '--ion-no-border': colors?.external_borders == undefined,
+      background: colors != undefined && colors?.background.type != 'var',
     }"
   >
     <ion-card-header v-if="title != undefined && title.content != ''">
-      <ion-card-title class="ion-text-center"><ionic-element :element="title" class="title_font" /></ion-card-title>
+      <ion-card-title
+        ><ionic-element :element="title" class="title_font"
+      /></ion-card-title>
       <ion-card-subtitle v-if="subtitle != undefined"
         ><ionic-element :element="subtitle"
       /></ion-card-subtitle>
@@ -15,25 +20,58 @@
       <ion-list class="ion-no-padding">
         <template v-if="Object.keys(actual_cards_list.cards).length === 0">
           <ion-item
-            :color="colors?.background"
+            :color="
+              colors?.background.type == 'var'
+                ? colors?.background.name
+                : undefined
+            "
+            :class="{
+              background:
+                colors != undefined && colors?.background.type != 'var',
+            }"
             class="ion-no-padding"
           >
-            <ionic-element :element="emptiness_message" class="ion-text-wrap ion-text-center" />
+            <ionic-element
+              :element="emptiness_message"
+              class="ion-text-wrap ion-text-center"
+            />
           </ion-item>
         </template>
         <template v-else-if="actual_cards_list.cards[''] != undefined">
           <ion-item
             v-if="actual_cards_list.cards[''].length === 0"
-            :color="colors?.background"
+            :color="
+              colors?.background.type == 'var'
+                ? colors?.background.name
+                : undefined
+            "
+            :class="{
+              background:
+                colors != undefined && colors?.background.type != 'var',
+            }"
             class="ion-no-padding"
           >
-            <ionic-element :element="emptiness_message" class="ion-text-wrap ion-text-center" />
+            <ionic-element
+              :element="emptiness_message"
+              class="ion-text-wrap ion-text-center"
+            />
           </ion-item>
           <template v-else>
-            <template v-for="card in actual_cards_list.cards['']" :key="card.id">
+            <template
+              v-for="card in actual_cards_list.cards['']"
+              :key="card.id"
+            >
               <ion-item
                 :lines="colors?.list_borders != undefined ? 'inset' : 'none'"
-                :color="colors?.background"
+                :color="
+                  colors?.background.type == 'var'
+                    ? colors?.background.name
+                    : undefined
+                "
+                :class="{
+                  background:
+                    colors != undefined && colors?.background.type != 'var',
+                }"
                 class="ion-no-padding"
               >
                 <course-card
@@ -59,8 +97,10 @@
                   :side_element="card.side_element"
                   :selected="card.selected"
                   :link="card.link"
-                  :background_color="colors?.background"
-                  :borders="colors?.cards_borders"
+                  :colors="{
+                    background: colors?.background,
+                    borders: colors?.cards_borders,
+                  }"
                 />
               </ion-item>
             </template>
@@ -72,16 +112,38 @@
             :key="'group-' + ordered_cards.key"
           >
             <ion-item-divider
-              :color="colors?.dividers ?? 'light'"
+              :color="
+                (colors?.dividers.type == 'var'
+                  ? colors?.dividers.name
+                  : undefined) ?? 'light'
+              "
+              :class="{
+                background:
+                  colors != undefined && colors.dividers.type != 'var',
+              }"
             >
-              <ionic-element :element="ordered_cards.title" class="ion-padding-end item-text-wrap" />
+              <ionic-element
+                :element="ordered_cards.title"
+                class="ion-padding-end item-text-wrap"
+              />
             </ion-item-divider>
             <ion-item
               v-if="actual_cards_list.cards[ordered_cards.key].length === 0"
-              :color="colors?.background"
+              :color="
+                colors?.background.type == 'var'
+                  ? colors?.background.name
+                  : undefined
+              "
+              :class="{
+                background:
+                  colors != undefined && colors?.background.type != 'var',
+              }"
               class="ion-no-padding"
             >
-              <ionic-element :element="emptiness_message" class="ion-text-wrap ion-text-center" />
+              <ionic-element
+                :element="emptiness_message"
+                class="ion-text-wrap ion-text-center"
+              />
             </ion-item>
             <template v-else>
               <template
@@ -90,7 +152,15 @@
               >
                 <ion-item
                   :lines="colors?.list_borders != undefined ? 'inset' : 'none'"
-                  :color="colors?.background"
+                  :color="
+                    colors?.background.type == 'var'
+                      ? colors?.background.name
+                      : undefined
+                  "
+                  :class="{
+                    background:
+                      colors != undefined && colors?.background.type != 'var',
+                  }"
                   class="ion-no-padding"
                 >
                   <course-card
@@ -116,8 +186,10 @@
                     :side_element="card.side_element"
                     :selected="card.selected"
                     :link="card.link"
-                    :background_color="colors?.background"
-                    :borders="colors?.cards_borders"
+                    :colors="{
+                      background: colors?.background,
+                      borders: colors?.cards_borders,
+                    }"
                   />
                 </ion-item>
               </template>
@@ -176,69 +248,85 @@ const props = defineProps({
     required: true,
   },
   colors: Object as PropType<{
-    background: string;
-    text: string;
-    dividers_text: string;
-    dividers: string;
-    external_borders: string;
-    cards_borders: string;
-    list_borders: string;
+    background: ColorObject;
+    text: ColorObject;
+    dividers_text: ColorObject;
+    dividers: ColorObject;
+    external_borders: ColorObject;
+    cards_borders: ColorObject;
+    list_borders: ColorObject;
   }>,
 });
 
 defineEmits(["execute_link", "signal_event"]);
 
-const actual_emptiness_message = JSON.parse(JSON.stringify(props.emptiness_message));
+const actual_emptiness_message = JSON.parse(
+  JSON.stringify(props.emptiness_message)
+);
 const actual_cards_list = JSON.parse(JSON.stringify(props.cards_list));
+const background_color =
+  props.colors != undefined && props.colors.background != undefined
+    ? "" + props.colors.background.name
+    : undefined;
 
 let actual_title, actual_subtitle;
 
 if (props.title != undefined) {
   actual_title = JSON.parse(JSON.stringify(props.title));
   actual_title.color = adjustColor(
-    props.title?.color != undefined ? props.title.color?.type : "text",
+    props.title?.color != undefined
+      ? props.title.color?.type
+      : props.colors?.text?.type,
     props.title?.color?.name,
-    props.colors?.text
+    props.colors?.text?.name
   );
 }
 if (props.subtitle != undefined) {
   actual_subtitle = JSON.parse(JSON.stringify(props.subtitle));
   actual_subtitle.color = adjustColor(
-    props.subtitle?.color != undefined ? props.subtitle.color?.type : "text",
+    props.subtitle?.color != undefined
+      ? props.subtitle.color?.type
+      : props.colors?.text?.type,
     props.subtitle?.color?.name,
-    props.colors?.text
+    props.colors?.text?.name
   );
 }
 actual_emptiness_message.color = adjustColor(
   props.emptiness_message?.color != undefined
     ? props.emptiness_message.color?.type
-    : "text",
+    : props.colors?.text?.type,
   props.emptiness_message?.color?.name,
-  props.colors?.text
+  props.colors?.text?.name
 );
 for (const group of Object.keys(actual_cards_list.cards)) {
   for (const card of actual_cards_list.cards[group]) {
     if (isGeneral(card)) {
       if (card.title != undefined) {
         card.title.color = adjustColor(
-          card.title.color != undefined ? card.title.color?.type : "text",
+          card.title.color != undefined
+            ? card.title.color?.type
+            : props.colors?.text?.type,
           card.title.color?.name,
-          props.colors?.text
+          props.colors?.text?.name
         );
       }
       if (card.subtitle != undefined) {
         card.subtitle.color = adjustColor(
-          card.subtitle.color != undefined ? card.subtitle.color?.type : "text",
+          card.subtitle.color != undefined
+            ? card.subtitle.color?.type
+            : props.colors?.text?.type,
           card.subtitle.color?.name,
-          props.colors?.text
+          props.colors?.text?.name
         );
       }
       if (card.content != undefined) {
         for (const element of card.content) {
           element.color = adjustColor(
-            element.color != undefined ? element.color?.type : "text",
+            element.color != undefined
+              ? element.color?.type
+              : props.colors?.text?.type,
             element.color?.name,
-            props.colors?.text
+            props.colors?.text?.name
           );
         }
       }
@@ -249,14 +337,15 @@ for (const ordered_cards of actual_cards_list.order) {
   ordered_cards.title.color = adjustColor(
     ordered_cards.title.color != undefined
       ? ordered_cards.title.color?.type
-      : "text",
+      : props.colors?.dividers_text != undefined
+      ? props.colors?.dividers_text.type
+      : props.colors?.background?.type,
     ordered_cards.title.color?.name,
-    props.colors?.dividers_text,
-    props.colors?.background
+    props.colors?.dividers_text?.name,
+    props.colors?.background?.name
   );
 }
 </script>
-
 
 <style scoped>
 ion-card {
@@ -269,5 +358,8 @@ ion-card-content {
   position: relative;
   overflow: hidden;
   overflow-y: auto;
+}
+.background {
+  background-color: v-bind("background_color");
 }
 </style>

@@ -130,6 +130,7 @@ import {
   RequestStringIcon,
   EventStringIcon,
 } from "@/types";
+import { getVariableName } from "@/utils";
 import { IonButton, IonLabel, IonIcon } from "@ionic/vue";
 import { PropType } from "vue";
 import { useStore } from "vuex";
@@ -156,18 +157,10 @@ defineEmits(["execute_link", "signal_event"]);
 const actual_class = props.class ?? "";
 const color =
   props.element.color != undefined
-    ? getComputedStyle(document.documentElement).getPropertyValue(
-        "--ion-color-" + props.element.color.name
-      )
-    : undefined; // Da sistemare: differenziare con type
-/*const color: string =
-  props.element.color != undefined
     ? props.element.color.type == "var"
-      ? getComputedStyle(document.documentElement).getPropertyValue(
-          props.element.color.name
-        )
+      ? getVariableName(props.element.color.name)
       : props.element.color.name
-    : "";*/
+    : undefined;
 </script>
 
 <style scoped>

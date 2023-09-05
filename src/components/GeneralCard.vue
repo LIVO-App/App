@@ -1,11 +1,18 @@
 <template>
   <!-- Da chiedere: convertire tutti i colori -->
   <ion-card
-    :color="selected ? 'light' : background_color ?? ''"
-    class="ion-no-padding ion-no-margin"
+    :color="
+      selected
+        ? 'light'
+        : colors?.background.type == 'var'
+        ? colors?.background.name
+        : undefined
+    "
     :class="{
-      no_card_border: borders == undefined,
+      no_card_border: colors?.borders == undefined,
+      background: colors != undefined && colors.background.type != 'var',
     }"
+    class="ion-no-padding ion-no-margin"
     style="width: 100%"
     :button="link != undefined"
     :href="link != undefined && isRequest(link) && isGet ? link.url : undefined"
@@ -103,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { CustomElement, LinkParameters } from "@/types";
+import { ColorObject, CustomElement, LinkParameters } from "@/types";
 import { isRequest, isEvent } from "@/utils";
 import {
   IonCard,
@@ -131,18 +138,24 @@ const props = defineProps({
   side_element: Object as PropType<CustomElement>,
   selected: Boolean,
   link: Object as PropType<LinkParameters>,
-  background_color: String,
-  borders: String,
+  colors: Object as PropType<{
+    background: ColorObject;
+    borders: ColorObject;
+  }>,
 });
 defineEmits(["execute_link", "signal_event"]);
 const isGet =
   props.link != undefined &&
   isRequest(props.link) &&
   props.link.method == "get";
+const background_color = props.colors != undefined && props.colors.background != undefined ? "" + props.colors.background.name : undefined;
 </script>
 
 <style scoped>
 .no_card_border {
   box-shadow: none !important;
+}
+.background {
+  background-color: v-bind("background_color");
 }
 </style>
