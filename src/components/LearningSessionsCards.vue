@@ -47,6 +47,7 @@
           :colors="{
             list_borders: 'white',
             background: 'danger',
+            text: 'white',
             dividers: 'white',
           }"
           :emptiness_message="no_session"
@@ -67,6 +68,7 @@
           :colors="{
             list_borders: 'white',
             background: 'completed',
+            text: 'white',
             dividers: 'white',
           }"
           :emptiness_message="no_session"

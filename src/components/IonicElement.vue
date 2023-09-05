@@ -6,13 +6,20 @@
       :class="actual_class"
       >{{ element.content }}</ion-label
     >
-    <div v-if="element.type == 'html'" v-html="element.content"></div>
+    <div
+      v-if="element.type == 'html'"
+      v-html="element.content"
+      :class="{
+        textColor: element.color != undefined,
+      }"
+    ></div>
     <ion-icon
       v-else-if="element.type == 'icon'"
       :ios="castIconAlternatives(element.content).ios"
       :md="castIconAlternatives(element.content).md"
       :class="actual_class"
-    ></ion-icon> <!-- Da sistemare: mettere il colore alle icone -->
+    ></ion-icon>
+    <!-- Da sistemare: mettere il colore alle icone -->
     <ion-label
       v-else-if="element.type == 'title'"
       :color="element.color != undefined ? element.color.name : undefined"
@@ -147,6 +154,12 @@ const props = defineProps({
 defineEmits(["execute_link", "signal_event"]);
 
 const actual_class = props.class ?? "";
+const color =
+  props.element.color != undefined
+    ? getComputedStyle(document.documentElement).getPropertyValue(
+        "--ion-color-" + props.element.color.name
+      )
+    : undefined; // Da sistemare: differenziare con type
 /*const color: string =
   props.element.color != undefined
     ? props.element.color.type == "var"
@@ -158,7 +171,7 @@ const actual_class = props.class ?? "";
 </script>
 
 <style scoped>
-/*.textColor {
+.textColor {
   color: v-bind("color");
-}*/
+}
 </style>

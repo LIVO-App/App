@@ -13,7 +13,7 @@
     </ion-card-header>
     <ion-card-content style="overflow-y: auto">
       <ion-list class="ion-no-padding">
-        <template v-if="Object.keys(props.cards_list.cards).length === 0">
+        <template v-if="Object.keys(actual_cards_list.cards).length === 0">
           <ion-item
             :color="colors?.background"
             class="ion-no-padding"
@@ -21,16 +21,16 @@
             <ionic-element :element="emptiness_message" class="ion-text-wrap ion-text-center" />
           </ion-item>
         </template>
-        <template v-else-if="props.cards_list.cards[''] != undefined">
+        <template v-else-if="actual_cards_list.cards[''] != undefined">
           <ion-item
-            v-if="props.cards_list.cards[''].length === 0"
+            v-if="actual_cards_list.cards[''].length === 0"
             :color="colors?.background"
             class="ion-no-padding"
           >
             <ionic-element :element="emptiness_message" class="ion-text-wrap ion-text-center" />
           </ion-item>
           <template v-else>
-            <template v-for="card in cards_list.cards['']" :key="card.id">
+            <template v-for="card in actual_cards_list.cards['']" :key="card.id">
               <ion-item
                 :lines="colors?.list_borders != undefined ? 'inset' : 'none'"
                 :color="colors?.background"
@@ -68,7 +68,7 @@
         </template>
         <template v-else>
           <ion-item-group
-            v-for="ordered_cards in actual_card_list.order"
+            v-for="ordered_cards in actual_cards_list.order"
             :key="'group-' + ordered_cards.key"
           >
             <ion-item-divider
@@ -77,7 +77,7 @@
               <ionic-element :element="ordered_cards.title" class="ion-padding-end item-text-wrap" />
             </ion-item-divider>
             <ion-item
-              v-if="props.cards_list.cards[ordered_cards.key].length === 0"
+              v-if="actual_cards_list.cards[ordered_cards.key].length === 0"
               :color="colors?.background"
               class="ion-no-padding"
             >
@@ -85,7 +85,7 @@
             </ion-item>
             <template v-else>
               <template
-                v-for="card in props.cards_list.cards[ordered_cards.key]"
+                v-for="card in actual_cards_list.cards[ordered_cards.key]"
                 :key="card.id"
               >
                 <ion-item
@@ -189,7 +189,7 @@ const props = defineProps({
 defineEmits(["execute_link", "signal_event"]);
 
 const actual_emptiness_message = JSON.parse(JSON.stringify(props.emptiness_message));
-const actual_card_list = JSON.parse(JSON.stringify(props.cards_list));
+const actual_cards_list = JSON.parse(JSON.stringify(props.cards_list));
 
 let actual_title, actual_subtitle;
 
@@ -216,8 +216,8 @@ actual_emptiness_message.color = adjustColor(
   props.emptiness_message?.color?.name,
   props.colors?.text
 );
-for (const group of Object.keys(actual_card_list.cards)) {
-  for (const card of actual_card_list.cards[group]) {
+for (const group of Object.keys(actual_cards_list.cards)) {
+  for (const card of actual_cards_list.cards[group]) {
     if (isGeneral(card)) {
       if (card.title != undefined) {
         card.title.color = adjustColor(
@@ -233,10 +233,19 @@ for (const group of Object.keys(actual_card_list.cards)) {
           props.colors?.text
         );
       }
+      if (card.content != undefined) {
+        for (const element of card.content) {
+          element.color = adjustColor(
+            element.color != undefined ? element.color?.type : "text",
+            element.color?.name,
+            props.colors?.text
+          );
+        }
+      }
     }
   }
 }
-for (const ordered_cards of actual_card_list.order) {
+for (const ordered_cards of actual_cards_list.order) {
   ordered_cards.title.color = adjustColor(
     ordered_cards.title.color != undefined
       ? ordered_cards.title.color?.type
