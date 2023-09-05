@@ -4,8 +4,12 @@
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="getCurrentElement('classes')"
-          :emptiness_message="getCurrentElement('no_classes')"
+          :title="{
+            text: getCurrentElement('classes')
+          }"
+          :emptiness_message="{
+            text: getCurrentElement('no_classes')
+          }"
           :cards_list="ordinary_classes"
           @signal_event="changeSelection()"
         />
@@ -25,14 +29,16 @@
         ></custom-select>
         <list-card
           :key="trigger"
-          :title="getCurrentElement('students')"
-          :emptiness_message="
-            getCurrentElement(
+          :title="{
+            text: getCurrentElement('students')
+          }"
+          :emptiness_message="{
+            text: getCurrentElement(
               is_nothing_selected()
                 ? 'ordinary_class_selection_message'
                 : 'no_students'
             )
-          "
+          }"
           :cards_list="students"
         />
       </ion-col>
@@ -53,6 +59,7 @@ import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { reactive, Ref, ref, watch } from "vue";
 import { useStore } from "vuex";
 import { executeLink, getCurrentElement } from "@/utils";
+import { text } from "ionicons/icons";
 
 type Indexes = {
   year: string;
@@ -196,7 +203,9 @@ for (const year of school_years) {
       (response) => {
         ordinary_classes.order.push({
           key: year,
-          title: year,
+          title: {
+            text: year,
+          },
         });
         for (const tmp_class of response.data.data) {
           ordinary_class = new OrdinaryClassSummary(tmp_class);

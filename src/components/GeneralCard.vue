@@ -1,11 +1,14 @@
 <template>
+  <!-- Da chiedere: convertire tutti i colori -->
   <ion-card
-    :color="selected ? 'primary' : 'tertiary'"
+    :color="selected ? 'light' : background_color ?? ''"
+    class="ion-no-padding ion-no-margin"
+    :class="{
+      no_card_border: borders == undefined,
+    }"
     style="width: 100%"
     :button="link != undefined"
-    :href="
-      link != undefined && isRequest(link) && isGet ? link.url : undefined
-    "
+    :href="link != undefined && isRequest(link) && isGet ? link.url : undefined"
     @click="
       () => {
         if (link != undefined) {
@@ -34,18 +37,23 @@
       }
     "
   >
-    <ion-card-header v-if="title != undefined || subtitle != undefined" class="ion-no-padding">
+    <ion-card-header
+      v-if="title != undefined || subtitle != undefined"
+      class="ion-no-padding"
+    >
       <ion-grid class="ion-no-margin">
         <ion-row class="ion-align-items-center">
-          <ion-col size="4">
-            <ion-card-title v-if="title != undefined">{{
-              title
-            }}</ion-card-title>
+          <ion-col size="auto">
+            <ion-card-title v-if="title != undefined" :color="title.color"
+              ><b>{{ title.text }}</b></ion-card-title
+            >
           </ion-col>
           <ion-col size="5">
-            <ion-card-subtitle v-if="subtitle != undefined">{{
-              subtitle
-            }}</ion-card-subtitle>
+            <ion-card-subtitle
+              v-if="subtitle != undefined"
+              :color="subtitle.color"
+              >{{ subtitle.text }}</ion-card-subtitle
+            >
           </ion-col>
           <ion-col size="1"></ion-col>
           <ion-col size="2">
@@ -97,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import { CustomElement, LinkParameters } from "@/types";
+import { CustomElement, CustomText, LinkParameters } from "@/types";
 import { isRequest, isEvent } from "@/utils";
 import {
   IonCard,
@@ -119,12 +127,14 @@ const props = defineProps({
     type: String || Number,
     required: true,
   },
-  title: String,
-  subtitle: String,
+  title: Object as PropType<CustomText>,
+  subtitle: Object as PropType<CustomText>,
   content: Array<CustomElement>,
   side_element: Object as PropType<CustomElement>,
   selected: Boolean,
   link: Object as PropType<LinkParameters>,
+  background_color: String,
+  borders: String,
 });
 defineEmits(["execute_link", "signal_event"]);
 const isGet =
@@ -133,5 +143,8 @@ const isGet =
   props.link.method == "get";
 </script>
 
-<style>
+<style scoped>
+.no_card_border {
+  box-shadow: none !important;
+}
 </style>

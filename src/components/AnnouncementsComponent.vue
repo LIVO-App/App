@@ -69,7 +69,9 @@
         <list-card
           :key="trigger"
           :cards_list="messages"
-          :emptiness_message="getCurrentElement('no_messages')"
+          :emptiness_message="{
+            text: getCurrentElement('no_announcements')
+          }"
           @signal_event="setupModalAndOpen()"
         />
       </template>

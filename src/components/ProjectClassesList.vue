@@ -4,8 +4,12 @@
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="getCurrentElement('learning_sessions')"
-          :emptiness_message="getCurrentElement('no_sessions')"
+          :title="{
+            text: getCurrentElement('learning_sessions')
+          }"
+          :emptiness_message="{
+            text: getCurrentElement('no_sessions')
+          }"
           :cards_list="learning_sessions"
           @signal_event="changeSelection()"
         />
@@ -13,14 +17,16 @@
       <ion-col size="12" size-md="6">
         <list-card
           :key="trigger"
-          :title="getCurrentElement('courses')"
-          :emptiness_message="
-            getCurrentElement(
+          :title="{
+            text: getCurrentElement('courses')
+          }"
+          :emptiness_message="{
+            text: getCurrentElement(
               is_nothing_selected()
                 ? 'student_learning_session_selection_message'
                 : 'no_courses'
             )
-          "
+          }"
           :cards_list="courses"
         />
       </ion-col>
@@ -44,6 +50,7 @@ import { reactive, ref } from "vue";
 import { useStore } from "vuex";
 import { executeLink, getCurrentElement } from "@/utils";
 import { useRoute } from "vue-router";
+import { text } from "ionicons/icons";
 
 type Indexes = {
   year: string;
@@ -178,7 +185,9 @@ for (const year of school_years) {
       async (response) => {
         learning_sessions.order.push({
           key: year,
-          title: year,
+          title: {
+            text: year,
+          },
         });
         learning_sessions.cards[year] = [];
         for (const learning_session of response.data.data) {

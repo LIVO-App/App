@@ -1,34 +1,45 @@
 <template>
-  <ion-card>
-    <ion-card-header
-      color="primary"
-      v-if="props.title != undefined && props.title != ''"
-    >
-      <ion-card-title color="tertiary" class="ion-text-center">{{
-        props.title
-      }}</ion-card-title>
-      <ion-card-subtitle color="tertiary" class="ion-text-center">{{
-        props.subtitle
-      }}</ion-card-subtitle>
+  <ion-card :color="colors?.background" :class="{
+    '--ion-no-border': colors?.external_borders == undefined
+  }">
+    <ion-card-header v-if="props.title != undefined && props.title.text != ''">
+      <ion-card-title
+        :color="props.title.color ?? colors?.text"
+        >{{ props.title.text }}</ion-card-title
+      > <!-- Da sistemare: non cambia colore -->
+      <ion-card-subtitle
+        v-if="props.subtitle != undefined"
+        :color="props.subtitle.color ?? colors?.text"
+        class="ion-text-center"
+        >{{ props.subtitle.text }}</ion-card-subtitle
+      >
     </ion-card-header>
     <ion-card-content style="overflow-y: auto">
-      <ion-list>
+      <ion-list class="ion-no-padding">
         <template v-if="Object.keys(props.cards_list.cards).length === 0">
-          <ion-item>
-            <ion-label class="ion-text-wrap ion-text-center">{{
-              props.emptiness_message
-            }}</ion-label>
+          <ion-item :color="colors?.background" class="ion-no-padding">
+            <ion-label
+              class="ion-text-wrap ion-text-center"
+              :color="emptiness_message.color ?? colors?.text"
+              >{{ props.emptiness_message.text }}</ion-label
+            >
           </ion-item>
         </template>
         <template v-else-if="props.cards_list.cards[''] != undefined">
-          <ion-item v-if="props.cards_list.cards[''].length === 0">
-            <ion-label class="ion-text-wrap ion-text-center">{{
-              props.emptiness_message
-            }}</ion-label>
+          <ion-item
+            v-if="props.cards_list.cards[''].length === 0"
+            :color="colors?.background"
+            class="ion-no-padding"
+          >
+            <ion-label
+              class="ion-text-wrap ion-text-center"
+              :color="emptiness_message.color ?? colors?.text"
+              >{{ props.emptiness_message.text }}</ion-label
+            >
           </ion-item>
           <template v-else>
             <template v-for="card in props.cards_list.cards['']" :key="card.id">
-              <ion-item lines="none">
+              <ion-item :lines="colors?.list_borders != undefined ? 'inset' : 'none'" :color="colors?.background" class="ion-no-padding">
                 <course-card
                   v-if="isCourse(card)"
                   @execute_link="$emit('execute_link')"
@@ -44,12 +55,28 @@
                   @execute_link="$emit('execute_link')"
                   @signal_event="$emit('signal_event')"
                   :id="card.id"
-                  :title="card.title"
-                  :subtitle="card.subtitle"
+                  :title="
+                    card.title != undefined
+                      ? {
+                          text: card.title.text,
+                          color: card.title.color ?? colors?.text,
+                        }
+                      : undefined
+                  "
+                  :subtitle="
+                    card.subtitle != undefined
+                      ? {
+                          text: card.subtitle.text,
+                          color: card.subtitle.color ?? colors?.text,
+                        }
+                      : undefined
+                  "
                   :content="card.content"
                   :side_element="card.side_element"
                   :selected="card.selected"
                   :link="card.link"
+                  :background_color="colors?.background"
+                  :borders="colors?.cards_borders"
                 />
               </ion-item>
             </template>
@@ -60,24 +87,30 @@
             v-for="ordered_cards in props.cards_list.order"
             :key="'group-' + ordered_cards.key"
           >
-            <ion-item-divider color="light">
-              <ion-label class="ion-padding-end item-text-wrap">{{
-                ordered_cards.title
-              }}</ion-label>
+            <ion-item-divider :color="colors?.dividers ?? 'tertiary'">
+              <ion-label
+                class="ion-padding-end item-text-wrap"
+                :color="actual_text_divider_color"
+                >{{ ordered_cards.title.text }}</ion-label
+              >
             </ion-item-divider>
             <ion-item
               v-if="props.cards_list.cards[ordered_cards.key].length === 0"
+              :color="colors?.background"
+              class="ion-no-padding"
             >
-              <ion-label class="ion-text-wrap ion-text-center">{{
-                props.emptiness_message
-              }}</ion-label>
+              <ion-label
+                class="ion-text-wrap ion-text-center"
+                :color="emptiness_message.color ?? colors?.text"
+                >{{ emptiness_message.text }}</ion-label
+              >
             </ion-item>
             <template v-else>
               <template
                 v-for="card in props.cards_list.cards[ordered_cards.key]"
                 :key="card.id"
               >
-                <ion-item lines="none">
+                <ion-item :lines="colors?.list_borders != undefined ? 'inset' : 'none'" :color="colors?.background" class="ion-no-padding">
                   <course-card
                     v-if="isCourse(card)"
                     @execute_link="$emit('execute_link')"
@@ -93,12 +126,28 @@
                     @execute_link="$emit('execute_link')"
                     @signal_event="$emit('signal_event')"
                     :id="card.id"
-                    :title="card.title"
-                    :subtitle="card.subtitle"
+                    :title="
+                      card.title != undefined
+                        ? {
+                            text: card.title.text,
+                            color: card.title.color ?? colors?.text,
+                          }
+                        : undefined
+                    "
+                    :subtitle="
+                      card.subtitle != undefined
+                        ? {
+                            text: card.subtitle.text,
+                            color: card.subtitle.color ?? colors?.text,
+                          }
+                        : undefined
+                    "
                     :content="card.content"
                     :side_element="card.side_element"
                     :selected="card.selected"
                     :link="card.link"
+                    :background_color="colors?.background"
+                    :borders="colors?.cards_borders"
                   />
                 </ion-item>
               </template>
@@ -124,28 +173,39 @@ import {
   IonItem,
 } from "@ionic/vue";
 import { PropType } from "vue";
-import { OrderedCardsList } from "../types";
+import { CustomText, OrderedCardsList } from "../types";
 import { isGeneral, isCourse } from "../utils";
 
 const props = defineProps({
-  title: String,
-  subtitle: String,
+  title: Object as PropType<CustomText>,
+  subtitle: Object as PropType<CustomText>,
   emptiness_message: {
-    type: String,
+    type: Object as PropType<CustomText>,
     required: true,
   },
   cards_list: {
     type: Object as PropType<OrderedCardsList>,
     required: true,
   },
+  colors: Object as PropType<{
+    background: string,
+    text: string,
+    dividers_text: string,
+    dividers: string,
+    external_borders: string,
+    cards_borders: string,
+    list_borders: string
+  }>
 });
+
 defineEmits(["execute_link", "signal_event"]);
+
+const actual_text_divider_color = props.colors?.dividers_text ?? props.colors?.background;
 </script>
 
 
-<style>
+<style scoped>
 ion-card {
-  border-radius: 20px;
   max-height: 100%;
   display: flex;
   flex-direction: column;
@@ -155,5 +215,8 @@ ion-card-content {
   position: relative;
   overflow: hidden;
   overflow-y: auto;
+}
+ion-card-title {
+  font-size: 32px;
 }
 </style>

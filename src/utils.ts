@@ -13,7 +13,7 @@ function getCurrentSchoolYear() {
 }
 
 function getRagneString(start: Date, end: Date) {
-    return (new Date(start)).toLocaleDateString("en-GB") + " - " + (new Date(end)).toLocaleDateString("en-GB");
+    return toDateString(new Date(start)) + "-" + toDateString(new Date(end));
 }
 
 function isGeneral(card: CardElements): card is GeneralCardElements {

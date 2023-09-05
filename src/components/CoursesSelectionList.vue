@@ -66,7 +66,9 @@
       :key="trigger"
       @execute_link="changeEnrollment()"
       @signal_event="openModal()"
-      :emptiness_message="getCurrentElement('noCourses')"
+      :emptiness_message="{
+        text: getCurrentElement('noCourses')
+      }"
       v-model:cards_list="courses"
     />
   </div>
@@ -96,6 +98,7 @@ import {
   toSummary,
 } from "@/utils";
 import { IonAlert, IonModal, IonGrid, IonRow, IonCol } from "@ionic/vue";
+import { text } from "ionicons/icons";
 import { Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { Store, useStore } from "vuex";
@@ -269,7 +272,9 @@ const showCourses = (
     if (courses.cards[course.group] == undefined) {
       courses.order.push({
         key: course.group,
-        title: getCurrentElement("group") + " " + course.group,
+        title: {
+          text: getCurrentElement("group") + " " + course.group
+        },
       });
       courses.cards[course.group] = [];
     }

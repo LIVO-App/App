@@ -1,6 +1,6 @@
 <template>
   <ion-item lines="none">
-    <ion-card color="tertiary" style="width: 100%">
+    <ion-card style="width: 100%">
       <ion-card-content>
         <ion-grid>
           <ion-row>

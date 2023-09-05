@@ -3,11 +3,11 @@
     :value="selected_option"
     @input="$emit('update:selected_option', $event.target.value)"
     :label="label"
+    :aria-label="label"
     justify="start"
-    :aria-label="aria_label"
     :placeholder="placeholder"
     class="ion-padding"
-    fill="solid"
+    fill="outline"
     :disabled="disabled"
   >
     <!-- interface="popover" è più carino, ma da warnings-->
@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { IonSelect, IonSelectOption } from "@ionic/vue";
+import { IonSelect, IonSelectOption, IonLabel } from "@ionic/vue";
 import { PropType } from "vue";
 
 const props = defineProps({

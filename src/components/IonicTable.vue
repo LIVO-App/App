@@ -74,7 +74,7 @@ defineEmits(["execute_link", "signal_event"]);
 
 .header .col {
   background-color: var(--ion-color-primary);
-  color: var(--ion-color-tertiary);
+  color: white;
 }
 
 .col {

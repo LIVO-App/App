@@ -35,7 +35,7 @@
                     :ios="getIcon(p.icon_ref).ios"
                     :md="getIcon(p.icon_ref).md"
                   ></ion-icon>
-                  <ion-label>{{
+                  <ion-label text-wrap>{{
                     getCurrentElement(menu.order[castToUser(user).user][i])
                   }}</ion-label>
                 </ion-item>
@@ -124,7 +124,7 @@ if (user != undefined) {
 
 <style scoped>
 ion-menu ion-content {
-  --background: var(--ion-item-background, var(--ion-background-color, #fff));
+  --background: var(--ion-item-background, var(--ion-background-color));
 }
 
 ion-menu.md ion-content {
@@ -161,7 +161,6 @@ ion-menu.md ion-list#menu-list ion-list-header {
 ion-menu.md ion-item {
   --padding-start: 10px;
   --padding-end: 10px;
-  border-radius: 4px;
 }
 
 ion-menu.md ion-item.selected {
@@ -173,7 +172,7 @@ ion-menu.md ion-item.selected ion-icon {
 }
 
 ion-menu.md ion-item ion-icon {
-  color: #616e7e;
+  color: var(--ion-color-primary);
 }
 
 ion-menu.md ion-item ion-label {
@@ -205,7 +204,7 @@ ion-menu.ios ion-item.selected ion-icon {
 
 ion-menu.ios ion-item ion-icon {
   font-size: 24px;
-  color: #73849a;
+  color: var(--ion-color-primary);
 }
 
 ion-menu.ios ion-list-header,

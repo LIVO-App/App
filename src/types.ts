@@ -91,7 +91,9 @@ class OrdinaryClassSummary implements OrdinaryClassSummaryProps {
         return {
             id: id,
             group: this.school_year,
-            title: this.toString(section, school_year),
+            title: {
+                text: this.toString(section, school_year)
+            },
             selected: selected,
             link: {
                 event: 'change_selection',
@@ -189,9 +191,8 @@ type CardElements = { // Da sistemare: sistemare quando tolti gli altri type-car
 }
 
 type GeneralCardElements = CardElements & {
-    id: string | number,
-    title?: string,
-    subtitle?: string,
+    title?: CustomText,
+    subtitle?: CustomText,
     content?: CustomElement[],
     side_element?: CustomElement,
     selected?: boolean,
@@ -623,7 +624,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             }, {
                 id: this.id + "_creation_date",
                 type: "html",
-                content: "<b>" + getCurrentElement("creation_date") + "</b>: " + this.creation_date.toLocaleDateString("en-GB")
+                content: "<b>" + getCurrentElement("creation_date") + "</b>: " + toDateString(this.creation_date)
             }, {
                 id: this.id + "_students_number",
                 type: "html",
@@ -722,7 +723,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
             () => []);
 
         let courses_presence: boolean;
-        let session_list = put_courses_list ? "" : "<ul>";
+        let session_list = put_courses_list ? "" : "<ul class='ion-no-margin'>";
 
         await executeLink("/v1/courses?student_id=" + user.id + "&context_id=" + actual_learning_context.id + "&session_id=" + this.id,
             response => (response.data.data as CourseSummaryProps[]).map(x => {
@@ -738,7 +739,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
             session_list += (put_courses_list ? "<label>" : "<li>") + area[`${language}_title`] + ": " + (put_credits ? (courses[area.id] != undefined ? courses[area.id].filter(course => course.pending == "true").reduce((pv, cv) => pv + cv.credits, 0) : 0) + "/" + area.credits : "") + (put_courses_list ? "</label>" : "</li>");
             if (put_courses_list) {
                 courses_presence = courses[area.id] != undefined && courses[area.id].length > 0;
-                session_list += courses_presence ? "<ul>" : "<br />";
+                session_list += courses_presence ? "<ul class='ion-no-margin'>" : "<br />";
                 if (courses_presence) {
                     for (const course of courses[area.id]) {
                         if (course.pending == "true") {
@@ -776,16 +777,18 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
         const tmp_element: GeneralCardElements = {
             id: "" + this.id,
             group: this.school_year,
-            title: getCurrentElement("session") + " " + this.number,
-            subtitle: getRagneString(new Date(this.start), new Date(this.end)),
-            content: selected == undefined ? [{
+            title: {
+                text: getCurrentElement("session") + " " + this.number
+            },
+            subtitle: {
+                text: getRagneString(new Date(this.start), new Date(this.end))
+            },
+            content: selected == undefined && (status != LearningSessionStatus.COMPLETED || credits != undefined || courses_list != undefined) ? [{
                 id: "" + this.id,
                 type: "html",
-                content: status != LearningSessionStatus.COMPLETED || credits != undefined || courses_list != undefined ?
-                    (put_credits ? "<label>" + getCurrentElement("constraints") + ":"
+                content: (put_credits ? "<label>" + getCurrentElement("constraints") + ":"
                         + (actual_learning_context.credits != null ? " " + (await this.getSubscribedCredits(actual_learning_context.id)) + "/" + actual_learning_context.credits : "") + "</label>" : "")
                     + (actual_learning_context.credits == null ? (await this.getSessionList(actual_learning_context, reference, credits, courses_list)) : "")
-                    : ""
             }] : undefined,
             side_element: selected != undefined ? {
                 id: "status",
@@ -868,7 +871,7 @@ type CardsList<T = CardElements> = {
 type OrderedCardsList<T = CardElements> = {
     order: {
         key: string | number,
-        title: string | number
+        title: CustomText<string | number>
     }[],
     cards: CardsList<T>
 }
@@ -943,7 +946,7 @@ class Grade implements GradeProps {
         }, {
             id: this.id + "_pubblication",
             type: "string",
-            content: this.publication.toLocaleDateString("en-GB")
+            content: toDateString(this.publication)
         }, {
             id: this.id + "_value",
             type: "string",
@@ -1200,7 +1203,9 @@ class StudentInformation extends StudentSummary {
     toCard(): GeneralCardElements {
         return {
             id: "" + this.username,
-            title: this.username,
+            title: {
+                text: this.username
+            },
             group: "",
             content: [{
                 id: this.id + "_name",
@@ -1442,7 +1447,9 @@ class CourseModel {
         return {
             id: "" + this.id,
             group: "",
-            title: this[`${language}_title`] + " - " + this.creation_school_year,
+            title: {
+                text: this[`${language}_title`] + " - " + this.creation_school_year
+            },
             side_element: user.user == "admin" ? {
                 id: "status",
                 type: "string",
@@ -2045,7 +2052,9 @@ class AdminProjectClass {
         return {
             id: "" + this.course_id + "_" + this.learning_session + "_" + this.group,
             group: "",
-            title: "Placeholder", // Da chiedere: chiedere a Pietro di mettere titolo
+            title: {
+                text: "Placeholder"
+            }, // Da chiedere: chiedere a Pietro di mettere titolo
             content: [
                 {
                     id: "group",
@@ -2078,4 +2087,9 @@ type CardListDescription = {
     on_click?: () => any
 }
 
-export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, LinkType, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }
+type CustomText<T = string> = {
+    text: T;
+    color?: string;
+};
+
+export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, LinkType, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription, CustomText }

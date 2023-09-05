@@ -49,7 +49,7 @@
     />
     <ion-card :key="trigger">
       <ion-card-header color="primary">
-        <ion-card-title color="tertiary" class="ion-text-center">{{
+        <ion-card-title class="ion-text-center">{{
           getCurrentElement(pages[current_page_index])
         }}</ion-card-title>
       </ion-card-header>
@@ -318,7 +318,9 @@
                 <list-card
                   :key="trigger + '_list'"
                   :cards_list="teachings_cards"
-                  :emptiness_message="getCurrentElement('no_teachings')"
+                  :emptiness_message="{
+                    text: getCurrentElement('no_teachings')
+                  }"
                   @signal_event="removeElement('teachings')"
                 />
               </ion-col>
@@ -498,13 +500,13 @@
                         ? access_propositions_cards
                         : teachers_cards
                     "
-                    :emptiness_message="
-                      getCurrentElement(
+                    :emptiness_message="{
+                      text: getCurrentElement(
                         pages[current_page_index] == 'access_object'
                           ? 'no_access_proposition'
                           : 'no_teacher_proposition'
                       )
-                    "
+                    }"
                     @signal_event="
                       removeElement(
                         pages[current_page_index] == 'access_object'
@@ -779,7 +781,9 @@ const addAccess = (
     if (access_propositions_cards.cards[learning_context.id] == undefined) {
       access_propositions_cards.order.push({
         key: learning_context.id,
-        title: learning_context[`${language}_title`],
+        title: {
+          text: learning_context[`${language}_title`]
+        },
       });
       access_propositions_cards.order.sort((a, b) =>
         a.key == b.key ? 0 : a.key > b.key ? 1 : -1

@@ -4,10 +4,10 @@
       <ion-buttons>
         <ion-menu-button color="primary"></ion-menu-button>
       </ion-buttons>
-      <ion-title size="large" class="ion-text-center">{{
+      <ion-title size="large" class="ion-text-center" color="white">{{
         props.title
       }}</ion-title>
-      <ion-title size="small" class="ion-text-center">{{
+      <ion-title size="small" class="ion-text-center" color="white">{{
         props.subtitle
       }}</ion-title>
     </ion-toolbar>

@@ -4,8 +4,12 @@
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
-          :title="getCurrentElement('school_years')"
-          :emptiness_message="getCurrentElement('no_school_years')"
+          :title="{
+            text: getCurrentElement('school_years')
+          }"
+          :emptiness_message="{
+            text: getCurrentElement('no_school_years')
+          }"
           :cards_list="school_years"
           @signal_event="changeSelection()"
         />
@@ -13,14 +17,16 @@
       <ion-col size="12" size-md="6">
         <list-card
           :key="trigger"
-          :title="getCurrentElement('courses')"
-          :emptiness_message="
-            getCurrentElement(
+          :title="{
+            text: getCurrentElement('courses')
+          }"
+          :emptiness_message="{
+            text: getCurrentElement(
               is_nothing_selected()
                 ? 'teacher_learning_session_selection_message'
                 : 'no_project_classes'
             )
-          "
+          }"
           :cards_list="is_nothing_selected() ? empty_propositions : year_propositions"
         />
       </ion-col>
@@ -40,6 +46,7 @@ import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { reactive, ref } from "vue";
 import { useStore } from "vuex";
 import { executeLink, getCurrentElement } from "@/utils";
+import { text } from "ionicons/icons";
 
 const is_nothing_selected = () =>
   selected_year_index.value == -1;
