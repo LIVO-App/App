@@ -2,7 +2,7 @@
   <template v-if="element.linkType == undefined || element.type == 'html'">
     <ion-label
       v-if="element.type == 'string'"
-      :color="element.color != undefined ? element.color.name : undefined"
+      :color="element.colors?.text != undefined ? element.colors.text.name : undefined"
       :class="actual_class"
       >{{ element.content }}</ion-label
     >
@@ -10,7 +10,7 @@
       v-if="element.type == 'html'"
       v-html="element.content"
       :class="{
-        textColor: element.color != undefined,
+        textColor: element.colors?.text != undefined,
       }"
     ></div>
     <ion-icon
@@ -22,7 +22,7 @@
     <!-- Da sistemare: mettere il colore alle icone -->
     <ion-label
       v-else-if="element.type == 'title'"
-      :color="element.color != undefined ? element.color.name : undefined"
+      :color="element.colors?.text != undefined ? element.colors.text.name : undefined"
       :class="actual_class"
       ><h2>{{ element.content }}</h2></ion-label
     >
@@ -58,7 +58,7 @@
     </ion-button>
     <ion-label
       v-else-if="element.type == 'string'"
-      :color="element.color != undefined ? element.color.name : undefined"
+      :color="element.colors?.text != undefined ? element.colors.text.name : undefined"
       @click="
         () => {
           if (!disabled && element.linkType == 'request') {
@@ -82,7 +82,7 @@
     </ion-label>
     <template v-else-if="element.type == 'string_icon'">
       <ion-label
-        :color="element.color != undefined ? element.color.name : undefined"
+        :color="element.colors?.text != undefined ? element.colors.text.name : undefined"
         :class="actual_class"
       >
         {{ castEventStringIcon(element.content).text }}
@@ -155,16 +155,16 @@ const props = defineProps({
 defineEmits(["execute_link", "signal_event"]);
 
 const actual_class = props.class ?? "";
-const color =
-  props.element.color != undefined
-    ? props.element.color.type == "var"
-      ? getVariableName(props.element.color.name)
-      : props.element.color.name
+const text_color =
+  props.element.colors?.text != undefined
+    ? props.element.colors.text.type == "var"
+      ? getVariableName(props.element.colors.text.name)
+      : props.element.colors.text.name
     : undefined;
 </script>
 
 <style scoped>
 .textColor {
-  color: v-bind("color");
+  color: v-bind("text_color");
 }
 </style>

@@ -1,5 +1,5 @@
 import { Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters, ContentType, CustomElement, ElementType, ColorObject } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, RequestIcon, Enrollment, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters, ContentType, CustomElement, ElementType, ColorObject, SubElementsColors } from "./types";
 import { $axios } from "./plugins/axios";
 import { store } from "./store"
 
@@ -181,12 +181,12 @@ function getAviableLanguages(): Language[] {
     return store.state.languages;
 }
 
-function getCustomMessage(id: string, content: ContentType, type: ElementType = "string", color?: ColorObject): CustomElement {
+function getCustomMessage(id: string, content: ContentType, type: ElementType = "string", colors?: SubElementsColors): CustomElement {
     return {
         id: id,
         type: type,
         content: content,
-        color: color
+        colors: colors
     }
 }
 

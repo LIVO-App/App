@@ -78,7 +78,6 @@
                   v-if="isCourse(card)"
                   @execute_link="$emit('execute_link')"
                   @signal_event="$emit('signal_event')"
-                  :credits="card.credits"
                   :content="card.content"
                   :enrollment="card.enrollment"
                   :url="card.url"
@@ -167,7 +166,6 @@
                     v-if="isCourse(card)"
                     @execute_link="$emit('execute_link')"
                     @signal_event="$emit('signal_event')"
-                    :credits="card.credits"
                     :content="card.content"
                     :enrollment="card.enrollment"
                     :url="card.url"
@@ -270,66 +268,87 @@ const background_color =
     : undefined;
 
 let actual_title, actual_subtitle;
+let tmp_color: ColorObject | undefined = undefined;
 
 if (props.title != undefined) {
   actual_title = JSON.parse(JSON.stringify(props.title));
   actual_title.color = adjustColor(
-    props.title?.color != undefined
-      ? props.title.color?.type
+    props.title?.colors?.text != undefined
+      ? props.title.colors.text.type
       : props.colors?.text?.type,
-    props.title?.color?.name,
+    props.title?.colors?.text?.name,
     props.colors?.text?.name
   );
 }
 if (props.subtitle != undefined) {
   actual_subtitle = JSON.parse(JSON.stringify(props.subtitle));
   actual_subtitle.color = adjustColor(
-    props.subtitle?.color != undefined
-      ? props.subtitle.color?.type
+    props.subtitle?.colors?.text != undefined
+      ? props.subtitle.colors.text.type
       : props.colors?.text?.type,
-    props.subtitle?.color?.name,
+    props.subtitle?.colors?.text?.name,
     props.colors?.text?.name
   );
 }
 actual_emptiness_message.color = adjustColor(
-  props.emptiness_message?.color != undefined
-    ? props.emptiness_message.color?.type
+  props.emptiness_message?.colors?.text != undefined
+    ? props.emptiness_message.colors.text.type
     : props.colors?.text?.type,
-  props.emptiness_message?.color?.name,
+  props.emptiness_message?.colors?.text?.name,
   props.colors?.text?.name
 );
 for (const group of Object.keys(actual_cards_list.cards)) {
   for (const card of actual_cards_list.cards[group]) {
     if (isGeneral(card)) {
       if (card.title != undefined) {
-        card.title.color = adjustColor(
-          card.title.color != undefined
-            ? card.title.color?.type
+        tmp_color = adjustColor(
+          card.title.colors?.text != undefined
+            ? card.title.colors.text.type
             : props.colors?.text?.type,
-          card.title.color?.name,
+          card.title.colors?.text?.name,
           props.colors?.text?.name
         );
+        if (tmp_color != undefined) {
+          if (card.title.colors == undefined) {
+            card.title.colors = {};
+          }
+          card.title.colors.text = tmp_color;
+        }
       }
       if (card.subtitle != undefined) {
-        card.subtitle.color = adjustColor(
-          card.subtitle.color != undefined
-            ? card.subtitle.color?.type
+        tmp_color = adjustColor(
+          card.subtitle.colors?.text != undefined
+            ? card.subtitle.colors.text.type
             : props.colors?.text?.type,
-          card.subtitle.color?.name,
+          card.subtitle.colors?.text?.name,
           props.colors?.text?.name
         );
+        if (tmp_color != undefined) {
+          if (card.subtitle.colors == undefined) {
+            card.subtitle.colors = {};
+          }
+          card.subtitle.colors.text = tmp_color;
+        }
       }
       if (card.content != undefined) {
         for (const element of card.content) {
-          element.color = adjustColor(
-            element.color != undefined
-              ? element.color?.type
+          tmp_color = adjustColor(
+            element.colors?.text != undefined
+              ? element.colors.text.type
               : props.colors?.text?.type,
-            element.color?.name,
+            element.colors?.text?.name,
             props.colors?.text?.name
           );
+          if (tmp_color != undefined) {
+            if (element.colors == undefined) {
+              element.colors = {};
+            }
+            element.colors.text = tmp_color;
+          }
         }
       }
+    } else if (isCourse(card)) {
+      console.log("Ciaone",card);
     }
   }
 }

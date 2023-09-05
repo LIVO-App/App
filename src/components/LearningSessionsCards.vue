@@ -6,8 +6,10 @@
         <list-card
           :title="
             getCustomMessage('title', getCurrentElement('current'), 'string', {
-              name: 'white',
-              type: 'var',
+              text: {
+                name: 'white',
+                type: 'var',
+              },
             })
           "
           :emptiness_message="no_session"
@@ -15,27 +17,29 @@
           :colors="{
             list_borders: {
               name: 'white',
-              type: 'var'
+              type: 'var',
             },
             background: {
               name: 'current',
-              type: 'var'
+              type: 'var',
             },
             text: {
               name: 'white',
-              type: 'var'
+              type: 'var',
             },
             dividers: {
               name: 'white',
-              type: 'var'
+              type: 'var',
             },
           }"
         />
         <list-card
           :title="
             getCustomMessage('title', getCurrentElement('future'), 'string', {
-              name: 'white',
-              type: 'var',
+              text: {
+                name: 'white',
+                type: 'var',
+              },
             })
           "
           :emptiness_message="no_session"
@@ -43,19 +47,19 @@
           :colors="{
             background: {
               name: 'warning',
-              type: 'var'
+              type: 'var',
             },
             dividers_text: {
               name: 'black',
-              type: 'var'
+              type: 'var',
             },
             list_borders: {
               name: 'white',
-              type: 'var'
+              type: 'var',
             },
             dividers: {
               name: 'white',
-              type: 'var'
+              type: 'var',
             },
           }"
         />
@@ -64,26 +68,28 @@
         <list-card
           :title="
             getCustomMessage('title', getCurrentElement('upcoming'), 'string', {
-              name: 'white',
-              type: 'var',
+              text: {
+                name: 'white',
+                type: 'var',
+              },
             })
           "
           :colors="{
             list_borders: {
               name: 'white',
-              type: 'var'
+              type: 'var',
             },
             background: {
               name: 'danger',
-              type: 'var'
+              type: 'var',
             },
             text: {
               name: 'white',
-              type: 'var'
+              type: 'var',
             },
             dividers: {
               name: 'white',
-              type: 'var'
+              type: 'var',
             },
           }"
           :emptiness_message="no_session"
@@ -96,27 +102,29 @@
               getCurrentElement('completed'),
               'string',
               {
-                name: 'white',
-                type: 'var',
+                text: {
+                  name: 'white',
+                  type: 'var',
+                },
               }
             )
           "
           :colors="{
             list_borders: {
               name: 'white',
-              type: 'var'
+              type: 'var',
             },
             background: {
               name: 'completed',
-              type: 'var'
+              type: 'var',
             },
             text: {
               name: 'white',
-              type: 'var'
+              type: 'var',
             },
             dividers: {
               name: 'white',
-              type: 'var'
+              type: 'var',
             },
           }"
           :emptiness_message="no_session"
@@ -172,7 +180,10 @@ const learning_sessions: {
   },
 });
 const promises: Promise<any>[] = [];
-const no_session: CustomElement = getCustomMessage("emptiness_message",getCurrentElement("no_sessions"));
+const no_session: CustomElement = getCustomMessage(
+  "emptiness_message",
+  getCurrentElement("no_sessions")
+);
 const ordinary_classes: OrdinaryClassProps[] = await executeLink(
   "/v1/ordinary_classes?student_id=" + user.id,
   (response) => response.data.data
