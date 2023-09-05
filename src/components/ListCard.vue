@@ -87,7 +87,7 @@
             v-for="ordered_cards in props.cards_list.order"
             :key="'group-' + ordered_cards.key"
           >
-            <ion-item-divider :color="colors?.dividers ?? 'tertiary'">
+            <ion-item-divider :color="colors?.dividers ?? 'light'">
               <ion-label
                 class="ion-padding-end item-text-wrap"
                 :color="actual_text_divider_color"
