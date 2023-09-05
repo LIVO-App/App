@@ -12,11 +12,11 @@
         <!-- Da sistemare: freccetta -->
       </ion-col>
       <ion-col>
-        <ion-title style="wid" :color="head_content.title?.color">{{ head_content.title?.text }}</ion-title>
+        <ion-title><ionic-element :element="head_content.title" /></ion-title>
       </ion-col>
     </ion-row>
     <ion-row>
-      <ion-text :color="head_content.subtitle?.color">{{ head_content.subtitle?.text }}</ion-text>
+      <ionic-element :element="head_content.subtitle" />
     </ion-row>
     <ion-row>
       <div class="ion-padding">

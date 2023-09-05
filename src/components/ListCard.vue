@@ -10,7 +10,13 @@
   >
     <ion-card-header v-if="title != undefined && title.content != ''">
       <ion-card-title
-        ><ionic-element :element="title" class="title_font"
+        ><ionic-element
+          :element="title"
+          :classes="{
+            label: {
+              title_font: true,
+            },
+          }"
       /></ion-card-title>
       <ion-card-subtitle v-if="subtitle != undefined"
         ><ionic-element :element="subtitle"
@@ -33,7 +39,7 @@
           >
             <ionic-element
               :element="emptiness_message"
-              class="ion-text-wrap ion-text-center"
+              :classes="emptiness_message_classes"
             />
           </ion-item>
         </template>
@@ -53,7 +59,7 @@
           >
             <ionic-element
               :element="emptiness_message"
-              class="ion-text-wrap ion-text-center"
+              :classes="emptiness_message_classes"
             />
           </ion-item>
           <template v-else>
@@ -123,7 +129,12 @@
             >
               <ionic-element
                 :element="ordered_cards.title"
-                class="ion-padding-end item-text-wrap"
+                :classes="{
+                  label: {
+                    'ion-padding-end': true,
+                    'item-text-wrap': true,
+                  },
+                }"
               />
             </ion-item-divider>
             <ion-item
@@ -141,7 +152,7 @@
             >
               <ionic-element
                 :element="emptiness_message"
-                class="ion-text-wrap ion-text-center"
+                :classes="emptiness_message_classes"
               />
             </ion-item>
             <template v-else>
@@ -219,6 +230,7 @@ import {
   CourseCardElements,
   CustomElement,
   OrderedCardsList,
+  SubElementsClasses,
 } from "../types";
 import { isGeneral, isCourse, nullOperator } from "../utils";
 
@@ -271,6 +283,12 @@ const background_color =
     ? "" + props.colors.background.name
     : undefined;
 const groups = Object.keys(actual_cards_list.cards);
+const emptiness_message_classes: SubElementsClasses = {
+  label: {
+    "ion-text-wrap": true,
+    "ion-text-center": true,
+  },
+};
 
 let actual_title, actual_subtitle, tmp_card;
 let tmp_color: ColorObject | undefined = undefined;

@@ -2,29 +2,36 @@
   <template v-if="element.linkType == undefined || element.type == 'html'">
     <ion-label
       v-if="element.type == 'string'"
-      :color="element.colors?.text != undefined ? element.colors.text.name : undefined"
-      :class="actual_class"
+      :color="
+        element.colors?.text != undefined ? element.colors.text.name : undefined
+      "
+      :class="classes.label"
       >{{ element.content }}</ion-label
     >
     <div
       v-if="element.type == 'html'"
       v-html="element.content"
-      :class="{
-        textColor: element.colors?.text != undefined,
-      }"
+      :class="classes.html"
     ></div>
     <ion-icon
       v-else-if="element.type == 'icon'"
       :ios="castIconAlternatives(element.content).ios"
       :md="castIconAlternatives(element.content).md"
-      :class="actual_class"
+      :color="
+        element.colors?.text != undefined ? element.colors.text.name : undefined
+      "
+      :class="classes.icon"
     ></ion-icon>
     <!-- Da sistemare: mettere il colore alle icone -->
     <ion-label
       v-else-if="element.type == 'title'"
-      :color="element.colors?.text != undefined ? element.colors.text.name : undefined"
-      :class="actual_class"
-      ><h2>{{ element.content }}</h2></ion-label
+      :color="
+        element.colors?.text != undefined ? element.colors.text.name : undefined
+      "
+      :class="classes.label"
+      ><h2>
+        <b>{{ element.content }}</b>
+      </h2></ion-label
     >
   </template>
   <template v-else>
@@ -49,16 +56,24 @@
           }
         }
       "
-      :class="actual_class"
+      :class="classes.button"
     >
       <ion-icon
         :ios="castRequestIcon(element.content).icon.ios"
         :md="castRequestIcon(element.content).icon.md"
+        :color="
+          element.colors?.text != undefined
+            ? element.colors.text.name
+            : undefined
+        "
+        :class="classes.icon"
       ></ion-icon>
     </ion-button>
     <ion-label
       v-else-if="element.type == 'string'"
-      :color="element.colors?.text != undefined ? element.colors.text.name : undefined"
+      :color="
+        element.colors?.text != undefined ? element.colors.text.name : undefined
+      "
       @click="
         () => {
           if (!disabled && element.linkType == 'request') {
@@ -76,14 +91,18 @@
           }
         }
       "
-      :class="actual_class"
+      :class="classes.label"
     >
       {{ castEventString(element.content).text }}
     </ion-label>
     <template v-else-if="element.type == 'string_icon'">
       <ion-label
-        :color="element.colors?.text != undefined ? element.colors.text.name : undefined"
-        :class="actual_class"
+        :color="
+          element.colors?.text != undefined
+            ? element.colors.text.name
+            : undefined
+        "
+        :class="classes.label"
       >
         {{ castEventStringIcon(element.content).text }}
       </ion-label>
@@ -108,11 +127,12 @@
             }
           }
         "
-        :class="actual_class"
+        :class="classes.button"
       >
         <ion-icon
           :ios="castRequestIcon(element.content).icon.ios"
           :md="castRequestIcon(element.content).icon.md"
+          :class="classes.icon"
         ></ion-icon>
       </ion-button>
     </template>
@@ -129,6 +149,7 @@ import {
   RequestString,
   RequestStringIcon,
   EventStringIcon,
+  SubElementsClasses,
 } from "@/types";
 import { getVariableName } from "@/utils";
 import { IonButton, IonLabel, IonIcon } from "@ionic/vue";
@@ -149,22 +170,52 @@ const props = defineProps({
     type: Object as PropType<CustomElement>,
     required: true,
   },
-  class: String, // Da sistemare: mettere anche oggetto e vedere come sistemare oggetti multipli
+  classes: Object as PropType<SubElementsClasses>,
   disabled: Boolean, // Da sistemare: aggiornare posti dove viene usato
 });
 defineEmits(["execute_link", "signal_event"]);
 
-const actual_class = props.class ?? "";
 const text_color =
   props.element.colors?.text != undefined
     ? props.element.colors.text.type == "var"
       ? getVariableName(props.element.colors.text.name)
       : props.element.colors.text.name
     : undefined;
+const background_color =
+  props.element.colors?.background != undefined
+    ? props.element.colors.background.type == "var"
+      ? getVariableName(props.element.colors.background.name)
+      : props.element.colors.background.name
+    : undefined;
+const classes: SubElementsClasses = {
+  label: {
+    ...props.classes?.label,
+    textColor: props.element.colors?.text != undefined,
+    backgroundColor: background_color != undefined,
+  },
+  html: {
+    ...props.classes?.html,
+    textColor: props.element.colors?.text != undefined,
+    backgroundColor: background_color != undefined,
+  },
+  icon: {
+    ...props.classes?.icon,
+    textColor: props.element.colors?.text != undefined,
+    backgroundColor: background_color != undefined,
+  },
+  button: {
+    ...props.classes?.button,
+    //textColor: props.element.colors?.text != undefined,
+    backgroundColor: background_color != undefined,
+  },
+};
 </script>
 
 <style scoped>
 .textColor {
   color: v-bind("text_color");
+}
+.backgroundColor {
+  background-color: v-bind("background_color");
 }
 </style>

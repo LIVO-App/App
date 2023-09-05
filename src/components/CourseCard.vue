@@ -3,12 +3,17 @@
     <ion-card style="width: 100%">
       <ion-card-content>
         <ion-grid>
-          <ion-row>
-            <ion-col
-              size="auto"
-              style="border-right: 1px solid var(--ion-color-dark)"
-            >
-              <ionic-element :element="content[0]" />
+          <ion-row class="ion-align-items-center">
+            <ion-col size="auto">
+              <ionic-element
+                :element="content[0]"
+                :classes="{
+                  label: {
+                    'ion-padding': true,
+                    'radius': true,
+                  },
+                }"
+              />
             </ion-col>
             <ion-col>
               <ionic-element
@@ -17,26 +22,26 @@
               />
             </ion-col>
             <ion-col size="auto">
-              <ion-text
-                :color="
-                  enrollment.isPending()
-                    ? 'warning'
-                    : props.enrollment.enrollment === true
-                    ? 'success'
-                    : 'danger'
-                "
-              >
-                <ionic-element :element="content[2]" />
-              </ion-text>
+              <ionic-element
+                :element="content[2]"
+                :classes="{
+                  label: {
+                    'ion-padding': true,
+                    'radius': true,
+                  },
+                }"
+              />
             </ion-col>
-            <ion-col
-              v-if="button"
-              size="auto"
-              style="border-left: 1px solid var(--ion-color-dark)"
-            >
+            <ion-col v-if="button" size="auto">
               <ionic-element
                 :element="content[3]"
                 @execute_link="$emit('execute_link')"
+                :classes="{
+                  button: {
+                    'ion-padding': true,
+                    'radius': true,
+                  },
+                }"
               />
             </ion-col>
           </ion-row>
@@ -79,4 +84,7 @@ const button = props.enrollment.editable && props.content.length > 3;
 </script>
 
 <style>
+.radius {
+  border-radius: 10px;
+}
 </style>
