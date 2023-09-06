@@ -180,8 +180,6 @@ http://ionicframework.com/docs/theming/ */
 
   --ion-item-background: #ffffff;
 
-  --ion-toolbar-background: var(--ion-color-primary);
-
   --ion-tab-bar-background: #1f1f1f;
 
   --ion-card-background: #ffffff;
@@ -452,4 +450,8 @@ ion-split-pane {
 
 .no_card_border {
   box-shadow: none !important;
+}
+
+ion-modal > ion-header::after {
+  display: none;
 }

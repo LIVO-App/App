@@ -17,4 +17,8 @@ import { IonHeader, IonToolbar, IonTitle } from "@ionic/vue";
 const props = defineProps(["title", "subtitle"]);
 </script>
 
-<style scoped></style>
+<style scoped>
+ion-toolbar {
+  --background: var(--ion-color-primary);
+}
+</style>
