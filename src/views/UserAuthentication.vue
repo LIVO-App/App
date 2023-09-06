@@ -41,7 +41,6 @@ const login = async (payload: LoginInformation) => {
     checkParameters(payload, login_parameters);
     if (!alert_open.value) {
       redirect = menu.default_item[payload.type];
-      console.log(menu.default_item,payload.type,redirect);
       
       tmp_index = menu.order[payload.type].findIndex(
         (a) => a == redirect

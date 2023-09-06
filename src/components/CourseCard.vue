@@ -53,13 +53,11 @@
 import { CustomElement, SubElementsColors } from "@/types";
 import { Enrollment } from "@/types";
 import {
-  IonItem,
   IonCard,
   IonCardContent,
   IonGrid,
   IonRow,
   IonCol,
-  IonText,
 } from "@ionic/vue";
 import { PropType } from "vue";
 

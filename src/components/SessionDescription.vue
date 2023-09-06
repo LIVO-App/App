@@ -37,14 +37,7 @@ import {
   LearningContextSummary,
 } from "@/types";
 import { executeLink, getIcon } from "@/utils";
-import {
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonIcon,
-  IonTitle,
-  IonText,
-} from "@ionic/vue";
+import { IonGrid, IonRow, IonCol, IonIcon } from "@ionic/vue";
 import { PropType } from "vue";
 import { useRouter } from "vue-router";
 

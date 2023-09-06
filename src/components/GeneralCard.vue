@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { ColorObject, CustomElement, LinkParameters, SubElementsColors } from "@/types";
+import { CustomElement, LinkParameters, SubElementsColors } from "@/types";
 import { isRequest, isEvent } from "@/utils";
 import {
   IonCard,
