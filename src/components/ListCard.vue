@@ -40,7 +40,7 @@
                 colors?.background?.type != 'var',
             }"
             class="ion-no-padding"
-          >
+            >
             <ionic-element
               :element="emptiness_message"
               :classes="emptiness_message_classes"
@@ -233,7 +233,7 @@ import {
   IonItemDivider,
   IonItem,
 } from "@ionic/vue";
-import { PropType } from "vue";
+import { computed, PropType } from "vue";
 import {
   CardElements,
   ColorObject,
@@ -283,17 +283,19 @@ const props = defineProps({
 
 defineEmits(["execute_link", "signal_event"]);
 
-const actual_emptiness_message = JSON.parse(
+const actual_emptiness_message = computed(() => JSON.parse(
   JSON.stringify(props.emptiness_message)
-);
-const actual_cards_list: OrderedCardsList<CardElements> = JSON.parse(
-  JSON.stringify(props.cards_list)
-);
+));
+const actual_cards_list = computed(() => {
+  return (JSON.parse(
+    JSON.stringify(props.cards_list)
+  )) as OrderedCardsList<CardElements>;
+})
 const background_color =
   props.colors?.background != undefined && props.colors.background != undefined
     ? "" + props.colors.background.name
     : undefined;
-const groups = Object.keys(actual_cards_list.cards);
+const groups = Object.keys(actual_cards_list.value.cards);
 const emptiness_message_classes: SubElementsClasses = {
   label: {
     "ion-text-wrap": true,
@@ -332,7 +334,7 @@ if (props.subtitle != undefined) {
     props.colors?.text?.name
   );
 }
-actual_emptiness_message.color = adjustColor(
+actual_emptiness_message.value.color = adjustColor(
   props.emptiness_message?.colors?.text != undefined
     ? props.emptiness_message.colors.text.type
     : props.colors?.text?.type,
@@ -340,8 +342,8 @@ actual_emptiness_message.color = adjustColor(
   props.colors?.text?.name
 );
 for (const group in groups) {
-  for (const card in actual_cards_list.cards[groups[group]]) {
-    tmp_card = actual_cards_list.cards[groups[group]][card];
+  for (const card in actual_cards_list.value.cards[groups[group]]) {
+    tmp_card = actual_cards_list.value.cards[groups[group]][card];
     if (isGeneral(tmp_card)) {
       if (tmp_card.title != undefined) {
         tmp_color = adjustColor(
@@ -425,7 +427,7 @@ for (const group in groups) {
     }
   }
 }
-for (const ordered_cards of actual_cards_list.order) {
+for (const ordered_cards of actual_cards_list.value.order) {
   tmp_color = adjustColor(
     ordered_cards.title.colors?.text != undefined
       ? ordered_cards.title.colors.text.type
