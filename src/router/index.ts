@@ -150,7 +150,7 @@ router.beforeEach((to) => {
         ((selected_item = sessionStorage.getItem("selected_item") ?? menu.order[user.user][menu.index]) == undefined // No menu item selected
           && find_item_index(user, menu, menu_items, to.name.toString()) == -1 // Link not found in any menu item
           ||
-          menu.items[selected_item].url_names[user.user].findIndex(a => a == to.name) == -1 // Link not found in the selected menu item
+          menu.items[selected_item]?.url_names[user.user]?.findIndex(a => a == to.name) == -1 // Link not found in the selected menu item
           && find_item_index(user, menu, menu_items, to.name.toString()) == -1)) // Link not found in any menu item
         || to.name === 'auth') {
         return false;

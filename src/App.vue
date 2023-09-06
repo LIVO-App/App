@@ -106,11 +106,12 @@ if (user != undefined) {
   if (selected_item != undefined) {
     tmp_index = menu.order[user.user].findIndex((a) => a == selected_item);
   } else if ($route.name !== undefined) {
-    do {
-      tmp_index = menu.items[items_titles[count++]].url_names[
+    while (
+      (tmp_index = menu.items[items_titles[count]].url_names[
         user.user
-      ].findIndex((a) => a == $route.name);
-    } while (tmp_index == -1 && count < items_titles.length);
+      ]?.findIndex((a) => a == $route.name)) == -1 &&
+      ++count < items_titles.length
+    );
   }
   store.state.menu.index =
     tmp_index != -1
