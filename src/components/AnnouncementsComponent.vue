@@ -72,7 +72,7 @@
           :emptiness_message="
             getCustomMessage(
               'emptiness_message',
-              getCurrentElement('no_announcements')
+              getCurrentElement('no_messages')
             )
           "
           @signal_event="setupModalAndOpen()"

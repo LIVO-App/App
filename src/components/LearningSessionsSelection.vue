@@ -27,7 +27,7 @@
               getCurrentElement(
                 is_nothing_selected()
                   ? 'teacher_learning_session_selection_message'
-                  : 'no_project_classes'
+                  : 'no_courses'
               )
             )
           "

@@ -55,7 +55,7 @@ async function executeLink(url?: string | undefined, success = (response: any) =
         }
         store.state.request = {};
         return request.then(success)
-            .catch(fail);
+            .catch(fail); // Da sistemare: mettere finally che cancella store.state.request e store.state.event
     } else {
         store.state.request = {};
         return new Promise((resolve, reject) => {

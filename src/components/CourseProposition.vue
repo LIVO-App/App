@@ -355,6 +355,8 @@
                       :getCompleteName="learningContextToString"
                     />
                   </ion-col>
+                </ion-row>
+                <ion-row>
                   <ion-col>
                     <custom-select
                       :key="trigger + '_study_address'"
@@ -372,7 +374,14 @@
                       "
                       :getCompleteName="studyAddressToString"
                     />
-                  </ion-col>
+                    <ion-checkbox
+                      v-model="presidium"
+                      :aria-label="getCurrentElement('presidium')"
+                      class="ion-padding-start"
+                      label-placement="start"
+                      >{{ getCurrentElement("presidium") }}</ion-checkbox
+                    >
+                    </ion-col>
                   <ion-col>
                     <custom-select
                       :key="trigger + '_study_year'"
@@ -395,15 +404,6 @@
                         )
                       "
                     />
-                  </ion-col>
-                  <ion-col>
-                    <ion-checkbox
-                      v-model="presidium"
-                      :aria-label="getCurrentElement('presidium')"
-                      class="ion-padding-start"
-                      label-placement="start"
-                      >{{ getCurrentElement("presidium") }}</ion-checkbox
-                    >
                     <ion-checkbox
                       v-model="main_study_year"
                       :aria-label="getCurrentElement('main_study_year')"
