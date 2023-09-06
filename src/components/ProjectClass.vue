@@ -11,6 +11,7 @@
       id="grades_manages"
       :is-open="grades_open"
       @didDismiss="closeModal('grades')"
+      class="grades_modal"
     >
       <suspense>
         <template #default>
@@ -19,8 +20,7 @@
             :parameters="grades_parameters"
             :grades="student_grades"
             @close="closeModal('grades')"
-            @execute_link="add_grade()"
-            @signal_event="setupModalAndOpen()"
+            @signal_event="checkAndAdd()"
           />
         </template>
         <template #fallback>
@@ -109,9 +109,7 @@ const setupModalAndOpen = () => {
       grades_open.value = true;
       break;
     case "empty_descriptions":
-      alert_information.message = getCurrentElement(
-        "empty_descriptions"
-      );
+      alert_information.message = getCurrentElement("empty_descriptions");
       alert_open.value = true;
       break;
     case "grade_value_error":
@@ -139,30 +137,40 @@ const closeModal = (window: AvailableModal) => {
   }
 };
 const add_grade = async () => {
-  executeLink(
-    undefined,
-    (response) => {
-      const split_url = store.state.request.url.split("/");
-      const split_query = split_url[split_url.length - 1]
-        .split("?")[1]
-        .split("&");
-      const final = split_query[split_query.length - 2].split("=")[1];
-      const student_id = split_url[3];
-      const grade = split_query[split_query.length - 3].split("=")[1];
+  const data = store.state.event.data;
 
+  executeLink(
+    "/v1/students/" +
+      data.student_id +
+      "/grades?teacher_id=" +
+      data.teacher_id +
+      "&course_id=" +
+      data.course_id +
+      "&session_id=" +
+      data.session_id +
+      "&ita_description=" +
+      data.italian_description + // Da chiedere: cambiare lingue con parole intere
+      "&eng_description=" +
+      data.english_description +
+      "&grade=" +
+      data.grade +
+      "&final=" +
+      data.final,
+    (response) => {
       let student_pos: number;
 
-      grades[student_id].push(new Grade(response.data.value));
-      if (final == "true") {
+      grades[data.student_id].push(new Grade(response.data.value));
+      if (data.final == true) {
         student_pos = table_data.findIndex(
-          (a: CustomElement[]) => a[0].id == student_id + "_name_surname"
+          (a: CustomElement[]) => a[0].id == data.student_id + "_name_surname"
         );
         table_data[student_pos][table_data[student_pos].length - 1].content =
-          grade;
+          data.grade;
         trigger.value++;
       }
     },
-    (err) => console.error(err)
+    (err) => console.error(err),
+    "post"
   );
 };
 
@@ -212,6 +220,13 @@ const updateStudents = async () => {
         final_grade
       )
     );
+  }
+};
+const checkAndAdd = () => {
+  if (store.state.event.name == "add_grade") {
+    add_grade();
+  } else {
+    setupModalAndOpen();
   }
 };
 
@@ -353,7 +368,7 @@ watch(selected_section, async () => {
 
 <style>
 ion-modal#grades_manages {
-  --width: fit-content;
+  --width: 75%;
   --height: fit-content;
 }
 </style>

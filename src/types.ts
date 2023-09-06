@@ -1,6 +1,6 @@
 import { Method } from "axios";
 import { store } from "./store";
-import { executeLink, getActualLearningContext, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getCustomMessage, getGender, getIcon, getRagneString, getStatusColor, getStatusString, hashCode, numberToSection, toDateString } from "./utils";
+import { executeLink, getActualLearningContext, getAviableLanguages, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getCustomMessage, getGender, getIcon, getRagneString, getStatusColor, getStatusString, hashCode, numberToSection, toDateString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -1009,19 +1009,20 @@ class Grade implements GradeProps {
 
     toTableRow(): CustomElement[] {
         const language = getCurrentLanguage();
+
         return [{
             id: this.id + "_description",
             type: "html",
-            content: this[`${language}_description`] + (this.final ? " <b>[" + getCurrentElement("final") + "]</b>" : "") //Da sistemare: visualizzazione migliore voto finale
-        }, {
+            content: this[`${language}_description`]
+        },{
             id: this.id + "_pubblication",
             type: "string",
             content: toDateString(this.publication)
         }, {
             id: this.id + "_value",
-            type: "string",
-            content: "" + this.grade
-        }]
+            type: "html",
+            content: this.grade + (this.final ? "<br /><b>[" + getCurrentElement("final") + "]</b>" : "")
+        }];
     }
 }
 
