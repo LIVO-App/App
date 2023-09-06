@@ -1,58 +1,56 @@
 <template>
-  <ion-item lines="none">
-    <ion-card style="width: 100%">
-      <ion-card-content>
-        <ion-grid>
-          <ion-row class="ion-align-items-center">
-            <ion-col size="auto">
-              <ionic-element
-                :element="content[0]"
-                :classes="{
-                  label: {
-                    'ion-padding': true,
-                    'radius': true,
-                  },
-                }"
-              />
-            </ion-col>
-            <ion-col>
-              <ionic-element
-                :element="content[1]"
-                @signal_event="$emit('signal_event')"
-              />
-            </ion-col>
-            <ion-col size="auto">
-              <ionic-element
-                :element="content[2]"
-                :classes="{
-                  label: {
-                    'ion-padding': true,
-                    'radius': true,
-                  },
-                }"
-              />
-            </ion-col>
-            <ion-col v-if="button" size="auto">
-              <ionic-element
-                :element="content[3]"
-                @execute_link="$emit('execute_link')"
-                :classes="{
-                  button: {
-                    'ion-padding': true,
-                    'radius': true,
-                  },
-                }"
-              />
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-card-content>
-    </ion-card>
-  </ion-item>
+  <ion-card
+    style="width: 100%"
+    :class="{
+      no_card_border: colors?.borders == undefined,
+    }"
+    class="ion-no-padding ion-no-margin"
+  >
+    <ion-card-content>
+      <ion-grid>
+        <ion-row class="ion-align-items-center">
+          <ion-col size="auto">
+            <ionic-element
+              :element="content[0]"
+              :classes="{
+                label: {
+                  'ion-padding': true,
+                  radius: true,
+                },
+              }"
+            />
+          </ion-col>
+          <ion-col>
+            <ionic-element
+              :element="content[1]"
+              @signal_event="$emit('signal_event')"
+            />
+          </ion-col>
+          <ion-col size="auto">
+            <ionic-element
+              :element="content[2]"
+              :classes="{
+                label: {
+                  'ion-padding': true,
+                  half_radius: true,
+                },
+              }"
+            />
+          </ion-col>
+          <ion-col v-if="button" size="auto">
+            <ionic-element
+              :element="content[3]"
+              @execute_link="$emit('execute_link')"
+            />
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
 </template>
 
 <script setup lang="ts">
-import { CustomElement } from "@/types";
+import { CustomElement, SubElementsColors } from "@/types";
 import { Enrollment } from "@/types";
 import {
   IonItem,
@@ -78,6 +76,7 @@ const props = defineProps({
     type: Object as PropType<Enrollment>,
     required: true,
   },
+  colors: Object as PropType<SubElementsColors>,
 });
 defineEmits(["execute_link", "signal_event"]);
 const button = props.enrollment.editable && props.content.length > 3;
@@ -86,5 +85,8 @@ const button = props.enrollment.editable && props.content.length > 3;
 <style>
 .radius {
   border-radius: 10px;
+}
+.half_radius {
+  border-radius: 5px;
 }
 </style>

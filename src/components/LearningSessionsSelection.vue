@@ -222,7 +222,7 @@ const courses: OrderedCardsList<GeneralCardElements> = reactive({
   order: [
     {
       key: "teacher",
-      title: getCustomMessage("title", getCurrentElement("teacher")),
+      title: getCustomMessage("title", getCurrentElement("teacher"), "title"),
     },
     {
       key: "associated",
@@ -256,7 +256,7 @@ for (const year of teaching_years) {
       async (response) => {
         learning_sessions.order.push({
           key: year,
-          title: getCustomMessage("title", year),
+          title: getCustomMessage("title", year, "title"),
         });
         learning_sessions.cards[year] = [];
         for (const learning_session of response.data.data) {

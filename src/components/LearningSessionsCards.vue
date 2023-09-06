@@ -205,7 +205,7 @@ if (current_class != undefined) {
         async (response) => {
           learning_sessions.completed.order.push({
             key: oc.school_year,
-            title: getCustomMessage("title", oc.school_year),
+            title: getCustomMessage("title", oc.school_year, "title"),
           });
           learning_sessions.completed.cards[oc.school_year] = [];
           for (const session of response.data.data) {
@@ -259,7 +259,7 @@ if (current_class != undefined) {
         }
         learning_sessions.completed.order.push({
           key: current_school_year,
-          title: getCustomMessage("title", current_school_year),
+          title: getCustomMessage("title", current_school_year, "title"),
         });
         learning_sessions.future.order = learning_sessions.future.order.concat(
           {
@@ -271,7 +271,7 @@ if (current_class != undefined) {
           },
           {
             key: "planned",
-            title: getCustomMessage("title", getCurrentElement("planned")),
+            title: getCustomMessage("title", getCurrentElement("planned"), "title"),
           }
         );
         tmp_element = learning_sessions.future.cards["planned"].shift();

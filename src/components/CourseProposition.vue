@@ -782,7 +782,7 @@ const addAccess = (
     if (access_propositions_cards.cards[learning_context.id] == undefined) {
       access_propositions_cards.order.push({
         key: learning_context.id,
-        title: getCustomMessage("title", learning_context[`${language}_title`]),
+        title: getCustomMessage("title", learning_context[`${language}_title`], "title"),
       });
       access_propositions_cards.order.sort((a, b) =>
         a.key == b.key ? 0 : a.key > b.key ? 1 : -1

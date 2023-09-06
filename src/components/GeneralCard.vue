@@ -4,13 +4,13 @@
     :color="
       selected
         ? 'light'
-        : colors?.background.type == 'var'
+        : colors?.background?.type == 'var'
         ? colors?.background.name
         : undefined
     "
     :class="{
       no_card_border: colors?.borders == undefined,
-      background: colors != undefined && colors.background.type != 'var',
+      background: colors != undefined && colors.background?.type != 'var',
     }"
     class="ion-no-padding ion-no-margin"
     style="width: 100%"
@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { ColorObject, CustomElement, LinkParameters } from "@/types";
+import { ColorObject, CustomElement, LinkParameters, SubElementsColors } from "@/types";
 import { isRequest, isEvent } from "@/utils";
 import {
   IonCard,
@@ -138,10 +138,7 @@ const props = defineProps({
   side_element: Object as PropType<CustomElement>,
   selected: Boolean,
   link: Object as PropType<LinkParameters>,
-  colors: Object as PropType<{
-    background: ColorObject;
-    borders: ColorObject;
-  }>,
+  colors: Object as PropType<SubElementsColors>,
 });
 defineEmits(["execute_link", "signal_event"]);
 const isGet =
@@ -152,9 +149,6 @@ const background_color = props.colors != undefined && props.colors.background !=
 </script>
 
 <style scoped>
-.no_card_border {
-  box-shadow: none !important;
-}
 .background {
   background-color: v-bind("background_color");
 }

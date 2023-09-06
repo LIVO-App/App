@@ -70,6 +70,16 @@
         getCustomMessage('emptiness_message', getCurrentElement('noCourses'))
       "
       v-model:cards_list="courses"
+      :colors="{
+        list_borders: {
+          name: 'black',
+          type: 'var',
+        },
+        text: {
+          name: 'primary',
+          type: 'var',
+        },
+      }"
     />
   </div>
 </template>
@@ -95,7 +105,6 @@ import {
   getCurrentElement,
   getCurrentLanguage,
   getCustomMessage,
-  getEnrollmentIcon,
   toSummary,
 } from "@/utils";
 import { IonAlert, IonModal, IonGrid, IonRow, IonCol } from "@ionic/vue";
@@ -121,13 +130,14 @@ const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
     if (context_reference.context_id == selected_context.value) {
       course.enrollment.enrollment = value;
       course.content[2].content = course.enrollment.toString();
-      course.content[3].content = getEnrollmentIcon(
-        course.enrollment,
+      course.content[3].content = course.enrollment.getEnrollmentIcon(
         pathArray.join("/") +
           (value === false ? "/subscribe?" : "/unsubscribe?") +
           requestArray[1],
         course.enrollment.getChangingMethod()
       );
+      course.content[2].colors = course.enrollment.getStatusColors();
+      course.content[3].colors = course.enrollment.getChangeButtonColors();
     } else {
       course.enrollment.editable = false; // Da sistemare: chiedere se in backend, quando è presente il corso per due contesti, c'è il controllo che non sia iscritto nell'altro contesto
     }

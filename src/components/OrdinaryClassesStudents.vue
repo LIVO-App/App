@@ -201,7 +201,7 @@ for (const year of school_years) {
       (response) => {
         ordinary_classes.order.push({
           key: year,
-          title: getCustomMessage("title", year),
+          title: getCustomMessage("title", year, "title"),
         });
         for (const tmp_class of response.data.data) {
           ordinary_class = new OrdinaryClassSummary(tmp_class);

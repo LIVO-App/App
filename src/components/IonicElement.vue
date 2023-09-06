@@ -29,9 +29,9 @@
         element.colors?.text != undefined ? element.colors.text.name : undefined
       "
       :class="classes.label"
-      ><h2>
+      ><!--<h2>--> <!-- Da sistemare: ingrandire titolo -->
         <b>{{ element.content }}</b>
-      </h2></ion-label
+      <!--</h2>--></ion-label
     >
   </template>
   <template v-else>
@@ -151,7 +151,7 @@ import {
   EventStringIcon,
   SubElementsClasses,
 } from "@/types";
-import { getVariableName } from "@/utils";
+import { getCssVariable } from "@/utils";
 import { IonButton, IonLabel, IonIcon } from "@ionic/vue";
 import { PropType } from "vue";
 import { useStore } from "vuex";
@@ -178,37 +178,53 @@ defineEmits(["execute_link", "signal_event"]);
 const text_color =
   props.element.colors?.text != undefined
     ? props.element.colors.text.type == "var"
-      ? getVariableName(props.element.colors.text.name)
+      ? getCssVariable("--ion-color-" + props.element.colors.text.name)
       : props.element.colors.text.name
     : undefined;
 const background_color =
   props.element.colors?.background != undefined
     ? props.element.colors.background.type == "var"
-      ? getVariableName(props.element.colors.background.name)
+      ? getCssVariable("--ion-color-" + props.element.colors.background.name)
       : props.element.colors.background.name
     : undefined;
+const borders_color =
+  props.element.colors?.borders != undefined
+    ? props.element.colors.borders.type == "var"
+      ? getCssVariable("--ion-color-" + props.element.colors.borders.name)
+      : props.element.colors.borders.name
+    : undefined;
+
 const classes: SubElementsClasses = {
   label: {
     ...props.classes?.label,
     textColor: props.element.colors?.text != undefined,
     backgroundColor: background_color != undefined,
+    borders: borders_color != undefined,
   },
   html: {
     ...props.classes?.html,
     textColor: props.element.colors?.text != undefined,
     backgroundColor: background_color != undefined,
+    borders: borders_color != undefined,
   },
   icon: {
     ...props.classes?.icon,
     textColor: props.element.colors?.text != undefined,
     backgroundColor: background_color != undefined,
+    borders: borders_color != undefined && props.element.linkType == undefined,
   },
   button: {
     ...props.classes?.button,
-    //textColor: props.element.colors?.text != undefined,
-    backgroundColor: background_color != undefined,
+    textButton: props.element.colors?.text != undefined,
+    backgroundButton: background_color != undefined,
+    bordersButton: borders_color != undefined,
   },
 };
+
+const border_radius = props.element.params?.border_radius ?? "0px";
+if (props.element.id == "5_change_enrollment") {
+  console.log(props.element,classes);
+}
 </script>
 
 <style scoped>
@@ -218,4 +234,23 @@ const classes: SubElementsClasses = {
 .backgroundColor {
   background-color: v-bind("background_color");
 }
+.borders {
+  border: 1px solid v-bind("borders_color");
+}
+.backgroundButton {
+  --background: v-bind("background_color");
+}
+.textButton {
+  --color: v-bind("text_color");
+}
+.bordersButton {
+  --border-radius: v-bind("border_radius");
+  --border-color: v-bind("borders_color");
+  --border-style: solid;
+  --border-width: 1px;
+}
+/*.paddingButton {
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+}*/
 </style>

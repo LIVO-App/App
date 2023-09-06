@@ -1,11 +1,14 @@
 <template>
   <ion-card
     :color="
-      colors?.background.type == 'var' ? colors?.background.name : undefined
+      colors?.background != undefined && colors?.background?.type == 'var'
+        ? colors?.background.name
+        : undefined
     "
     :class="{
       '--ion-no-border': colors?.external_borders == undefined,
-      background: colors != undefined && colors?.background.type != 'var',
+      background:
+        colors?.background != undefined && colors?.background?.type != 'var',
     }"
   >
     <ion-card-header v-if="title != undefined && title.content != ''">
@@ -27,13 +30,14 @@
         <template v-if="Object.keys(actual_cards_list.cards).length === 0">
           <ion-item
             :color="
-              colors?.background.type == 'var'
+              colors?.background?.type == 'var'
                 ? colors?.background.name
                 : undefined
             "
             :class="{
               background:
-                colors != undefined && colors?.background.type != 'var',
+                colors?.background != undefined &&
+                colors?.background?.type != 'var',
             }"
             class="ion-no-padding"
           >
@@ -47,13 +51,14 @@
           <ion-item
             v-if="actual_cards_list.cards[''].length === 0"
             :color="
-              colors?.background.type == 'var'
+              colors?.background?.type == 'var'
                 ? colors?.background.name
                 : undefined
             "
             :class="{
               background:
-                colors != undefined && colors?.background.type != 'var',
+                colors?.background != undefined &&
+                colors?.background?.type != 'var',
             }"
             class="ion-no-padding"
           >
@@ -68,15 +73,21 @@
               :key="card.id"
             >
               <ion-item
-                :lines="colors?.list_borders != undefined ? 'inset' : 'none'"
+                :lines="
+                  colors?.list_borders != undefined &&
+                  colors?.list_borders != undefined
+                    ? 'inset'
+                    : 'none'
+                "
                 :color="
-                  colors?.background.type == 'var'
+                  colors?.background?.type == 'var'
                     ? colors?.background.name
                     : undefined
                 "
                 :class="{
                   background:
-                    colors != undefined && colors?.background.type != 'var',
+                    colors?.background != undefined &&
+                    colors?.background?.type != 'var',
                 }"
                 class="ion-no-padding"
               >
@@ -85,6 +96,7 @@
                   @execute_link="$emit('execute_link')"
                   @signal_event="$emit('signal_event')"
                   :content="card.content"
+                  :credits="card.credits"
                   :enrollment="card.enrollment"
                   :url="card.url"
                   :method="card.method"
@@ -102,10 +114,7 @@
                   :side_element="card.side_element"
                   :selected="card.selected"
                   :link="card.link"
-                  :colors="{
-                    background: colors?.background,
-                    borders: colors?.cards_borders,
-                  }"
+                  :colors="general_card_colors"
                 />
               </ion-item>
             </template>
@@ -118,13 +127,14 @@
           >
             <ion-item-divider
               :color="
-                (colors?.dividers.type == 'var'
+                (colors?.dividers?.type == 'var'
                   ? colors?.dividers.name
                   : undefined) ?? 'light'
               "
               :class="{
                 background:
-                  colors != undefined && colors.dividers.type != 'var',
+                  colors?.dividers != undefined &&
+                  colors.dividers.type != 'var',
               }"
             >
               <ionic-element
@@ -140,13 +150,14 @@
             <ion-item
               v-if="actual_cards_list.cards[ordered_cards.key].length === 0"
               :color="
-                colors?.background.type == 'var'
+                colors?.background?.type == 'var'
                   ? colors?.background.name
                   : undefined
               "
               :class="{
                 background:
-                  colors != undefined && colors?.background.type != 'var',
+                  colors?.background != undefined &&
+                  colors?.background?.type != 'var',
               }"
               class="ion-no-padding"
             >
@@ -163,13 +174,14 @@
                 <ion-item
                   :lines="colors?.list_borders != undefined ? 'inset' : 'none'"
                   :color="
-                    colors?.background.type == 'var'
+                    colors?.background?.type == 'var'
                       ? colors?.background.name
                       : undefined
                   "
                   :class="{
                     background:
-                      colors != undefined && colors?.background.type != 'var',
+                      colors?.background != undefined &&
+                      colors?.background?.type != 'var',
                   }"
                   class="ion-no-padding"
                 >
@@ -178,8 +190,10 @@
                     @execute_link="$emit('execute_link')"
                     @signal_event="$emit('signal_event')"
                     :content="card.content"
+                    :credits="card.credits"
                     :enrollment="card.enrollment"
                     :url="card.url"
+                    :colors="general_card_colors"
                     :method="card.method"
                   />
                   <general-card
@@ -195,10 +209,7 @@
                     :side_element="card.side_element"
                     :selected="card.selected"
                     :link="card.link"
-                    :colors="{
-                      background: colors?.background,
-                      borders: colors?.cards_borders,
-                    }"
+                    :colors="general_card_colors"
                   />
                 </ion-item>
               </template>
@@ -279,7 +290,7 @@ const actual_cards_list: OrderedCardsList<CardElements> = JSON.parse(
   JSON.stringify(props.cards_list)
 );
 const background_color =
-  props.colors != undefined && props.colors.background != undefined
+  props.colors?.background != undefined && props.colors.background != undefined
     ? "" + props.colors.background.name
     : undefined;
 const groups = Object.keys(actual_cards_list.cards);
@@ -289,6 +300,14 @@ const emptiness_message_classes: SubElementsClasses = {
     "ion-text-center": true,
   },
 };
+const general_card_colors =
+  props.colors?.background != undefined ||
+  props.colors?.cards_borders != undefined
+    ? {
+        background: props.colors?.background,
+        borders: props.colors?.cards_borders,
+      }
+    : undefined;
 
 let actual_title, actual_subtitle, tmp_card;
 let tmp_color: ColorObject | undefined = undefined;
@@ -375,6 +394,34 @@ for (const group in groups) {
       tmp_card.enrollment = (
         props.cards_list.cards[groups[group]][card] as CourseCardElements
       ).enrollment;
+
+      tmp_color = adjustColor(
+        tmp_card.content[0].colors?.text != undefined
+          ? tmp_card.content[0].colors.text.type
+          : props.colors?.background?.type,
+        tmp_card.content[0].colors?.text?.name,
+        props.colors?.background?.name
+      );
+      if (tmp_color != undefined) {
+        if (tmp_card.content[0].colors == undefined) {
+          tmp_card.content[0].colors = {};
+        }
+        tmp_card.content[0].colors.text = tmp_color;
+      }
+
+      tmp_color = adjustColor(
+        tmp_card.content[1].colors?.text != undefined
+          ? tmp_card.content[1].colors.text.type
+          : props.colors?.text?.type,
+        tmp_card.content[1].colors?.text?.name,
+        props.colors?.text?.name
+      );
+      if (tmp_color != undefined) {
+        if (tmp_card.content[1].colors == undefined) {
+          tmp_card.content[1].colors = {};
+        }
+        tmp_card.content[1].colors.text = tmp_color;
+      }
     }
   }
 }

@@ -189,7 +189,7 @@ for (const year of school_years) {
       async (response) => {
         learning_sessions.order.push({
           key: year,
-          title: getCustomMessage("title", year),
+          title: getCustomMessage("title", year, "title"),
         });
         learning_sessions.cards[year] = [];
         for (const learning_session of response.data.data) {

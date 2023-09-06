@@ -65,16 +65,6 @@ async function executeLink(url?: string | undefined, success = (response: any) =
     }
 }
 
-function getEnrollmentIcon(enrollment: Enrollment, path: string, method?: Method): RequestIcon {
-    return {
-        url: path,
-        method: enrollment.editable ?
-            (method ?? enrollment.getChangingMethod())
-            : (method ?? "get"),
-        icon: enrollment.enrollment === false ? getIcon("add") : getIcon("close")
-    }
-}
-
 function getCurrentElement(key: string) {
 
     const language: Language = store.state.language;
@@ -199,10 +189,10 @@ function nullOperator(...args: any[]) {
     return color;
 }
 
-function getVariableName(color: string) {
+function getCssVariable(variable: string) {
     return getComputedStyle(document.documentElement).getPropertyValue(
-        "--ion-color-" + color
+        variable
     );
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getEnrollmentIcon, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getVariableName }
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable }

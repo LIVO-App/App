@@ -11,12 +11,12 @@
         ></ion-icon>
         <!-- Da sistemare: freccetta -->
       </ion-col>
-      <ion-col>
-        <ion-title><ionic-element :element="head_content.title" /></ion-title>
+      <ion-col size="auto">
+        <ionic-element :element="head_content.title" />
       </ion-col>
-    </ion-row>
-    <ion-row>
-      <ionic-element :element="head_content.subtitle" />
+      <ion-col size="auto">
+        <ionic-element :element="head_content.subtitle" />
+      </ion-col>
     </ion-row>
     <ion-row>
       <div class="ion-padding">

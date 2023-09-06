@@ -449,3 +449,7 @@ ion-split-pane {
 .title_font {
   font-size: 32px !important;
 }
+
+.no_card_border {
+  box-shadow: none !important;
+}
