@@ -429,7 +429,7 @@ if (learning_session != undefined) {
               all_courses[tmp_learning_context.id] = {};
               for (const learning_area of learning_areas) {
                 remaining_courses[tmp_learning_context.id][
-                  tmp_learning_area.id
+                  learning_area.id
                 ] = {};
                 all_courses[tmp_learning_context.id][learning_area.id] = [];
               }
