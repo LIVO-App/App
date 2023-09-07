@@ -109,7 +109,7 @@ export const store = createStore({
                     },
                     "project_courses": {
                         url_names: {
-                            "teacher": ["project_courses", "project_course", "announcements", "student"],
+                            "teacher": ["project_courses", "project_course", "announcement", "student"],
                             "admin": ["project_courses_hub", "project_course", "student"]
                         },
                         icon_ref: "brief_case"
