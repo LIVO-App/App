@@ -463,6 +463,7 @@ export const store = createStore({
                     learning_sessions_management: "Gestione sessioni di apprendimento",
                     constraints_management: "Gestione vincoli",
                     info: "Info",
+                    specific_information: "Informazioni specifiche",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -623,6 +624,7 @@ export const store = createStore({
                     learning_sessions_management: "Learning sessions management",
                     constraints_management: "Constraints management",
                     info: "Info",
+                    specific_information: "Specific information",
                 }
             },
             logged_user: false,

@@ -1014,14 +1014,14 @@ class Grade implements GradeProps {
             id: this.id + "_description",
             type: "html",
             content: this[`${language}_description`]
-        },{
+        }, {
             id: this.id + "_pubblication",
             type: "string",
             content: toDateString(this.publication)
         }, {
             id: this.id + "_value",
             type: "html",
-            content: this.grade + (this.final ? "<br /><b>[" + getCurrentElement("final") + "]</b>" : "")
+            content: (this.final ? "<b>" + getCurrentElement("final") + "</b><br />" : "") + this.grade
         }];
     }
 }
@@ -1541,29 +1541,26 @@ class CourseModel {
 
 type PagesType = "pages" | "editor" | "no_inner_props";
 
-type Pages = "course_id" | "title" | "characteristics" | "students_distribution" | "descriptions" | "expected_learning_results" | "criterions" | "activities" | "access_object" | "teacher_list";
+type Pages = "course_id" | "title" | "characteristics1" | "characteristics2" | "description" | "expected_learning_results" | "criterions" | "activities" | "access_object" | "specific_information";
 
 type PropositionTitles = {
     [key in keyof string as `${Language}_title`]: string
 };
 
-type PropositionCharacteristics = {
+type PropositionCharacteristics1 = {
     up_hours: number,
     credits: number,
     area_id: string,
-    growth_id: number,
-    session_id: number,
-    class_group: number
-};
-
-type PropositionStudentsDistribution = { // Da sistemare: trovare nome comune
-    num_section: number,
     min_students: number,
     max_students: number,
+};
+
+type PropositionCharacteristics2 = {
+    growth_id: number, // Da sistemare: fare lista
     teaching_list: string[]
 }
 
-type PropositionDescriptions = {
+type PropositionDescription = {
     [key in keyof string as `${Language}_descr`]: string
 };
 
@@ -1596,11 +1593,21 @@ type PropositionTeacher = {
     sections: string[]
 };
 
+type PropositionSpecificInformation = {
+    session_id: number,
+    class_group: number
+    num_section: number,
+    teacher_list: PropositionTeacher[]
+}
+
 type PropositionObj = {
     course_id: number;
     access_object: PropositionAccessObject;
-    teacher_list: PropositionTeacher[];
-} & PropositionTitles & PropositionCharacteristics & PropositionStudentsDistribution & PropositionDescriptions & PropositionExpectedLearningResults & PropositionCriterions & PropositionActivities;
+} & PropositionTitles & PropositionCharacteristics1 & PropositionCharacteristics2 & PropositionDescription & PropositionExpectedLearningResults & PropositionCriterions & PropositionActivities & PropositionSpecificInformation;
+
+type PagesTitlesRefs = {
+    [key in keyof string as Pages]: string
+}
 
 class ModelProposition {
 
@@ -1608,14 +1615,14 @@ class ModelProposition {
 
     private _course_id: number;
     private _title: PropositionTitles;
-    private _characteristics: PropositionCharacteristics;
-    private _students_distribution: PropositionStudentsDistribution;
-    private _description: PropositionDescriptions;
+    private _characteristics1: PropositionCharacteristics1;
+    private _characteristics2: PropositionCharacteristics2;
+    private _description: PropositionDescription;
     private _expected_learning_results: PropositionExpectedLearningResults;
     private _criterions: PropositionCriterions;
     private _activities: PropositionActivities;
     private _access_object: PropositionAccessObject;
-    private _teacher_list: PropositionTeacher[];
+    private _specific_information: PropositionSpecificInformation;
     private _remaining: Pages[];
 
     constructor(proposition?: PropositionObj) {
@@ -1627,18 +1634,15 @@ class ModelProposition {
             italian_title: actual_proposition.italian_title,
             english_title: actual_proposition.english_title
         };
-        this._characteristics = {
+        this._characteristics1 = {
             up_hours: actual_proposition.up_hours,
             credits: actual_proposition.credits,
             area_id: actual_proposition.area_id,
-            growth_id: actual_proposition.growth_id,
-            session_id: actual_proposition.session_id,
-            class_group: actual_proposition.class_group
-        };
-        this._students_distribution = {
-            num_section: actual_proposition.num_section,
             min_students: actual_proposition.min_students,
             max_students: actual_proposition.max_students,
+        };
+        this._characteristics2 = {
+            growth_id: actual_proposition.growth_id,
             teaching_list: actual_proposition.teaching_list
         };
         this._description = {
@@ -1658,7 +1662,12 @@ class ModelProposition {
             english_act: actual_proposition.english_act
         };
         this._access_object = actual_proposition.access_object;
-        this._teacher_list = actual_proposition.teacher_list;
+        this._specific_information = {
+            session_id: actual_proposition.session_id,
+            class_group: actual_proposition.class_group,
+            num_section: actual_proposition.num_section,
+            teacher_list: actual_proposition.teacher_list,
+        };
 
         if (empty_proposition) {
             this._remaining = ModelProposition.getProps();
@@ -1711,28 +1720,28 @@ class ModelProposition {
         this._remaining = this._remaining.filter(a => a != "title");
     }
 
-    public get characteristics() {
-        return this._characteristics;
+    public get characteristics1() {
+        return this._characteristics1;
     }
-    public set characteristics(value: PropositionCharacteristics) {
-        this._characteristics = value;
-        this._remaining = this._remaining.filter(a => a != "characteristics");
-    }
-
-    public get students_distribution() {
-        return this._students_distribution;
-    }
-    public set students_distribution(value: PropositionStudentsDistribution) {
-        this._students_distribution = value;
-        this._remaining = this._remaining.filter(a => a != "students_distribution");
+    public set characteristics1(value: PropositionCharacteristics1) {
+        this._characteristics1 = value;
+        this._remaining = this._remaining.filter(a => a != "characteristics1");
     }
 
-    public get descriptions() {
+    public get characteristics2() {
+        return this._characteristics2;
+    }
+    public set characteristics2(value: PropositionCharacteristics2) {
+        this._characteristics2 = value;
+        this._remaining = this._remaining.filter(a => a != "characteristics2");
+    }
+
+    public get description() {
         return this._description;
     }
-    public set descriptions(value: PropositionDescriptions) {
+    public set description(value: PropositionDescription) {
         this._description = value;
-        this._remaining = this._remaining.filter(a => a != "descriptions");
+        this._remaining = this._remaining.filter(a => a != "description");
     }
 
     public get expected_learning_results() {
@@ -1767,18 +1776,23 @@ class ModelProposition {
         this._remaining = this._remaining.filter(a => a != "access_object");
     }
 
-    public get teacher_list() {
-        return this._teacher_list;
+    public get specific_information() {
+        return this._specific_information;
     }
-    public set teacher_list(list: PropositionTeacher[]) {
-        this._teacher_list = list.map(a => {
-            return {
-                teacher_id: a.teacher_id,
-                main: /*!!*/a.main ? true : false,
-                sections: a.sections
-            }
-        });
-        this._remaining = this._remaining.filter(a => a != "teacher_list");
+    public set specific_information(value: PropositionSpecificInformation) {
+        this._specific_information = {
+            session_id: value.session_id,
+            class_group: value.class_group,
+            num_section: value.num_section,
+            teacher_list: value.teacher_list.map(a => {
+                return {
+                    teacher_id: a.teacher_id,
+                    main: /*!!*/a.main ? true : false,
+                    sections: a.sections
+                }
+            })
+        };
+        this._remaining = this._remaining.filter(a => a != "specific_information");
     }
 
     toProposition(): PropositionObj {
@@ -1816,13 +1830,28 @@ class ModelProposition {
     static getProps(type?: PagesType): Pages[] {
         switch (type) {
             case undefined:
-                return ["course_id", "title", "characteristics", "descriptions", "expected_learning_results", "criterions", "activities", "access_object", "teacher_list"];
+                return ["course_id", "title", "characteristics1", "characteristics2", "description", "expected_learning_results", "criterions", "activities", "access_object", "specific_information"];
             case "pages":
-                return ["title", "characteristics", "students_distribution", "descriptions", "expected_learning_results", "criterions", "activities", "access_object", "teacher_list"];
+                return ["title", "characteristics1", "characteristics2", "description", "expected_learning_results", "criterions", "activities", "access_object", "specific_information"];
             case "editor":
-                return ["descriptions", "expected_learning_results", "criterions", "activities"];
+                return ["description", "expected_learning_results", "criterions", "activities"];
             case "no_inner_props":
-                return ["course_id", "access_object", "teacher_list"];
+                return ["course_id", "access_object", "specific_information"];
+        }
+    }
+
+    static getTitles(): PagesTitlesRefs {
+        return {
+            course_id: "reference_model",
+            title: "title",
+            characteristics1: "characteristics",
+            characteristics2: "characteristics",
+            description: "description",
+            expected_learning_results: "expected_learning_results",
+            criterions: "criterions",
+            activities: "activities",
+            access_object: "access_object",
+            specific_information: "specific_information"
         }
     }
 }
@@ -2152,4 +2181,4 @@ type CardListDescription = {
     on_click?: () => any
 }
 
-export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, SubElementsColors, SubElementsClasses, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics, PropositionCriterions, PropositionDescriptions, PropositionExpectedLearningResults, PropositionStudentsDistribution, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }
+export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, SubElementsColors, SubElementsClasses, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }
