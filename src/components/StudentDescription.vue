@@ -13,7 +13,7 @@
           <!-- Da sistemare: freccetta -->
         </ion-col>
         <ion-col>
-          <ion-title>{{ student_card.title }}</ion-title>
+          <ionic-element :element="student_card.title" />
         </ion-col>
       </ion-row>
       <ion-row>

@@ -1483,9 +1483,9 @@ class CourseModel {
     italian_title: string;
     english_title: string;
     creation_school_year: number;
-    project_class_confirmation_date: Date;
+    project_class_confirmation_date: Date | undefined;
     project_class_to_be_modified: boolean | null;
-    course_confirmation_date: Date;
+    course_confirmation_date: Date | undefined;
     course_to_be_modified: boolean | null;
 
     constructor(props: CourseModelProps) {
@@ -1493,9 +1493,9 @@ class CourseModel {
         this.italian_title = props.italian_title;
         this.english_title = props.english_title;
         this.creation_school_year = props.creation_school_year;
-        this.project_class_confirmation_date = new Date(props.project_class_confirmation_date); // Da sistemare: guardare quando undefined
+        this.project_class_confirmation_date = props.project_class_confirmation_date != null ? new Date(props.project_class_confirmation_date) : undefined; // Da sistemare: guardare quando undefined
         this.project_class_to_be_modified = props.project_class_to_be_modified;
-        this.course_confirmation_date = new Date(props.course_confirmation_date);
+        this.course_confirmation_date = props.course_confirmation_date != null ? new Date(props.course_confirmation_date) : props.course_confirmation_date;
         this.course_to_be_modified = props.course_to_be_modified;
         // Da sistemare: sistemare id card con id+anno e aggiungere proposer_teacher e certifying_admin quando Pietro finisce
     }
@@ -1520,11 +1520,11 @@ class CourseModel {
             content: [{
                 id: this.id + "_project_class_confirmation_date",
                 type: "string",
-                content: getCurrentElement("project_class_confirmation_date") + ": " + toDateString(this.project_class_confirmation_date)
+                content: getCurrentElement("project_class_confirmation_date") + ": " + (this.project_class_confirmation_date != undefined ? toDateString(this.project_class_confirmation_date) : "-")
             }, {
                 id: this.id + "_course_confirmation_date",
                 type: "string",
-                content: getCurrentElement("course_confirmation_date") + ": " + toDateString(this.course_confirmation_date)
+                content: getCurrentElement("course_confirmation_date") + ": " + (this.course_confirmation_date != undefined ? toDateString(this.course_confirmation_date) : "-")
             }],
             link: {
                 url: "/course_proposal?" + (view ? "view" + "=" + this.id : ""), // Da sistemare: mettere guardia che sistema il link, salvando le cose sulla sessione

@@ -39,6 +39,7 @@
       />
     </template>
     <custom-select
+      :key="trigger"
       v-model="selected_model"
       :list="models"
       :label="getCurrentElement('reference_model') + ':'"
@@ -1165,6 +1166,7 @@ const edit_course_proposition = async (course_id?: number) => {
         teacher_list: [],
       })
     );
+    console.log("Ciao",course_proposition);
     for (const teaching of course_proposition.characteristics2.teaching_list) {
       addToSimpleList("teachings",teaching);
     }
@@ -1191,9 +1193,10 @@ const changeModality = (new_action: Action) => {
 const approve = (outcome = true) => {
   executeLink(
     "/v1/propositions/approval?course_id=" +
-      course_proposition.id +
+      course_proposition.course_id +
       "&session_id=" +
-      course_proposition.specific_information.session_id +
+      "2" +
+      //course_proposition.specific_information.session_id +
       "&approved=" +
       outcome,
     () => {

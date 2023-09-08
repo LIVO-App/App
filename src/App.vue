@@ -71,7 +71,7 @@ import { useStore } from "vuex";
 import { Menu, MenuItem, User } from "./types";
 import { getCurrentElement, getIcon } from "./utils";
 
-const image = computed(() => require("./assets/Logo_LIVO_Campus_POS_RGB.png"));
+const image = computed(() => require("./assets/Logo_LIVO_Path.png"));
 const castToUser = (user: User | undefined) => user as User;
 const getMenu = (user: User) => {
   const complete_menu: MenuItem[] = [];

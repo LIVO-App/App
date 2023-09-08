@@ -5,9 +5,12 @@
       <ion-col size="12" size-md="6">
         <list-card
           :title="getCustomMessage('title', getCurrentElement('school_years'))"
-          :emptiness_message="{
-            text: getCurrentElement('no_school_years'),
-          }"
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement('no_school_years')
+            )
+          "
           :cards_list="school_years"
           @signal_event="changeSelection()"
         />
@@ -16,13 +19,16 @@
         <list-card
           :key="trigger"
           :title="getCustomMessage('title', getCurrentElement('courses'))"
-          :emptiness_message="{
-            text: getCurrentElement(
-              is_nothing_selected()
-                ? 'teacher_learning_session_selection_message'
-                : 'no_project_classes'
-            ),
-          }"
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement(
+                is_nothing_selected()
+                  ? 'teacher_learning_session_selection_message'
+                  : 'no_project_classes'
+              )
+            )
+          "
           :cards_list="
             is_nothing_selected() ? empty_propositions : year_propositions
           "
@@ -129,7 +135,7 @@ await executeLink(
         // Da sistemare: creare il suo oggetto
         id: id,
         group: "",
-        title: "" + a.year,
+        title: getCustomMessage("title","" + a.year),
         selected: false,
         link: {
           event: "change_selection",
