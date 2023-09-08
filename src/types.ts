@@ -354,8 +354,6 @@ type CourseProps = CourseBaseProps & {
     } & {
         [key in keyof string as `${Language}_learning_area`]: string
     } & {
-        [key in keyof string as `${Language}_growth_area`]: string
-    } & {
         [key in keyof string as `${Language}_description`]: string
     }
 
@@ -566,12 +564,11 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
     english_activities: string;
     italian_learning_area: string;
     english_learning_area: string;
-    italian_growth_area: string;
-    english_growth_area: string;
     italian_description: string;
     english_description: string;
     access_object: PropositionAccessObject;
     teaching_list: Teaching[];
+    growth_list: GrowthArea[];
     //teacher_list: TeacherProposition[]; 
     //Da sistemare: sistemare teacher_list e usare access_object, teaching_list e proposer_teacher_id per description
 
@@ -596,14 +593,16 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
         this.english_activities = courseObj.english_activities;
         this.italian_learning_area = courseObj.italian_learning_area;
         this.english_learning_area = courseObj.english_learning_area;
-        this.italian_growth_area = courseObj.italian_growth_area;
-        this.english_growth_area = courseObj.english_growth_area;
         this.italian_description = courseObj.italian_description;
         this.english_description = courseObj.english_description;
+        this.growth_list = [];
         this.teaching_list = [];
+        this.access_object = {};
+
+        executeLink("/v1/courses/" + this.id + "/growth_areas",
+            response => this.growth_list = response.data.data.map((a: GrowthAreaProps) => new GrowthArea(a)));
         executeLink("/v1/courses/" + this.id + "/teachings",
             response => this.teaching_list = response.data.data.map((a: TeachingProps) => new Teaching(a)));
-        this.access_object = {};
         executeLink("/v1/courses/" + this.id + "/opento",
             response => {
                 let learning_context_id;
@@ -666,10 +665,6 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
                 type: "html",
                 content: "<b>" + getCurrentElement("learning_area") + "</b>: " + this[`${language}_learning_area`]
             }, {
-                id: this.id + "_growth_area",
-                type: "html",
-                content: "<b>" + getCurrentElement("growth_area") + "</b>: " + this[`${language}_growth_area`]
-            }, {
                 id: this.id + "_credits",
                 type: "html",
                 content: "<b>" + getCurrentElement("credits") + "</b>: " + this.credits + "(" + (this.credits * hours_per_credit) + " " + getCurrentElement("hours") + ")"
@@ -693,7 +688,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
                 id: this.id + "_certifying_admin",
                 type: "html",
                 content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.admin_name + this.admin_surname
-            }*/] //Da sistemare: limitare a teacher e admin
+            }*/] //Da sistemare: limitare a teacher e admin e aggiungere liste
         }
     }
 }
@@ -1245,9 +1240,9 @@ class Student extends StudentSummary {
 class StudentInformation extends StudentSummary {
 
     username: string;
-    gender: Gender;
-    birth_date: Date;
-    address: string;
+    gender?: Gender;
+    birth_date?: Date;
+    address?: string;
     email: string;
     ordinary_class: OrdinaryClassSummary;
 
@@ -1272,7 +1267,7 @@ class StudentInformation extends StudentSummary {
     }
 
     toCard(): GeneralCardElements {
-        return {
+        return { // Da sistemare: sistemare roba undefined
             id: "" + this.username,
             title: getCustomMessage("title", this.username, "title"),
             group: "",
@@ -1287,11 +1282,11 @@ class StudentInformation extends StudentSummary {
             }, {
                 id: this.id + "_gender",
                 type: "string",
-                content: getCurrentElement("gender") + ": " + getGender(this.gender)
+                content: getCurrentElement("gender") + ": " + (this.gender != undefined ? getGender(this.gender) : "-")
             }, {
                 id: this.id + "_birth_date",
                 type: "string",
-                content: getCurrentElement("birth_date") + ": " + toDateString(this.birth_date)
+                content: getCurrentElement("birth_date") + ": " + (this.birth_date != undefined ? toDateString(this.birth_date) : "-")
             }, {
                 id: this.id + "_address",
                 type: "string",
@@ -1314,7 +1309,7 @@ type LearningContextSummary = {
     credits?: number | null
 }
 
-type LearningContext = LearningContextSummary & IdTitleDescription<string>;
+type LearningContext = LearningContextSummary & TitleDescription;
 
 type AnnouncementSummaryProps = {
     id: number,
@@ -1556,7 +1551,7 @@ type PropositionCharacteristics1 = {
 };
 
 type PropositionCharacteristics2 = {
-    growth_id: number, // Da sistemare: fare lista
+    growth_list: number[],
     teaching_list: string[]
 }
 
@@ -1613,7 +1608,7 @@ class ModelProposition {
 
     [key: string]: any;
 
-    private _course_id: number;
+    private _course_id?: number;
     private _title: PropositionTitles;
     private _characteristics1: PropositionCharacteristics1;
     private _characteristics2: PropositionCharacteristics2;
@@ -1642,7 +1637,7 @@ class ModelProposition {
             max_students: actual_proposition.max_students,
         };
         this._characteristics2 = {
-            growth_id: actual_proposition.growth_id,
+            growth_list: actual_proposition.growth_list,
             teaching_list: actual_proposition.teaching_list
         };
         this._description = {
@@ -1678,13 +1673,13 @@ class ModelProposition {
 
     public static emptyProposition(): PropositionObj {
         return {
-            course_id: 0,
+            course_id: 0, // Da sistemare: mettere undefined di base a quelli che possono permetterselo
             italian_title: "",
             english_title: "",
             up_hours: 0,
             credits: 0,
             area_id: "",
-            growth_id: -1,
+            growth_list: [],
             session_id: -1,
             class_group: -1,
             num_section: 0,
@@ -1707,7 +1702,7 @@ class ModelProposition {
     public get course_id() {
         return this._course_id;
     }
-    public set course_id(value: number) {
+    public set course_id(value: number | undefined) {
         this._course_id = value;
         this._remaining = this._remaining.filter(a => a != "course_id");
     }
@@ -1836,7 +1831,7 @@ class ModelProposition {
             case "editor":
                 return ["description", "expected_learning_results", "criterions", "activities"];
             case "no_inner_props":
-                return ["course_id", "access_object", "specific_information"];
+                return ["course_id", "access_object"];
         }
     }
 
@@ -1856,24 +1851,64 @@ class ModelProposition {
     }
 }
 
-type IdTitleDescription<T> = {
-    id: T,
+type TitleDescription = {
+    [key in keyof string as `${Language}_title`]: string
 } & {
-        [key in keyof string as `${Language}_title`]: string
-    } & {
         [key in keyof string as `${Language}_description`]?: string // Da sistemare: vedere descrizioni che possono essere null
+    };
+
+type GrowthAreaProps = {
+    id?: number,
+    growth_area_ref?: ResponseItem<{ id: number }>
+} & TitleDescription;
+
+class GrowthArea {
+    id: number;
+    italian_title: string;
+    english_title: string;
+    italian_description?: string;
+    english_description?: string;
+
+    constructor(props: GrowthAreaProps) {
+        this.id = props.growth_area_ref != undefined ? (props.growth_area_ref.data as { id: number }).id : props.id as number;
+        this.italian_title = props.italian_title;
+        this.english_title = props.english_title;
+        this.italian_description = props.italian_description;
+        this.english_description = props.english_description;
     }
 
-type GrowthArea = IdTitleDescription<number>;
+    toCard(disabled = false): GeneralCardElements {
+        const language = getCurrentLanguage();
+        return {
+            id: "" + this.id,
+            group: "",
+            side_element: disabled ? undefined : {
+                id: this.id + "_remove",
+                type: "icon",
+                linkType: "event",
+                content: {
+                    event: "remove",
+                    data: {
+                        id: this.id,
+                    },
+                    icon: getIcon("close"),
+                },
+            },
+            content: [
+                {
+                    id: "" + this.id,
+                    type: "string",
+                    content: this[`${language}_title`],
+                },
+            ],
+        }
+    }
+}
 
 type TeachingProps = {
     id?: string
     teaching_ref?: ResponseItem<{ id: string }>
-} & {
-        [key in keyof string as `${Language}_title`]: string
-    } & {
-        [key in keyof string as `${Language}_description`]?: string // Da sistemare: vedere descrizioni che possono essere null
-    };
+} & TitleDescription;
 
 class Teaching {
     id: string;
@@ -1918,9 +1953,10 @@ class Teaching {
     }
 }
 
-type StudyAddress = IdTitleDescription<string> & {
+type StudyAddress = {
+    id: string,
     max_classes: number
-};
+} & TitleDescription;
 
 class AccessProposition {
     study_year: number;
@@ -2004,14 +2040,14 @@ type TeacherProps = {
 
 class Teacher {
     id: number;
-    cf: string;
+    cf?: string;
     username: string;
     name: string;
     surname: string;
-    gender: Gender;
-    birth_date: Date;
-    address: string;
-    email: string;
+    gender?: Gender;
+    birth_date?: Date;
+    address?: string;
+    email?: string;
 
     constructor(teacher: TeacherProps) {
         this.id = teacher.id;
@@ -2045,7 +2081,7 @@ class TeacherProposition {
     }
 
     toCard(disabled = false): GeneralCardElements {
-        return {
+        return { // Da sistemare: sistemare roba undefined
             id: "" + this.teacher.id,
             group: "",
             side_element: disabled ? undefined : {
@@ -2181,4 +2217,4 @@ type CardListDescription = {
     on_click?: () => any
 }
 
-export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, SubElementsColors, SubElementsClasses, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }
+export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, SubElementsColors, SubElementsClasses, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }

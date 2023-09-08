@@ -238,8 +238,7 @@
           </template>
           <template v-else-if="pages[current_page_index] == 'characteristics2'">
             <ion-row>
-              <ion-col>
-                <custom-select
+              <!--<custom-select
                   v-model="
                     castToCharacteristics2(
                       course_proposition[pages[current_page_index]]
@@ -251,25 +250,44 @@
                   :placeholder="getCurrentElement('growth_choice')"
                   :getCompleteName="growthAreaToString"
                   :disabled="action == 'view'"
+                />-->
+              <ion-col
+                v-for="key in Object.keys(course_proposition.characteristics2)"
+                :key="key"
+              >
+                <ionic-element
+                  :element="
+                    getCustomMessage(
+                      'title',
+                      getCurrentElement(
+                        key == 'teaching_list' ? 'teachings' : 'growth_areas'
+                      )
+                    )
+                  "
                 />
-                <!-- Da sistemare: mettere lista di growth_areas -->
-              </ion-col>
-              <ion-col>
-                <ion-text>
-                  {{ getCurrentElement("students_per_section") }}:
-                </ion-text>
                 <template v-if="action != 'view'">
                   <custom-select
-                    :key="trigger + '_select'"
+                    v-if="key == 'teaching_list'"
+                    :key="trigger + '_teachings_select'"
                     v-model="selected_teaching"
                     :list="teachings.available"
                     :label="getCurrentElement('teaching') + ':'"
                     :aria_label="getCurrentElement('teaching')"
                     :placeholder="getCurrentElement('teaching_choices')"
-                    :getCompleteName="teachingToString"
+                    :getCompleteName="getTitle"
+                  />
+                  <custom-select
+                    v-else
+                    :key="trigger + '_growth_areas_select'"
+                    v-model="selected_growth_area"
+                    :list="growth_areas.available"
+                    :label="getCurrentElement('growth_area') + ':'"
+                    :aria_label="getCurrentElement('growth_area')"
+                    :placeholder="getCurrentElement('growth_area_choices')"
+                    :getCompleteName="getTitle"
                   />
                   <ion-button
-                    @click="addElement('teachings')"
+                    @click="addElement(key == 'teaching_list' ? 'teachings' : 'growth_areas')"
                     expand="block"
                     color="primary"
                     fill="solid"
@@ -279,14 +297,14 @@
                 </template>
                 <list-card
                   :key="trigger + '_list'"
-                  :cards_list="teachings_cards"
+                  :cards_list="key == 'teaching_list' ? teachings_cards : growth_areas_cards"
                   :emptiness_message="
                     getCustomMessage(
                       'emptiness_message',
-                      getCurrentElement('no_teachings')
+                      getCurrentElement(key == 'teaching_list' ? 'no_teachings' : 'no_growth_areas')
                     )
                   "
-                  @signal_event="removeElement('teachings')"
+                  @signal_event="removeElement(key == 'teaching_list' ? 'teachings' : 'growth_areas')"
                 />
               </ion-col>
             </ion-row>
@@ -587,6 +605,7 @@ import {
   AccessObject,
   PropositionTeacher,
   PropositionSpecificInformation,
+  GrowthAreaProps,
 } from "@/types";
 import {
   executeLink,
@@ -619,8 +638,13 @@ import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
 type AvailableModal = Pages | "teacher_info";
-type ListTypes = "teachings" | "access" | "teachers";
+type ListTypes = "access" | "teachers" | SimpleListTypes;
 type Action = "view" | "edit" | "propose";
+type SimpleListTypes = "growth_areas" | "teachings";
+type SimpleList<T> = {
+  available: T[];
+  selected: T[];
+};
 
 const modelToString = (model: CourseModel) => model.toString();
 const learningAreaToString = (learning_area: LearningArea) =>
@@ -635,15 +659,13 @@ const go = (direction: boolean) => {
   }
 };
 const propose = () => {
-  console.log(course_proposition, course_proposition.toProposition());
-
-  /*executeLink(
+  executeLink(
     "/v1/propositions",
-    edit_course_proposition,
+    undefined,
     () => setupModalAndOpen("title"),
     "post",
     course_proposition.toProposition()
-  );*/ // Da sistemare: sistemare remainings e dopo setuPModalAndOpen
+  ); // Da sistemare: sistemare remainings e dopo setuPModalAndOpen
 };
 const closeModal = (alert: boolean) => {
   if (alert) {
@@ -659,7 +681,8 @@ const setupModalAndOpen = async (window: AvailableModal) => {
       break;
   }
 };
-const teachingToString = (teaching: Teaching) => teaching[`${language}_title`];
+const getTitle = (obj: any) =>
+  `${language}_title` in obj ? obj[`${language}_title`] : undefined;
 const learningContextToString = (learning_context: LearningContext) =>
   learning_context[`${language}_title`];
 const studyAddressToString = (study_address: StudyAddress) =>
@@ -683,28 +706,46 @@ const castToActivities = (activities: any) =>
   activities as PropositionActivities;
 const castToSpecificInformation = (specific_information: any) =>
   specific_information as PropositionSpecificInformation;
-const addTeaching = (id?: string) => {
-  const actual_teaching_id = id ?? selected_teaching.value;
+const addToSimpleList = (type: SimpleListTypes, id?: string | number) => {
+  let actual_id: string | number;
+  let reference: SimpleList<Teaching | GrowthArea>;
+  let cards_reference: OrderedCardsList<GeneralCardElements>;
+  let tmp_index: number;
+  let to_add: Teaching | GrowthArea;
 
-  let tmp_teaching_index: number;
-  let teaching: Teaching;
-
+  if (type == "teachings") {
+    actual_id = id ?? selected_teaching.value;
+    reference = teachings;
+    cards_reference = teachings_cards;
+  } else {
+    actual_id = id ?? selected_growth_area.value;
+    reference = growth_areas;
+    cards_reference = growth_areas_cards;
+  }
+  
   if (
-    actual_teaching_id != "" &&
-    (tmp_teaching_index = teachings.available.findIndex(
-      (a) => a.id == actual_teaching_id
-    )) != -1
+    actual_id != (type == "teachings" ? "" : 0) &&
+    (tmp_index = reference.available.findIndex((a) => a.id == actual_id)) != -1
   ) {
-    teaching = teachings.available[tmp_teaching_index];
+    to_add = reference.available[tmp_index];
+    cards_reference.cards[""].push(to_add.toCard(action.value == "view"));
 
-    course_proposition.characteristics2.teaching_list.push(teaching.id);
-
-    teachings_cards.cards[""].push(teaching.toCard(action.value == "view"));
-
-    teachings.selected.push(teaching);
-    teachings.available.splice(tmp_teaching_index, 1);
-    if (id == undefined) {
-      selected_teaching.value = "";
+    if (type == "teachings") {
+      course_proposition.characteristics2.teaching_list.push(
+        to_add.id as string
+      );
+      teachings.selected.push(to_add as Teaching);
+      teachings.available.splice(tmp_index, 1);
+      if (id == undefined) {
+        selected_teaching.value = "";
+      }
+    } else {
+      course_proposition.characteristics2.growth_list.push(to_add.id as number);
+      growth_areas.selected.push(to_add as GrowthArea);
+      growth_areas.available.splice(tmp_index, 1);
+      if (id == undefined) {
+        selected_growth_area.value = 0;
+      }
     }
 
     trigger.value++;
@@ -902,7 +943,10 @@ const addElement = (type: ListTypes) => {
   // Da sistemare: trovare pezzi in comune negli switch per semplificare la funzione e la successiva
   switch (type) {
     case "teachings":
-      addTeaching();
+      addToSimpleList("teachings");
+      break;
+    case "growth_areas":
+      addToSimpleList("growth_areas");
       break;
     case "access":
       addAccess();
@@ -912,10 +956,43 @@ const addElement = (type: ListTypes) => {
       break;
   }
 };
-const removeElement = (type: ListTypes) => {
-  let teaching_id: string;
-  let tmp_teaching_index: number;
+const removeSimpleElement = (type: SimpleListTypes) => {
+  let reference: SimpleList<Teaching | GrowthArea>;
+  let cards_reference: OrderedCardsList<GeneralCardElements>;
 
+  if (type == "teachings") {
+    reference = teachings;
+    cards_reference = teachings_cards;
+  } else {
+    reference = growth_areas;
+    cards_reference = growth_areas_cards;
+  }
+
+  const id: string | number = store.state.event.data.id;
+  const tmp_index: number = reference.selected.findIndex((a) => a.id == id);
+
+  if (type == "teachings") {
+    course_proposition.characteristics2.teaching_list.splice(
+      course_proposition.characteristics2.teaching_list.indexOf(id as string),
+      1
+    );
+  } else {
+    course_proposition.characteristics2.growth_list.splice(
+      course_proposition.characteristics2.growth_list.indexOf(id as number),
+      1
+    );
+  }
+
+  cards_reference.cards[""].splice(
+    cards_reference.cards[""].findIndex((a) => a.id == id),
+    1
+  );
+
+  reference.available.push(reference.selected[tmp_index]);
+  reference.available.sort((a, b) => (a.id == b.id ? 0 : a.id > b.id ? 1 : -1));
+  reference.selected.splice(tmp_index, 1);
+};
+const removeElement = (type: ListTypes) => {
   let learning_context_id: string;
   let study_address_id: string;
   let study_year: number;
@@ -929,26 +1006,10 @@ const removeElement = (type: ListTypes) => {
 
   switch (type) {
     case "teachings":
-      teaching_id = store.state.event.data.id;
-      tmp_teaching_index = teachings.selected.findIndex(
-        (a) => a.id == teaching_id
-      );
-
-      course_proposition.characteristics2.teaching_list.splice(
-        course_proposition.characteristics2.teaching_list.indexOf(teaching_id),
-        1
-      );
-
-      teachings_cards.cards[""].splice(
-        teachings_cards.cards[""].findIndex((a) => a.id == teaching_id),
-        1
-      );
-
-      teachings.available.push(teachings.selected[tmp_teaching_index]);
-      teachings.available.sort((a, b) =>
-        a.id == b.id ? 0 : a.id > b.id ? 1 : -1
-      );
-      teachings.selected.splice(tmp_teaching_index, 1);
+      removeSimpleElement("teachings");
+      break;
+    case "growth_areas":
+      removeSimpleElement("growth_areas");
       break;
     case "access":
       learning_context_id = store.state.event.data.learning_context_id;
@@ -1057,27 +1118,12 @@ const removeElement = (type: ListTypes) => {
 };
 const edit_course_proposition = async (course_id?: number) => {
   let course: Course;
-  let growth_area: GrowthArea;
   let learning_area: LearningArea;
   if (course_id != undefined && !Number.isNaN(course_id)) {
     course = await executeLink(
       "/v1/courses/" + course_id + "?admin_info=true",
       (response) => new Course(response.data.data)
     );
-    growth_area = await executeLink("/v1/growth_areas", (response) => {
-      const tmp = response.data.data.find(
-        (a: GrowthArea) =>
-          a.italian_title == course.italian_growth_area &&
-          a.english_title == course.english_growth_area
-      ); // Da sistemare: aspettare che Pietro metta id
-      return tmp != undefined
-        ? tmp
-        : {
-            id: -1,
-            italian_title: "",
-            english_title: "",
-          };
-    });
     learning_area = await executeLink("/v1/learning_areas", (response) => {
       const tmp = response.data.data.find(
         (a: LearningArea) =>
@@ -1100,7 +1146,7 @@ const edit_course_proposition = async (course_id?: number) => {
         up_hours: course.up_hours,
         credits: course.credits,
         area_id: learning_area.id,
-        growth_id: growth_area.id,
+        growth_list: course.growth_list.map((a) => a.id),
         session_id: -1,
         class_group: -1,
         num_section: 0,
@@ -1120,7 +1166,10 @@ const edit_course_proposition = async (course_id?: number) => {
       })
     );
     for (const teaching of course_proposition.characteristics2.teaching_list) {
-      addTeaching(teaching);
+      addToSimpleList("teachings",teaching);
+    }
+    for (const growth_area of course_proposition.characteristics2.growth_list) {
+      addToSimpleList("growth_areas",growth_area);
     }
     for (const learning_context_id in course_proposition.access_object) {
       for (const access_object of course_proposition.access_object[
@@ -1169,7 +1218,7 @@ const languages = getAviableLanguages();
 const $route = useRoute();
 
 const trigger = ref(0);
-const selected_model = ref(0);
+const selected_model: Ref<number | undefined> = ref(undefined);
 const alert_open = ref(false);
 const alert_information = {
   title: getCurrentElement("error"),
@@ -1258,6 +1307,7 @@ const addition = ref(false);
 const presidium = ref(false);
 const main_study_year = ref(false);
 const selected_teaching = ref("");
+const selected_growth_area = ref(0);
 const tmp_set: Set<number> = new Set();
 const selected_learning_context = ref("");
 const selected_study_address = ref("");
@@ -1268,10 +1318,17 @@ const teachings_cards: OrderedCardsList<GeneralCardElements> = {
     "": [],
   },
 };
-const teachings: {
-  available: Teaching[];
-  selected: Teaching[];
-} = {
+const teachings: SimpleList<Teaching> = {
+  available: [],
+  selected: [],
+};
+const growth_areas_cards: OrderedCardsList<GeneralCardElements> = {
+  order: [],
+  cards: {
+    "": [],
+  },
+};
+const growth_areas: SimpleList<GrowthArea> = {
   available: [],
   selected: [],
 };
@@ -1351,7 +1408,6 @@ const action: Ref<Action> = ref(
 let course_proposition = reactive(new ModelProposition());
 let models: CourseModel[] = [];
 let learning_areas: LearningArea[] = [];
-let growth_areas: GrowthArea[] = [];
 let learning_sessions: LearningSession[] = [];
 let groups: { id: number }[] = [];
 let sections: boolean[] = reactive([]);
@@ -1378,9 +1434,9 @@ learning_areas = await executeLink(
   (response) => response.data.data,
   () => []
 );
-growth_areas = await executeLink(
+growth_areas.available = await executeLink(
   "/v1/growth_areas",
-  (response) => response.data.data,
+  (response) => response.data.data.map((a: GrowthAreaProps) => new GrowthArea(a)),
   () => []
 );
 learning_sessions = await executeLink(
@@ -1389,7 +1445,6 @@ learning_sessions = await executeLink(
     const tmp_learning_sessions: LearningSession[] = [];
 
     let tmp_session: LearningSession;
-    console.log(response.data.data);
 
     for (const session of response.data.data) {
       tmp_session = new LearningSession(session);
@@ -1403,9 +1458,7 @@ learning_sessions = await executeLink(
 );
 teachings.available = await executeLink(
   "/v1/teachings?all_data=true",
-  (response) => {
-    return response.data.data.map((a: TeachingProps) => new Teaching(a));
-  },
+  (response) => response.data.data.map((a: TeachingProps) => new Teaching(a)),
   () => []
 );
 
@@ -1456,11 +1509,13 @@ teachers.available = await executeLink(
 );
 
 watch(selected_session, (new_session) => {
+  const tmp_learning_session = learning_sessions.find(a => a.id == new_session);
+
   course_proposition.specific_information.session_id = new_session;
-  groups = learning_sessions.map((a) => {
+  groups = Array.from({length: tmp_learning_session != undefined ? tmp_learning_session.num_groups : 0}, (_, i) => {
     return {
-      id: a.num_groups, // Da sistemare: mettere lista di gruppi
-    };
+      id: i + 1
+    }
   });
   trigger.value++;
 });
@@ -1506,10 +1561,12 @@ watch(num_section, (n) => {
   }
 });
 watch(selected_model, () => {
-  edit_course_proposition(selected_model.value);
+  if (selected_model.value != undefined) {
+    edit_course_proposition(selected_model.value);
+  }
   trigger.value++;
 });
-selected_model.value = parseInt($route.query[action.value] as string);
+selected_model.value = $route.query[action.value] != undefined ? parseInt($route.query[action.value] as string) : undefined;
 </script>
 
 <style></style>
