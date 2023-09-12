@@ -313,7 +313,7 @@ export const store = createStore({
                     course: "Corso",
                     courses: "Corsi",
                     learning_area: "Area di apprendimento",
-                    noCourses: "Nessun corso",
+                    no_proposed_courses: "Nessun corso proposto",
                     credits: "Crediti",
                     pending: "In attesa",
                     enrolled: "Iscritto",
@@ -468,6 +468,7 @@ export const store = createStore({
                     constraints_management: "Gestione vincoli",
                     info: "Info",
                     specific_information: "Informazioni specifiche",
+                    non_existing_session: "Sessione non esistente"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -480,7 +481,7 @@ export const store = createStore({
                     course: "Course",
                     courses: "Courses",
                     learning_area: "Learning area",
-                    noCourses: "No courses",
+                    no_proposed_courses: "No proposed courses",
                     credits: "Credits",
                     pending: "Pending",
                     enrolled: "Enrolled",
@@ -633,6 +634,7 @@ export const store = createStore({
                     constraints_management: "Constraints management",
                     info: "Info",
                     specific_information: "Specific information",
+                    non_existing_session: "Not existing session"
                 }
             },
             logged_user: false,

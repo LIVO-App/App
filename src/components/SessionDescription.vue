@@ -11,14 +11,19 @@
         ></ion-icon>
         <!-- Da sistemare: freccetta -->
       </ion-col>
-      <ion-col size="auto">
-        <ionic-element :element="head_content.title" />
-      </ion-col>
-      <ion-col size="auto">
-        <ionic-element :element="head_content.subtitle" />
+      <template v-if="head_content != undefined">
+        <ion-col size="auto">
+          <ionic-element :element="head_content.title" />
+        </ion-col>
+        <ion-col size="auto">
+          <ionic-element :element="head_content.subtitle" />
+        </ion-col>
+      </template>
+      <ion-col v-else>
+        <ionic-element :element="getCustomMessage('emptiness_message',getCurrentElement('non_existing_session'))" />
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row v-if="head_content != undefined">
       <div class="ion-padding">
         <ionic-element
           v-for="element in head_content.content"
@@ -36,7 +41,7 @@ import {
   LearningSession,
   LearningContextSummary,
 } from "@/types";
-import { executeLink, getIcon } from "@/utils";
+import { executeLink, getCurrentElement, getCustomMessage, getIcon } from "@/utils";
 import { IonGrid, IonRow, IonCol, IonIcon } from "@ionic/vue";
 import { PropType } from "vue";
 import { useRouter } from "vue-router";
@@ -49,16 +54,22 @@ const props = defineProps({
   },
   learning_context: Object as PropType<LearningContextSummary>,
 });
-let head_content: GeneralCardElements;
+let head_content: GeneralCardElements | undefined;
 
-await executeLink("/v1/learning_sessions/" + props.id, async (response) => {
-  head_content = await new LearningSession(response.data.data).toCard(
-    undefined,
-    props.learning_context,
-    true,
-    false
+if (props.learning_context != undefined) {
+  await executeLink(
+    "/v1/learning_sessions/" + props.id,
+    async (response) => {
+      head_content = await new LearningSession(response.data.data).toCard(
+        undefined,
+        props.learning_context,
+        true,
+        false
+      );
+    },
+    (_) => undefined
   );
-});
+}
 </script>
 
 <style>

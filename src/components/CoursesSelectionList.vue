@@ -67,7 +67,7 @@
       @execute_link="changeEnrollment()"
       @signal_event="openModal()"
       :emptiness_message="
-        getCustomMessage('emptiness_message', getCurrentElement('noCourses'))
+        getCustomMessage('emptiness_message', getCurrentElement('no_proposed_courses'))
       "
       v-model:cards_list="courses"
       :colors="{
@@ -274,7 +274,7 @@ const showCourses = (
 ) => {
   courses.cards = {};
   courses.order = [];
-  for (const course of all_courses[context][area]) {
+  for (const course of (all_courses[context] != undefined ? all_courses[context][area] : [])) {
     if (courses.cards[course.group] == undefined) {
       courses.order.push({
         key: course.group,
@@ -388,139 +388,159 @@ if (learning_session != undefined) {
   );
   selected_area.value = learning_areas.length > 0 ? learning_areas[0].id : "";
 
-  tmp_courses = await executeLink(
-    "/v2/courses?student_id=" + user.id + "&session_id=" + learning_session_id,
-    (response) => response.data.data,
-    () => []
-  );
-  courses_ids = tmp_courses.map((a: CourseSummaryProps) => a.id);
+  if (learning_contexts.length > 0 && learning_areas.length > 0) {
+    tmp_courses = await executeLink(
+      "/v2/courses?student_id=" +
+        user.id +
+        "&session_id=" +
+        learning_session_id,
+      (response) => response.data.data,
+      () => []
+    );
 
-  await executeLink(
-    "/v1/learning_contexts/correspondence?student_id=" +
-      user.id +
-      "&session_id=" +
-      learning_session_id,
-    (response) => {
-      let course_props,
-        tmp_course: CourseSummary,
-        tmp_learning_area: LearningArea | undefined,
-        open_enrollment,
-        learning_context_index,
-        tmp_learning_context: LearningContext;
+    if (tmp_courses.length > 0) {
+      courses_ids = tmp_courses.map((a: CourseSummaryProps) => a.id);
 
-      course_correspondences = response.data.data;
-      for (const correspondence of course_correspondences) {
-        course_props = tmp_courses.find(
-          (a) => a.id == correspondence.course_id
-        );
-        learning_context_index = learning_contexts.findIndex(
-          (a) => a.id == correspondence.context_id
-        );
-        if (course_props != undefined && learning_context_index != -1) {
-          tmp_learning_context = learning_contexts[learning_context_index];
-          tmp_course = new CourseSummary(course_props);
-          tmp_learning_area = learning_areas.find(
-            (a) =>
-              a.id == (tmp_course.learning_area_ref.data as { id: string }).id
-          );
-          if (tmp_learning_area != undefined) {
-            if (all_courses[tmp_learning_context.id] == undefined) {
-              remaining_courses[tmp_learning_context.id] = {};
-              all_courses[tmp_learning_context.id] = {};
-              for (const learning_area of learning_areas) {
+      await executeLink(
+        "/v1/learning_contexts/correspondence?student_id=" +
+          user.id +
+          "&session_id=" +
+          learning_session_id,
+        (response) => {
+          let course_props,
+            tmp_course: CourseSummary,
+            tmp_learning_area: LearningArea | undefined,
+            open_enrollment,
+            learning_context_index,
+            tmp_learning_context: LearningContext;
+
+          course_correspondences = response.data.data;
+          for (const correspondence of course_correspondences) {
+            course_props = tmp_courses.find(
+              (a) => a.id == correspondence.course_id
+            );
+            learning_context_index = learning_contexts.findIndex(
+              (a) => a.id == correspondence.context_id
+            );
+            if (course_props != undefined && learning_context_index != -1) {
+              tmp_learning_context = learning_contexts[learning_context_index];
+              tmp_course = new CourseSummary(course_props);
+              tmp_learning_area = learning_areas.find(
+                (a) =>
+                  a.id ==
+                  (tmp_course.learning_area_ref.data as { id: string }).id
+              );
+              if (tmp_learning_area != undefined) {
+                if (all_courses[tmp_learning_context.id] == undefined) {
+                  remaining_courses[tmp_learning_context.id] = {};
+                  all_courses[tmp_learning_context.id] = {};
+                  for (const learning_area of learning_areas) {
+                    remaining_courses[tmp_learning_context.id][
+                      learning_area.id
+                    ] = {};
+                    all_courses[tmp_learning_context.id][learning_area.id] = [];
+                  }
+                }
+                if (
+                  remaining_courses[tmp_learning_context.id][
+                    tmp_learning_area.id
+                  ][tmp_course.group] == undefined
+                ) {
+                  remaining_courses[tmp_learning_context.id][
+                    tmp_learning_area.id
+                  ][tmp_course.group] = store.state.courses_per_group;
+                }
+                open_enrollment =
+                  learning_session?.getStatus() ==
+                    LearningSessionStatus.FUTURE &&
+                  (learning_session_position == 0 ||
+                    learning_sessions[
+                      learning_session_position - 1
+                    ]?.getStatus() == LearningSessionStatus.CURRENT);
+                tmp_card = tmp_course.toCard(
+                  learning_session as LearningSession,
+                  open_enrollment
+                    ? "/v1/students/" +
+                        user.id +
+                        "/" +
+                        (tmp_course.pending !== "false"
+                          ? "unsubscribe"
+                          : "subscribe") +
+                        "?course_id=" +
+                        tmp_course.id +
+                        "&session_id=" +
+                        learning_session_id +
+                        "&context_id=" +
+                        tmp_learning_context.id
+                    : undefined,
+                  undefined,
+                  open_enrollment
+                );
                 remaining_courses[tmp_learning_context.id][
-                  learning_area.id
-                ] = {};
-                all_courses[tmp_learning_context.id][learning_area.id] = [];
-              }
-            }
-            if (
-              remaining_courses[tmp_learning_context.id][tmp_learning_area.id][
-                tmp_course.group
-              ] == undefined
-            ) {
-              remaining_courses[tmp_learning_context.id][tmp_learning_area.id][
-                tmp_course.group
-              ] = store.state.courses_per_group;
-            }
-            open_enrollment =
-              learning_session?.getStatus() == LearningSessionStatus.FUTURE &&
-              (learning_session_position == 0 ||
-                learning_sessions[learning_session_position - 1]?.getStatus() ==
-                  LearningSessionStatus.CURRENT);
-            tmp_card = tmp_course.toCard(
-              learning_session as LearningSession,
-              open_enrollment
-                ? "/v1/students/" +
-                    user.id +
-                    "/" +
-                    (tmp_course.pending !== "false"
-                      ? "unsubscribe"
-                      : "subscribe") +
-                    "?course_id=" +
-                    tmp_course.id +
-                    "&session_id=" +
-                    learning_session_id +
-                    "&context_id=" +
-                    tmp_learning_context.id
-                : undefined,
-              undefined,
-              open_enrollment
-            );
-            remaining_courses[tmp_learning_context.id][tmp_learning_area.id][
-              tmp_course.group
-            ] -= tmp_card.enrollment.enrollment ? 1 : 0;
-            all_courses[tmp_learning_context.id][tmp_learning_area.id].push(
-              tmp_card
-            );
-            if (tmp_learning_context.credits != null) {
-              if (remaining_credits[tmp_learning_context.id] == undefined) {
-                remaining_credits[tmp_learning_context.id] =
-                  tmp_learning_context.credits;
-              }
-              if (tmp_course.pending === "true") {
-                (remaining_credits[tmp_learning_context.id] as number) -=
-                  tmp_course.credits;
-              }
-              //remaining_credits[tmp_learning_context.id] = tmp_courses.reduce((a,b) => b.pending === "true" && b.learning_context_id == tmp_learning_context.id ? a - b.credits : a,tmp_learning_context.credits);
-            } else {
-              if (remaining_credits[tmp_learning_context.id] == undefined) {
-                remaining_credits[tmp_learning_context.id] = {};
-              }
-              if (
-                (remaining_credits[tmp_learning_context.id] as TmpList<number>)[
                   tmp_learning_area.id
-                ] == undefined
-              ) {
-                (remaining_credits[tmp_learning_context.id] as TmpList<number>)[
-                  tmp_learning_area.id
-                ] = tmp_learning_area.credits as number;
+                ][tmp_course.group] -= tmp_card.enrollment.enrollment ? 1 : 0;
+                all_courses[tmp_learning_context.id][tmp_learning_area.id].push(
+                  tmp_card
+                );
+                if (tmp_learning_context.credits != null) {
+                  if (remaining_credits[tmp_learning_context.id] == undefined) {
+                    remaining_credits[tmp_learning_context.id] =
+                      tmp_learning_context.credits;
+                  }
+                  if (tmp_course.pending === "true") {
+                    (remaining_credits[tmp_learning_context.id] as number) -=
+                      tmp_course.credits;
+                  }
+                  //remaining_credits[tmp_learning_context.id] = tmp_courses.reduce((a,b) => b.pending === "true" && b.learning_context_id == tmp_learning_context.id ? a - b.credits : a,tmp_learning_context.credits);
+                } else {
+                  if (remaining_credits[tmp_learning_context.id] == undefined) {
+                    remaining_credits[tmp_learning_context.id] = {};
+                  }
+                  if (
+                    (
+                      remaining_credits[
+                        tmp_learning_context.id
+                      ] as TmpList<number>
+                    )[tmp_learning_area.id] == undefined
+                  ) {
+                    (
+                      remaining_credits[
+                        tmp_learning_context.id
+                      ] as TmpList<number>
+                    )[tmp_learning_area.id] =
+                      tmp_learning_area.credits as number;
+                  }
+                  if (tmp_course.pending === "true") {
+                    (
+                      remaining_credits[
+                        tmp_learning_context.id
+                      ] as TmpList<number>
+                    )[tmp_learning_area.id] -= tmp_course.credits;
+                  }
+                  //(remaining_credits[tmp_learning_context.id] as TmpList<number>)[tmp_learning_area.id] = tmp_courses.reduce((a,b) => b.pending === "true" ? a - b.credits : a,tmp_learning_area.credits);
+                }
               }
-              if (tmp_course.pending === "true") {
-                (remaining_credits[tmp_learning_context.id] as TmpList<number>)[
-                  tmp_learning_area.id
-                ] -= tmp_course.credits;
-              }
-              //(remaining_credits[tmp_learning_context.id] as TmpList<number>)[tmp_learning_area.id] = tmp_courses.reduce((a,b) => b.pending === "true" ? a - b.credits : a,tmp_learning_area.credits);
             }
           }
+        },
+        (err) => console.error(err),
+        "post",
+        {
+          courses: courses_ids,
         }
-      }
-    },
-    (err) => console.error(err),
-    "post",
-    {
-      courses: courses_ids,
-    }
-  );
-  showCourses();
+      );
+      showCourses();
 
+      watch(selected_area, (new_area) => {
+        showCourses(selected_context.value, new_area);
+        trigger.value++;
+      });
+    }
+  }
   watch(selected_context, (new_context) => {
-    showCourses(new_context);
-    trigger.value++;
-  });
-  watch(selected_area, (new_area) => {
-    showCourses(selected_context.value, new_area);
+    if (tmp_courses.length > 0) {
+      showCourses(new_context);
+    }
     trigger.value++;
   });
 }
