@@ -5,13 +5,13 @@
         <ion-row class="ion-text-center ion-align-items-center">
           <!-- Da sistemare: mettere select per far vedere progect_class se si ha anche il session_id -->
           <ion-col>
-            <ionic-element :element="elements.title"></ionic-element>
+            <ionic-element :element="elements.title" />
           </ion-col>
           <ion-col size="auto">
             <ionic-element
               :element="elements.close"
               @signal_event="$emit('close')"
-            ></ionic-element>
+            />
           </ion-col>
         </ion-row>
       </ion-grid>

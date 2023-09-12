@@ -87,9 +87,9 @@ export const store = createStore({
                         },
                         icon_ref: "school"
                     },
-                    "obenbadges": {
+                    "openbadges": {
                         url_names: {
-                            "student": ["obenbadges"],
+                            "student": ["openbadges"],
                             "admin": ["openbadges"],
                         },
                         icon_ref: "ribbon"
@@ -175,7 +175,7 @@ export const store = createStore({
                         "learning_sessions",
                         "announcements",
                         "curriculum",
-                        "obenbadges",
+                        "openbadges",
                         "citizenship_report",
                         "settings",
                         "logout",
@@ -196,7 +196,7 @@ export const store = createStore({
                         "learning_sessions_management",
                         "constraints_management",
                         "citizenship_report",
-                        "obenbadges",
+                        "openbadges",
                         "settings",
                         "logout",
                         "info"
@@ -455,7 +455,7 @@ export const store = createStore({
                     edit: "Modifica",
                     no_elements: "Nessun elemento",
                     curriculum: "Curriculum",
-                    obenbadges: "ObenBadge",
+                    openbadges: "OpenBadge",
                     citizenship_report: "Cittadinanza attiva",
                     announcements: "Annunci",
                     settings: "Impostazioni",
@@ -620,7 +620,7 @@ export const store = createStore({
                     edit: "Edit",
                     no_elements: "No elements",
                     curriculum: "Curriculum",
-                    obenbadges: "OpenBadges",
+                    openbadges: "OpenBadges",
                     citizenship_report: "Citizenship report",
                     announcements: "Announcements",
                     settings: "Settings",
