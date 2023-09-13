@@ -1166,7 +1166,6 @@ const edit_course_proposition = async (course_id?: number) => {
         teacher_list: [],
       })
     );
-    console.log("Ciao",course_proposition);
     for (const teaching of course_proposition.characteristics2.teaching_list) {
       addToSimpleList("teachings",teaching);
     }

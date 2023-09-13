@@ -2153,12 +2153,16 @@ type AdminProjectClassProps = {
     admin_name: string,
     admin_surname: string,
     to_be_modified: string | null
+} & {
+    [key in keyof string as `${Language}_title`]: string
 }
 
 class AdminProjectClass {
     course_id: number;
     learning_session: number;
     group: number;
+    italian_title: string;
+    english_title: string;
     teacher_id: number;
     teacher_name: string;
     teacher_surname: string;
@@ -2171,6 +2175,8 @@ class AdminProjectClass {
         this.course_id = props.course_id;
         this.learning_session = props.learning_session;
         this.group = props.group;
+        this.italian_title = props.italian_title;
+        this.english_title = props.english_title;
         this.teacher_id = (props.teacher_ref.data as { id: number }).id;
         this.teacher_name = props.teacher_name;
         this.teacher_surname = props.teacher_surname;
@@ -2181,15 +2187,16 @@ class AdminProjectClass {
     }
 
     toCard(path?: string): GeneralCardElements { // Da sistemare: vedere se usare Higlight...
+        const language = getCurrentLanguage();
         return {
             id: "" + this.course_id + "_" + this.learning_session + "_" + this.group,
             group: "",
-            title: getCustomMessage("title", "Placeholder", "title"), // Da sistemare: mettere titolo
+            title: getCustomMessage("title", this[`${language}_title`], "title"), // Da sistemare: mettere titolo
             content: [
                 {
-                    id: "group",
+                    id: "learning_session",
                     type: "string",
-                    content: getCurrentElement("group") + ": " + this.group,
+                    content: getCurrentElement("session") + " - " + getCurrentElement("group") + ": " + this.learning_session + " - " + this.group,
                 },
                 {
                     id: "teacher",

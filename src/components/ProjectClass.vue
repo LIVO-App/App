@@ -357,7 +357,9 @@ if (user.user == "teacher") {
       )
   );
 }
-selected_section.value = sections[0].id;
+if (sections.length > 0) {
+  selected_section.value = sections[0].id;
+}
 
 await updateStudents();
 watch(selected_section, async () => {

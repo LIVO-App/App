@@ -124,9 +124,9 @@ const changeSelection = async () => {
         : "/v1/project_classes?session_id=" +
             learning_sessions.cards[selected_session_indexes.year][
               selected_session_indexes.index
-            ].id, // Da chiedere: cosa serve year
-      (response: any) =>
-        response.data.data.map(
+            ].id,
+      (response: any) => {
+        return response.data.data.map(
           (a: MinimumCourseProps | AdminProjectClassProps) =>
             $route.name == "announcements"
               ? new MinimizedCourse(a as MinimumCourseProps).toCard(
@@ -145,6 +145,7 @@ const changeSelection = async () => {
                     (a as AdminProjectClassProps).learning_session
                 )
         )
+      }
     );
   }
 };
