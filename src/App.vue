@@ -64,7 +64,7 @@ import {
   IonRouterOutlet,
   IonSplitPane,
 } from "@ionic/vue";
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
@@ -91,36 +91,45 @@ const selectTitle = (user: User, index: number) => {
   store.state.menu.index = index;
   sessionStorage.setItem("selected_item", menu.order[user.user][index]);
 };
+const changeTitle = () => {
+  const items_titles = Object.keys(menu.items);
+  const selected_item = sessionStorage.getItem("selected_item");
+
+  let tmp_index = -1;
+  let count = 0;
+
+  if (user != undefined) {
+    if (selected_item != null) {
+      tmp_index = menu.order[user.user].findIndex((a) => a == selected_item);
+    } else if (
+      $route.name !== undefined &&
+      $route.name != "auth" &&
+      $route.name != "logout"
+    ) {
+      while (
+        (tmp_index = menu.items[items_titles[count]].url_names[
+          user.user
+        ]?.findIndex((a) => a == $route.name)) == -1 &&
+        ++count < items_titles.length
+      );
+    }
+    menu.index =
+      tmp_index != -1
+        ? tmp_index
+        : menu.order[user.user].findIndex(
+            (a) => a == menu.default_item[user.user]
+          );
+    sessionStorage.setItem("selected_item", menu.order[user.user][tmp_index]);
+  }
+};
 
 const store = useStore();
 const $route = useRoute();
 const menu: Menu = store.state.menu;
 const user = User.getLoggedUser();
-const items_titles = Object.keys(menu.items);
-const selected_item = sessionStorage.getItem("selected_item");
 
-let tmp_index = -1;
-let count = 0;
-
-if (user != undefined) {
-  if (selected_item != undefined) {
-    tmp_index = menu.order[user.user].findIndex((a) => a == selected_item);
-  } else if ($route.name !== undefined) {
-    while (
-      (tmp_index = menu.items[items_titles[count]].url_names[
-        user.user
-      ]?.findIndex((a) => a == $route.name)) == -1 &&
-      ++count < items_titles.length
-    );
-  }
-  store.state.menu.index =
-    tmp_index != -1
-      ? tmp_index
-      : menu.order[user.user].findIndex(
-          (a) => a == menu.default_item[user.user]
-        );
-  sessionStorage.setItem("selected_item", menu.order[user.user][tmp_index]);
-}
+changeTitle();
+watch(menu, changeTitle);
 </script>
 
 <style scoped>

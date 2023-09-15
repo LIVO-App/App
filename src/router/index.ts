@@ -166,10 +166,14 @@ router.beforeEach((to) => {
 
 const logout = async () => {
   const session = window.sessionStorage;
+  const menu: Menu = store.state.menu;
 
   for (const key of User.getProperties()) {
     session.removeItem(key);
   }
+  session.removeItem("selected_item");
+  menu.index = -1;
+
   await store.dispatch("signalLogin"); // Dummy change to trigger reactive behaviour
   await store.dispatch("logout");
   await store.dispatch("signalLogout");
