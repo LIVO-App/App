@@ -339,10 +339,10 @@ export const store = createStore({
                     expected_learning_results: "Risultati apprendimento attesi",
                     criterions: "Criteri",
                     activities: "Attività",
-                    technical_information: "Informazioni tecniche",
                     growth_area: "Area di crescita personale",
                     growth_areas: "Aree di crescita personale",
-                    creation_date: "Data di creazione",
+                    creation_school_year: "Anno scolastico di creazione",
+                    hour: "Ora",
                     hours: "Ore",
                     up_hours: "Ore UP",
                     students_number: "Numero di studenti",
@@ -468,7 +468,9 @@ export const store = createStore({
                     constraints_management: "Gestione vincoli",
                     info: "Info",
                     specific_information: "Informazioni specifiche",
-                    non_existing_session: "Sessione non esistente"
+                    non_existing_session: "Sessione non esistente",
+                    min: "Min",
+                    max: "Max"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -507,10 +509,10 @@ export const store = createStore({
                     expected_learning_results: "Expected learning results",
                     criterions: "Criterions",
                     activities: "Activities",
-                    technical_information: "Technical information",
                     growth_area: "Personal growth area",
                     growth_areas: "Personal growth areas",
-                    creation_date: "Creation date",
+                    creation_school_year: "Creation school year",
+                    hour: "Hour",
                     hours: "Hours",
                     up_hours: "UP hours",
                     students_number: "Students number",
@@ -634,7 +636,9 @@ export const store = createStore({
                     constraints_management: "Constraints management",
                     info: "Info",
                     specific_information: "Specific information",
-                    non_existing_session: "Not existing session"
+                    non_existing_session: "Not existing session",
+                    min: "Min",
+                    max: "Max"
                 }
             },
             logged_user: false,

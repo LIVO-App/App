@@ -330,7 +330,7 @@ type CurriculumCourseProps = CourseBaseProps & {
 }
 
 type CourseProps = CourseBaseProps & {
-    creation_date: Date,
+    creation_school_year: number,
     up_hours: number,
     min_students: number,
     max_students: number,
@@ -545,20 +545,16 @@ class CurriculumCourse extends CourseBase {
 
 class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
 
-    creation_date: Date;
+    creation_school_year: number;
     up_hours: number;
     min_students: number;
     max_students: number;
-    proposer_teacher_id: number;
-    teacher_name: string;
-    teacher_surname: string;
-    certifying_admin_id: number;
-    admin_name: string;
-    admin_surname: string;
+    proposer_teacher: TeacherSummary;
+    certifying_admin: AdminSummary;
     admin_confirmation: string;
     italian_expected_learning_results: string;
     english_expected_learning_results: string;
-    italian_criterions: string;
+    italian_criterions: string; // Da sistemare: vedere se conviene raggruppare le cose con le lingue in oggetti, per poter rendere più facile l'aggiunta di lingue
     english_criterions: string;
     italian_activities: string;
     english_activities: string;
@@ -569,21 +565,24 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
     access_object: PropositionAccessObject;
     teaching_list: Teaching[];
     growth_list: GrowthArea[];
-    //teacher_list: TeacherProposition[]; 
-    //Da sistemare: sistemare teacher_list e usare access_object, teaching_list e proposer_teacher_id per description
+    images: ImageDescriptor[];
 
     constructor(courseObj: CourseProps) {
         super(courseObj);
-        this.creation_date = new Date(courseObj.creation_date);
+        this.creation_school_year = courseObj.creation_school_year;
         this.up_hours = courseObj.up_hours;
         this.min_students = courseObj.min_students;
         this.max_students = courseObj.max_students;
-        this.proposer_teacher_id = (courseObj.proposer_teacher_ref.data as { id: number }).id; // Da sistemare: valutare se mettere Teacher qui e Admin sotto
-        this.teacher_name = courseObj.teacher_name;
-        this.teacher_surname = courseObj.teacher_surname;
-        this.certifying_admin_id = (courseObj.certifying_admin_ref.data as { id: number }).id;
-        this.admin_name = courseObj.admin_name;
-        this.admin_surname = courseObj.admin_surname;
+        this.proposer_teacher = new TeacherSummary({
+            id: (courseObj.proposer_teacher_ref.data as { id: number }).id,
+            name: courseObj.teacher_name,
+            surname: courseObj.teacher_surname
+        });
+        this.certifying_admin = new AdminSummary({
+            id: (courseObj.certifying_admin_ref.data as { id: number }).id,
+            name: courseObj.admin_name,
+            surname: courseObj.admin_surname
+        });
         this.admin_confirmation = courseObj.admin_confirmation;
         this.italian_expected_learning_results = courseObj.italian_expected_learning_results;
         this.english_expected_learning_results = courseObj.english_expected_learning_results;
@@ -598,6 +597,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
         this.growth_list = [];
         this.teaching_list = [];
         this.access_object = {};
+        this.images = [];
 
         executeLink("/v1/courses/" + this.id + "/growth_areas",
             response => this.growth_list = response.data.data.map((a: GrowthAreaProps) => new GrowthArea(a)));
@@ -621,15 +621,34 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             });
     }
 
-    toCard(): GeneralCardElements {
+    getCustomAccessList() {
+        const access_list: CustomElement[] = [];
+
+        /*for (const learning_context of this.access_object) {
+            
+        }*/
+        /**
+         * study_year: number
+    study_address: string
+    main_study_year: boolean
+    presidium: boolean
+         */
+
+        return access_list;
+    }
+
+    toCard(user?: User) {
 
         const language = getCurrentLanguage();
+
         const hours_per_credit: number = store.state.hours_per_credit;
-        return {
+        const hours = this.credits * hours_per_credit;
+
+        const course: GeneralCardElements = {
             id: "" + this.id,
             group: "",
             content: [{
-                id: this.id + "_description",
+                id: this.id + "_description", // Da sistemare: usare getCustomMessage
                 type: "html",
                 content: this[`${language}_description`]
             }, {
@@ -659,7 +678,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             }, {
                 id: this.id + "_technical_information",
                 type: "title",
-                content: getCurrentElement("technical_information").toUpperCase()
+                content: getCurrentElement("characteristics").toUpperCase()
             }, {
                 id: this.id + "_learning_area",
                 type: "html",
@@ -667,29 +686,35 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             }, {
                 id: this.id + "_credits",
                 type: "html",
-                content: "<b>" + getCurrentElement("credits") + "</b>: " + this.credits + "(" + (this.credits * hours_per_credit) + " " + getCurrentElement("hours") + ")"
+                content: "<b>" + getCurrentElement("credits") + "</b>: " + this.credits + " (" + (hours) + " " + getCurrentElement(hours == 1 ? "hour" : "hours") + ")"
             }, {
                 id: this.id + "_up_hours",
                 type: "html",
-                content: "<b>" + getCurrentElement("up_hours") + "</b>: " + this.up_hours + " " + getCurrentElement("hours")
-            }, {
-                id: this.id + "_creation_date",
-                type: "html",
-                content: "<b>" + getCurrentElement("creation_date") + "</b>: " + toDateString(this.creation_date)
+                content: "<b>" + getCurrentElement("up_hours") + "</b>: " + this.up_hours + " " + getCurrentElement(this.up_hours == 1 ? "hour" : "hours")
             }, {
                 id: this.id + "_students_number",
                 type: "html",
-                content: "<b>" + getCurrentElement("students_number") + "</b>: " + this.min_students + " - " + this.max_students
-            }, {
+                content: "<b>" + getCurrentElement("students_number") + "</b>: <ul class='ion-no-margin'><li>" + getCurrentElement("min") + ": " + this.min_students + "</li><li>" + getCurrentElement("max") + ": " + this.max_students + "</li></ul>"
+            }]
+        };
+
+        if (user != undefined && user.user != "student") {
+            course.content?.push({
                 id: this.id + "_proposer_teacher",
                 type: "html",
-                content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.teacher_name + this.teacher_surname
-            }/*,{
+                content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.proposer_teacher.name + " " + this.proposer_teacher.surname
+            }, {
+                id: this.id + "_creation_date",
+                type: "html",
+                content: "<b>" + getCurrentElement("creation_school_year") + "</b>: " + this.creation_school_year
+            }, {
                 id: this.id + "_certifying_admin",
                 type: "html",
-                content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.admin_name + this.admin_surname
-            }*/] //Da sistemare: limitare a teacher e admin e aggiungere liste
+                content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.certifying_admin.name + " " + this.certifying_admin.surname
+            });
         }
+
+        return course;
     }
 }
 
@@ -2038,11 +2063,20 @@ type TeacherProps = {
     email: string
 }
 
-class Teacher {
+class TeacherSummary {
     id: number;
-    cf?: string;
-    username: string;
     name: string;
+    surname: string;
+
+    constructor(summary: { id: number, name: string, surname: string }) {
+        this.id = summary.id;
+        this.name = summary.name;
+        this.surname = summary.surname;
+    }
+}
+
+class Teacher extends TeacherSummary {
+    cf?: string;
     surname: string;
     gender?: Gender;
     birth_date?: Date;
@@ -2050,10 +2084,12 @@ class Teacher {
     email?: string;
 
     constructor(teacher: TeacherProps) {
-        this.id = teacher.id;
+        super({
+            id: teacher.id,
+            name: teacher.name,
+            surname: teacher.surname
+        });
         this.cf = teacher.cf;
-        this.username = teacher.username;
-        this.name = teacher.name;
         this.surname = teacher.surname;
         this.gender = teacher.gender == "M" || teacher.gender == "F" ? teacher.gender : "O";
         this.birth_date = new Date(teacher.birth_date);
@@ -2154,8 +2190,8 @@ type AdminProjectClassProps = {
     admin_surname: string,
     to_be_modified: string | null
 } & {
-    [key in keyof string as `${Language}_title`]: string
-}
+        [key in keyof string as `${Language}_title`]: string
+    }
 
 class AdminProjectClass {
     course_id: number;
@@ -2222,6 +2258,23 @@ type CardListDescription = {
     emptiness_message: CustomElement,
     cards_list: OrderedCardsList,
     on_click?: () => any
+}
+
+class AdminSummary {
+    id: number;
+    name: string;
+    surname: string;
+
+    constructor(summary: { id: number, name: string, surname: string }) {
+        this.id = summary.id;
+        this.name = summary.name;
+        this.surname = summary.surname;
+    }
+}
+
+type ImageDescriptor = {
+    url: string,
+    caption: string
 }
 
 export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, SubElementsColors, SubElementsClasses, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }

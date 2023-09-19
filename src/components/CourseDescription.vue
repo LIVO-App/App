@@ -1,4 +1,4 @@
-\<template>
+<template>
   <ion-header>
     <ion-toolbar>
       <ion-grid>
@@ -17,22 +17,22 @@
       </ion-grid>
     </ion-toolbar>
   </ion-header>
-  <template v-if="course != undefined">
-    <ion-content>
-      <div class="ion-padding">
+  <ion-content>
+    <div class="ion-padding">
+      <template v-if="course != undefined">
         <ionic-element
           v-for="element in courseCard.content"
           :key="element.id"
           :element="element"
         ></ionic-element>
-      </div>
-    </ion-content>
-  </template>
-  <template v-else>
-    <ionic-element
-      :element="elements.course_information_not_found"
-    ></ionic-element>
-  </template>
+      </template>
+      <template v-else>
+        <ionic-element
+          :element="elements.course_information_not_found"
+        ></ionic-element>
+      </template>
+    </div>
+  </ion-content>
 </template>
 
 <script setup lang="ts">
@@ -95,5 +95,12 @@ if (course != null) {
 }
 </script>
 
-<style>
+<style scoped>
+.block {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>

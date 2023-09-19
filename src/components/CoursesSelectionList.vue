@@ -6,7 +6,7 @@
       :message="alert_information.message"
       :buttons="alert_information.buttons"
       @didDismiss="closeModal('max_credits')"
-    ></ion-alert>
+    />
     <ion-modal
       :is-open="description_open"
       @didDismiss="closeModal('course_details')"
@@ -16,8 +16,9 @@
           <course-description
             :title="description_title"
             :course_id="description_course_id"
+            :keepContentsMounted="true"
             @close="closeModal('course_details')"
-          ></course-description>
+          />
         </template>
         <template #fallback>
           <loading-component />
@@ -546,8 +547,11 @@ if (learning_session != undefined) {
 }
 </script>
 
-<style>
+<style scoped>
 ion-select {
   width: fit-content;
+}
+.modal {
+  --height: auto;
 }
 </style>
