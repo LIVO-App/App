@@ -16,7 +16,6 @@
           <course-description
             :title="description_title"
             :course_id="description_course_id"
-            :keepContentsMounted="true"
             @close="closeModal('course_details')"
           />
         </template>

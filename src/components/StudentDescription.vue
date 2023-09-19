@@ -48,7 +48,6 @@ import {
   IonItem,
   IonIcon,
   IonImg,
-  IonTitle,
 } from "@ionic/vue";
 import { computed } from "vue";
 

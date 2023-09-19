@@ -192,7 +192,6 @@ import {
   IonRow,
   IonCol,
   IonText,
-  IonTitle,
   IonLabel,
   IonInput,
   IonCheckbox,

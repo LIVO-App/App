@@ -650,8 +650,8 @@ type SimpleList<T> = {
 const modelToString = (model: CourseModel) => model.toString();
 const learningAreaToString = (learning_area: LearningArea) =>
   learning_area[`${language}_title`];
-const growthAreaToString = (growth_area: GrowthArea) =>
-  growth_area[`${language}_title`];
+/*const growthAreaToString = (growth_area: GrowthArea) =>
+  growth_area[`${language}_title`];*/
 const go = (direction: boolean) => {
   if (direction && current_page_index.value < pages.length - 1) {
     current_page_index.value += 1;
@@ -695,8 +695,8 @@ const teacherToString = (teacher: Teacher) =>
 const castToTitles = (titles: any) => titles as PropositionTitles;
 const castToCharacteristics1 = (characteristics: any) =>
   characteristics as PropositionCharacteristics1;
-const castToCharacteristics2 = (characteristics: any) =>
-  characteristics as PropositionCharacteristics2;
+/*const castToCharacteristics2 = (characteristics: any) =>
+  characteristics as PropositionCharacteristics2;*/
 const castToDescription = (description: any) =>
   description as PropositionDescription;
 const castToExpectedLearningResults = (expected_learning_results: any) =>

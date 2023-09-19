@@ -67,7 +67,7 @@ if (props.learning_context != undefined) {
         false
       );
     },
-    (_) => undefined
+    () => undefined
   );
 }
 </script>

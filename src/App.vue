@@ -9,7 +9,7 @@
                 :src="image"
                 alt="LIVO Campus Logo"
                 style="height: 90px"
-              ></ion-img>
+              />
             </ion-list-header>
 
             <ion-menu-toggle :auto-hide="false">
