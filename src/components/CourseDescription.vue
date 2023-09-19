@@ -20,16 +20,40 @@
   <ion-content>
     <div class="ion-padding">
       <template v-if="course != undefined">
+        <swiper
+          v-if="course.images.length > 1"
+          :modules="modules"
+          :slides-per-view="1"
+          navigation
+          :autoplay="{
+            delay: 4000,
+            disableOnInteraction: false,
+          }"
+        >
+          <swiper-slide v-for="(image, index) in course.images" :key="index">
+            <ion-img
+              :src="require('@/assets/' + image.url)"
+              :alt="image.caption"
+              style="height: 150px"
+            />
+          </swiper-slide>
+        </swiper>
+        <ion-img
+          v-if="course.images.length == 1"
+          :src="require('@/assets/' + course.images[0].url)"
+          :alt="course.images[0].caption"
+          style="height: 150px"
+        />
         <ionic-element
           v-for="element in courseCard.content"
           :key="element.id"
           :element="element"
-        ></ionic-element>
+        />
       </template>
       <template v-else>
         <ionic-element
           :element="elements.course_information_not_found"
-        ></ionic-element>
+        />
       </template>
     </div>
   </ion-content>
@@ -45,8 +69,13 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonImg,
 } from "@ionic/vue";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import "swiper/css";
+import { Navigation, Autoplay } from "swiper/modules";
 
+const modules = [Navigation, Autoplay];
 const props = defineProps({
   title: {
     type: String,
@@ -83,10 +112,24 @@ const elements: {
   },
 };
 
-const course = await executeLink(
+const course: Course = await executeLink(
   "/v1/courses/" + props.course_id,
   (response) => new Course(response.data.data),
   () => null
+);
+course.images.push(
+  {
+    url: "Logo_LIVO_Path.png",
+    caption: "New logo",
+  },
+  {
+    url: "Logo_LIVO_Campus_POS_RGB.png",
+    caption: "Old logo",
+  },
+  {
+    url: "person.png",
+    caption: "Default person",
+  }
 );
 let courseCard: GeneralCardElements;
 
