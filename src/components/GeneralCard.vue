@@ -9,6 +9,7 @@
         : undefined
     "
     :class="{
+      ...classes?.card,
       no_card_border: colors?.borders == undefined,
       background: colors != undefined && colors.background?.type != 'var',
     }"
@@ -47,6 +48,7 @@
     <ion-card-header
       v-if="title != undefined || subtitle != undefined"
       class="ion-no-padding"
+      :class="classes?.header"
     >
       <ion-grid class="ion-no-margin">
         <ion-row class="ion-align-items-center">
@@ -72,14 +74,13 @@
         </ion-row>
       </ion-grid>
     </ion-card-header>
-    <ion-card-content v-if="content != undefined">
+    <ion-card-content v-if="content != undefined" :class="classes?.content">
       <ion-grid v-if="side_element != undefined">
         <ion-row>
           <ion-col>
             <ionic-element
               v-for="element in content"
               :key="element.id"
-              :element="element"
               @execute_link="$emit('execute_link')"
               @signal_event="$emit('signal_event')"
             />
@@ -110,7 +111,13 @@
 </template>
 
 <script setup lang="ts">
-import { CustomElement, LinkParameters, SubElementsColors } from "@/types";
+import {
+  CardSubElements,
+  Classes,
+  CustomElement,
+  LinkParameters,
+  SubElementsColors,
+} from "@/types";
 import { isRequest, isEvent } from "@/utils";
 import {
   IonCard,
@@ -139,13 +146,17 @@ const props = defineProps({
   selected: Boolean,
   link: Object as PropType<LinkParameters>,
   colors: Object as PropType<SubElementsColors>,
+  classes: Object as PropType<Classes<CardSubElements>>,
 });
 defineEmits(["execute_link", "signal_event"]);
 const isGet =
   props.link != undefined &&
   isRequest(props.link) &&
   props.link.method == "get";
-const background_color = props.colors != undefined && props.colors.background != undefined ? "" + props.colors.background.name : undefined;
+const background_color =
+  props.colors != undefined && props.colors.background != undefined
+    ? "" + props.colors.background.name
+    : undefined;
 </script>
 
 <style scoped>

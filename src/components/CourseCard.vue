@@ -10,15 +10,7 @@
       <ion-grid>
         <ion-row class="ion-align-items-center">
           <ion-col size="auto">
-            <ionic-element
-              :element="content[0]"
-              :classes="{
-                label: {
-                  'ion-padding': true,
-                  radius: true,
-                },
-              }"
-            />
+            <ionic-element :element="content[0]" />
           </ion-col>
           <ion-col>
             <ionic-element
@@ -27,15 +19,7 @@
             />
           </ion-col>
           <ion-col size="auto">
-            <ionic-element
-              :element="content[2]"
-              :classes="{
-                label: {
-                  'ion-padding': true,
-                  half_radius: true,
-                },
-              }"
-            />
+            <ionic-element :element="content[2]" />
           </ion-col>
           <ion-col v-if="button" size="auto">
             <ionic-element
@@ -50,15 +34,14 @@
 </template>
 
 <script setup lang="ts">
-import { CustomElement, SubElementsColors } from "@/types";
-import { Enrollment } from "@/types";
 import {
-  IonCard,
-  IonCardContent,
-  IonGrid,
-  IonRow,
-  IonCol,
-} from "@ionic/vue";
+  Classes,
+  CustomElement,
+  SubElements,
+  SubElementsColors,
+} from "@/types";
+import { Enrollment } from "@/types";
+import { IonCard, IonCardContent, IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { PropType } from "vue";
 
 const props = defineProps({
@@ -78,6 +61,21 @@ const props = defineProps({
 });
 defineEmits(["execute_link", "signal_event"]);
 const button = props.enrollment.editable && props.content.length > 3;
+
+if (props.content[0].classes == undefined) {
+  props.content[0].classes = {};
+}
+props.content[0].classes.label = {
+  "ion-padding": true,
+  radius: true,
+};
+if (props.content[2].classes == undefined) {
+  props.content[2].classes = {};
+}
+props.content[2].classes.label = {
+  "ion-padding": true,
+  half_radius: true,
+};
 </script>
 
 <style>

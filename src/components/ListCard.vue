@@ -6,27 +6,25 @@
         : undefined
     "
     :class="{
+      ...classes?.card,
       '--ion-no-border': colors?.external_borders == undefined,
       background:
         colors?.background != undefined && colors?.background?.type != 'var',
     }"
   >
-    <ion-card-header v-if="title != undefined && title.content != ''">
-      <ion-card-title
-        ><ionic-element
-          :element="title"
-          :classes="{
-            label: {
-              title_font: true,
-            },
-          }"
+    <ion-card-header
+      v-if="title != undefined && title.content != ''"
+      :class="classes?.header"
+    >
+      <ion-card-title v-if="title != undefined"
+        ><ionic-element :element="actual_title"
       /></ion-card-title>
       <ion-card-subtitle v-if="subtitle != undefined"
-        ><ionic-element :element="subtitle"
+        ><ionic-element :element="actual_subtitle"
       /></ion-card-subtitle>
     </ion-card-header>
-    <ion-card-content style="overflow-y: auto">
-      <ion-list class="ion-no-padding">
+    <ion-card-content style="overflow-y: auto" :class="classes?.content">
+      <ion-list class="ion-no-padding" :class="classes?.list">
         <template v-if="Object.keys(actual_cards_list.cards).length === 0">
           <ion-item
             :color="
@@ -40,11 +38,8 @@
                 colors?.background?.type != 'var',
             }"
             class="ion-no-padding"
-            >
-            <ionic-element
-              :element="emptiness_message"
-              :classes="emptiness_message_classes"
-            />
+          >
+            <ionic-element :element="actual_emptiness_message" />
           </ion-item>
         </template>
         <template v-else-if="actual_cards_list.cards[''] != undefined">
@@ -62,10 +57,7 @@
             }"
             class="ion-no-padding"
           >
-            <ionic-element
-              :element="emptiness_message"
-              :classes="emptiness_message_classes"
-            />
+            <ionic-element :element="actual_emptiness_message" />
           </ion-item>
           <template v-else>
             <template
@@ -73,12 +65,7 @@
               :key="card.id"
             >
               <ion-item
-                :lines="
-                  colors?.list_borders != undefined &&
-                  colors?.list_borders != undefined
-                    ? 'inset'
-                    : 'none'
-                "
+                :lines="colors?.list_borders != undefined ? 'inset' : 'none'"
                 :color="
                   colors?.background?.type == 'var'
                     ? colors?.background.name
@@ -87,7 +74,7 @@
                 :class="{
                   background:
                     colors?.background != undefined &&
-                    colors?.background?.type != 'var',
+                    colors?.background.type != 'var',
                 }"
                 class="ion-no-padding"
               >
@@ -100,6 +87,7 @@
                   :enrollment="card.enrollment"
                   :url="card.url"
                   :method="card.method"
+                  :colors="setSpecificColors(card.colors)"
                 />
                 <general-card
                   v-else-if="isGeneral(card)"
@@ -114,7 +102,8 @@
                   :side_element="card.side_element"
                   :selected="card.selected"
                   :link="card.link"
-                  :colors="general_card_colors"
+                  :colors="setSpecificColors(card.colors)"
+                  :classes="card.classes"
                 />
               </ion-item>
             </template>
@@ -132,20 +121,13 @@
                   : undefined) ?? 'light'
               "
               :class="{
+                ...classes?.divider,
                 background:
                   colors?.dividers != undefined &&
                   colors.dividers.type != 'var',
               }"
             >
-              <ionic-element
-                :element="ordered_cards.title"
-                :classes="{
-                  label: {
-                    'ion-padding-end': true,
-                    'item-text-wrap': true,
-                  },
-                }"
-              />
+              <ionic-element :element="ordered_cards.title" />
             </ion-item-divider>
             <ion-item
               v-if="actual_cards_list.cards[ordered_cards.key].length === 0"
@@ -161,10 +143,7 @@
               }"
               class="ion-no-padding"
             >
-              <ionic-element
-                :element="emptiness_message"
-                :classes="emptiness_message_classes"
-              />
+              <ionic-element :element="actual_emptiness_message" />
             </ion-item>
             <template v-else>
               <template
@@ -175,13 +154,13 @@
                   :lines="colors?.list_borders != undefined ? 'inset' : 'none'"
                   :color="
                     colors?.background?.type == 'var'
-                      ? colors?.background.name
+                      ? colors?.background?.name
                       : undefined
                   "
                   :class="{
                     background:
                       colors?.background != undefined &&
-                      colors?.background?.type != 'var',
+                      colors?.background.type != 'var',
                   }"
                   class="ion-no-padding"
                 >
@@ -193,7 +172,7 @@
                     :credits="card.credits"
                     :enrollment="card.enrollment"
                     :url="card.url"
-                    :colors="general_card_colors"
+                    :colors="setSpecificColors(card.colors)"
                     :method="card.method"
                   />
                   <general-card
@@ -209,7 +188,8 @@
                     :side_element="card.side_element"
                     :selected="card.selected"
                     :link="card.link"
-                    :colors="general_card_colors"
+                    :colors="setSpecificColors(card.colors)"
+                    :classes="card.classes"
                   />
                 </ion-item>
               </template>
@@ -233,7 +213,7 @@ import {
   IonItemDivider,
   IonItem,
 } from "@ionic/vue";
-import { computed, PropType } from "vue";
+import { computed, ComputedRef, PropType } from "vue";
 import {
   CardElements,
   ColorObject,
@@ -241,7 +221,12 @@ import {
   CourseCardElements,
   CustomElement,
   OrderedCardsList,
-  SubElementsClasses,
+  Classes,
+  SubElements,
+  CardsListElements,
+  GeneralSubElements,
+  SubElementsColors,
+  CardSubElements,
 } from "../types";
 import { isGeneral, isCourse, nullOperator } from "../utils";
 
@@ -257,6 +242,13 @@ const adjustColor = (
         type: color_type,
       }
     : undefined;
+};
+const setSpecificColors = (specific_colors: SubElementsColors | undefined) => {
+  const colors: SubElementsColors = general_card_colors ?? {};
+
+  Object.assign(colors, specific_colors);
+
+  return colors;
 };
 
 const props = defineProps({
@@ -279,30 +271,29 @@ const props = defineProps({
     cards_borders: ColorObject;
     list_borders: ColorObject;
   }>,
+  classes: Object as PropType<Classes<CardsListElements>>,
 });
 
 defineEmits(["execute_link", "signal_event"]);
 
-const actual_emptiness_message = computed(() => JSON.parse(
-  JSON.stringify(props.emptiness_message)
-));
+const actual_emptiness_message: ComputedRef<CustomElement> = computed(() =>
+  JSON.parse(JSON.stringify(props.emptiness_message))
+);
 const actual_cards_list = computed(() => {
-  return (JSON.parse(
+  return JSON.parse(
     JSON.stringify(props.cards_list)
-  )) as OrderedCardsList<CardElements>;
-})
+  ) as OrderedCardsList<CardElements>;
+});
 const background_color =
   props.colors?.background != undefined && props.colors.background != undefined
     ? "" + props.colors.background.name
     : undefined;
 const groups = Object.keys(actual_cards_list.value.cards);
-const emptiness_message_classes: SubElementsClasses = {
-  label: {
-    "ion-text-wrap": true,
-    "ion-text-center": true,
-  },
-};
-const general_card_colors =
+const general_card_colors:
+  | {
+      [key in keyof string as GeneralSubElements]?: ColorObject;
+    }
+  | undefined =
   props.colors?.background != undefined ||
   props.colors?.cards_borders != undefined
     ? {
@@ -311,12 +302,15 @@ const general_card_colors =
       }
     : undefined;
 
-let actual_title, actual_subtitle, tmp_card;
+let actual_title: CustomElement, actual_subtitle: CustomElement, tmp_card;
 let tmp_color: ColorObject | undefined = undefined;
 
 if (props.title != undefined) {
   actual_title = JSON.parse(JSON.stringify(props.title));
-  actual_title.color = adjustColor(
+  if (actual_title.colors == undefined) {
+    actual_title.colors = {};
+  }
+  actual_title.colors.text = adjustColor(
     props.title?.colors?.text != undefined
       ? props.title.colors.text.type
       : props.colors?.text?.type,
@@ -326,7 +320,10 @@ if (props.title != undefined) {
 }
 if (props.subtitle != undefined) {
   actual_subtitle = JSON.parse(JSON.stringify(props.subtitle));
-  actual_subtitle.color = adjustColor(
+  if (actual_subtitle.colors == undefined) {
+    actual_subtitle.colors = {};
+  }
+  actual_subtitle.colors.text = adjustColor(
     props.subtitle?.colors?.text != undefined
       ? props.subtitle.colors.text.type
       : props.colors?.text?.type,
@@ -334,13 +331,33 @@ if (props.subtitle != undefined) {
     props.colors?.text?.name
   );
 }
-actual_emptiness_message.value.color = adjustColor(
+if (actual_emptiness_message.value.colors == undefined) {
+  actual_emptiness_message.value.colors = {};
+}
+actual_emptiness_message.value.colors.text = adjustColor(
   props.emptiness_message?.colors?.text != undefined
     ? props.emptiness_message.colors.text.type
     : props.colors?.text?.type,
   props.emptiness_message?.colors?.text?.name,
   props.colors?.text?.name
 );
+if (actual_emptiness_message.value.classes == undefined) {
+  actual_emptiness_message.value.classes = {};
+}
+actual_emptiness_message.value.classes.label = {
+  "ion-text-wrap": true,
+  "ion-text-center": true,
+};
+for (const card_group of actual_cards_list.value.order) {
+  if (card_group.title.classes == undefined) {
+    card_group.title.classes = {};
+  }
+  card_group.title.classes.label = {
+    "ion-padding-end": true,
+    "item-text-wrap": true,
+  };
+}
+
 for (const group in groups) {
   for (const card in actual_cards_list.value.cards[groups[group]]) {
     tmp_card = actual_cards_list.value.cards[groups[group]][card];
