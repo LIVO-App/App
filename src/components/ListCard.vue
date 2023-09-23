@@ -24,7 +24,7 @@
       /></ion-card-subtitle>
     </ion-card-header>
     <ion-card-content style="overflow-y: auto" :class="classes?.content">
-      <ion-list class="ion-no-padding" :class="classes?.list">
+      <ion-list v-if="columns == 1" class="ion-no-padding" :class="classes?.list">
         <template v-if="Object.keys(actual_cards_list.cards).length === 0">
           <ion-item
             :color="
@@ -87,7 +87,7 @@
                   :enrollment="card.enrollment"
                   :url="card.url"
                   :method="card.method"
-                  :colors="setSpecificColors(card.colors)"
+                  :colors="card.colors"
                 />
                 <general-card
                   v-else-if="isGeneral(card)"
@@ -172,7 +172,7 @@
                     :credits="card.credits"
                     :enrollment="card.enrollment"
                     :url="card.url"
-                    :colors="setSpecificColors(card.colors)"
+                    :colors="card.colors"
                     :method="card.method"
                   />
                   <general-card
@@ -188,7 +188,7 @@
                     :side_element="card.side_element"
                     :selected="card.selected"
                     :link="card.link"
-                    :colors="setSpecificColors(card.colors)"
+                    :colors="card.colors"
                     :classes="card.classes"
                   />
                 </ion-item>
@@ -197,6 +197,9 @@
           </ion-item-group>
         </template>
       </ion-list>
+      <!--<ion-grid v-else>
+
+      </ion-grid>-->
     </ion-card-content>
   </ion-card>
 </template>
@@ -222,11 +225,10 @@ import {
   CustomElement,
   OrderedCardsList,
   Classes,
-  SubElements,
   CardsListElements,
   GeneralSubElements,
-  SubElementsColors,
-  CardSubElements,
+  Colors,
+  GeneralCardSubElements,
 } from "../types";
 import { isGeneral, isCourse, nullOperator } from "../utils";
 
@@ -243,8 +245,8 @@ const adjustColor = (
       }
     : undefined;
 };
-const setSpecificColors = (specific_colors: SubElementsColors | undefined) => {
-  const colors: SubElementsColors = general_card_colors ?? {};
+const setSpecificColors = (specific_colors: Colors<GeneralSubElements> | undefined) => {
+  const colors: Colors<GeneralSubElements> = general_card_colors ?? {};
 
   Object.assign(colors, specific_colors);
 
@@ -262,16 +264,12 @@ const props = defineProps({
     type: Object as PropType<OrderedCardsList>,
     required: true,
   },
-  colors: Object as PropType<{
-    background: ColorObject;
-    text: ColorObject;
-    dividers_text: ColorObject;
-    dividers: ColorObject;
-    external_borders: ColorObject;
-    cards_borders: ColorObject;
-    list_borders: ColorObject;
-  }>,
+  colors: Object as PropType<Colors<GeneralCardSubElements>>,
   classes: Object as PropType<Classes<CardsListElements>>,
+  columns: {
+    type: Number,
+    default: 1
+  }
 });
 
 defineEmits(["execute_link", "signal_event"]);
@@ -409,6 +407,7 @@ for (const group in groups) {
           }
         }
       }
+      tmp_card.colors = setSpecificColors(tmp_card.colors);
     } else if (isCourse(tmp_card)) {
       tmp_card.enrollment = (
         props.cards_list.cards[groups[group]][card] as CourseCardElements

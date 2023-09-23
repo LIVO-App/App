@@ -176,7 +176,8 @@ import {
   GradeProps,
   GradesParameters,
   Language,
-  SubElementsColors,
+  Colors,
+  GeneralSubElements,
 } from "@/types";
 import {
   executeLink,
@@ -270,7 +271,7 @@ const descriptions: {
 });
 const grade: Ref<number> = ref(0);
 const final_grade: Ref<boolean> = ref(false);
-const colors: SubElementsColors = {
+const colors: Colors<GeneralSubElements> = {
   text: {
     name: "primary",
     type: "var",

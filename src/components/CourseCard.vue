@@ -10,7 +10,7 @@
       <ion-grid>
         <ion-row class="ion-align-items-center">
           <ion-col size="auto">
-            <ionic-element :element="content[0]" />
+            <ionic-element :element="actual_content[0]" />
           </ion-col>
           <ion-col>
             <ionic-element
@@ -19,7 +19,7 @@
             />
           </ion-col>
           <ion-col size="auto">
-            <ionic-element :element="content[2]" />
+            <ionic-element :element="actual_content[2]" />
           </ion-col>
           <ion-col v-if="button" size="auto">
             <ionic-element
@@ -38,11 +38,12 @@ import {
   Classes,
   CustomElement,
   SubElements,
-  SubElementsColors,
+  Colors,
+  GeneralSubElements,
 } from "@/types";
 import { Enrollment } from "@/types";
 import { IonCard, IonCardContent, IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { PropType } from "vue";
+import { computed, ComputedRef, PropType } from "vue";
 
 const props = defineProps({
   credits: {
@@ -57,22 +58,25 @@ const props = defineProps({
     type: Object as PropType<Enrollment>,
     required: true,
   },
-  colors: Object as PropType<SubElementsColors>,
+  colors: Object as PropType<Colors<GeneralSubElements>>,
 });
 defineEmits(["execute_link", "signal_event"]);
 const button = props.enrollment.editable && props.content.length > 3;
+const actual_content: ComputedRef<CustomElement[]> = computed(() =>
+  JSON.parse(JSON.stringify(props.content))
+);
 
-if (props.content[0].classes == undefined) {
-  props.content[0].classes = {};
+if (actual_content.value[0].classes == undefined) {
+  actual_content.value[0].classes = {};
 }
-props.content[0].classes.label = {
+actual_content.value[0].classes.label = {
   "ion-padding": true,
   radius: true,
 };
-if (props.content[2].classes == undefined) {
-  props.content[2].classes = {};
+if (actual_content.value[2].classes == undefined) {
+  actual_content.value[2].classes = {};
 }
-props.content[2].classes.label = {
+actual_content.value[2].classes.label = {
   "ion-padding": true,
   half_radius: true,
 };

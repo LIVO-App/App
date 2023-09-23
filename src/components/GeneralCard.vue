@@ -116,7 +116,8 @@ import {
   Classes,
   CustomElement,
   LinkParameters,
-  SubElementsColors,
+  Colors,
+  GeneralSubElements,
 } from "@/types";
 import { isRequest, isEvent } from "@/utils";
 import {
@@ -145,7 +146,7 @@ const props = defineProps({
   side_element: Object as PropType<CustomElement>,
   selected: Boolean,
   link: Object as PropType<LinkParameters>,
-  colors: Object as PropType<SubElementsColors>,
+  colors: Object as PropType<Colors<GeneralSubElements>>,
   classes: Object as PropType<Classes<CardSubElements>>,
 });
 defineEmits(["execute_link", "signal_event"]);

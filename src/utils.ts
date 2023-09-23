@@ -1,5 +1,5 @@
 import { Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters, ContentType, CustomElement, ElementType, SubElementsColors, IconAlternatives, Classes, SubElements, ColorObject } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters, ContentType, CustomElement, ElementType, Colors, IconAlternatives, Classes, SubElements, ColorObject, GeneralSubElements } from "./types";
 import { $axios } from "./plugins/axios";
 import { store } from "./store"
 
@@ -171,7 +171,7 @@ function getAviableLanguages(): Language[] {
     return store.state.languages;
 }
 
-function getCustomMessage(id: string, content: ContentType, type: ElementType = "string", colors?: SubElementsColors, classes?: Classes<SubElements>): CustomElement {
+function getCustomMessage(id: string, content: ContentType, type: ElementType = "string", colors?: Colors<GeneralSubElements>, classes?: Classes<SubElements>): CustomElement {
     return {
         id: id,
         type: type,

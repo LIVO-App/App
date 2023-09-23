@@ -183,7 +183,7 @@ class Enrollment {
             icon: this.enrollment === false ? getIcon("add") : getIcon("close")
         }
     }
-    getStatusColors(): SubElementsColors {
+    getStatusColors(): Colors<GeneralSubElements> {
         return {
             text: {
                 name: this.isPending()
@@ -201,7 +201,7 @@ class Enrollment {
             } : undefined
         }
     }
-    getChangeButtonColors(): SubElementsColors {
+    getChangeButtonColors(): Colors<GeneralSubElements> {
         return {
             text: this.enrollment === false ? {
                 name: "white",
@@ -229,7 +229,7 @@ type CardElements = { // Da sistemare: sistemare quando tolti gli altri type-car
     group: any,
     url?: string,
     method?: Method,
-    colors?: SubElementsColors,
+    colors?: Colors<GeneralSubElements>,
     classes?: Classes<CardSubElements>
 }
 
@@ -1060,14 +1060,16 @@ type ColorObject = {
 
 type GeneralSubElements = "text" | "background" | "borders";
 
+type GeneralCardSubElements = "background" | "text" | "dividers_text" | "external_borders" | "cards_borders" | "list_borders" | "dividers";
+
 type SubElements = "label" | "html" | "icon" | "button" | "item";
 
 type CardSubElements = "card" | "header" | "content";
 
 type CardsListElements = CardSubElements | "list" | "divider";
 
-type SubElementsColors = {
-    [key in keyof string as GeneralSubElements]?: ColorObject
+type Colors<T extends GeneralSubElements | GeneralCardSubElements> = {
+    [key in keyof string as T]?: ColorObject
 };
 
 type Classes<T extends SubElements | CardsListElements> = {
@@ -1080,7 +1082,7 @@ type CustomElement = { // Da sistemare: togliere type e usare funzioni is... o r
     id: string,
     type: ElementType,
     linkType?: LinkType,
-    colors?: SubElementsColors,
+    colors?: Colors<GeneralSubElements>,
     classes?: Classes<SubElements>,
     params?: TmpList,
     content: ContentType
@@ -2376,4 +2378,4 @@ type ImageDescriptor = {
     caption: string
 }
 
-export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, StringIcon, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, SubElements, CardSubElements, CardsListElements, SubElementsColors, Classes, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }
+export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, StringIcon, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, GeneralCardSubElements, SubElements, CardSubElements, CardsListElements, Colors, Classes, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }
