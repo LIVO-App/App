@@ -1,6 +1,6 @@
 import { Method } from "axios";
 import { store } from "./store";
-import { executeLink, getActualLearningContext, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getCustomMessage, getGender, getIcon, getRagneString, getStatusColor, getStatusString, hashCode, numberToSection, toDateString } from "./utils";
+import { executeLink, getActualLearningContext, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getCustomMessage, getGender, getIcon, getRagneString, getStatusColor, getStatusString, getStudyAddressVisualization, hashCode, numberToSection, toDateString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -228,7 +228,9 @@ type CardElements = { // Da sistemare: sistemare quando tolti gli altri type-car
     id: string,
     group: any,
     url?: string,
-    method?: Method
+    method?: Method,
+    colors?: SubElementsColors,
+    classes?: Classes<CardSubElements>
 }
 
 type GeneralCardElements = CardElements & {
@@ -566,6 +568,10 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
     teaching_list: Teaching[];
     growth_list: GrowthArea[];
     images: ImageDescriptor[];
+    private learning_contexts: {
+        [key: string]: LearningContext
+    };
+    ready: boolean;
 
     constructor(courseObj: CourseProps) {
         super(courseObj);
@@ -598,12 +604,16 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
         this.teaching_list = [];
         this.access_object = {};
         this.images = [];
+        this.learning_contexts = {};
+        this.ready = false;
+    }
 
-        executeLink("/v1/courses/" + this.id + "/growth_areas",
+    private async loadParams() {
+        await executeLink("/v1/courses/" + this.id + "/growth_areas",
             response => this.growth_list = response.data.data.map((a: GrowthAreaProps) => new GrowthArea(a)));
-        executeLink("/v1/courses/" + this.id + "/teachings",
+        await executeLink("/v1/courses/" + this.id + "/teachings",
             response => this.teaching_list = response.data.data.map((a: TeachingProps) => new Teaching(a)));
-        executeLink("/v1/courses/" + this.id + "/opento",
+        await executeLink("/v1/courses/" + this.id + "/opento",
             response => {
                 let learning_context_id;
                 for (const constraint of (response.data.data as OpenToConstraint[])) {
@@ -619,19 +629,104 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
                     });
                 }
             });
+        await executeLink("/v1/learning_contexts",
+            response => {
+                for (const learning_context of (response.data.data as LearningContext[])) {
+                    this.learning_contexts[learning_context.id] = learning_context;
+                }
+            },
+            () => []);
+        this.ready = true;
+    }
+
+    static async newCourse(courseObj: CourseProps) {
+        const course = new Course(courseObj);
+        await course.loadParams();
+
+        return course;
     }
 
     getCustomAccessList() {
-        const access_list: CustomElement[] = [];
+        const language = getCurrentLanguage();
+        const access_list: OrderedCardsList<GeneralCardElements> = {
+            order: [],
+            cards: {}
+        };
 
-        /*for (const learning_context of this.access_object) {
-            
-        }*/
+        let ordinary_classes_cards: {
+            [study_address: string]: {
+                card: GeneralCardElements,
+                study_years: number[],
+            };
+        };
+        let study_address_visualization: {
+            icon: IconAlternatives,
+            background: ColorObject
+        } | undefined;
+
+        for (const learning_context_id of Object.keys(this.access_object)) {
+            if (access_list.cards[learning_context_id] == undefined) {
+                access_list.order.push({
+                    key: learning_context_id,
+                    title: getCustomMessage(learning_context_id, this.learning_contexts[learning_context_id][`${language}_title`], "title", {
+                        text: {
+                            name: 'medium',
+                            type: 'var'
+                        }
+                    })
+                });
+                access_list.cards[learning_context_id] = [];
+            }
+
+            ordinary_classes_cards = {};
+            for (const access of this.access_object[learning_context_id]) {
+                if (ordinary_classes_cards[access.study_address] == undefined) {
+                    study_address_visualization = getStudyAddressVisualization(access.study_address);
+                    ordinary_classes_cards[access.study_address] = {
+                        card: {
+                            id: access.study_address,
+                            group: learning_context_id,
+                            content: [{
+                                id: access.study_address,
+                                type: study_address_visualization != undefined ? "string_icon" : "string",
+                                content: study_address_visualization != undefined ? {
+                                    text: "",
+                                    icon: study_address_visualization.icon,
+                                    order: true
+                                } : "",
+                                colors: {
+                                    text: {
+                                        name: "white",
+                                        type: "var"
+                                    },
+                                    background: study_address_visualization != undefined ? study_address_visualization.background : {
+                                        name: "medium",
+                                        type: "var"
+                                    }
+                                },
+                                classes: {
+                                    item: {
+                                        radius: true,
+                                    }
+                                }
+                            }],
+                        },
+                        study_years: [access.study_year]
+                    }
+                } else {
+                    ordinary_classes_cards[access.study_address].study_years.push(access.study_year);
+                }
+            }
+
+            for (const study_address of Object.keys(ordinary_classes_cards)) {
+                ordinary_classes_cards[study_address].study_years.sort();
+                ((ordinary_classes_cards[study_address].card.content as CustomElement[])[0].content as StringIcon).text = ordinary_classes_cards[study_address].study_years.join("-") + " " + study_address;
+                access_list.cards[learning_context_id].push(ordinary_classes_cards[study_address].card);
+            }
+        }
+
         /**
-         * study_year: number
-    study_address: string
-    main_study_year: boolean
-    presidium: boolean
+        main_study_year: boolean
          */
 
         return access_list;
@@ -898,6 +993,12 @@ type IconsList = {
     [key: string]: IconAlternatives
 }
 
+type StringIcon = {
+    text: string,
+    icon: IconAlternatives,
+    order?: boolean
+}
+
 type RequestParameters = {
     url: string,
     method: Method,
@@ -928,15 +1029,9 @@ type EventString = EventParameters & {
     text: string
 }
 
-type RequestStringIcon = RequestParameters & {
-    text: string,
-    icon: IconAlternatives
-}
+type RequestStringIcon = RequestParameters & StringIcon;
 
-type EventStringIcon = EventParameters & {
-    text: string,
-    icon: IconAlternatives
-}
+type EventStringIcon = EventParameters & StringIcon;
 
 type CardsList<T = CardElements> = {
     [key: string | number]: T[]
@@ -954,7 +1049,7 @@ type ElementType = "string" | "html" | "icon" | "title" | "string_icon";
 
 type LinkType = "request" | "event";
 
-type ContentType = string | number | IconAlternatives | RequestIcon | EventIcon | RequestString | EventString | RequestStringIcon | EventStringIcon;
+type ContentType = string | number | IconAlternatives | StringIcon | RequestIcon | EventIcon | RequestString | EventString | RequestStringIcon | EventStringIcon;
 
 type ColorType = "var" | "text" | "hex";
 
@@ -965,14 +1060,18 @@ type ColorObject = {
 
 type GeneralSubElements = "text" | "background" | "borders";
 
-type SubElements = "label" | "html" | "icon" | "button";
+type SubElements = "label" | "html" | "icon" | "button" | "item";
+
+type CardSubElements = "card" | "header" | "content";
+
+type CardsListElements = CardSubElements | "list" | "divider";
 
 type SubElementsColors = {
     [key in keyof string as GeneralSubElements]?: ColorObject
 };
 
-type SubElementsClasses = {
-    [key in keyof string as SubElements]?: {
+type Classes<T extends SubElements | CardsListElements> = {
+    [key in keyof string as T]?: {
         [key: string]: boolean
     }
 }
@@ -982,7 +1081,7 @@ type CustomElement = { // Da sistemare: togliere type e usare funzioni is... o r
     type: ElementType,
     linkType?: LinkType,
     colors?: SubElementsColors,
-    classes?: SubElementsClasses,
+    classes?: Classes<SubElements>,
     params?: TmpList,
     content: ContentType
 }
@@ -2277,4 +2376,4 @@ type ImageDescriptor = {
     caption: string
 }
 
-export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, SubElementsColors, SubElementsClasses, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }
+export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, StringIcon, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, SubElements, CardSubElements, CardsListElements, SubElementsColors, Classes, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }

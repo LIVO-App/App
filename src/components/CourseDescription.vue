@@ -49,11 +49,42 @@
           :key="element.id"
           :element="element"
         />
+        <b><ionic-element
+          :element="
+            getCustomMessage('open_to', getCurrentElement('open_to') + ':')
+          "
+        /></b>
+        <list-card
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement('course_for_noone')
+            )
+          "
+          :cards_list="access_cards"
+          :colors="{
+            background: {
+              name: 'white',
+              type: 'var',
+            },
+            dividers: {
+              name: 'white',
+              type: 'var',
+            },
+          }"
+          :classes="{
+            card: {
+              no_card_border: true,
+              'ion-no-margin': true,
+            },
+            content: {
+              'ion-no-padding': true,
+            },
+          }"
+        />
       </template>
       <template v-else>
-        <ionic-element
-          :element="elements.course_information_not_found"
-        />
+        <ionic-element :element="elements.course_information_not_found" />
       </template>
     </div>
   </ion-content>
@@ -61,7 +92,12 @@
 
 <script setup lang="ts">
 import { Course, CustomElement, GeneralCardElements } from "@/types";
-import { executeLink, getCurrentElement, getIcon } from "@/utils";
+import {
+  executeLink,
+  getCurrentElement,
+  getCustomMessage,
+  getIcon,
+} from "@/utils";
 import {
   IonContent,
   IonHeader,
@@ -74,6 +110,7 @@ import {
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
 import { Navigation, Autoplay } from "swiper/modules";
+import { computed, ref } from "vue";
 
 const modules = [Navigation, Autoplay];
 const props = defineProps({
@@ -85,6 +122,7 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  learning_block_id: Number,
 });
 defineEmits(["close"]);
 
@@ -112,10 +150,12 @@ const elements: {
   },
 };
 
-const course: Course = await executeLink(
-  "/v1/courses/" + props.course_id,
-  (response) => new Course(response.data.data),
-  () => null
+const course = await Course.newCourse(
+  await executeLink(
+    "/v1/courses/" + props.course_id,
+    (response) => response.data.data,
+    () => null
+  )
 );
 course.images.push(
   {
@@ -131,6 +171,8 @@ course.images.push(
     caption: "Default person",
   }
 );
+const access_cards = course.getCustomAccessList();
+
 let courseCard: GeneralCardElements;
 
 if (course != null) {

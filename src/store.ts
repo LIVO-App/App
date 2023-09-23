@@ -44,7 +44,15 @@ import {
     pencilOutline,
     pencilSharp,
     eyeOutline,
-    eyeSharp
+    eyeSharp,
+    earthOutline,
+    earthSharp,
+    flaskOutline,
+    flaskSharp,
+    medkitOutline,
+    medkitSharp,
+    medalOutline,
+    medalSharp
 } from 'ionicons/icons';
 import { UserProps } from "./types";
 
@@ -297,6 +305,22 @@ export const store = createStore({
                 eye: {
                     ios: eyeOutline,
                     md: eyeSharp
+                },
+                earth: {
+                    ios: earthOutline,
+                    md: earthSharp
+                },
+                flask: {
+                    ios: flaskOutline,
+                    md: flaskSharp
+                },
+                medkit: {
+                    ios: medkitOutline,
+                    md: medkitSharp
+                },
+                medal: {
+                    ios: medalOutline,
+                    md: medalSharp
                 }
             },
             languages: ["italian", "english"],
@@ -470,7 +494,9 @@ export const store = createStore({
                     specific_information: "Informazioni specifiche",
                     non_existing_session: "Sessione non esistente",
                     min: "Min",
-                    max: "Max"
+                    max: "Max",
+                    course_for_noone: "Corso aperto a nessuna classe",
+                    open_to: "Aperto a"
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -638,7 +664,9 @@ export const store = createStore({
                     specific_information: "Specific information",
                     non_existing_session: "Not existing session",
                     min: "Min",
-                    max: "Max"
+                    max: "Max",
+                    course_for_noone: "Course open to no class",
+                    open_to: "Open to",
                 }
             },
             logged_user: false,

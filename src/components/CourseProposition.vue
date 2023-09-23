@@ -288,7 +288,11 @@
                     :getCompleteName="getTitle"
                   />
                   <ion-button
-                    @click="addElement(key == 'teaching_list' ? 'teachings' : 'growth_areas')"
+                    @click="
+                      addElement(
+                        key == 'teaching_list' ? 'teachings' : 'growth_areas'
+                      )
+                    "
                     expand="block"
                     color="primary"
                     fill="solid"
@@ -298,14 +302,26 @@
                 </template>
                 <list-card
                   :key="trigger + '_list'"
-                  :cards_list="key == 'teaching_list' ? teachings_cards : growth_areas_cards"
+                  :cards_list="
+                    key == 'teaching_list'
+                      ? teachings_cards
+                      : growth_areas_cards
+                  "
                   :emptiness_message="
                     getCustomMessage(
                       'emptiness_message',
-                      getCurrentElement(key == 'teaching_list' ? 'no_teachings' : 'no_growth_areas')
+                      getCurrentElement(
+                        key == 'teaching_list'
+                          ? 'no_teachings'
+                          : 'no_growth_areas'
+                      )
                     )
                   "
-                  @signal_event="removeElement(key == 'teaching_list' ? 'teachings' : 'growth_areas')"
+                  @signal_event="
+                    removeElement(
+                      key == 'teaching_list' ? 'teachings' : 'growth_areas'
+                    )
+                  "
                 />
               </ion-col>
             </ion-row>
@@ -723,7 +739,7 @@ const addToSimpleList = (type: SimpleListTypes, id?: string | number) => {
     reference = growth_areas;
     cards_reference = growth_areas_cards;
   }
-  
+
   if (
     actual_id != (type == "teachings" ? "" : 0) &&
     (tmp_index = reference.available.findIndex((a) => a.id == actual_id)) != -1
@@ -1121,9 +1137,11 @@ const edit_course_proposition = async (course_id?: number) => {
   let course: Course;
   let learning_area: LearningArea;
   if (course_id != undefined && !Number.isNaN(course_id)) {
-    course = await executeLink(
-      "/v1/courses/" + course_id + "?admin_info=true",
-      (response) => new Course(response.data.data)
+    course = await Course.newCourse(
+      await executeLink(
+        "/v1/courses/" + course_id + "?admin_info=true",
+        (response) => response.data.data
+      )
     );
     learning_area = await executeLink("/v1/learning_areas", (response) => {
       const tmp = response.data.data.find(
@@ -1167,10 +1185,10 @@ const edit_course_proposition = async (course_id?: number) => {
       })
     );
     for (const teaching of course_proposition.characteristics2.teaching_list) {
-      addToSimpleList("teachings",teaching);
+      addToSimpleList("teachings", teaching);
     }
     for (const growth_area of course_proposition.characteristics2.growth_list) {
-      addToSimpleList("growth_areas",growth_area);
+      addToSimpleList("growth_areas", growth_area);
     }
     for (const learning_context_id in course_proposition.access_object) {
       for (const access_object of course_proposition.access_object[
@@ -1438,7 +1456,8 @@ learning_areas = await executeLink(
 );
 growth_areas.available = await executeLink(
   "/v1/growth_areas",
-  (response) => response.data.data.map((a: GrowthAreaProps) => new GrowthArea(a)),
+  (response) =>
+    response.data.data.map((a: GrowthAreaProps) => new GrowthArea(a)),
   () => []
 );
 learning_sessions = await executeLink(
@@ -1511,14 +1530,22 @@ teachers.available = await executeLink(
 );
 
 watch(selected_session, (new_session) => {
-  const tmp_learning_session = learning_sessions.find(a => a.id == new_session);
+  const tmp_learning_session = learning_sessions.find(
+    (a) => a.id == new_session
+  );
 
   course_proposition.specific_information.session_id = new_session;
-  groups = Array.from({length: tmp_learning_session != undefined ? tmp_learning_session.num_groups : 0}, (_, i) => {
-    return {
-      id: i + 1
+  groups = Array.from(
+    {
+      length:
+        tmp_learning_session != undefined ? tmp_learning_session.num_groups : 0,
+    },
+    (_, i) => {
+      return {
+        id: i + 1,
+      };
     }
-  });
+  );
   trigger.value++;
 });
 watch(selected_learning_context, (new_learning_context) => {
@@ -1568,7 +1595,10 @@ watch(selected_model, () => {
   }
   trigger.value++;
 });
-selected_model.value = $route.query[action.value] != undefined ? parseInt($route.query[action.value] as string) : undefined;
+selected_model.value =
+  $route.query[action.value] != undefined
+    ? parseInt($route.query[action.value] as string)
+    : undefined;
 </script>
 
 <style></style>

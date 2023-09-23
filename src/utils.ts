@@ -1,5 +1,5 @@
 import { Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters, ContentType, CustomElement, ElementType, SubElementsColors } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters, ContentType, CustomElement, ElementType, SubElementsColors, IconAlternatives, Classes, SubElements, ColorObject } from "./types";
 import { $axios } from "./plugins/axios";
 import { store } from "./store"
 
@@ -171,12 +171,13 @@ function getAviableLanguages(): Language[] {
     return store.state.languages;
 }
 
-function getCustomMessage(id: string, content: ContentType, type: ElementType = "string", colors?: SubElementsColors): CustomElement {
+function getCustomMessage(id: string, content: ContentType, type: ElementType = "string", colors?: SubElementsColors, classes?: Classes<SubElements>): CustomElement {
     return {
         id: id,
         type: type,
         content: content,
-        colors: colors
+        colors: colors,
+        classes: classes
     }
 }
 
@@ -195,4 +196,52 @@ function getCssVariable(variable: string) {
     );
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable }
+function getStudyAddressVisualization(study_address_id: string) {
+    let visualization: {
+        icon: IconAlternatives,
+        background: ColorObject
+    } | undefined;
+
+    switch (study_address_id) {
+        case "ATS":
+            visualization = {
+                icon: getIcon("medal"),
+                background: {
+                    name: "ats",
+                    type: "var"
+                }
+            };
+            break;
+        case "BIO":
+            visualization = {
+                icon: getIcon("flask"),
+                background: {
+                    name: "bio",
+                    type: "var"
+                }
+            };
+            break;
+        case "ODO":
+            visualization = {
+                icon: getIcon("medkit"),
+                background: {
+                    name: "odo",
+                    type: "var"
+                }
+            };
+            break;
+        case "TUR4":
+            visualization = {
+                icon: getIcon("earth"),
+                background: {
+                    name: "tur4",
+                    type: "var"
+                }
+            };
+            break;
+    }
+
+    return visualization;
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization }
