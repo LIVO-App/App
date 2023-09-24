@@ -57,7 +57,7 @@ defineProps({
     required: true,
   },
   colors: Object as PropType<Colors<GeneralCardSubElements>>,
-    classes: Object as PropType<Classes<CardsCommonElements>>,
+  classes: Object as PropType<Classes<CardsCommonElements>>,
 });
 defineEmits(["execute_link", "signal_event"]);
 </script>

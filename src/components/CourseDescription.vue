@@ -89,6 +89,86 @@
             }
           }"
         />
+        <b><ionic-element
+          :element="
+            getCustomMessage('teachings', getCurrentElement('teachings') + ':')
+          "
+        /></b>
+        <list-card
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement('no_teachings')
+            )
+          "
+          :cards_list="teachings_cards"
+          :columns="2"
+          :colors="{
+            background: {
+              name: 'white',
+              type: 'var',
+            },
+            dividers: {
+              name: 'white',
+              type: 'var',
+            },
+          }"
+          :classes="{
+            card: {
+              no_card_border: true,
+              'ion-no-margin': true,
+            },
+            content: {
+              'ion-no-padding': true,
+            },
+            item: {
+              'ion-no-padding': true,
+            },
+            row: {
+              'ion-wrap': true,
+            }
+          }"
+        />
+        <b><ionic-element
+          :element="
+            getCustomMessage('growth_areas', getCurrentElement('growth_areas') + ':')
+          "
+        /></b>
+        <list-card
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement('no_growth_areas')
+            )
+          "
+          :cards_list="growth_cards"
+          :columns="2"
+          :colors="{
+            background: {
+              name: 'white',
+              type: 'var',
+            },
+            dividers: {
+              name: 'white',
+              type: 'var',
+            },
+          }"
+          :classes="{
+            card: {
+              no_card_border: true,
+              'ion-no-margin': true,
+            },
+            content: {
+              'ion-no-padding': true,
+            },
+            item: {
+              'ion-no-padding': true,
+            },
+            row: {
+              'ion-wrap': true,
+            },
+          }"
+        />
       </template>
       <template v-else>
         <ionic-element :element="elements.course_information_not_found" />
@@ -178,7 +258,9 @@ course.images.push(
     caption: "Default person",
   }
 );
-const access_cards = course.getCustomAccessList();
+const access_cards = course.getAccessCardsList();
+const growth_cards = course.getGrowthCardsList();
+const teachings_cards = course.getTeachingCardsList();
 
 let courseCard: GeneralCardElements;
 

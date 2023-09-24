@@ -571,7 +571,6 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
     private learning_contexts: {
         [key: string]: LearningContext
     };
-    ready: boolean;
 
     constructor(courseObj: CourseProps) {
         super(courseObj);
@@ -605,7 +604,6 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
         this.access_object = {};
         this.images = [];
         this.learning_contexts = {};
-        this.ready = false;
     }
 
     private async loadParams() {
@@ -636,7 +634,6 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
                 }
             },
             () => []);
-        this.ready = true;
     }
 
     static async newCourse(courseObj: CourseProps) {
@@ -646,7 +643,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
         return course;
     }
 
-    getCustomAccessList() {
+    getAccessCardsList() {
         const language = getCurrentLanguage();
         const access_list: OrderedCardsList<GeneralCardElements> = {
             order: [],
@@ -730,11 +727,80 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             }
         }
 
-        /**
-        main_study_year: boolean
-         */
-
         return access_list;
+    }
+
+    getGrowthCardsList(): OrderedCardsList<GeneralCardElements> {
+        let tmp_card: GeneralCardElements;
+
+        return {
+            order: [],
+            cards: {
+                "": this.growth_list.map(a => {
+                    tmp_card = a.toCard(true);
+                    (tmp_card.content as CustomElement[])[0].colors = {
+                        text: {
+                            name: "white",
+                            type: "var"
+                        },
+                        background: {
+                            name: "odo",
+                            type: "var"
+                        },
+                    };
+                    (tmp_card.content as CustomElement[])[0].classes = {
+                        label: {
+                            "ion-padding": true,
+                            radius: true,
+                            "ion-text-wrap": true,
+                        }
+                    };
+                    tmp_card.classes = {
+                        content: {
+                            "ion-no-padding": true
+                        }
+                    };
+
+                    return tmp_card;
+                })
+            }
+        };
+    }
+
+    getTeachingCardsList(): OrderedCardsList<GeneralCardElements> {
+        let tmp_card: GeneralCardElements;
+        return {
+            order: [],
+            cards: {
+                "": this.teaching_list.map(a => {
+                    tmp_card = a.toCard(true);
+                    (tmp_card.content as CustomElement[])[0].colors = {
+                        text: {
+                            name: "white",
+                            type: "var"
+                        },
+                        background: {
+                            name: "bio",
+                            type: "var"
+                        }
+                    };
+                    (tmp_card.content as CustomElement[])[0].classes = {
+                        label: {
+                            "ion-padding": true,
+                            radius: true,
+                            "ion-text-wrap": true,
+                        }
+                    };
+                    tmp_card.classes = {
+                        content: {
+                            "ion-no-padding": true
+                        }
+                    };
+
+                    return tmp_card;
+                })
+            }
+        };
     }
 
     toCard(user?: User) {
