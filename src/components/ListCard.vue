@@ -24,48 +24,113 @@
       /></ion-card-subtitle>
     </ion-card-header>
     <ion-card-content style="overflow-y: auto" :class="classes?.content">
-      <ion-list v-if="columns == 1" class="ion-no-padding" :class="classes?.list">
-        <template v-if="Object.keys(actual_cards_list.cards).length === 0">
-          <ion-item
-            :color="
-              colors?.background?.type == 'var'
-                ? colors?.background.name
-                : undefined
-            "
-            :class="{
-              background:
-                colors?.background != undefined &&
-                colors?.background?.type != 'var',
-            }"
-            class="ion-no-padding"
-          >
-            <ionic-element :element="actual_emptiness_message" />
-          </ion-item>
+      <template
+        v-if="
+          Object.keys(actual_cards_list.cards).length === 0 ||
+          actual_cards_list.cards['']?.length === 0
+        "
+      >
+        <ion-item
+          :color="
+            colors?.background?.type == 'var'
+              ? colors?.background.name
+              : undefined
+          "
+          :class="{
+            background:
+              colors?.background != undefined &&
+              colors?.background?.type != 'var',
+          }"
+          class="ion-no-padding"
+        >
+          <ionic-element :element="actual_emptiness_message" />
+        </ion-item>
+      </template>
+      <ion-list
+        v-if="onlyLists()"
+        class="ion-no-padding"
+        :class="classes?.list"
+      >
+        <template v-if="actual_cards_list.cards[''] != undefined">
+          <card-item
+            v-for="card in actual_cards_list.cards['']"
+            :key="card.id"
+            :card="card"
+            :colors="colors"
+            :classes="classes"
+            @execute_link="$emit('execute_link')"
+            @signal_event="$emit('signal_event')"
+          />
         </template>
-        <template v-else-if="actual_cards_list.cards[''] != undefined">
-          <ion-item
-            v-if="actual_cards_list.cards[''].length === 0"
-            :color="
-              colors?.background?.type == 'var'
-                ? colors?.background.name
-                : undefined
-            "
-            :class="{
-              background:
-                colors?.background != undefined &&
-                colors?.background?.type != 'var',
-            }"
-            class="ion-no-padding"
+        <template v-else>
+          <ion-item-group
+            v-for="ordered_cards in actual_cards_list.order"
+            :key="'group-' + ordered_cards.key"
           >
-            <ionic-element :element="actual_emptiness_message" />
-          </ion-item>
-          <template v-else>
-            <template
-              v-for="card in actual_cards_list.cards['']"
-              :key="card.id"
+            <group-list
+              :emptiness_message="actual_emptiness_message"
+              :divider="ordered_cards.title"
+              :cards_list="actual_cards_list.cards[ordered_cards.key]"
+              :colors="colors"
+              :classes="classes"
+              @execute_link="$emit('execute_link')"
+              @signal_event="$emit('signal_event')"
+            />
+          </ion-item-group>
+        </template>
+      </ion-list>
+      <template v-else>
+        <cards-grid
+          v-if="actual_cards_list.cards[''] != undefined"
+          :cards_list="actual_cards_list.cards['']"
+          :columns="typeof columns == 'number' ? columns : columns['']"
+          :colors="colors"
+          :classes="classes"
+          @execute_link="$emit('execute_link')"
+          @signal_event="$emit('signal_event')"
+        />
+        <template v-else>
+          <template
+            v-for="ordered_cards in actual_cards_list.order"
+            :key="'group-' + ordered_cards.key"
+          >
+            <ion-list
+              v-if="
+                (typeof columns == 'number'
+                  ? columns
+                  : columns[ordered_cards.key]) == 1
+              "
             >
+              <ion-item-group>
+                <group-list
+                  :emptiness_message="actual_emptiness_message"
+                  :divider="ordered_cards.title"
+                  :cards_list="actual_cards_list.cards[ordered_cards.key]"
+                  :colors="colors"
+                  :classes="classes"
+                  @execute_link="$emit('execute_link')"
+                  @signal_event="$emit('signal_event')"
+                />
+              </ion-item-group>
+            </ion-list>
+            <template v-else>
+              <ion-item-divider
+                :color="
+                  (colors?.dividers?.type == 'var'
+                    ? colors?.dividers.name
+                    : undefined) ?? 'light'
+                "
+                :class="{
+                  ...classes?.divider,
+                  background:
+                    colors?.dividers != undefined &&
+                    colors.dividers.type != 'var',
+                }"
+              >
+                <ionic-element :element="ordered_cards.title" />
+              </ion-item-divider>
               <ion-item
-                :lines="colors?.list_borders != undefined ? 'inset' : 'none'"
+                v-if="actual_cards_list.cards[ordered_cards.key].length === 0"
                 :color="
                   colors?.background?.type == 'var'
                     ? colors?.background.name
@@ -74,132 +139,30 @@
                 :class="{
                   background:
                     colors?.background != undefined &&
-                    colors?.background.type != 'var',
+                    colors?.background?.type != 'var',
                 }"
                 class="ion-no-padding"
               >
-                <course-card
-                  v-if="isCourse(card)"
-                  @execute_link="$emit('execute_link')"
-                  @signal_event="$emit('signal_event')"
-                  :content="card.content"
-                  :credits="card.credits"
-                  :enrollment="card.enrollment"
-                  :url="card.url"
-                  :method="card.method"
-                  :colors="card.colors"
-                />
-                <general-card
-                  v-else-if="isGeneral(card)"
-                  @execute_link="$emit('execute_link')"
-                  @signal_event="$emit('signal_event')"
-                  :id="card.id"
-                  :title="card.title != undefined ? card.title : undefined"
-                  :subtitle="
-                    card.subtitle != undefined ? card.subtitle : undefined
-                  "
-                  :content="card.content"
-                  :side_element="card.side_element"
-                  :selected="card.selected"
-                  :link="card.link"
-                  :colors="setSpecificColors(card.colors)"
-                  :classes="card.classes"
-                />
+                <ionic-element :element="actual_emptiness_message" />
               </ion-item>
+              <template v-else>
+                <cards-grid
+                  :cards_list="actual_cards_list.cards[ordered_cards.key]"
+                  :columns="
+                    typeof columns == 'number'
+                      ? columns
+                      : columns[ordered_cards.key]
+                  "
+                  :colors="colors"
+                  :classes="classes"
+                  @execute_link="$emit('execute_link')"
+                  @signal_event="$emit('signal_event')"
+                />
+              </template>
             </template>
           </template>
         </template>
-        <template v-else>
-          <ion-item-group
-            v-for="ordered_cards in actual_cards_list.order"
-            :key="'group-' + ordered_cards.key"
-          >
-            <ion-item-divider
-              :color="
-                (colors?.dividers?.type == 'var'
-                  ? colors?.dividers.name
-                  : undefined) ?? 'light'
-              "
-              :class="{
-                ...classes?.divider,
-                background:
-                  colors?.dividers != undefined &&
-                  colors.dividers.type != 'var',
-              }"
-            >
-              <ionic-element :element="ordered_cards.title" />
-            </ion-item-divider>
-            <ion-item
-              v-if="actual_cards_list.cards[ordered_cards.key].length === 0"
-              :color="
-                colors?.background?.type == 'var'
-                  ? colors?.background.name
-                  : undefined
-              "
-              :class="{
-                background:
-                  colors?.background != undefined &&
-                  colors?.background?.type != 'var',
-              }"
-              class="ion-no-padding"
-            >
-              <ionic-element :element="actual_emptiness_message" />
-            </ion-item>
-            <template v-else>
-              <template
-                v-for="card in actual_cards_list.cards[ordered_cards.key]"
-                :key="card.id"
-              >
-                <ion-item
-                  :lines="colors?.list_borders != undefined ? 'inset' : 'none'"
-                  :color="
-                    colors?.background?.type == 'var'
-                      ? colors?.background?.name
-                      : undefined
-                  "
-                  :class="{
-                    background:
-                      colors?.background != undefined &&
-                      colors?.background.type != 'var',
-                  }"
-                  class="ion-no-padding"
-                >
-                  <course-card
-                    v-if="isCourse(card)"
-                    @execute_link="$emit('execute_link')"
-                    @signal_event="$emit('signal_event')"
-                    :content="card.content"
-                    :credits="card.credits"
-                    :enrollment="card.enrollment"
-                    :url="card.url"
-                    :colors="card.colors"
-                    :method="card.method"
-                  />
-                  <general-card
-                    v-else-if="isGeneral(card)"
-                    @execute_link="$emit('execute_link')"
-                    @signal_event="$emit('signal_event')"
-                    :id="card.id"
-                    :title="card.title != undefined ? card.title : undefined"
-                    :subtitle="
-                      card.subtitle != undefined ? card.subtitle : undefined
-                    "
-                    :content="card.content"
-                    :side_element="card.side_element"
-                    :selected="card.selected"
-                    :link="card.link"
-                    :colors="card.colors"
-                    :classes="card.classes"
-                  />
-                </ion-item>
-              </template>
-            </template>
-          </ion-item-group>
-        </template>
-      </ion-list>
-      <!--<ion-grid v-else>
-
-      </ion-grid>-->
+      </template>
     </ion-card-content>
   </ion-card>
 </template>
@@ -229,6 +192,8 @@ import {
   GeneralSubElements,
   Colors,
   GeneralCardSubElements,
+  TmpList,
+  CardsGridElements,
 } from "../types";
 import { isGeneral, isCourse, nullOperator } from "../utils";
 
@@ -245,12 +210,35 @@ const adjustColor = (
       }
     : undefined;
 };
-const setSpecificColors = (specific_colors: Colors<GeneralSubElements> | undefined) => {
+const setSpecificColors = (
+  specific_colors: Colors<GeneralSubElements> | undefined
+) => {
   const colors: Colors<GeneralSubElements> = general_card_colors ?? {};
 
   Object.assign(colors, specific_colors);
 
   return colors;
+};
+const onlyLists = () => {
+  const groups = Object.keys(props.columns);
+
+  let is_list;
+  let count = 0;
+
+  if (
+    !(is_list =
+      props.columns === 1 ||
+      (actual_cards_list.value.cards[""] != undefined &&
+        typeof props.columns != "number" &&
+        props.columns[""] == 1))
+  ) {
+    while (
+      (is_list = (props.columns as TmpList<number>)[groups[count]] == 1) &&
+      ++count < groups.length
+    );
+  }
+
+  return is_list;
 };
 
 const props = defineProps({
@@ -264,14 +252,15 @@ const props = defineProps({
     type: Object as PropType<OrderedCardsList>,
     required: true,
   },
-  colors: Object as PropType<Colors<GeneralCardSubElements>>,
-  classes: Object as PropType<Classes<CardsListElements>>,
   columns: {
-    type: Number,
-    default: 1
-  }
+    type: [Number, Object] as PropType<number | TmpList<number>>,
+    default() {
+      return 1;
+    },
+  },
+  colors: Object as PropType<Colors<GeneralCardSubElements>>,
+  classes: Object as PropType<Classes<CardsListElements | CardsGridElements>>,
 });
-
 defineEmits(["execute_link", "signal_event"]);
 
 const actual_emptiness_message: ComputedRef<CustomElement> = computed(() =>

@@ -62,6 +62,7 @@
             )
           "
           :cards_list="access_cards"
+          :columns="3"
           :colors="{
             background: {
               name: 'white',
@@ -80,6 +81,12 @@
             content: {
               'ion-no-padding': true,
             },
+            item: {
+              'ion-no-padding': true,
+            },
+            row: {
+              'ion-wrap': true,
+            }
           }"
         />
       </template>
