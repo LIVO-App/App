@@ -27,8 +27,10 @@
           <course-description
             :title="description_title"
             :course_id="description_course_id"
+            :learning_session_id="description_learning_session_id"
+            :section="description_section"
             @close="closeModal('course_details')"
-          ></course-description>
+          />
         </template>
         <template #fallback>
           <loading-component />
@@ -152,6 +154,8 @@ const SetupModalAndOpen = () => {
     case "course_details":
       description_title = store.state.event.data.title;
       description_course_id = store.state.event.data.course_id;
+      description_learning_session_id = store.state.event.data.learning_session_id;
+      description_section = store.state.event.data.section;
       description_open.value = true;
       break;
   }
@@ -282,6 +286,8 @@ let grades_title: string;
 let grades_parameters: GradesParameters;
 let description_title: string;
 let description_course_id: number;
+let description_learning_session_id: number;
+let description_section: string;
 let learning_contexts: LearningContext[] = [];
 let learning_areas: LearningArea[] = [];
 let courses_list: CurriculumCourse[] = [];

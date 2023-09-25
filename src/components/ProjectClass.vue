@@ -37,8 +37,10 @@
           <course-description
             :title="description_title"
             :course_id="description_course_id"
+            :learning_session_id="session_id"
+            :section="selected_section"
             @close="closeModal('course_details')"
-          ></course-description>
+          />
         </template>
         <template #fallback>
           <loading-component />
@@ -182,7 +184,7 @@ const updateStudents = async () => {
       session_id +
       "/components?section=" +
       selected_section.value +
-      (user.user == "teacher" ? "&teacher_id=" + user.id : ""), //Da sistemare: creare link per pagina per gestire assoc_class e togliere teacher_id
+      (user.user == "teacher" ? "&teacher_id=" + user.id : ""), // Da sistemare: creare link per pagina per gestire assoc_class e togliere teacher_id
     (response) => response.data.data.map((a: any) => new Student(a)),
     () => []
   );

@@ -125,27 +125,37 @@ const changeSelection = async () => {
             learning_sessions.cards[selected_session_indexes.year][
               selected_session_indexes.index
             ].id,
-      (response: any) => {
-        return response.data.data.map(
-          (a: MinimumCourseProps | AdminProjectClassProps) =>
-            $route.name == "announcements"
-              ? new MinimizedCourse(a as MinimumCourseProps).toCard(
-                  // Da sistemare: finire
-                  "/announcements/" +
-                    (a as MinimumCourseProps).id +
-                    "/" +
-                    learning_sessions.cards[selected_session_indexes.year][
-                      selected_session_indexes.index
-                    ].id
-                )
-              : new AdminProjectClass(a as AdminProjectClassProps).toCard(
-                  "project_courses/" +
-                    (a as AdminProjectClassProps).course_id +
-                    "/" +
-                    (a as AdminProjectClassProps).learning_session
-                )
-        )
-      }
+      async (response: any) =>
+        Promise.all(response.data.data.map(
+          async (a: MinimumCourseProps | AdminProjectClassProps) => {
+            let tmp_project_class: AdminProjectClass;
+            let tmp_card: GeneralCardElements;
+            if ($route.name == "announcements") {
+              tmp_card = new MinimizedCourse(a as MinimumCourseProps).toCard(
+                // Da sistemare: finire
+                "/announcements/" +
+                  (a as MinimumCourseProps).id +
+                  "/" +
+                  learning_sessions.cards[selected_session_indexes.year][
+                    selected_session_indexes.index
+                  ].id
+              );
+            } else {
+              tmp_project_class = new AdminProjectClass(
+                a as AdminProjectClassProps
+              );
+              await tmp_project_class.loadParms();
+              tmp_card = tmp_project_class.toCard(
+                "project_courses/" +
+                  (a as AdminProjectClassProps).course_id +
+                  "/" +
+                  (a as AdminProjectClassProps).learning_session
+              );
+            }
+
+            return tmp_card;
+          }
+        ))
     );
   }
 };

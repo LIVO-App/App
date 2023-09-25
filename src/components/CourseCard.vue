@@ -83,10 +83,4 @@ actual_content.value[2].classes.label = {
 </script>
 
 <style>
-.radius {
-  border-radius: 10px;
-}
-.half_radius {
-  border-radius: 5px;
-}
 </style>

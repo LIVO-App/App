@@ -25,7 +25,7 @@ type Menu = {
 };
 
 type BaseElement = {
-    [key: string]: string //Da sistemare: mettere [key in keyof string as Language]
+    [key: string]: string // Da sistemare: mettere [key in keyof string as Language]
 }
 
 type ElementsList = {
@@ -51,7 +51,7 @@ type AnnualCredits = {
 
 type OrdinaryClassProps = {
     annual_credits_ref: ResponseItem<AnnualCredits>,
-    english_displayed_name: string, //Da sistemare: sistemare visualizzazione nome classe
+    english_displayed_name: string, // Da sistemare: sistemare visualizzazione nome classe
     italian_displayed_name: string,
     school_year: number,
     study_address_ref: ResponseItem<{
@@ -105,7 +105,7 @@ class OrdinaryClassSummary implements OrdinaryClassSummaryProps {
 
 /*class OrdinaryClass {
     annual_credits?: AnnualCredits
-    english_displayed_name?: string //Da sistemare: sistemare visualizzazione nome classe
+    english_displayed_name?: string // Da sistemare: sistemare visualizzazione nome classe
     italian_displayed_name?: string
     school_year: number
     address: string
@@ -421,6 +421,7 @@ class CourseSummary extends CourseBase {
                     data: {
                         title: this[`${language}_title`],
                         course_id: this.id,
+                        section: this.section,
                     },
                     text: this[`${language}_title`] + (this.section != null ? " - " + getCurrentElement("section") + ": " + this.section : "")
                 },
@@ -475,7 +476,7 @@ class CurriculumCourse extends CourseBase {
         this.intermediate_grades = this.intermediate_grades.concat(grades);
     }*/
 
-    toCard(path?: string, method?: Method): GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
+    toCard(path?: string, method?: Method): GeneralCardElements { // Da sistemare: per visualizzazione tabella a telefono
         const language = getCurrentLanguage();
         return {
             id: "" + this.id,
@@ -504,6 +505,8 @@ class CurriculumCourse extends CourseBase {
                     data: {
                         title: this[`${language}_title`],
                         course_id: this.id,
+                        learning_session_id: session_id,
+                        section: this.section,
                     },
                     text: this[`${language}_title`]
                 }
@@ -520,7 +523,7 @@ class CurriculumCourse extends CourseBase {
                 type: "string",
                 content: (this.learning_area_ref.data as { id: string }).id
             }, {
-                id: this.id + "_gardes", //Da sistemare: mettere il controllo con future_course al passaggio a curriculum_v2
+                id: this.id + "_gardes", // Da sistemare: mettere il controllo con future_course al passaggio a curriculum_v2
                 type: "icon",
                 linkType: "event",
                 content: {
@@ -906,7 +909,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
         this.id = sessionObj.id;
         this.number = sessionObj.number;
         this.school_year = sessionObj.school_year;
-        this.start = sessionObj.start;
+        this.start = sessionObj.start; // Da sistemare: mettere date
         this.end = sessionObj.end;
         this.num_groups = sessionObj.num_groups;
     }
@@ -989,7 +992,7 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
                                 + course[`${language}_title`]
                                 + ((status == LearningSessionStatus.CURRENT || status == LearningSessionStatus.UPCOMING) && course.section != null
                                     ? " - " + getCurrentElement("section") + " " + course.section : "")
-                                + "</li>"; //Da sistemare: vedere se sezione è fissa o meno
+                                + "</li>"; // Da sistemare: vedere se sezione è fissa o meno
                         }
                     }
                     session_list += "</ul>";
@@ -1200,7 +1203,7 @@ class Grade implements GradeProps {
         this.id = hashCode(this.publication.toISOString());
     }
 
-    toCard(): GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
+    toCard(): GeneralCardElements { // Da sistemare: per visualizzazione tabella a telefono
         const language = getCurrentLanguage();
         return {
             id: "" + this.id,
@@ -1268,7 +1271,7 @@ class CourseSectionsTeachings {
         }).id]);
     }
 
-    toCard(group: string, learning_session: string): GeneralCardElements { //Da sistemare: per visualizzazione tabella a telefono
+    toCard(group: string, learning_session: string): GeneralCardElements { // Da sistemare: per visualizzazione tabella a telefono
         const language = getCurrentLanguage();
         return {
             id: "" + this.id,
@@ -1383,7 +1386,7 @@ class Student extends StudentSummary {
     }
 
     toTableRow(course_id: string, session_id: string, teacher_id?: number, grades?: boolean, final_grade?: Grade): CustomElement[] {
-        const row_to_return: CustomElement[] = [{ //Da sistemare: rendere cliccabile
+        const row_to_return: CustomElement[] = [{ // Da sistemare: rendere cliccabile
             id: this.id + "_name_surname",
             type: "string",
             content: this.name + " " + this.surname
@@ -1403,7 +1406,7 @@ class Student extends StudentSummary {
         }
         if (grades) {
             tmp_row.push({
-                id: this.id + "_gardes", //Da sistemare: Mettere il controllo con future_course al passaggio a curriculum_v2
+                id: this.id + "_gardes", // Da sistemare: Mettere il controllo con future_course al passaggio a curriculum_v2
                 type: "icon",
                 linkType: "event",
                 content: {
@@ -2285,11 +2288,11 @@ class Teacher extends TeacherSummary {
 }
 
 class TeacherProposition {
-    teacher: Teacher;
+    teacher: TeacherSummary;
     main: boolean;
     sections: string[];
 
-    constructor(teacher: Teacher, main: boolean, sections: boolean[] | string[]) {
+    constructor(teacher: TeacherSummary, main: boolean, sections: boolean[] | string[]) {
         this.teacher = teacher;
         this.main = main;
         this.sections = [];
@@ -2329,7 +2332,7 @@ class TeacherProposition {
                             teacher_id: this.teacher.id,
                         },
                         icon: getIcon("information_circle"),
-                        text: this.teacher.name + " " + this.teacher.surname + (this.main ? " [" + getCurrentElement("main_teacher") + "]" : "")
+                        text: this.teacher.name + " " + this.teacher.surname/* + (this.main ? " [" + getCurrentElement("main_teacher") + "]" : "")*/
                     },
                 },
                 {
@@ -2360,7 +2363,7 @@ type OpenToConstraint = {
         [key in keyof string as `${Language}_title`]: string
     }
 
-type AdminProjectClassProps = {
+type AdminProjectClassProps = { // Da sistemare: cambiare nome, dato che possono accederci tutti
     course_id: number,
     learning_session: number,
     group: number,
@@ -2381,7 +2384,7 @@ type AdminProjectClassProps = {
 
 class AdminProjectClass {
     course_id: number;
-    learning_session: number;
+    learning_session: LearningSession; // Da sistemare: controllare dove ho messo id, invece che cose da visualizzare
     group: number;
     italian_title: string;
     english_title: string;
@@ -2395,11 +2398,18 @@ class AdminProjectClass {
 
     constructor(props: AdminProjectClassProps) {
         this.course_id = props.course_id;
-        this.learning_session = props.learning_session;
+        this.learning_session = new LearningSession({
+            id: props.learning_session,
+            number: -1,
+            school_year: -1,
+            start: "",
+            end: "",
+            num_groups: 0
+        });
         this.group = props.group;
         this.italian_title = props.italian_title;
         this.english_title = props.english_title;
-        this.teacher_id = (props.teacher_ref.data as { id: number }).id;
+        this.teacher_id = (props.teacher_ref.data as { id: number }).id; // Da sistemare: raccogliere in tipo TeacherSummary
         this.teacher_name = props.teacher_name;
         this.teacher_surname = props.teacher_surname;
         this.admin_id = (props.admin_ref.data as { id: number }).id;
@@ -2408,34 +2418,77 @@ class AdminProjectClass {
         this.to_be_modified = props.to_be_modified ?? undefined;
     }
 
-    toCard(path?: string): GeneralCardElements { // Da sistemare: vedere se usare Higlight...
+    async loadParms() {
+        await executeLink("/v1/learning_sessions/" + this.learning_session.id,
+            response => {
+                this.learning_session = new LearningSession(response.data.data)
+            });
+    }
+
+    toCard(path?: string, user?: User, section?: string, separated_elements = false): GeneralCardElements { // Da sistemare: vedere se usare Higlight...
         const language = getCurrentLanguage();
-        return {
+        const tmp_card: GeneralCardElements = {
             id: "" + this.course_id + "_" + this.learning_session + "_" + this.group,
             group: "",
             title: getCustomMessage("title", this[`${language}_title`], "title"), // Da sistemare: mettere titolo
-            content: [
-                {
-                    id: "learning_session",
-                    type: "string",
-                    content: getCurrentElement("session") + " - " + getCurrentElement("group") + ": " + this.learning_session + " - " + this.group,
-                },
-                {
-                    id: "teacher",
-                    type: "string",
-                    content: getCurrentElement("proposer_teacher") + ": " + this.teacher_name + " " + this.teacher_surname,
-                },
-                {
-                    id: "admin",
-                    type: "string",
-                    content: getCurrentElement("certifying_admin") + ": " + this.admin_name + " " + this.admin_surname,
-                }
-            ],
+            content: [],
             link: path != undefined ? {
                 url: path,
                 method: "get"
             } : undefined
+        };
+
+        if (separated_elements) {
+            tmp_card.content?.push({
+                id: "learning_session",
+                type: "html",
+                content: "<b>" + getCurrentElement("session") + "</b>: " + this.learning_session.number + " - " + this.learning_session.school_year + "/" + (this.learning_session.school_year % store.state.year_module + 1),
+            }, {
+                id: "group",
+                type: "html",
+                content: "<b>" + getCurrentElement("group") + "</b>: " + this.group,
+            });
+            if (section != undefined) {
+                tmp_card.content?.push({
+                    id: "section",
+                    type: "html",
+                    content: "<b>" + getCurrentElement("section") + "</b>: " + section,
+                });
+            }
+        } else {
+            tmp_card.content?.push({
+                id: "session_group" + (section != undefined ? "_section" : ""),
+                type: "html",
+                content:
+                    "<b>" + getCurrentElement("session")
+                    + " - " + getCurrentElement("group")
+                    + (section != undefined ? " - " + getCurrentElement("section") : "")
+                    + "</b>: (" + this.learning_session.number + " - " + this.learning_session.school_year + "/" + (this.learning_session.school_year % store.state.year_module + 1) // Da sistemare: modificare tutti gli anni scolastici per la visualizzazione
+                    + ") - " + this.group
+                    + (section != undefined ? " - " + section : ""),
+            });
         }
+        if (this[`${language}_title`] != undefined) {
+            tmp_card.content?.push({
+                id: "title",
+                type: "html",
+                content: "<b>" + getCurrentElement("title") + "</b>: " + this[`${language}_title`], // Da sistemare: mettere <p> o simili
+            });
+        }
+        if (user == undefined || user.user != "student") {
+            tmp_card.content?.push({
+                id: "teacher",
+                type: "html",
+                content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.teacher_name + " " + this.teacher_surname,
+            },
+                {
+                    id: "admin",
+                    type: "html",
+                    content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.admin_name + " " + this.admin_surname,
+                });
+        }
+
+        return tmp_card;
     }
 }
 
@@ -2463,4 +2516,4 @@ type ImageDescriptor = {
     caption: string
 }
 
-export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, StringIcon, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, OrderedCardsGrid, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, GeneralCardSubElements, SubElements, CardSubElements, CardsCommonElements, CardsListElements, CardsGridElements, Colors, Classes, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }
+export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, StringIcon, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, OrderedCardsGrid, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, GeneralCardSubElements, SubElements, CardSubElements, CardsCommonElements, CardsListElements, CardsGridElements, Colors, Classes, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, TeacherSummary, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription }

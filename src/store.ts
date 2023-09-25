@@ -436,7 +436,7 @@ export const store = createStore({
                     conduct: "Svolgimento",
                     teaching_list: "Insegnamenti",
                     access_object: "Accesso",
-                    teacher_list: "Insegnanti",
+                    teachers: "Insegnanti",
                     italian: "Italiano",
                     english: "Inglese",
                     propose: "Proponi",
@@ -496,7 +496,8 @@ export const store = createStore({
                     min: "Min",
                     max: "Max",
                     course_for_noone: "Corso aperto a nessuna classe",
-                    open_to: "Aperto a"
+                    open_to: "Aperto a",
+                    no_teachers: "Nessun insegnante",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -607,7 +608,7 @@ export const store = createStore({
                     conduct: "Conduct",
                     teaching_list: "Teachings",
                     access_object: "Access",
-                    teacher_list: "Teachers",
+                    teachers: "Teachers",
                     italian: "Italian",
                     english: "English",
                     propose: "Propose",
@@ -667,6 +668,7 @@ export const store = createStore({
                     max: "Max",
                     course_for_noone: "Course open to no class",
                     open_to: "Open to",
+                    no_teachers: "Nessun insegnante",
                 }
             },
             logged_user: false,
@@ -677,12 +679,13 @@ export const store = createStore({
                 min: 1,
                 max: 11
             },
-            excluded_learning_contexts_id: ["ECA"], //Da sistemare: mettere referenza a contesto di apprendimento
+            excluded_learning_contexts_id: ["ECA"], // Da sistemare: mettere referenza a contesto di apprendimento
             main_learning_context: {
                 id: "SPE",
                 credits: null
-            }, //Da sistemare: mettere referenza a contesto di apprendimento
-            courses_per_group: 1
+            }, // Da sistemare: mettere referenza a contesto di apprendimento
+            courses_per_group: 1,
+            year_module: 100,
         }
     }
 });

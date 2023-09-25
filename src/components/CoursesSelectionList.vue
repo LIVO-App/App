@@ -16,6 +16,8 @@
           <course-description
             :title="description_title"
             :course_id="description_course_id"
+            :learning_session_id="learning_session_id"
+            :section="description_section"
             @close="closeModal('course_details')"
           />
         </template>
@@ -151,7 +153,7 @@ const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
 };
 
 const changeEnrollment = async () => {
-  const requestArray = store.state.request.url.split("?");
+  const requestArray = store.state.request.url.split("?"); // Da sistemare: usare parametri router
   const pathArray = requestArray[0].split("/");
   const queryArray = requestArray[1].split("&");
   const learning_session_id = queryArray[0].split("=")[1];
@@ -264,6 +266,7 @@ const closeModal = (window: AvailableModal) => {
 const openModal = () => {
   description_title = store.state.event.data.title;
   description_course_id = store.state.event.data.course_id;
+  description_section = store.state.event.data.section;
   description_open.value = true;
 };
 const getContextAxronym = (option: LearningContext) =>
@@ -345,6 +348,7 @@ const learning_session =
 let learning_areas: LearningArea[] = [];
 let description_title: string;
 let description_course_id: number;
+let description_section: string;
 let selected_context: Ref<string>;
 let learning_contexts: LearningContext[] = [];
 let tmp_courses: CourseSummaryProps[];
