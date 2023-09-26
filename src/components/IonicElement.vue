@@ -94,42 +94,8 @@
     </ion-item>
   </template>
   <template v-else>
-    <ion-button
-      v-if="element.type == 'icon'"
-      :disabled="disabled"
-      fill="clear"
-      @click="
-        () => {
-          if (element.linkType == 'request') {
-            store.state.request = {
-              url: castRequestIcon(element.content).url,
-              method: castRequestIcon(element.content).method,
-            };
-            $emit('execute_link');
-          } else if (element.linkType == 'event') {
-            store.state.event = {
-              name: castEventIcon(props.element.content).event,
-              data: castEventIcon(props.element.content).data,
-            };
-            $emit('signal_event');
-          }
-        }
-      "
-      :class="actual_classes.button"
-    >
-      <ion-icon
-        :ios="castRequestIcon(element.content).icon.ios"
-        :md="castRequestIcon(element.content).icon.md"
-        :color="
-          element.colors?.text != undefined
-            ? element.colors.text.name
-            : undefined
-        "
-        :class="actual_classes.icon"
-      />
-    </ion-button>
     <ion-label
-      v-else-if="element.type == 'string'"
+      v-if="element.type == 'string'"
       :color="
         element.colors?.text != undefined ? element.colors.text.name : undefined
       "
@@ -154,6 +120,94 @@
     >
       {{ castEventString(element.content).text }}
     </ion-label>
+    <ion-button
+      v-else-if="
+        element.type == 'icon' ||
+        (element.type == 'string_icon' &&
+          castEventStringIcon(element.content).whole_link)
+      "
+      :disabled="disabled"
+      fill="clear"
+      @click="
+        () => {
+          if (element.linkType == 'request') {
+            store.state.request = {
+              url: (element.type == 'icon'
+                ? castRequestIcon(element.content)
+                : castRequestStringIcon(element.content)
+              ).url,
+              method: (element.type == 'icon'
+                ? castRequestIcon(element.content)
+                : castRequestStringIcon(element.content)
+              ).method,
+            };
+            $emit('execute_link');
+          } else if (element.linkType == 'event') {
+            store.state.event = {
+              name: (element.type == 'icon'
+                ? castEventIcon(element.content)
+                : castEventStringIcon(element.content)
+              ).event,
+              data: (element.type == 'icon'
+                ? castEventIcon(element.content)
+                : castEventStringIcon(element.content)
+              ).data,
+            };
+            $emit('signal_event');
+          }
+        }
+      "
+      :class="actual_classes.button"
+    >
+      <ion-label
+        v-if="
+          element.type == 'string_icon' &&
+          (castStringIcon(element.content).order == undefined ||
+            !castStringIcon(element.content).order)
+        "
+        :color="
+          element.colors?.text != undefined
+            ? element.colors.text.name
+            : undefined
+        "
+        :class="actual_classes.label"
+        class="ion-padding-end"
+      >
+        {{ castStringIcon(element.content).text }}
+      </ion-label>
+      <ion-icon
+        :ios="
+          (element.type == 'icon'
+            ? castEventIcon(element.content)
+            : castEventStringIcon(element.content)
+          ).icon.ios
+        "
+        :md="
+          (element.type == 'icon'
+            ? castEventIcon(element.content)
+            : castEventStringIcon(element.content)
+          ).icon.md
+        "
+        :color="
+          element.colors?.text != undefined
+            ? element.colors.text.name
+            : undefined
+        "
+        :class="actual_classes.icon"
+      />
+      <ion-label
+        v-if="element.type == 'string_icon' && castStringIcon(element.content).order"
+        :color="
+          element.colors?.text != undefined
+            ? element.colors.text.name
+            : undefined
+        "
+        :class="actual_classes.label"
+        class="ion-padding-start"
+      >
+        {{ castStringIcon(element.content).text }}
+      </ion-label>
+    </ion-button>
     <ion-item
       v-else-if="element.type == 'string_icon'"
       :lines="element.colors?.borders != undefined ? 'inset' : 'none'"
@@ -184,7 +238,6 @@
           {{ castStringIcon(element.content).text }}
         </ion-label>
         <ion-button
-          v-if="element.type == 'string_icon'"
           :disabled="disabled"
           fill="clear"
           @click="
@@ -220,7 +273,6 @@
       </template>
       <template v-else>
         <ion-button
-          v-if="element.type == 'string_icon'"
           :disabled="disabled"
           fill="clear"
           @click="

@@ -11,7 +11,7 @@
     <ion-content :fullscreen="true">
       <inner-header :title="getCurrentElement('auth')" />
 
-      <auth-panel @login="login" />
+      <auth-panel @login="login" @execute_link="googleAuth()" />
     </ion-content>
   </ion-page>
 </template>
@@ -104,6 +104,10 @@ const checkParameters = (
       }
       break;
   }
+};
+const googleAuth = () => {
+  console.log("Ciao",store.state.request.url);
+  $router.push(store.state.request.url);
 };
 
 const store = useStore();

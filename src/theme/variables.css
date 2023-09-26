@@ -478,6 +478,7 @@ ion-modal ion-header ion-toolbar {
 
 .radius {
   border-radius: 10px;
+  --border-radius: 10px;
 }
 
 .bottom_radius {
@@ -492,4 +493,5 @@ ion-modal ion-header ion-toolbar {
 
 .half_radius {
   border-radius: 5px;
+  --border-radius: 5px;
 }

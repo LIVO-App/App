@@ -127,6 +127,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'constraints_management',
     component: () => import('../views/NotImplemented.vue')
   },
+  {
+    path: '/auth/google',
+    name: 'google_auth',
+    component: () => import('../components/LoadingComponent.vue')
+  }
 ]
 
 const router = createRouter({
@@ -143,8 +148,13 @@ router.beforeEach((to) => {
   let selected_item: string;
 
   if (to.name != undefined) {
-    if (user == undefined && to.name !== 'auth') {
-      return { name: 'auth' };
+    if (user == undefined) {
+      if (to.name == 'google_auth') {
+        console.log("Ciaone");
+        location.href = store.state.server_url + "/v1/auth/google";
+      } else if (to.name !== 'auth') {
+        return { name: 'auth' };
+      }
     } else if (user != undefined) {
       if ((to.name !== 'auth' && to.name !== 'logout' &&
         ((selected_item = sessionStorage.getItem("selected_item") ?? menu.order[user.user][menu.index]) == undefined // No menu item selected

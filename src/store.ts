@@ -52,7 +52,8 @@ import {
     medkitOutline,
     medkitSharp,
     medalOutline,
-    medalSharp
+    medalSharp,
+    logoGoogle
 } from 'ionicons/icons';
 import { UserProps } from "./types";
 
@@ -321,6 +322,10 @@ export const store = createStore({
                 medal: {
                     ios: medalOutline,
                     md: medalSharp
+                },
+                google: {
+                    ios: logoGoogle,
+                    md: logoGoogle
                 }
             },
             languages: ["italian", "english"],
@@ -498,6 +503,9 @@ export const store = createStore({
                     course_for_noone: "Corso aperto a nessuna classe",
                     open_to: "Aperto a",
                     no_teachers: "Nessun insegnante",
+                    or: "Oppure",
+                    login_with_account: "Accedi con il tuo account",
+                    google: "Google",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -669,6 +677,9 @@ export const store = createStore({
                     course_for_noone: "Course open to no class",
                     open_to: "Open to",
                     no_teachers: "Nessun insegnante",
+                    or: "Or",
+                    login_with_account: "Login with your account",
+                    google: "Google",
                 }
             },
             logged_user: false,
@@ -686,6 +697,7 @@ export const store = createStore({
             }, // Da sistemare: mettere referenza a contesto di apprendimento
             courses_per_group: 1,
             year_module: 100,
+            server_url: "http://localhost:5000/api",
         }
     }
 });

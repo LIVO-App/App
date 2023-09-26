@@ -29,7 +29,10 @@ const $axios = axios.create({
     baseURL: options.baseUrl,
     headers: {
         //Authorization: options.token ? `Bearer ${options.token}` : '',
-        "x-access-token": options.token ?? undefined
+        "x-access-token": options.token ?? undefined,
+        common: {
+            "Access-Control-Allow-Origin": "http://localhost:8100"
+        }
     }
 });
 

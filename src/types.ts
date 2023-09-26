@@ -440,7 +440,7 @@ class CourseSummary extends CourseBase {
                 content: tmp_enrollment.getEnrollmentIcon(path, method),
                 colors: tmp_enrollment.getChangeButtonColors(),
                 params: {
-                    border_radius: "10px"
+                    border_radius: "10px" // Da sistemare: capire cos'è params
                 }
             });
         }
@@ -1103,9 +1103,13 @@ type EventString = EventParameters & {
     text: string
 }
 
-type RequestStringIcon = RequestParameters & StringIcon;
+type RequestStringIcon = {
+    whole_link?: boolean,
+} & RequestParameters & StringIcon;
 
-type EventStringIcon = EventParameters & StringIcon;
+type EventStringIcon = {
+    whole_link?: boolean,
+} & EventParameters & StringIcon;
 
 type CardsList<T = CardElements> = {
     [key: string | number]: T[]

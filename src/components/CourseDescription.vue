@@ -374,9 +374,10 @@ if (props.learning_session_id != undefined) {
   project_class_card = await executeLink(
     "/v1/project_classes/" + course.id + "/" + props.learning_session_id,
     async (response) => {
-      let actual_section: string | undefined;
-      let tmp_project_class = new AdminProjectClass(response.data.data);
+      const tmp_project_class = new AdminProjectClass(response.data.data);
       await tmp_project_class.loadParms();
+
+      let actual_section: string | undefined;
 
       if (user.user == "student") {
         actual_section =

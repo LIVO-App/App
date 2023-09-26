@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router';
 import { $axios } from './plugins/axios'
 import { store } from "./store";
+import GSignInButton from 'vue-google-signin-button';
 
 import { IonicVue } from '@ionic/vue';
 
@@ -60,6 +61,7 @@ const app = createApp(App)
   .use(store)
   .use(IonicVue)
   .use(router)
+  .use(GSignInButton)
   /*.use(axios, {
       baseUrl: 'https://cataas.com/',
   })*/
