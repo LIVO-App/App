@@ -1001,7 +1001,6 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
         }
         session_list += (put_courses_list ? "" : "</ul>");
 
-
         return session_list;
     }
 
@@ -1900,7 +1899,7 @@ class ModelProposition {
             growth_list: [],
             session_id: -1,
             class_group: -1,
-            num_section: 0,
+            num_section: 1,
             min_students: 0,
             max_students: 0,
             teaching_list: [],
@@ -2326,7 +2325,7 @@ class TeacherProposition {
                 },
             },
             content: [
-                {
+                /*{
                     id: "name",
                     type: "string_icon",
                     linkType: "event",
@@ -2336,7 +2335,19 @@ class TeacherProposition {
                             teacher_id: this.teacher.id,
                         },
                         icon: getIcon("information_circle"),
-                        text: this.teacher.name + " " + this.teacher.surname/* + (this.main ? " [" + getCurrentElement("main_teacher") + "]" : "")*/
+                        text: this.teacher.name + " " + this.teacher.surname// + (this.main ? " [" + getCurrentElement("main_teacher") + "]" : "")
+                    },
+                },*/ // Da sistemare: creare info teacher
+                {
+                    id: "name",
+                    type: "string",
+                    linkType: "event",
+                    content: {
+                        event: "teacher_info",
+                        data: {
+                            teacher_id: this.teacher.id,
+                        },
+                        text: this.teacher.name + " " + this.teacher.surname// + (this.main ? " [" + getCurrentElement("main_teacher") + "]" : "")
                     },
                 },
                 {

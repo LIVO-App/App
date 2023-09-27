@@ -287,4 +287,8 @@ async function setUser(user: User, default_link: DefaultLink) {
     store.state.menuIndex = default_link.index;
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence, getUserFromToken, getDefautlLink, setUser }
+function getBaseUrl() {
+    return $axios.defaults.baseURL;
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence, getUserFromToken, getDefautlLink, setUser, getBaseUrl }

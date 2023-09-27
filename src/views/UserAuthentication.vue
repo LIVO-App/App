@@ -25,7 +25,7 @@ import {
 } from "@/utils";
 import { IonPage, IonContent, IonAlert } from "@ionic/vue";
 import { useStore } from "vuex";
-import { LoginInformation, Menu, User } from "@/types";
+import { LoginInformation, User } from "@/types";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 

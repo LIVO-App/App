@@ -35,9 +35,7 @@
 
 <script setup lang="ts">
 import {
-  Classes,
   CustomElement,
-  SubElements,
   Colors,
   GeneralSubElements,
 } from "@/types";

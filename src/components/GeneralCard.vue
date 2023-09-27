@@ -81,6 +81,7 @@
             <ionic-element
               v-for="element in content"
               :key="element.id"
+              :element="element"
               @execute_link="$emit('execute_link')"
               @signal_event="$emit('signal_event')"
             />

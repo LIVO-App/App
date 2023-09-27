@@ -97,7 +97,9 @@
     <ion-label
       v-if="element.type == 'string'"
       :color="
-        element.colors?.text != undefined ? element.colors.text.name : undefined
+        element.colors?.text != undefined
+          ? element.colors?.text.name
+          : undefined
       "
       @click="
         () => {
@@ -196,7 +198,9 @@
         :class="actual_classes.icon"
       />
       <ion-label
-        v-if="element.type == 'string_icon' && castStringIcon(element.content).order"
+        v-if="
+          element.type == 'string_icon' && castStringIcon(element.content).order
+        "
         :color="
           element.colors?.text != undefined
             ? element.colors.text.name
@@ -218,104 +222,67 @@
       "
       :class="actual_classes.item"
     >
-      <template
+      <ion-label
         v-if="
           castStringIcon(element).order == undefined ||
           !castStringIcon(element).order
         "
+        :color="
+          element.colors?.text != undefined
+            ? element.colors.text.name
+            : undefined
+        "
+        :class="{
+          'ion-padding-end': true,
+          ...actual_classes.label,
+        }"
       >
-        <ion-label
+        {{ castStringIcon(element.content).text }}
+      </ion-label>
+      <ion-button
+        :disabled="disabled"
+        fill="clear"
+        @click="
+          () => {
+            if (element.linkType == 'request') {
+              store.state.request = {
+                url: castRequestStringIcon(element.content).url,
+                method: castRequestStringIcon(element.content).method,
+              };
+              $emit('execute_link');
+            } else if (element.linkType == 'event') {
+              store.state.event = {
+                name: castEventStringIcon(props.element.content).event,
+                data: castEventStringIcon(props.element.content).data,
+              };
+              $emit('signal_event');
+            }
+          }
+        "
+        :class="actual_classes.button"
+      >
+        <ion-icon
+          :ios="castStringIcon(element.content).icon.ios"
+          :md="castStringIcon(element.content).icon.md"
           :color="
             element.colors?.text != undefined
               ? element.colors.text.name
               : undefined
           "
-          :class="{
-            'ion-padding-end': true,
-            ...actual_classes.label,
-          }"
-        >
-          {{ castStringIcon(element.content).text }}
-        </ion-label>
-        <ion-button
-          :disabled="disabled"
-          fill="clear"
-          @click="
-            () => {
-              if (element.linkType == 'request') {
-                store.state.request = {
-                  url: castRequestStringIcon(element.content).url,
-                  method: castRequestStringIcon(element.content).method,
-                };
-                $emit('execute_link');
-              } else if (element.linkType == 'event') {
-                store.state.event = {
-                  name: castEventStringIcon(props.element.content).event,
-                  data: castEventStringIcon(props.element.content).data,
-                };
-                $emit('signal_event');
-              }
-            }
-          "
-          :class="actual_classes.button"
-        >
-          <ion-icon
-            :ios="castStringIcon(element.content).icon.ios"
-            :md="castStringIcon(element.content).icon.md"
-            :color="
-              element.colors?.text != undefined
-                ? element.colors.text.name
-                : undefined
-            "
-            :class="actual_classes.icon"
-          />
-        </ion-button>
-      </template>
-      <template v-else>
-        <ion-button
-          :disabled="disabled"
-          fill="clear"
-          @click="
-            () => {
-              if (element.linkType == 'request') {
-                store.state.request = {
-                  url: castRequestStringIcon(element.content).url,
-                  method: castRequestStringIcon(element.content).method,
-                };
-                $emit('execute_link');
-              } else if (element.linkType == 'event') {
-                store.state.event = {
-                  name: castEventStringIcon(props.element.content).event,
-                  data: castEventStringIcon(props.element.content).data,
-                };
-                $emit('signal_event');
-              }
-            }
-          "
-          :class="actual_classes.button"
-        >
-          <ion-icon
-            :ios="castStringIcon(element.content).icon.ios"
-            :md="castStringIcon(element.content).icon.md"
-            :color="
-              element.colors?.text != undefined
-                ? element.colors.text.name
-                : undefined
-            "
-            :class="actual_classes.icon"
-          />
-        </ion-button>
-        <ion-label
-          :color="
-            element.colors?.text != undefined
-              ? element.colors.text.name
-              : undefined
-          "
-          :class="actual_classes.label"
-        >
-          {{ castStringIcon(element.content).text }}
-        </ion-label>
-      </template>
+          :class="actual_classes.icon"
+        />
+      </ion-button>
+      <ion-label
+        v-if="castStringIcon(element).order"
+        :color="
+          element.colors?.text != undefined
+            ? element.colors.text.name
+            : undefined
+        "
+        :class="actual_classes.label"
+      >
+        {{ castStringIcon(element.content).text }}
+      </ion-label>
     </ion-item>
   </template>
 </template>

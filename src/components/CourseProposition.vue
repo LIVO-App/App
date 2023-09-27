@@ -487,11 +487,11 @@
                         :placeholder="getCurrentElement('teacher_choice')"
                         :getCompleteName="teacherToString"
                       />
-                      <ionic-element
+                      <!--<ionic-element
                         v-if="selected_teacher != 0"
                         :element="buttons[2]"
                         @signal_event="setupModalAndOpen('teacher_info')"
-                      />
+                      />--> <!-- Da sistemare: decommentare quando ci saranno le info dell'insegnante -->
                     </div>
                     <!--
                       <ion-checkbox
@@ -605,7 +605,7 @@ import {
   LearningSession,
   PropositionTitles,
   PropositionCharacteristics1,
-  PropositionCharacteristics2,
+  //PropositionCharacteristics2,
   OrderedCardsList,
   GeneralCardElements,
   TeachingProps,

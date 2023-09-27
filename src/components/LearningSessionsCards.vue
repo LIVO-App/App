@@ -283,6 +283,9 @@ if (current_class != undefined) {
   await Promise.all(promises); /*.then(() => {
       learning_sessions.loaded = true;
     });*/
+  if (learning_sessions.completed.cards[current_school_year] == undefined) {
+    learning_sessions.completed.cards[current_school_year] = [];
+  }
 } else {
   console.error("Connection failed");
 }

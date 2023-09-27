@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import { store } from "../store";
 import { Menu, User } from '@/types';
-import { getDefautlLink, getUserFromToken, setUser } from '@/utils';
+import { getBaseUrl, getDefautlLink, getUserFromToken, setUser } from '@/utils';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -150,7 +150,6 @@ router.beforeEach((to) => {
   const user = User.getLoggedUser();
   const menu: Menu = store.state.menu;
   const menu_items = Object.keys(menu.items);
-  const session = window.sessionStorage;
 
   let selected_item: string, tmp_user: User;
   let default_link = {
@@ -161,7 +160,7 @@ router.beforeEach((to) => {
   if (to.name != undefined) {
     if (user == undefined) {
       if (to.name == 'google_auth') {
-        location.href = store.state.server_url + "/v1/auth/google";
+        location.href = getBaseUrl() + "/v1/auth/google";
       } else if (to.name == 'google_redirect') {
         tmp_user = getUserFromToken(to.query.token as string);
         default_link = getDefautlLink(tmp_user.user);
@@ -191,13 +190,12 @@ router.beforeEach((to) => {
 })
 
 const logout = async () => {
-  const session = window.sessionStorage;
   const menu: Menu = store.state.menu;
 
   for (const key of User.getProperties()) {
-    session.removeItem(key);
+    sessionStorage.removeItem(key);
   }
-  session.removeItem("selected_item");
+  sessionStorage.removeItem("selected_item");
   menu.index = -1;
 
   await store.dispatch("signalLogin"); // Dummy change to trigger reactive behaviour

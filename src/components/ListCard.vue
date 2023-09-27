@@ -47,7 +47,7 @@
         </ion-item>
       </template>
       <ion-list
-        v-if="onlyLists()"
+        v-else-if="onlyLists()"
         class="ion-no-padding"
         :class="classes?.list"
       >

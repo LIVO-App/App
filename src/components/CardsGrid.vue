@@ -16,26 +16,6 @@
         />
       </ion-col>
     </ion-row>
-    <!--<ion-row
-      v-for="row in getNumberSequence(
-        cards_list.length / columns
-      )"
-      :key="row"
-    >
-      <ion-col
-        v-for="col in getNumberSequence(columns)"
-        :key="col"
-        :size="'' + Math.trunc(12 / columns)"
-      >
-        <card-item
-          v-if="cards_list[row * columns + col] != undefined"
-          :card="cards_list[row * columns + col]"
-          :colors="colors"
-          @execute_link="$emit('execute_link')"
-          @signal_event="$emit('signal_event')"
-        />
-      </ion-col>
-    </ion-row>-->
   </ion-grid>
 </template>
 
@@ -47,7 +27,6 @@ import {
   Colors,
   GeneralCardSubElements,
 } from "@/types";
-import { getNumberSequence } from "@/utils";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { PropType } from "vue";
 
