@@ -697,7 +697,7 @@ export const store = createStore({
             }, // Da sistemare: mettere referenza a contesto di apprendimento
             courses_per_group: 1,
             year_module: 100,
-            server_url: "http://localhost:5000/api",
+            server_url: "http://localhost:5000/api", // Da sistemare: vedere se si riesce a mettere su .env
         }
     }
 });

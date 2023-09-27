@@ -17,50 +17,44 @@
 </template>
 
 <script setup lang="ts">
-import { executeLink, getCurrentElement } from "@/utils";
 import {
-  IonPage,
-  IonContent,
-  IonAlert,
-} from "@ionic/vue";
+  executeLink,
+  getCurrentElement,
+  getDefautlLink,
+  setUser,
+} from "@/utils";
+import { IonPage, IonContent, IonAlert } from "@ionic/vue";
 import { useStore } from "vuex";
 import { LoginInformation, Menu, User } from "@/types";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const login = async (payload: LoginInformation) => {
-  const session = window.sessionStorage;
-
   const login_parameters = {};
-  const menu: Menu = store.state.menu;
 
-  let redirect = "/";
-  let tmp_index = 0;
+  let default_link = {
+    name: "/",
+    index: 0,
+  };
 
   try {
     checkParameters(payload, login_parameters);
     if (!alert_open.value) {
-      redirect = menu.default_item[payload.type];
-      
-      tmp_index = menu.order[payload.type].findIndex(
-        (a) => a == redirect
-      );
+      default_link = getDefautlLink(payload.type);
       await executeLink(
         "/v1/auth/" + payload.type + "_login",
         async (response) => {
-          const tmp_user = new User({
-            id: response.data.id,
-            token: response.data.token,
-            username: payload.parameters.username,
-            user: payload.type,
-          });
+          await setUser(
+            new User({
+              id: response.data.id,
+              token: response.data.token,
+              username: payload.parameters.username,
+              user: payload.type,
+            }),
+            default_link
+          );
 
-          for (const key of User.getProperties()) { // Da sistemare: non è il massimo metterlo in 2 posti
-            session.setItem(key, tmp_user[key]); // Necessario per la persistenza
-          }
-          await store.dispatch("login", tmp_user); // Necessario per la reattività (in caso puntare su questo, ma persistente)
-          store.state.menuIndex = tmp_index;
-          $router.push({ name: redirect });
+          $router.push({ name: default_link.name });
         },
         () => {
           alert_information.message = getCurrentElement(
@@ -106,7 +100,6 @@ const checkParameters = (
   }
 };
 const googleAuth = () => {
-  console.log("Ciao",store.state.request.url);
   $router.push(store.state.request.url);
 };
 

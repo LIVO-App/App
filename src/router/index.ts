@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import { store } from "../store";
 import { Menu, User } from '@/types';
+import { getDefautlLink, getUserFromToken, setUser } from '@/utils';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -131,7 +132,12 @@ const routes: Array<RouteRecordRaw> = [
     path: '/auth/google',
     name: 'google_auth',
     component: () => import('../components/LoadingComponent.vue')
-  }
+  },
+  {
+    path: '/google-redirect',
+    name: 'google_redirect',
+    component: () => import('../components/LoadingComponent.vue')
+  },
 ]
 
 const router = createRouter({
@@ -144,14 +150,24 @@ router.beforeEach((to) => {
   const user = User.getLoggedUser();
   const menu: Menu = store.state.menu;
   const menu_items = Object.keys(menu.items);
+  const session = window.sessionStorage;
 
-  let selected_item: string;
+  let selected_item: string, tmp_user: User;
+  let default_link = {
+    name: "/",
+    index: 0,
+  };
 
   if (to.name != undefined) {
     if (user == undefined) {
       if (to.name == 'google_auth') {
-        console.log("Ciaone");
         location.href = store.state.server_url + "/v1/auth/google";
+      } else if (to.name == 'google_redirect') {
+        tmp_user = getUserFromToken(to.query.token as string);
+        default_link = getDefautlLink(tmp_user.user);
+        /*await*/ setUser(tmp_user,default_link);
+
+        return { name: default_link.name };
       } else if (to.name !== 'auth') {
         return { name: 'auth' };
       }

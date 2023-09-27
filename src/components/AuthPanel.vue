@@ -122,7 +122,6 @@
           <ion-row>
             <ion-col></ion-col>
             <ion-col size="3">
-              <!--<g-signin-button :params="googleSignInParams" @signin-success="handleSignInSuccess" @signin-failure="handleSignInFailure"></g-signin-button>-->
               <ionic-element
                 :element="alternatives_login[0]"
                 @execute_link="$emit('execute_link')"
@@ -137,9 +136,8 @@
 </template>
 
 <script setup lang="ts">
-import { store } from "@/store";
-import { CustomElement, GeneralCardElements, TmpList, UserType } from "@/types";
-import { executeLink, getCurrentElement, getCustomMessage, getIcon } from "@/utils";
+import { CustomElement, TmpList, UserType } from "@/types";
+import { getCurrentElement, getCustomMessage, getIcon } from "@/utils";
 import {
   IonCard,
   //IonCardHeader,
@@ -171,16 +169,6 @@ const takeParameters = () => {
     params[key] = "";
   }
 };
-const handleSignInSuccess = (googleUser: any) => {
-  console.log("handleSignInSuccess");
-  console.log(googleUser);
-  console.log(googleUser.getBasicProfile());
-  console.log(googleUser.getAuthResponse());
-  executeLink("/auth/google",response => console.log(response),err => console.log(err));
-};
-const handleSignInFailure = () => {
-  console.log("handleSignInFailure");
-}
 
 defineEmits(["login", "execute_link"]);
 
@@ -228,9 +216,6 @@ const alternatives_login: CustomElement[] = [
   },
 ];
 const or = getCustomMessage("or", getCurrentElement("or"), "title");
-const googleSignInParams = {
-  client_id: '127723279075-he742l7e8jj75vir1839a8qone3totqu.apps.googleusercontent.com'
-};
 or.colors = {
   background: {
     name: "white",

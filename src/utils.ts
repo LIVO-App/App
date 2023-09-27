@@ -1,5 +1,5 @@
 import { Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters, ContentType, CustomElement, ElementType, Colors, IconAlternatives, Classes, SubElements, ColorObject, GeneralSubElements } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters, ContentType, CustomElement, ElementType, Colors, IconAlternatives, Classes, SubElements, ColorObject, GeneralSubElements, User, Menu, UserType, DefaultLink } from "./types";
 import { $axios } from "./plugins/axios";
 import { store } from "./store"
 
@@ -250,9 +250,41 @@ function getNumberSequence(length: number, start = 0) {
             length: length,
         },
         (_, i) => {
-            return i+start
+            return i + start
         }
     );
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence }
+function getUserFromToken(token: string) {
+    const token_obj = JSON.parse(atob(token.split(".")[1]));
+
+    return new User({
+        id: token_obj._id,
+        token: token,
+        username: token_obj.username,
+        user: token_obj.role,
+    });
+}
+
+function getDefautlLink(user_role: UserType) {
+    const menu: Menu = store.state.menu;
+    const name = menu.default_item[user_role];
+    const index = menu.order[user_role].findIndex(
+        (a) => a == name
+    );
+
+    return {
+        name: name,
+        index: index != -1 ? index : 0,
+    }
+}
+
+async function setUser(user: User, default_link: DefaultLink) {
+    for (const key of User.getProperties()) { // Da sistemare: non è il massimo metterlo in 2 posti
+        sessionStorage.setItem(key, user[key]); // Necessario per la persistenza
+    }
+    await store.dispatch("login", user); // Necessario per la reattività (in caso puntare su questo, ma persistente)
+    store.state.menuIndex = default_link.index;
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence, getUserFromToken, getDefautlLink, setUser }
