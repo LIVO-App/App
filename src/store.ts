@@ -506,6 +506,11 @@ export const store = createStore({
                     or: "Oppure",
                     login_with_account: "Accedi con il tuo account",
                     google: "Google",
+                    course_confirmation: "Confermi di iscriverti al corso?",
+                    course_pending: "Purtroppo il corso è già pieno. Vuoi segnalare che ti sarebbe piaciuto partecipare?",
+                    course_warning: "Attenzione: non sarà possibile disiscriversi",
+                    no: "No",
+                    yes: "Yes",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -680,6 +685,11 @@ export const store = createStore({
                     or: "Or",
                     login_with_account: "Login with your account",
                     google: "Google",
+                    course_confirmation: "Do you confirm your subscription to the course?",
+                    course_pending: "Unfortunately the course is already full. Do you want to report that you would have liked to participate?",
+                    course_waring: "Warning: this choice cannot be undo",
+                    no: "No",
+                    yes: "Yes",
                 }
             },
             logged_user: false,
@@ -697,6 +707,7 @@ export const store = createStore({
             }, // Da sistemare: mettere referenza a contesto di apprendimento
             courses_per_group: 1,
             year_module: 100,
+            static_subscription: true,
         }
     }
 });

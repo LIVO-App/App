@@ -432,7 +432,7 @@ class CourseSummary extends CourseBase {
                 colors: tmp_enrollment.getStatusColors()
             }]
         }
-        if (path != undefined) {
+        if ((!store.state.static_subscription || tmp_enrollment.enrollment === false) && path != undefined) {
             card.content.push({
                 id: this.id + "_change_enrollment",
                 type: "icon",

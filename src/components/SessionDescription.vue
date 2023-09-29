@@ -29,7 +29,7 @@
           v-for="element in head_content.content"
           :key="element.id"
           :element="element"
-        ></ionic-element>
+        />
       </div>
     </ion-row>
   </ion-grid>
