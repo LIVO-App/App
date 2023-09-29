@@ -5,19 +5,26 @@
         <ion-content>
           <ion-list id="menu-list">
             <ion-list-header class="ion-padding-bottom">
+              <router-link
+                v-if="user != undefined"
+                :to="{ name: getDefautlLink(user.user).name }"
+              >
+                <ion-img
+                  :src="image"
+                  alt="LIVO Campus Logo"
+                  style="height: 90px"
+                />
+              </router-link>
               <ion-img
+                v-else
                 :src="image"
                 alt="LIVO Campus Logo"
                 style="height: 90px"
               />
             </ion-list-header>
 
-            <ion-menu-toggle :auto-hide="false">
-              <template
-                v-if="
-                  (user = store.state.user ?? User.getLoggedUser()) != undefined
-                "
-              >
+            <ion-menu-toggle :auto-hide="false" :key="trigger">
+              <template v-if="user != undefined">
                 <ion-item
                   v-for="(p, i) in getMenu(castToUser(user))"
                   :key="i"
@@ -64,12 +71,12 @@ import {
   IonRouterOutlet,
   IonSplitPane,
 } from "@ionic/vue";
-import { computed, watch } from "vue";
+import { computed, ComputedRef, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
 import { Menu, MenuItem, User } from "./types";
-import { getCurrentElement, getIcon } from "./utils";
+import { getCurrentElement, getDefautlLink, getIcon } from "./utils";
 
 const image = computed(() => require("./assets/Logo_LIVO_Path.png"));
 const castToUser = (user: User | undefined) => user as User;
@@ -95,41 +102,64 @@ const changeTitle = () => {
   const items_titles = Object.keys(menu.items);
   const selected_item = sessionStorage.getItem("selected_item");
 
+  let urls: string[] | undefined;
   let tmp_index = -1;
   let count = 0;
 
-  if (user != undefined) {
-    if (selected_item != null) {
-      tmp_index = menu.order[user.user].findIndex((a) => a == selected_item);
-    } else if (
-      $route.name !== undefined &&
-      $route.name != "auth" &&
-      $route.name != "logout"
-    ) {
-      while (
-        (tmp_index = menu.items[items_titles[count]].url_names[
-          user.user
-        ]?.findIndex((a) => a == $route.name)) == -1 &&
-        ++count < items_titles.length
+  if ($route.name !== undefined && user.value != undefined) {
+    console.log("Ciao", selected_item, $route.name);
+
+    if (selected_item != null && selected_item == $route.name) {
+      tmp_index = menu.order[user.value.user].findIndex(
+        (a) => a == selected_item
       );
+      console.log(user.value.user, menu.order[user.value.user], tmp_index);
+    } else if ($route.name != "auth" && $route.name != "logout") {
+      while (tmp_index == -1 && count < items_titles.length) {
+        console.log(
+          count,
+          items_titles[count],
+          menu.items[items_titles[count]].url_names
+        );
+        urls = menu.items[items_titles[count]].url_names[user.value.user];
+        if (urls != undefined) {
+          tmp_index = urls.findIndex((a) => a == $route.name);
+          console.log("Ciaone", urls, tmp_index);
+        }
+        count++;
+      }
+      if (tmp_index != -1) {
+        tmp_index = menu.order[user.value.user].findIndex(
+          (a) => a == items_titles[count - 1]
+        );
+        console.log("Ciao", menu.order[user.value.user], tmp_index);
+      }
     }
     menu.index =
       tmp_index != -1
         ? tmp_index
-        : menu.order[user.user].findIndex(
-            (a) => a == menu.default_item[user.user]
+        : menu.order[user.value.user].findIndex(
+            (a) => a == menu.default_item[(user.value as User).user]
           );
-    sessionStorage.setItem("selected_item", menu.order[user.user][tmp_index]);
+    sessionStorage.setItem(
+      "selected_item",
+      menu.order[user.value.user][tmp_index]
+    );
+    trigger.value++;
   }
 };
 
 const store = useStore();
 const $route = useRoute();
 const menu: Menu = store.state.menu;
-const user = User.getLoggedUser();
+
+const trigger = ref(0);
+const user: ComputedRef<User | undefined> = computed(
+  () => store.state.user ?? User.getLoggedUser()
+);
 
 changeTitle();
-watch(menu, changeTitle);
+watch($route, changeTitle);
 </script>
 
 <style scoped>
