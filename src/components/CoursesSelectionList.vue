@@ -225,7 +225,7 @@ const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
       course.content[2].content = course.enrollment.toString();
       course.content[2].colors = course.enrollment.getStatusColors();
       if (store.state.static_subscription && value !== false) {
-        course.content.splice(3,1);
+        course.content.splice(3, 1);
       } else if (!store.state.static_subscription) {
         course.content[3].content = course.enrollment.getEnrollmentIcon(
           pathArray.join("/") +
@@ -602,6 +602,9 @@ const buttons: CustomElement[] = [
   },
 ];
 const timer_bar = ref(1);
+const tmp_learning_areas: {
+  [area_id: string]: LearningArea
+} = {};
 
 let learning_areas: LearningArea[] = [];
 let selected_context: Ref<string>;
@@ -640,12 +643,20 @@ if (learning_session != undefined) {
   );
   selected_context = ref(learning_contexts[0].id);
 
-  learning_areas = await executeLink(
-    "/v1/learning_areas?all_data=true&credits=true&session_id=" +
-      learning_session_id,
-    (response) => response.data.data,
-    () => []
-  );
+  for (const context of learning_contexts) {
+    await executeLink(
+      "/v1/learning_areas?all_data=true&credits=true&session_id=" +
+        learning_session_id +
+        "&context_id=" +
+        context.id,
+      (response) =>
+        response.data.data.forEach((a: LearningArea) =>
+          tmp_learning_areas[a.id] = a
+        ),
+      () => []
+    );
+  }
+  learning_areas = Object.values(tmp_learning_areas);
   selected_area.value = learning_areas.length > 0 ? learning_areas[0].id : "";
 
   if (learning_contexts.length > 0 && learning_areas.length > 0) {
