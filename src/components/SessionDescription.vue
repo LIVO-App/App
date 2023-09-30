@@ -8,7 +8,7 @@
           class="ion-padding-end"
           :ios="getIcon('arrow_back').ios"
           :md="getIcon('arrow_back').md"
-        ></ion-icon>
+        />
         <!-- Da sistemare: freccetta -->
       </ion-col>
       <template v-if="head_content != undefined">
