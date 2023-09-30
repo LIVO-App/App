@@ -162,11 +162,15 @@ router.beforeEach((to) => {
       if (to.name == 'google_auth') {
         location.href = getBaseUrl() + "/v1/auth/google";
       } else if (to.name == 'google_redirect') {
-        tmp_user = getUserFromToken(to.query.token as string);
-        default_link = getDefautlLink(tmp_user.user);
-        /*await*/ setUser(tmp_user,default_link);
+        if (to.query.token != undefined) {
+          tmp_user = getUserFromToken(to.query.token as string);
+          default_link = getDefautlLink(tmp_user.user);
+          /*await*/ setUser(tmp_user,default_link);
 
-        return { name: default_link.name };
+          return { name: default_link.name };
+        } else {
+          return { name: 'auth' };
+        }
       } else if (to.name !== 'auth') {
         return { name: 'auth' };
       }
