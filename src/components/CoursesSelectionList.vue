@@ -182,6 +182,7 @@ import {
   getCurrentElement,
   getCurrentLanguage,
   getCustomMessage,
+  getLearningContexts,
   getNumberSequence,
   toSummary,
 } from "@/utils";
@@ -619,28 +620,7 @@ let tmp_card;
 let timer: number;
 
 if (learning_session != undefined) {
-  learning_contexts = await executeLink(
-    "/v1/learning_contexts?student_id=" +
-      user.id +
-      "&session_id=" +
-      learning_session_id,
-    (response) => {
-      const tmp_contexts: LearningContext[] = [];
-
-      for (const learning_context of response.data.data) {
-        if (
-          store.state.excluded_learning_contexts_id.findIndex(
-            (a: number) => a != learning_context.id
-          ) != -1
-        ) {
-          tmp_contexts.push(learning_context);
-        }
-      }
-
-      return tmp_contexts;
-    },
-    () => []
-  );
+  learning_contexts = await getLearningContexts(user,learning_session_id);
   selected_context = ref(learning_contexts[0].id);
 
   for (const context of learning_contexts) {

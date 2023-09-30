@@ -1,7 +1,8 @@
 <template>
   <ion-grid>
     <ion-row>
-      <ion-col size="auto">
+      <!-- Da sistemare: freccetta -->
+      <!--<ion-col size="auto">
         <ion-icon
           @click="$router.go(-1)"
           aria-hidden="true"
@@ -9,8 +10,7 @@
           :ios="getIcon('arrow_back').ios"
           :md="getIcon('arrow_back').md"
         />
-        <!-- Da sistemare: freccetta -->
-      </ion-col>
+      </ion-col>-->
       <template v-if="head_content != undefined">
         <ion-col size="auto">
           <ionic-element :element="head_content.title" />
