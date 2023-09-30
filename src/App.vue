@@ -106,15 +106,24 @@ const changeTitle = () => {
   let tmp_index = -1;
   let count = 0;
 
-  if ($route.name !== undefined && user.value != undefined) {
+  if (
+    $route.name !== undefined &&
+    user.value != undefined &&
+    $route.name != "auth" &&
+    $route.name != "logout"
+  ) {
     console.log("Ciao", selected_item, $route.name);
 
-    if (selected_item != null && selected_item == $route.name) {
+    if (
+      selected_item != null &&
+      (tmp_index = menu.items[selected_item].url_names[
+        user.value.user
+      ].findIndex((a) => a == ($route.name as string))) != -1
+    ) {
       tmp_index = menu.order[user.value.user].findIndex(
         (a) => a == selected_item
       );
-      console.log(user.value.user, menu.order[user.value.user], tmp_index);
-    } else if ($route.name != "auth" && $route.name != "logout") {
+    } else {
       while (tmp_index == -1 && count < items_titles.length) {
         console.log(
           count,
