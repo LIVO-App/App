@@ -50,6 +50,9 @@ async function executeLink(url?: string | undefined, success = (response: any) =
             case "delete":
                 request = $axios.delete(toExecute, options);
                 break;
+            case "patch":
+                request = $axios.patch(toExecute, options);
+                break;
             default:
                 return new Promise(() => "Method not defined");
         }

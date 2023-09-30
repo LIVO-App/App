@@ -6,9 +6,12 @@
     :aria-label="label"
     justify="start"
     :placeholder="placeholder"
-    class="ion-padding"
     fill="outline"
     :disabled="disabled"
+    :class="{
+      ...classes?.select,
+      'ion-padding': !no_padding
+    }"
   >
     <!-- interface="popover" è più carino, ma da warnings-->
     <ion-select-option
@@ -16,6 +19,7 @@
       :value="option.id"
       :key="option.id"
       :aria-label="getCompleteName(option)"
+      :class="classes?.option"
     >
       {{ getCompleteName(option) }}
     </ion-select-option>
@@ -23,6 +27,7 @@
 </template>
 
 <script setup lang="ts">
+import { Classes, /*Colors, GeneralSubElements,*/ SelectSubElements } from "@/types";
 import { IonSelect, IonSelectOption } from "@ionic/vue";
 import { PropType } from "vue";
 
@@ -46,6 +51,9 @@ const props = defineProps({
     default: (option: any) => option.id,
   },
   disabled: Boolean,
+  no_padding: Boolean,
+  //colors: Object as PropType<Colors<GeneralSubElements>>, // Da sistemare: colori
+  classes: Object as PropType<Classes<SelectSubElements>>,
 });
 defineEmits(["update:selected_option"]);
 </script>

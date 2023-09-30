@@ -14,10 +14,10 @@
       <suspense>
         <template #default>
           <course-description
-            :title="description_title"
-            :course_id="description_course_id"
+            :title="description.title"
+            :course_id="description.course_id"
             :learning_session_id="learning_session_id"
-            :section="description_section"
+            :section="description.section"
             @close="closeModal('course_details')"
           />
         </template>
@@ -25,6 +25,76 @@
           <loading-component />
         </template>
       </suspense>
+    </ion-modal>
+    <ion-modal
+      :is-open="confirmation_open"
+      :can-dismiss="() => !confirmation_open"
+    >
+      <ion-header>
+        <ion-toolbar>
+          <ion-title class="ion-text-center">
+            <ionic-element
+              :element="
+                getCustomMessage(
+                  'confirmation_title',
+                  confirmation_data.title,
+                  'title',
+                  {
+                    text: {
+                      name: 'primary',
+                      type: 'var',
+                    },
+                  }
+                )
+              "
+            />
+          </ion-title>
+          <ion-progress-bar v-model:value="timer_bar" :color="getBarColor" />
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-grid class="ion-text-center">
+          <ion-row>
+            <ion-col>
+              <ionic-element
+                :element="
+                  getCustomMessage(
+                    'confirmation_message',
+                    confirmation_data.message
+                  )
+                "
+              />
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ionic-element
+                :element="
+                  getCustomMessage(
+                    'confirmation_warning',
+                    getCurrentElement('confrimation_warning'),
+                    'string',
+                    {
+                      text: {
+                        name: 'warning',
+                        type: 'var',
+                      },
+                    }
+                  )
+                "
+              />
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col v-for="i in getNumberSequence(2)" :key="buttons[i].id">
+              <ionic-element
+                :element="buttons[i]"
+                @signal_event="sendConfirmation()"
+              />
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-content>
     </ion-modal>
     <suspense v-if="$route.params.id != undefined">
       <template #default>
@@ -67,9 +137,12 @@
     <list-card
       :key="trigger"
       @execute_link="changeEnrollment()"
-      @signal_event="openModal()"
+      @signal_event="openDescription()"
       :emptiness_message="
-        getCustomMessage('emptiness_message', getCurrentElement('no_proposed_courses'))
+        getCustomMessage(
+          'emptiness_message',
+          getCurrentElement('no_proposed_courses')
+        )
       "
       v-model:cards_list="courses"
       :colors="{
@@ -101,20 +174,38 @@ import {
   RequestIcon,
   TmpList,
   User,
+  CustomElement,
+  EventString,
 } from "@/types";
 import {
   executeLink,
   getCurrentElement,
   getCurrentLanguage,
   getCustomMessage,
+  getNumberSequence,
   toSummary,
 } from "@/utils";
-import { IonAlert, IonModal, IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { Ref, ref, watch } from "vue";
+import {
+  IonAlert,
+  IonModal,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonHeader,
+  IonToolbar,
+  IonProgressBar,
+  IonContent,
+  IonTitle,
+} from "@ionic/vue";
+import { computed, Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { Store, useStore } from "vuex";
 
-type AvailableModal = "course_details" | "max_credits" | "max_courses";
+type AvailableModal =
+  | "course_details"
+  | "max_credits"
+  | "max_courses"
+  | "confirmation";
 
 const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
   const contexts_to_edit = course_correspondences.filter(
@@ -132,14 +223,18 @@ const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
     if (context_reference.context_id == selected_context.value) {
       course.enrollment.enrollment = value;
       course.content[2].content = course.enrollment.toString();
-      course.content[3].content = course.enrollment.getEnrollmentIcon(
-        pathArray.join("/") +
-          (value === false ? "/subscribe?" : "/unsubscribe?") +
-          requestArray[1],
-        course.enrollment.getChangingMethod()
-      );
       course.content[2].colors = course.enrollment.getStatusColors();
-      course.content[3].colors = course.enrollment.getChangeButtonColors();
+      if (store.state.static_subscription && value !== false) {
+        course.content.splice(3, 1);
+      } else if (!store.state.static_subscription) {
+        course.content[3].content = course.enrollment.getEnrollmentIcon(
+          pathArray.join("/") +
+            (value === false ? "/subscribe?" : "/unsubscribe?") +
+            requestArray[1],
+          course.enrollment.getChangingMethod()
+        );
+        course.content[3].colors = course.enrollment.getChangeButtonColors();
+      }
     } else {
       course.enrollment.editable = false; // Da sistemare: chiedere se in backend, quando è presente il corso per due contesti, c'è il controllo che non sia iscritto nell'altro contesto
     }
@@ -158,7 +253,7 @@ const changeEnrollment = async () => {
   const queryArray = requestArray[1].split("&");
   const learning_session_id = queryArray[0].split("=")[1];
   const action = pathArray[pathArray.length - 1];
-  const unsubscribe = action == "unsubscribe";
+  const unscribe = action == "unsubscribe";
   const groups = Object.keys(
     remaining_courses[selected_context.value][selected_area.value]
   );
@@ -193,7 +288,7 @@ const changeEnrollment = async () => {
         selected_area.value
       ] >= course.credits;
     if (
-      unsubscribe ||
+      unscribe ||
       (available_courses && available_area_credits) ||
       (available_courses && available_context_credits)
     ) {
@@ -203,29 +298,42 @@ const changeEnrollment = async () => {
           const pendingDate = new Date(response.data.data ?? "no date");
           const wasPending = course.enrollment.isPending();
           const isPending = !isNaN(pendingDate.getTime());
+          const enrollment_value = isPending
+            ? pendingDate
+            : unscribe
+            ? false
+            : response.data ?? true;
 
-          updateCourses(
-            course,
-            isPending
-              ? pendingDate
-              : unsubscribe
-              ? false
-              : response.data ?? true
-          );
           if (!wasPending && !isPending) {
-            remaining_courses[selected_context.value][selected_area.value][
-              course.group
-            ] += unsubscribe ? 1 : -1;
-            if (typeof remaining_credits[selected_context.value] == "number") {
-              (remaining_credits[selected_context.value] as number) +=
-                (unsubscribe ? 1 : -1) * course.credits;
+            if (store.state.static_subscription && !unscribe) {
+              confirmation_data.title = (
+                course.content[1].content as EventString
+              ).text;
+              confirmation_data.message = getCurrentElement(
+                "course_confirmation"
+              );
+              confirmation_data.course = course;
+              confirmation_data.unscribe = unscribe;
+              confirmation_data.enrollment_value = enrollment_value;
+              confirmation_data.update_credits = true;
+              openConfirmation();
             } else {
-              (remaining_credits[selected_context.value] as TmpList<number>)[
-                selected_area.value
-              ] += (unsubscribe ? 1 : -1) * course.credits;
+              updateCourses(course, enrollment_value);
+              updateCredits(course, unscribe);
+              trigger.value++;
             }
+          } else if (isPending) {
+            confirmation_data.title = (
+              course.content[1].content as EventString
+            ).text;
+            confirmation_data.message = getCurrentElement("course_pending");
+            confirmation_data.course = course;
+            confirmation_data.unscribe = unscribe;
+            openConfirmation();
+          } else {
+            updateCourses(course, enrollment_value);
+            trigger.value++;
           }
-          trigger.value++;
         },
         (err) => console.error(err)
       );
@@ -240,13 +348,28 @@ const changeEnrollment = async () => {
     console.error("Course not found");
   }
 };
+const updateCredits = (course: CourseCardElements, unsubscribe: boolean) => {
+  remaining_courses[selected_context.value][selected_area.value][
+    course.group
+  ] += unsubscribe ? 1 : -1;
+  if (typeof remaining_credits[selected_context.value] == "number") {
+    (remaining_credits[selected_context.value] as number) +=
+      (unsubscribe ? 1 : -1) * course.credits;
+  } else {
+    (remaining_credits[selected_context.value] as TmpList<number>)[
+      selected_area.value
+    ] += (unsubscribe ? 1 : -1) * course.credits;
+  }
+};
 const getCorrectName = (option: LearningArea) => option[`${language}_title`];
 const setAlertAndOpen = (type: AvailableModal) => {
   switch (type) {
     case "max_credits":
+      alert_information.title = getCurrentElement("error");
       alert_information.message = getCurrentElement("maximum_credits_error");
       break;
     case "max_courses":
+      alert_information.title = getCurrentElement("error");
       alert_information.message = getCurrentElement("maximum_courses_error");
       break;
   }
@@ -257,17 +380,30 @@ const closeModal = (window: AvailableModal) => {
     case "course_details":
       description_open.value = false;
       break;
+    case "confirmation":
+      confirmation_open.value = false;
+      break;
     case "max_credits":
     case "max_courses":
       openAlert.value = false;
       break;
   }
 };
-const openModal = () => {
-  description_title = store.state.event.data.title;
-  description_course_id = store.state.event.data.course_id;
-  description_section = store.state.event.data.section;
+const openDescription = () => {
+  description.title = store.state.event.data.title;
+  description.course_id = store.state.event.data.course_id;
+  description.section = store.state.event.data.section;
   description_open.value = true;
+};
+const openConfirmation = () => {
+  confirmation_open.value = true;
+  timer_bar.value = 1;
+  timer = setInterval(async () => {
+    timer_bar.value -= 0.01;
+    if (timer_bar.value <= 0) {
+      await confirm(false, true);
+    }
+  }, 300);
 };
 const getContextAxronym = (option: LearningContext) =>
   option[`${language}_title`];
@@ -277,7 +413,9 @@ const showCourses = (
 ) => {
   courses.cards = {};
   courses.order = [];
-  for (const course of (all_courses[context] != undefined ? all_courses[context][area] : [])) {
+  for (const course of all_courses[context] != undefined
+    ? all_courses[context][area]
+    : []) {
     if (courses.cards[course.group] == undefined) {
       courses.order.push({
         key: course.group,
@@ -294,6 +432,51 @@ const showCourses = (
     courses.cards[""] = [];
   }
 };
+const sendConfirmation = async () => {
+  await confirm(store.state.event.data.outcome);
+};
+const confirm = async (outcome: boolean, time_expired = false) => {
+  clearInterval(timer);
+  try {
+    await executeLink(
+      "/v1/students/" +
+        confirmation_data.student_id +
+        "/confirmation?course_id=" +
+        confirmation_data.course.id +
+        "&session_id=" +
+        confirmation_data.session_id +
+        "&outcome=" +
+        outcome,
+      () => {
+        if (!time_expired && outcome) {
+          updateCourses(
+            confirmation_data.course,
+            confirmation_data.enrollment_value
+          );
+          if (confirmation_data.update_credits) {
+            updateCredits(confirmation_data.course, confirmation_data.unscribe);
+          }
+          trigger.value++;
+        }
+      },
+      () => console.error("Confirmation error"),
+      "patch"
+    );
+  } catch (error) {
+    console.log(error);
+  }
+  console.log("Fine");
+  closeModal("confirmation");
+};
+const getBarColor = computed(() => {
+  if (timer_bar.value > 0.5) {
+    return "success";
+  } else if (timer_bar.value > 0.25) {
+    return "warning";
+  } else {
+    return "danger";
+  }
+});
 
 const store: Store<any> = useStore();
 const $route = useRoute();
@@ -317,12 +500,13 @@ const placeholder =
   learning_area;
 const openAlert = ref(false);
 const alert_information = {
-  title: getCurrentElement("error"),
+  title: "",
   message: "",
   buttons: [getCurrentElement("ok")],
 };
 const selected_area = ref("");
 const description_open = ref(false);
+const confirmation_open = ref(false);
 const remaining_courses: {
   [key: string]: {
     // Learning context
@@ -344,11 +528,85 @@ const learning_session =
   learning_session_position != -1
     ? learning_sessions[learning_session_position]
     : undefined;
+const description = {
+  title: "",
+  course_id: -1,
+  section: "",
+};
+const confirmation_data = {
+  title: "",
+  message: "",
+  student_id: user.id,
+  course: {} as CourseCardElements,
+  session_id: learning_session?.id,
+  unscribe: false,
+  enrollment_value: false,
+  update_credits: false,
+};
+const buttons: CustomElement[] = [
+  {
+    id: "yes",
+    type: "string",
+    linkType: "event",
+    content: {
+      text: getCurrentElement("yes"),
+      event: "yes",
+      data: {
+        outcome: true,
+      },
+    },
+    colors: {
+      background: {
+        name: "success",
+        type: "var",
+      },
+      text: {
+        name: "white",
+        type: "var",
+      },
+    },
+    classes: {
+      label: {
+        "ion-padding": true,
+        radius: true,
+      },
+    },
+  },
+  {
+    id: "no",
+    type: "string",
+    linkType: "event",
+    content: {
+      text: getCurrentElement("no"),
+      event: "no",
+      data: {
+        outcome: false,
+      },
+    },
+    colors: {
+      background: {
+        name: "danger",
+        type: "var",
+      },
+      text: {
+        name: "white",
+        type: "var",
+      },
+    },
+    classes: {
+      label: {
+        "ion-padding": true,
+        radius: true,
+      },
+    },
+  },
+];
+const timer_bar = ref(1);
+const tmp_learning_areas: {
+  [area_id: string]: LearningArea
+} = {};
 
 let learning_areas: LearningArea[] = [];
-let description_title: string;
-let description_course_id: number;
-let description_section: string;
 let selected_context: Ref<string>;
 let learning_contexts: LearningContext[] = [];
 let tmp_courses: CourseSummaryProps[];
@@ -358,6 +616,7 @@ let course_correspondences: {
   context_id: string;
 }[];
 let tmp_card;
+let timer: number;
 
 if (learning_session != undefined) {
   learning_contexts = await executeLink(
@@ -384,12 +643,20 @@ if (learning_session != undefined) {
   );
   selected_context = ref(learning_contexts[0].id);
 
-  learning_areas = await executeLink(
-    "/v1/learning_areas?all_data=true&credits=true&session_id=" +
-      learning_session_id,
-    (response) => response.data.data,
-    () => []
-  );
+  for (const context of learning_contexts) {
+    await executeLink(
+      "/v1/learning_areas?all_data=true&credits=true&session_id=" +
+        learning_session_id +
+        "&context_id=" +
+        context.id,
+      (response) =>
+        response.data.data.forEach((a: LearningArea) =>
+          tmp_learning_areas[a.id] = a
+        ),
+      () => []
+    );
+  }
+  learning_areas = Object.values(tmp_learning_areas);
   selected_area.value = learning_areas.length > 0 ? learning_areas[0].id : "";
 
   if (learning_contexts.length > 0 && learning_areas.length > 0) {
