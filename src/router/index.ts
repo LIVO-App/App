@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import { store } from "../store";
 import { Menu, User } from '@/types';
-import { getBaseUrl, getDefautlLink, getUserFromToken, setUser } from '@/utils';
+import { getBaseUrl, getDefautlLink, getUserFromToken, isTokenExpired, logout, setUser } from '@/utils';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -174,6 +174,9 @@ router.beforeEach((to) => {
       } else if (to.name !== 'auth') {
         return { name: 'auth' };
       }
+    } else if (isTokenExpired()) { // Da sistemare: quando si avrà lo store sicuro mettere che si può ritornare alla pagina precedente se è lo stesso utente
+      logout();
+      return { name: 'auth' };
     } else if (user != undefined) {
       if ((to.name !== 'auth' && to.name !== 'logout' &&
         ((selected_item = sessionStorage.getItem("selected_item") ?? menu.order[user.user][menu.index]) == undefined // No menu item selected
@@ -193,20 +196,6 @@ router.beforeEach((to) => {
   }
 })
 
-const logout = async () => {
-  const menu: Menu = store.state.menu;
-
-  for (const key of User.getProperties()) {
-    sessionStorage.removeItem(key);
-  }
-  sessionStorage.removeItem("selected_item");
-  menu.index = -1;
-
-  await store.dispatch("signalLogin"); // Dummy change to trigger reactive behaviour
-  await store.dispatch("logout");
-  await store.dispatch("signalLogout");
-}
-
 const find_item_index = (user: User, menu: Menu, menu_items: string[], item: string) => {
   let count = 0;
   let tmp_index = -1;
@@ -218,6 +207,6 @@ const find_item_index = (user: User, menu: Menu, menu_items: string[], item: str
   } while (tmp_index == -1 && ++count < menu_items.length);
 
   return tmp_index;
-}
+};
 
 export default router

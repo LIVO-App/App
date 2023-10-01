@@ -1649,10 +1649,12 @@ type UserProps = {
     id: number,
     username: string,
     token: string,
-    user: UserType
+    user: UserType,
+    expirationDate: string,
+    // Da sistemare: mettere first_access
 }
 
-class User implements UserProps {
+class User {
 
     [key: string]: any;
 
@@ -1660,30 +1662,36 @@ class User implements UserProps {
     username: string;
     token: string;
     user: UserType;
+    expiration_date: Date;
 
     constructor(props: UserProps) {
         this.id = props.id;
         this.username = props.username;
         this.token = props.token;
         this.user = props.user;
+        this.expiration_date = new Date(props.expirationDate);
     }
 
     static getProperties() {
-        return ["id", "username", "token", "user"];
+        return ["id", "username", "token", "user", "expiration_date"];
     }
 
     static getLoggedUser() {
 
         const session = window.sessionStorage;
+        const user: User | undefined = store.state.user;
 
-        if (session.getItem("id") != undefined) {
-            return new User({
+        if (user != undefined) {
+            return user;
+        } else if (session.getItem("id") != undefined) {
+            const a = new User({
                 id: parseInt(session.getItem("id") as string),
                 username: session.getItem("username") as string,
                 token: session.getItem("token") as string,
-                user: session.getItem("user") as UserType
-                // Da sistemare: scadenza token
+                user: session.getItem("user") as UserType,
+                expirationDate: session.getItem("expiration_date") as string,
             });
+            return a;
         } else {
             return undefined;
         }

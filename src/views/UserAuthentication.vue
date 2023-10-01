@@ -50,6 +50,7 @@ const login = async (payload: LoginInformation) => {
               token: response.data.token,
               username: payload.parameters.username,
               user: payload.type,
+              expirationDate: response.data.expirationDate,
             }),
             default_link
           );
@@ -120,6 +121,7 @@ if ($route.redirectedFrom?.name == "google_redirect") {
     alert_open.value = true;
   },100);
 }
+// Da sistemare: mettere avviso per token scaduto
 </script>
 
 <style>

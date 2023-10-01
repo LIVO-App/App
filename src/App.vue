@@ -112,8 +112,6 @@ const changeTitle = () => {
     $route.name != "auth" &&
     $route.name != "logout"
   ) {
-    console.log("Ciao", selected_item, $route.name);
-
     if (
       selected_item != null &&
       (tmp_index = menu.items[selected_item].url_names[
@@ -125,15 +123,9 @@ const changeTitle = () => {
       );
     } else {
       while (tmp_index == -1 && count < items_titles.length) {
-        console.log(
-          count,
-          items_titles[count],
-          menu.items[items_titles[count]].url_names
-        );
         urls = menu.items[items_titles[count]].url_names[user.value.user];
         if (urls != undefined) {
           tmp_index = urls.findIndex((a) => a == $route.name);
-          console.log("Ciaone", urls, tmp_index);
         }
         count++;
       }
@@ -141,7 +133,6 @@ const changeTitle = () => {
         tmp_index = menu.order[user.value.user].findIndex(
           (a) => a == items_titles[count - 1]
         );
-        console.log("Ciao", menu.order[user.value.user], tmp_index);
       }
     }
     menu.index =

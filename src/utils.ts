@@ -1,7 +1,8 @@
 import { Method } from "axios";
 import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters, ContentType, CustomElement, ElementType, Colors, IconAlternatives, Classes, SubElements, ColorObject, GeneralSubElements, User, Menu, UserType, DefaultLink } from "./types";
 import { $axios } from "./plugins/axios";
-import { store } from "./store"
+import { store } from "./store";
+import router from './router';
 
 function getCompleteSchoolYear(year: number) {
     return year + " - " + (year + 1);
@@ -37,28 +38,33 @@ async function executeLink(url?: string | undefined, success = (response: any) =
     let request;
 
     if ($axios != undefined && toExecute != undefined) {
-        switch (howExecute) {
-            case "get":
-                request = $axios.get(toExecute, options);
-                break;
-            case "post":
-                request = $axios.post(toExecute, body, options);
-                break;
-            case "put":
-                request = $axios.put(toExecute, body, options);
-                break;
-            case "delete":
-                request = $axios.delete(toExecute, options);
-                break;
-            case "patch":
-                request = $axios.patch(toExecute, options);
-                break;
-            default:
-                return new Promise(() => "Method not defined");
+        if (!isTokenExpired()) {
+            switch (howExecute) {
+                case "get":
+                    request = $axios.get(toExecute, options);
+                    break;
+                case "post":
+                    request = $axios.post(toExecute, body, options);
+                    break;
+                case "put":
+                    request = $axios.put(toExecute, body, options);
+                    break;
+                case "delete":
+                    request = $axios.delete(toExecute, options);
+                    break;
+                case "patch":
+                    request = $axios.patch(toExecute, options);
+                    break;
+                default:
+                    return new Promise(() => "Method not defined");
+            }
+            store.state.request = {};
+            return request.then(success)
+                .catch(fail); // Da sistemare: mettere finally che cancella store.state.request e store.state.event
+        } else {
+            logout();
+            router.push({ name: "auth" });
         }
-        store.state.request = {};
-        return request.then(success)
-            .catch(fail); // Da sistemare: mettere finally che cancella store.state.request e store.state.event
     } else {
         store.state.request = {};
         return new Promise((resolve, reject) => {
@@ -266,6 +272,7 @@ function getUserFromToken(token: string) {
         token: token,
         username: token_obj.username,
         user: token_obj.role,
+        expirationDate: token_obj.expirationDate
     });
 }
 
@@ -319,4 +326,25 @@ function getLearningContexts(user: User, learning_session_id: string): Promise<L
     );
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence, getUserFromToken, getDefautlLink, setUser, getBaseUrl, getLearningContexts }
+async function logout() {
+    const menu: Menu = store.state.menu;
+
+    for (const key of User.getProperties()) {
+        sessionStorage.removeItem(key);
+    }
+    store.state.user = undefined;
+    sessionStorage.removeItem("selected_item");
+    menu.index = -1;
+
+    await store.dispatch("signalLogin"); // Dummy change to trigger reactive behaviour
+    await store.dispatch("logout");
+    await store.dispatch("signalLogout");
+}
+
+function isTokenExpired() {
+    const user: User | undefined = User.getLoggedUser();
+
+    return user == undefined || user.expiration_date <= new Date();
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence, getUserFromToken, getDefautlLink, setUser, getBaseUrl, getLearningContexts, logout, isTokenExpired }

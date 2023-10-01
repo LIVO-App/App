@@ -512,6 +512,7 @@ export const store = createStore({
                     no: "No",
                     yes: "Yes",
                     open_day: "Click day",
+                    user_not_valid: "Utente non valido",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -692,6 +693,7 @@ export const store = createStore({
                     no: "No",
                     yes: "Yes",
                     open_day: "Click day",
+                    not_existing_user: "User not valid",
                 }
             },
             logged_user: false,
