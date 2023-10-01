@@ -6,7 +6,7 @@
       :message="alert_information.message"
       :buttons="alert_information.buttons"
       @didDismiss="closeAlert"
-    ></ion-alert>
+    />
     <outer-header :title="getCurrentElement('auth')" />
     <ion-content :fullscreen="true">
       <inner-header :title="getCurrentElement('auth')" />
@@ -27,7 +27,7 @@ import { IonPage, IonContent, IonAlert } from "@ionic/vue";
 import { useStore } from "vuex";
 import { LoginInformation, User } from "@/types";
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 const login = async (payload: LoginInformation) => {
   const login_parameters = {};
@@ -50,6 +50,7 @@ const login = async (payload: LoginInformation) => {
               token: response.data.token,
               username: payload.parameters.username,
               user: payload.type,
+              expirationDate: response.data.expirationDate,
             }),
             default_link
           );
@@ -105,6 +106,7 @@ const googleAuth = () => {
 
 const store = useStore();
 const $router = useRouter();
+const $route = useRoute();
 
 const alert_open = ref(false);
 const alert_information = {
@@ -112,6 +114,14 @@ const alert_information = {
   message: "",
   buttons: [getCurrentElement("ok")],
 };
+
+if ($route.redirectedFrom?.name == "google_redirect") {
+  alert_information.message = getCurrentElement("user_not_valid");
+  setTimeout(() => {
+    alert_open.value = true;
+  },100);
+}
+// Da sistemare: mettere avviso per token scaduto
 </script>
 
 <style>

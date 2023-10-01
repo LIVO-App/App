@@ -511,6 +511,8 @@ export const store = createStore({
                     course_warning: "Attenzione: non sarà possibile disiscriversi",
                     no: "No",
                     yes: "Yes",
+                    open_day: "Click day",
+                    user_not_valid: "Utente non valido",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -690,6 +692,8 @@ export const store = createStore({
                     course_waring: "Warning: this choice cannot be undo",
                     no: "No",
                     yes: "Yes",
+                    open_day: "Click day",
+                    not_existing_user: "User not valid",
                 }
             },
             logged_user: false,

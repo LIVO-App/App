@@ -894,29 +894,32 @@ type LearningSessionProps = {
     start: string;
     end: string;
     num_groups: number;
+    open_day: string;
 }
 
-class LearningSession implements LearningSessionProps { // Da sistemare: aggiungi numero sessioni
+class LearningSession { // Da sistemare: aggiungi numero sessioni
 
     id: number;
     number: number;
     school_year: number;
-    start: string;
-    end: string;
+    start: Date;
+    end: Date;
     num_groups: number;
+    open_day: Date;
 
     constructor(sessionObj: LearningSessionProps) {
         this.id = sessionObj.id;
         this.number = sessionObj.number;
         this.school_year = sessionObj.school_year;
-        this.start = sessionObj.start; // Da sistemare: mettere date
-        this.end = sessionObj.end;
+        this.start = new Date(sessionObj.start);
+        this.end = new Date(sessionObj.end);
         this.num_groups = sessionObj.num_groups;
+        this.open_day = new Date(sessionObj.open_day);
     }
 
     getStatus(reference = new Date()) { // future [TDB] upcoming [SD] current [ED] completed
-        const startDate = new Date(this.start);
-        const endDate = new Date(this.end);
+        const startDate = this.start;
+        const endDate = this.end;
         const tenDaysBefore = new Date(startDate);
         tenDaysBefore.setDate(tenDaysBefore.getDate() - 10);
 
@@ -1024,7 +1027,11 @@ class LearningSession implements LearningSessionProps { // Da sistemare: aggiung
             title: getCustomMessage("title", getCurrentElement("session") + " " + this.number, "title"),
             subtitle: getCustomMessage("subtitle", getRagneString(new Date(this.start), new Date(this.end))),
             content: selected == undefined && (status != LearningSessionStatus.COMPLETED || credits != undefined || courses_list != undefined) ? [{
-                id: "" + this.id,
+                id: this.id + "_open_day",
+                type: "string",
+                content: getCurrentElement("open_day") + ": " + toDateString(this.open_day),
+            }, {
+                id: this.id + "_description",
                 type: "html",
                 content: (put_credits ? "<label>" + getCurrentElement("constraints") + ":"
                     + (actual_learning_context.credits != null ? " " + (await this.getSubscribedCredits(actual_learning_context.id)) + "/" + actual_learning_context.credits : "") + "</label>" : "")
@@ -1642,10 +1649,12 @@ type UserProps = {
     id: number,
     username: string,
     token: string,
-    user: UserType
+    user: UserType,
+    expirationDate: string,
+    // Da sistemare: mettere first_access
 }
 
-class User implements UserProps {
+class User {
 
     [key: string]: any;
 
@@ -1653,30 +1662,36 @@ class User implements UserProps {
     username: string;
     token: string;
     user: UserType;
+    expiration_date: Date;
 
     constructor(props: UserProps) {
         this.id = props.id;
         this.username = props.username;
         this.token = props.token;
         this.user = props.user;
+        this.expiration_date = new Date(props.expirationDate);
     }
 
     static getProperties() {
-        return ["id", "username", "token", "user"];
+        return ["id", "username", "token", "user", "expiration_date"];
     }
 
     static getLoggedUser() {
 
         const session = window.sessionStorage;
+        const user: User | undefined = store.state.user;
 
-        if (session.getItem("id") != undefined) {
-            return new User({
+        if (user != undefined) {
+            return user;
+        } else if (session.getItem("id") != undefined) {
+            const a = new User({
                 id: parseInt(session.getItem("id") as string),
                 username: session.getItem("username") as string,
                 token: session.getItem("token") as string,
-                user: session.getItem("user") as UserType
-                // Da sistemare: scadenza token
+                user: session.getItem("user") as UserType,
+                expirationDate: session.getItem("expiration_date") as string,
             });
+            return a;
         } else {
             return undefined;
         }
@@ -2421,7 +2436,8 @@ class AdminProjectClass {
             school_year: -1,
             start: "",
             end: "",
-            num_groups: 0
+            num_groups: 0,
+            open_day: "invalid",
         });
         this.group = props.group;
         this.italian_title = props.italian_title;
