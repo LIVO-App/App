@@ -227,8 +227,6 @@ class Enrollment {
 type CardElements = { // Da sistemare: sistemare quando tolti gli altri type-card
     id: string,
     group: any,
-    url?: string,
-    method?: Method,
     colors?: Colors<GeneralSubElements>,
     classes?: Classes<CardSubElements>
 }

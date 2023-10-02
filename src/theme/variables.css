@@ -452,7 +452,7 @@ ion-modal {
 }
 
 ion-modal ion-content {
-  height: calc(100% - px) !important;
+  height: calc(100% - 120px) !important;
   /* Da sistemare: trovare un'alternativa più dinamica */
   --background: var(--ion-color-white);
 }

@@ -18,8 +18,6 @@
       :content="card.content"
       :credits="card.credits"
       :enrollment="card.enrollment"
-      :url="card.url"
-      :method="card.method"
       :colors="card.colors"
     />
     <general-card
