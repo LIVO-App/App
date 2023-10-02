@@ -343,16 +343,8 @@ const course = await Course.newCourse(
 );
 course.images.push(
   {
-    url: "Logo_LIVO_Path.png",
-    caption: "New logo",
-  },
-  {
     url: "Logo_LIVO_Campus_POS_RGB.png",
     caption: "Old logo",
-  },
-  {
-    url: "person.png",
-    caption: "Default person",
   }
 );
 const access_cards = course.getAccessCardsList();

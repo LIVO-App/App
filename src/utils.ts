@@ -341,10 +341,10 @@ async function logout() {
     await store.dispatch("signalLogout");
 }
 
-function isTokenExpired() {
+function isTokenExpired(check_user = false) {
     const user: User | undefined = User.getLoggedUser();
 
-    return user == undefined || user.expiration_date <= new Date();
+    return (check_user && user == undefined) || (user != undefined && user.expiration_date <= new Date());
 }
 
 export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence, getUserFromToken, getDefautlLink, setUser, getBaseUrl, getLearningContexts, logout, isTokenExpired }

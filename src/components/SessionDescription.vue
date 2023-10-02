@@ -41,12 +41,12 @@ import {
   LearningSession,
   LearningContextSummary,
 } from "@/types";
-import { executeLink, getCurrentElement, getCustomMessage, getIcon } from "@/utils";
-import { IonGrid, IonRow, IonCol, IonIcon } from "@ionic/vue";
+import { executeLink, getCurrentElement, getCustomMessage/*, getIcon*/ } from "@/utils";
+import { IonGrid, IonRow, IonCol/*, IonIcon*/ } from "@ionic/vue";
 import { PropType } from "vue";
-import { useRouter } from "vue-router";
+//import { useRouter } from "vue-router";
 
-const $router = useRouter();
+//const $router = useRouter();
 const props = defineProps({
   id: {
     type: String,
