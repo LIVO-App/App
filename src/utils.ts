@@ -310,17 +310,23 @@ function getLearningContexts(user: User, learning_session_id: string): Promise<L
         (response) => {
             const tmp_contexts: LearningContext[] = [];
 
-            for (const learning_context of response.data.data) {
+            let main_context: LearningContext | undefined;
+
+            for (const learning_context of (response.data.data as LearningContext[])) {
                 if (
                     store.state.excluded_learning_contexts_id.findIndex(
-                        (a: number) => a != learning_context.id
+                        (a: string) => a != learning_context.id
                     ) != -1
                 ) {
-                    tmp_contexts.push(learning_context);
+                    if (learning_context.id == store.state.main_learning_context.id) {
+                        main_context = learning_context;
+                    } else {
+                        tmp_contexts.push(learning_context);
+                    }
                 }
             }
 
-            return tmp_contexts;
+            return main_context ? [main_context, ...tmp_contexts] : tmp_contexts;
         },
         () => []
     );

@@ -125,7 +125,7 @@
         <ion-col size="auto">
           <custom-select
             v-model="selected_area"
-            :list="learning_areas"
+            :list="learning_areas[selected_context]"
             :label="learning_area + ':'"
             :aria_label="learning_area"
             :placeholder="placeholder"
@@ -362,7 +362,11 @@ const updateCredits = (course: CourseCardElements, unsubscribe: boolean) => {
     ] += (unsubscribe ? 1 : -1) * course.credits;
   }
 };
-const getCorrectName = (option: LearningArea) => option[`${language}_title`];
+const getCorrectName = (option: LearningArea) => {
+  const tmp_learning_area = all_learning_areas.find(a => a.id == option.id);
+
+  return tmp_learning_area != undefined ? tmp_learning_area[`${language}_title`] : "";
+};
 const setAlertAndOpen = (type: AvailableModal) => {
   switch (type) {
     case "max_credits":
@@ -466,7 +470,6 @@ const confirm = async (outcome: boolean, time_expired = false) => {
   } catch (error) {
     console.log(error);
   }
-  console.log("Fine");
   closeModal("confirmation");
 };
 const getBarColor = computed(() => {
@@ -604,10 +607,13 @@ const buttons: CustomElement[] = [
 ];
 const timer_bar = ref(1);
 const tmp_learning_areas: {
-  [area_id: string]: LearningArea
+  [area_id: string]: LearningArea;
+} = {};
+const learning_areas: {
+  [context_id: string]: { id: string }[];
 } = {};
 
-let learning_areas: LearningArea[] = [];
+let all_learning_areas: LearningArea[] = [];
 let selected_context: Ref<string>;
 let learning_contexts: LearningContext[] = [];
 let tmp_courses: CourseSummaryProps[];
@@ -620,7 +626,7 @@ let tmp_card;
 let timer: number;
 
 if (learning_session != undefined) {
-  learning_contexts = await getLearningContexts(user,learning_session_id);
+  learning_contexts = await getLearningContexts(user, learning_session_id);
   selected_context = ref(learning_contexts[0].id);
 
   for (const context of learning_contexts) {
@@ -629,17 +635,23 @@ if (learning_session != undefined) {
         learning_session_id +
         "&context_id=" +
         context.id,
-      (response) =>
-        response.data.data.forEach((a: LearningArea) =>
-          tmp_learning_areas[a.id] = a
-        ),
+      (response) => {
+        learning_areas[context.id] = response.data.data.map((a: LearningArea) => {
+          return {
+            id: a.id
+          }
+        });
+        response.data.data.forEach(
+          (a: LearningArea) => (tmp_learning_areas[a.id] = a)
+        );
+      },
       () => []
     );
   }
-  learning_areas = Object.values(tmp_learning_areas);
-  selected_area.value = learning_areas.length > 0 ? learning_areas[0].id : "";
+  all_learning_areas = Object.values(tmp_learning_areas);
+  selected_area.value = learning_areas[selected_context.value][0].id;
 
-  if (learning_contexts.length > 0 && learning_areas.length > 0) {
+  if (learning_contexts.length > 0 && all_learning_areas.length > 0) {
     tmp_courses = await executeLink(
       "/v2/courses?student_id=" +
         user.id +
@@ -676,7 +688,7 @@ if (learning_session != undefined) {
             if (course_props != undefined && learning_context_index != -1) {
               tmp_learning_context = learning_contexts[learning_context_index];
               tmp_course = new CourseSummary(course_props);
-              tmp_learning_area = learning_areas.find(
+              tmp_learning_area = all_learning_areas.find(
                 (a) =>
                   a.id ==
                   (tmp_course.learning_area_ref.data as { id: string }).id
@@ -685,7 +697,7 @@ if (learning_session != undefined) {
                 if (all_courses[tmp_learning_context.id] == undefined) {
                   remaining_courses[tmp_learning_context.id] = {};
                   all_courses[tmp_learning_context.id] = {};
-                  for (const learning_area of learning_areas) {
+                  for (const learning_area of all_learning_areas) {
                     remaining_courses[tmp_learning_context.id][
                       learning_area.id
                     ] = {};
@@ -789,6 +801,7 @@ if (learning_session != undefined) {
     }
   }
   watch(selected_context, (new_context) => {
+    selected_area.value = learning_areas[new_context][0].id;
     if (tmp_courses.length > 0) {
       showCourses(new_context);
     }
