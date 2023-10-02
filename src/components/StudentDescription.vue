@@ -39,14 +39,14 @@
 
 <script lang="ts" setup>
 import { GeneralCardElements, StudentInformation } from "@/types";
-import { executeLink, getIcon } from "@/utils";
+import { executeLink/*, getIcon*/ } from "@/utils";
 import {
   IonGrid,
   IonRow,
   IonCol,
   IonList,
   IonItem,
-  IonIcon,
+  //IonIcon,
   IonImg,
 } from "@ionic/vue";
 import { computed } from "vue";
