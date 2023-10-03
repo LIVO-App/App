@@ -218,7 +218,7 @@ const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
   const pathArray = requestArray[0].split("/");
   pathArray?.pop();
 
-  //, edited_course : CourseCardElements;  // Da sistemare: forse problema per non aver fatto copia profonda
+  //, edited_course : CourseCardElements;  //<!-- TODO (7): forse problema per non aver fatto copia profonda
 
   for (const context_reference of contexts_to_edit) {
     if (context_reference.context_id == selected_context.value) {
@@ -237,7 +237,7 @@ const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
         course.content[3].colors = course.enrollment.getChangeButtonColors();
       }
     } else {
-      course.enrollment.editable = false; // Da sistemare: chiedere se in backend, quando è presente il corso per due contesti, c'è il controllo che non sia iscritto nell'altro contesto
+      course.enrollment.editable = false; //<!-- ? chiedere se in backend, quando è presente il corso per due contesti, c'è il controllo che non sia iscritto nell'altro contesto
     }
 
     all_courses[context_reference.context_id][selected_area.value] =
@@ -249,7 +249,7 @@ const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
 };
 
 const changeEnrollment = async () => {
-  const requestArray = store.state.request.url.split("?"); // Da sistemare: usare parametri router
+  const requestArray = store.state.request.url.split("?"); //<!-- TODO (9): usare parametri router
   const pathArray = requestArray[0].split("/");
   const queryArray = requestArray[1].split("&");
   const learning_session_id = queryArray[0].split("=")[1];
@@ -490,7 +490,7 @@ const learning_session_id: string = $route.params.id as string;
 
 const all_courses: {
   [key: string]: CardsList<CourseCardElements>;
-} = {}; // Da sistemare: aggiungere gruppo (gruppi come group e controlli in nuova variabile)
+} = {}; //<!-- TODO (7*): aggiungere gruppo (gruppi come group e controlli in nuova variabile)
 const courses: OrderedCardsList<CourseCardElements> = {
   order: [],
   cards: {},

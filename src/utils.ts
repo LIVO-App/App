@@ -18,7 +18,7 @@ function getRagneString(start: Date, end: Date) {
 }
 
 function isGeneral(card: CardElements): card is GeneralCardElements {
-    return "side_element" in card || !("credits" in card); // Da sistemare: vedere se creare un parametro per fare la condizione positiva
+    return "side_element" in card || !("credits" in card); // TODO (8): vedere se creare un parametro per fare la condizione positiva
 }
 
 function isCourse(card: CardElements): card is CourseCardElements {
@@ -60,7 +60,7 @@ async function executeLink(url?: string | undefined, success = (response: any) =
             }
             store.state.request = {};
             return request.then(success)
-                .catch(fail); // Da sistemare: mettere finally che cancella store.state.request e store.state.event
+                .catch(fail); // TODO (6): mettere finally che cancella store.state.request e store.state.event e gestire success e fail come promise
         } else {
             logout();
             router.push({ name: "auth" });
@@ -290,7 +290,7 @@ function getDefautlLink(user_role: UserType) {
 }
 
 async function setUser(user: User, default_link: DefaultLink) {
-    for (const key of User.getProperties()) { // Da sistemare: non è il massimo metterlo in 2 posti
+    for (const key of User.getProperties()) { // TODO (7): trovare alternativa che garantisca persistenza e reattività (es. sistemi a pagamenti visti)
         sessionStorage.setItem(key, user[key]); // Necessario per la persistenza
     }
     await store.dispatch("login", user); // Necessario per la reattività (in caso puntare su questo, ma persistente)
@@ -301,7 +301,7 @@ function getBaseUrl() {
     return $axios.defaults.baseURL;
 }
 
-function getLearningContexts(user: User, learning_session_id: string): Promise<LearningContext[]> { // Da sistemare: vedere se è ripetuto in altri punti
+function getLearningContexts(user: User, learning_session_id: string): Promise<LearningContext[]> { // TODO (9): vedere se è ripetuto in altri punti
     return executeLink(
         "/v1/learning_contexts?student_id=" +
         user.id +

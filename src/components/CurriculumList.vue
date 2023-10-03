@@ -84,7 +84,7 @@
             :aria_label="getCurrentElement('school_year')"
             :placeholder="getCurrentElement('school_year_choice')"
           />
-          <!-- Da sistemare: aggiungere "All" -->
+          <!-- TODO (6): aggiungere "All" -->
         </ion-col>
         <ion-col size="auto">
           <custom-select

@@ -1,5 +1,5 @@
 <template>
-  <!-- Da chiedere: convertire tutti i colori -->
+  <!-- ? convertire tutti i colori -->
   <ion-card
     :color="
       selected

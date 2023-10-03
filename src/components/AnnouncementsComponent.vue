@@ -1,47 +1,23 @@
 <template>
   <div class="ion-padding-horizontal">
-    <ion-alert
-      :is-open="alert_open"
-      :header="alert_information.title"
-      :message="alert_information.message"
-      :buttons="alert_information.buttons"
-      @didDismiss="closeModal(store.state.event.name)"
-    ></ion-alert>
-    <ion-modal
-      id="publish_announcement"
-      :is-open="publishment_open"
-      @didDismiss="closeModal('publish_announcement')"
-      class="fit"
-    >
+    <ion-alert :is-open="alert_open" :header="alert_information.title" :message="alert_information.message"
+      :buttons="alert_information.buttons" @didDismiss="closeModal(store.state.event.name)"></ion-alert>
+    <ion-modal id="publish_announcement" :is-open="publishment_open" @didDismiss="closeModal('publish_announcement')"
+      class="fit">
       <suspense>
         <template #default>
-          <announcements-publisher
-            :sections="sections"
-            :current_section_index="
-              sections.findIndex((a) => a.id == selected_section)
-            "
-            @signal_event="setupModalAndOpen()"
-            @close="closeModal('publish_announcement')"
-          />
+          <announcements-publisher :sections="sections" :current_section_index="sections.findIndex((a) => a.id == selected_section)
+            " @signal_event="setupModalAndOpen()" @close="closeModal('publish_announcement')" />
         </template>
         <template #fallback>
           <loading-component />
         </template>
       </suspense>
     </ion-modal>
-    <ion-modal
-      id="announcement"
-      :is-open="announcement_open"
-      @didDismiss="closeModal('announcement')"
-      class="fit"
-    >
+    <ion-modal id="announcement" :is-open="announcement_open" @didDismiss="closeModal('announcement')" class="fit">
       <suspense>
         <template #default>
-          <announcement-viewer
-            :title="announcement_title"
-            :id="announcement_id"
-            @close="closeModal('announcement')"
-          />
+          <announcement-viewer :title="announcement_title" :id="announcement_id" @close="closeModal('announcement')" />
         </template>
         <template #fallback>
           <loading-component />
@@ -49,34 +25,18 @@
       </suspense>
     </ion-modal>
     <div v-if="user.user == 'teacher'">
-      <ionic-element
-        v-for="button in buttons"
-        :key="button.id"
-        :element="button"
-        @signal_event="setupModalAndOpen()"
-      />
+      <ionic-element v-for="button in buttons" :key="button.id" :element="button" @signal_event="setupModalAndOpen()" />
     </div>
-    <custom-select
-      v-if="user.user == 'teacher'"
-      v-model="selected_section"
-      :list="sections"
-      :label="getCurrentElement('section') + ':'"
-      :aria_label="getCurrentElement('section')"
-      :placeholder="getCurrentElement('section_choice')"
-    ></custom-select>
+    <custom-select v-if="user.user == 'teacher'" v-model="selected_section" :list="sections"
+      :label="getCurrentElement('section') + ':'" :aria_label="getCurrentElement('section')"
+      :placeholder="getCurrentElement('section_choice')"></custom-select>
     <suspense>
       <template #default>
-        <list-card
-          :key="trigger"
-          :cards_list="messages"
-          :emptiness_message="
-            getCustomMessage(
-              'emptiness_message',
-              getCurrentElement('no_messages')
-            )
-          "
-          @signal_event="setupModalAndOpen()"
-        />
+        <list-card :key="trigger" :cards_list="messages" :emptiness_message="getCustomMessage(
+          'emptiness_message',
+          getCurrentElement('no_messages')
+        )
+          " @signal_event="setupModalAndOpen()" />
       </template>
       <template #fallback>
         <loading-component />
@@ -127,18 +87,18 @@ const setupModalAndOpen = async () => {
       alert_information.message = getCurrentElement("empty_titles_or_messages");
       alert_open.value = true;
       break;
-    case "no_selected_sections": // Da sistemare: non ha funzionato
+    case "no_selected_sections": //<!-- TODO (5): non ha funzionato
       alert_information.message = getCurrentElement("no_selected_sections");
       alert_open.value = true;
       break;
     case "publish":
       await executeLink(
         "/v1/announcements?teacher_id=" +
-          user.id +
-          "&course_id=" +
-          course_id +
-          "&session_id=" +
-          session_id,
+        user.id +
+        "&course_id=" +
+        course_id +
+        "&session_id=" +
+        session_id,
         () => "",
         (err) => {
           console.error(err);
@@ -177,11 +137,11 @@ const closeModal = (window: availableModal) => {
 const updateMessages = async () => {
   messages.cards[""] = await executeLink(
     "/v1/project_classes/" +
-      course_id +
-      "/" +
-      session_id +
-      "/announcements?" +
-      (user.user == "teacher" ? "&section=" + selected_section.value : ""),
+    course_id +
+    "/" +
+    session_id +
+    "/announcements?" +
+    (user.user == "teacher" ? "&section=" + selected_section.value : ""),
     (response) =>
       response.data.data.map((a: AnnouncementSummaryProps) =>
         new AnnouncementSummary(a).toCard()
@@ -236,21 +196,21 @@ let announcement_id: string;
 if (user.user == "teacher") {
   await executeLink(
     "/v2/teachers/" +
-      user.id +
-      "/my_project_classes?session_id=" +
-      session_id +
-      "&course_id=" +
-      course_id,
+    user.id +
+    "/my_project_classes?session_id=" +
+    session_id +
+    "&course_id=" +
+    course_id,
     (response) =>
       response.data.data.map((a: any) => tmp_sections.add(a.section))
   );
   await executeLink(
     "/v2/teachers/" +
-      user.id +
-      "/associated_project_classes?session_id=" +
-      session_id +
-      "&course_id=" +
-      course_id,
+    user.id +
+    "/associated_project_classes?session_id=" +
+    session_id +
+    "&course_id=" +
+    course_id,
     (response) =>
       response.data.data.map((a: any) => tmp_sections.add(a.section))
   );

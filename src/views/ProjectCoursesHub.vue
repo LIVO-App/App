@@ -8,7 +8,7 @@
       <suspense>
         <template #default>
           <project-classes-list />
-          <!-- Da sistemare: da unire con ProjectCourses -->
+          <!-- TODO (6): da unire con ProjectCourses -->
         </template>
         <template #fallback>
           <loading-component />

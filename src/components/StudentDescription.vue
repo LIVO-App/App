@@ -2,7 +2,6 @@
   <div class="ion-padding-horizontal">
     <ion-grid>
       <ion-row>
-        <!-- Da sistemare: freccetta -->
         <!--<ion-col size="auto">
           <ion-icon
             @click="$router.go(-1)"
@@ -23,7 +22,7 @@
             alt="Student image"
             style="height: 70%"
           ></ion-img>
-          <!-- Da sistemare: altezza foto variabile -->
+          <!-- TODO (6): altezza foto variabile -->
         </ion-col>
         <ion-col>
           <ion-list>

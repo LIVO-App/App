@@ -55,7 +55,7 @@ const props = defineProps({
   },
   disabled: Boolean,
   no_padding: Boolean,
-  //colors: Object as PropType<Colors<GeneralSubElements>>, // Da sistemare: colori
+  //colors: Object as PropType<Colors<GeneralSubElements>>, //<!-- TODO (7): colori
   classes: Object as PropType<Classes<SelectSubElements>>,
 });
 defineEmits(["update:selected_option"]);
@@ -64,7 +64,7 @@ defineEmits(["update:selected_option"]);
 <style>
 .alert-wrapper {
   max-width: unset !important;
-  width: 350px !important; /* Da sistemare: trovare un metodo dinamico */
+  width: 350px !important; /*<!-- TODO (6): trovare un metodo dinamico */
 }
 /*.alert-radio-label.sc-ion-alert-md {
   white-space: pre-line !important;

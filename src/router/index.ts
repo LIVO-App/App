@@ -114,12 +114,12 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/PropositionsHistory.vue')
   },
   {
-    path: '/project_courses_hub', // Da sistemare: unire a /project_courses
+    path: '/project_courses_hub', // TODO (6): unire a /project_courses
     name: 'project_courses_hub',
     component: () => import('../views/ProjectCoursesHub.vue')
   },
   {
-    path: '/learning_sessions_management', // Da sistemare: unire a /project_courses
+    path: '/learning_sessions_management', // TODO (6): unire a /project_courses
     name: 'learning_sessions_management',
     component: () => import('../views/NotImplemented.vue')
   },
@@ -174,7 +174,7 @@ router.beforeEach((to) => {
       } else if (to.name !== 'auth') {
         return { name: 'auth' };
       }
-    } else if (isTokenExpired()) { // Da sistemare: quando si avrà lo store sicuro mettere che si può ritornare alla pagina precedente se è lo stesso utente
+    } else if (isTokenExpired()) { // TODO (7): quando si avrà lo store sicuro mettere che si può ritornare alla pagina precedente se è lo stesso utente
       logout();
       return { name: 'auth' };
     } else if (user != undefined) {

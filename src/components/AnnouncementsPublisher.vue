@@ -7,10 +7,7 @@
             <ionic-element :element="elements.title"></ionic-element>
           </ion-col>
           <ion-col size="auto">
-            <ionic-element
-              :element="elements.close"
-              @signal_event="$emit('close')"
-            ></ionic-element>
+            <ionic-element :element="elements.close" @signal_event="$emit('close')"></ionic-element>
           </ion-col>
         </ion-row>
       </ion-grid>
@@ -18,58 +15,29 @@
   </ion-header>
   <div class="ion-padding">
     <div class="ion-padding-bottom">
-      <ion-input
-        type="text"
-        v-model="italian_title"
-        :label="getCurrentElement('title')"
-        :aria-label="getCurrentElement('title')"
-        color="primary"
-        style="color: var(--ion-color-primary)"
-        fill="outline"
-        class="ion-margin-vertical"
-      ></ion-input
-      ><!--Da sistemare: mettere italiano e inglese-->
-      <ion-input
-        type="text"
-        v-model="italian_message"
-        :label="getCurrentElement('message')"
-        :aria-label="getCurrentElement('message')"
-        color="primary"
-        style="color: var(--ion-color-primary)"
-        fill="outline"
-        class="ion-margin-vertical"
-      ></ion-input
-      ><!--Da sistemare: mettere italiano e inglese-->
-      <ion-label color="primary"
-        >{{ getCurrentElement("sections") }}:</ion-label
-      >
+      <ion-input type="text" v-model="italian_title" :label="getCurrentElement('title')"
+        :aria-label="getCurrentElement('title')" color="primary" style="color: var(--ion-color-primary)" fill="outline"
+        class="ion-margin-vertical" /> <!-- TODO (4): mettere italiano e inglese riutilizzando i componenti -->
+      <ion-input type="text" v-model="italian_message" :label="getCurrentElement('message')"
+        :aria-label="getCurrentElement('message')" color="primary" style="color: var(--ion-color-primary)" fill="outline"
+        class="ion-margin-vertical" />
+      <ion-label color="primary">{{ getCurrentElement("sections") }}:</ion-label>
       <ion-list class="ion-margin-top">
-        <ion-item
-          v-for="(selection, index) in sections_selections"
-          :key="index + '_section'"
-        >
-          <ion-checkbox
-            v-model="selection.value"
-            :aria-label="sections[index].id"
-            class="ion-padding-start"
-            label-placement="start"
-            >{{ sections[index].id }}</ion-checkbox
-          >
+        <ion-item v-for="(selection, index) in sections_selections" :key="index + '_section'">
+          <ion-checkbox v-model="selection.value" :aria-label="sections[index].id" class="ion-padding-start"
+            label-placement="start">{{ sections[index].id }}</ion-checkbox>
         </ion-item>
       </ion-list>
     </div>
     <div class="ion-text-center">
-      <ion-button
-        @click="
-          () => {
-            const outcome = check_announcement();
-            $emit('signal_event');
-            if (outcome) {
-              $emit('close');
-            }
-          }
-        "
-      >
+      <ion-button @click="() => {
+        const outcome = check_announcement();
+        $emit('signal_event');
+        if (outcome) {
+          $emit('close');
+        }
+      }
+        ">
         {{ getCurrentElement("publish") }}
       </ion-button>
     </div>
@@ -171,5 +139,4 @@ const elements: {
 };
 </script>
 
-<style>
-</style>
+<style></style>
