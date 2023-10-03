@@ -862,15 +862,15 @@ class Course extends CourseBase { // TODO (6): "unire" con ModelProposition
                 id: this.id + "_students_number",
                 type: "html",
                 content: "<b>" + getCurrentElement("students_number") + "</b>: <ul class='ion-no-margin'><li>" + getCurrentElement("min") + ": " + this.min_students + "</li><li>" + getCurrentElement("max") + ": " + this.max_students + "</li></ul>"
+            }, {
+                id: this.id + "_proposer_teacher",
+                type: "html",
+                content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.proposer_teacher.name + " " + this.proposer_teacher.surname
             }]
         };
 
         if (user != undefined && user.user != "student") {
             course.content?.push({
-                id: this.id + "_proposer_teacher",
-                type: "html",
-                content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.proposer_teacher.name + " " + this.proposer_teacher.surname
-            }, {
                 id: this.id + "_creation_date",
                 type: "html",
                 content: "<b>" + getCurrentElement("creation_school_year") + "</b>: " + this.creation_school_year
@@ -2506,17 +2506,17 @@ class AdminProjectClass {
                 content: "<b>" + getCurrentElement("title") + "</b>: " + this[`${language}_title`],
             });
         }
+        tmp_card.content?.push({
+            id: "proposer_teacher",
+            type: "html",
+            content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.teacher_name + " " + this.teacher_surname,
+        });
         if (user == undefined || user.user != "student") { // ! (1): cambiare visibilità per studente
             tmp_card.content?.push({
-                id: "teacher",
+                id: "admin",
                 type: "html",
-                content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.teacher_name + " " + this.teacher_surname,
-            },
-                {
-                    id: "admin",
-                    type: "html",
-                    content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.admin_name + " " + this.admin_surname,
-                });
+                content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.admin_name + " " + this.admin_surname,
+            });
         }
 
         return tmp_card;
