@@ -121,7 +121,6 @@ if ($route.redirectedFrom?.name == "google_redirect") {
     alert_open.value = true;
   },100);
 }
-// Da sistemare: mettere avviso per token scaduto
 </script>
 
 <style>

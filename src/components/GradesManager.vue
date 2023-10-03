@@ -24,8 +24,7 @@
             :data="tableData"
             :first_row="first_row"
             :column_sizes="column_sizes"
-          ></ionic-table>
-          <!-- Da sistemare: cambiare e mettere card -->
+          />
           <div class="ion-text-center ion-padding-bottom">
             <ion-text color="primary"
               >{{ getCurrentElement("intermediate_arithmetic_mean") }}:
@@ -50,7 +49,7 @@
       </ion-col>
       <ion-col
         :size="tableData.length == 0 ? '12' : undefined"
-        v-if="parameters.teacher_id != undefined && final === false"
+        v-if="parameters.teacher_id != undefined && parameters.associated_teacher === false && final === false"
       >
         <div class="ion-padding-bottom">
           <div class="ion-padding-bottom">
@@ -115,7 +114,7 @@
               class="ion-padding-start"
             ></ion-checkbox>
           </div>
-          <!-- Da sistemare: controllare perchè non funziona nella tabella e mettere popup "Sei sicuro?" -->
+          <!-- TODO (4): controllare perchè non funziona nella tabella e mettere popup "Sei sicuro?" -->
         </div>
         <div class="ion-text-center">
           <ion-button

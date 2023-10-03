@@ -10,7 +10,7 @@
     :disabled="disabled"
     :class="{
       ...classes?.select,
-      'ion-padding': !no_padding
+      'ion-padding': !no_padding,
     }"
   >
     <!-- interface="popover" è più carino, ma da warnings-->
@@ -27,7 +27,10 @@
 </template>
 
 <script setup lang="ts">
-import { Classes, /*Colors, GeneralSubElements,*/ SelectSubElements } from "@/types";
+import {
+  Classes,
+  /*Colors, GeneralSubElements,*/ SelectSubElements,
+} from "@/types";
 import { IonSelect, IonSelectOption } from "@ionic/vue";
 import { PropType } from "vue";
 
@@ -52,11 +55,22 @@ const props = defineProps({
   },
   disabled: Boolean,
   no_padding: Boolean,
-  //colors: Object as PropType<Colors<GeneralSubElements>>, // Da sistemare: colori
+  //colors: Object as PropType<Colors<GeneralSubElements>>, //<!-- TODO (7): colori
   classes: Object as PropType<Classes<SelectSubElements>>,
 });
 defineEmits(["update:selected_option"]);
 </script>
 
 <style>
+.alert-wrapper {
+  max-width: unset !important;
+  width: 350px !important; /*<!-- TODO (6): trovare un metodo dinamico */
+}
+/*.alert-radio-label.sc-ion-alert-md {
+  white-space: pre-line !important;
+}
+
+.alert-radio-label.sc-ion-alert-ios {
+  white-space: pre-line !important;
+}*/
 </style>

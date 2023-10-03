@@ -132,7 +132,7 @@ const changeSelection = async () => {
             let tmp_card: GeneralCardElements;
             if ($route.name == "announcements") {
               tmp_card = new MinimizedCourse(a as MinimumCourseProps).toCard(
-                // Da sistemare: finire
+                //<!-- TODO (5): finire
                 "/announcements/" +
                   (a as MinimumCourseProps).id +
                   "/" +

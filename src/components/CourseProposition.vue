@@ -24,7 +24,7 @@
         </template>
       </suspense>
     </ion-modal>-->
-    <!-- Da sistemare: spostare dopo rework menu -->
+    <!-- ! (3): spostare pulsanti in alto -->
     <ionic-element
       :element="buttons[3]"
       @execute_link="$router.push(store.state.request.url)"
@@ -32,7 +32,7 @@
     <template v-if="user.user == 'admin'">
       <ionic-element :element="buttons[4]" @signal_event="approve()" />
       <ionic-element :element="buttons[5]" @signal_event="approve(false)" />
-      <!-- Da sistemare: sistemare /approval quando finito da Pietro -->
+      <!-- ! (2): sistemare /approval quando finito da Pietro -->
       <ionic-element
         :element="action == 'view' ? buttons[6] : buttons[7]"
         @signal_event="changeModality(action == 'view' ? 'edit' : 'view')"
@@ -82,7 +82,7 @@
                   class="ion-margin-vertical"
                   :readonly="action == 'view'"
                 />
-                <!-- Da sistemare: trovare un modo per rendere la chiamata generale -->
+                <!-- TODO (9): trovare un modo per rendere la chiamata generale -->
                 <!--<ion-textarea
                   v-else
                   v-model="
@@ -93,6 +93,7 @@
                   fill="outline"
                   class="ion-margin-vertical"
                 />-->
+                <!-- ! (1): mettere editor html -->
                 <ion-textarea
                   v-else-if="pages[current_page_index] == 'description'"
                   v-model="
@@ -491,7 +492,7 @@
                         v-if="selected_teacher != 0"
                         :element="buttons[2]"
                         @signal_event="setupModalAndOpen('teacher_info')"
-                      />--> <!-- Da sistemare: decommentare quando ci saranno le info dell'insegnante -->
+                      />--> <!-- TODO (7): decommentare quando ci saranno le info dell'insegnante -->
                     </div>
                     <!--
                       <ion-checkbox
@@ -569,7 +570,6 @@
             </ion-col>
           </ion-row>
           <!--<template v-if="parameters_remaining">-->
-          <!-- Da sistemare: sistemare remainings -->
           <ion-row>
             <ion-col>
               <ion-button
@@ -682,7 +682,7 @@ const propose = () => {
     () => setupModalAndOpen("title"),
     "post",
     course_proposition.toProposition()
-  ); // Da sistemare: sistemare remainings e dopo setuPModalAndOpen
+  );
 };
 const closeModal = (alert: boolean) => {
   if (alert) {
@@ -692,7 +692,7 @@ const closeModal = (alert: boolean) => {
   }
 };
 const setupModalAndOpen = async (window: AvailableModal) => {
-  // Da sistemare: fare le info degli insegnanti e i vari errori
+  //<!-- ! (1): Sistemare setuPModalAndOpen per errori e conferme
   switch (window) {
     default:
       break;
@@ -957,7 +957,7 @@ const addTeacher = (proposition_teacher?: PropositionTeacher) => {
   trigger.value++;
 };
 const addElement = (type: ListTypes) => {
-  // Da sistemare: trovare pezzi in comune negli switch per semplificare la funzione e la successiva
+  // TODO (9): trovare pezzi in comune negli switch per semplificare la funzione e la successiva
   switch (type) {
     case "teachings":
       addToSimpleList("teachings");
@@ -1148,7 +1148,7 @@ const edit_course_proposition = async (course_id?: number) => {
         (a: LearningArea) =>
           a.italian_title == course.italian_learning_area &&
           a.english_title == course.english_learning_area
-      ); // Da sistemare: aspettare che Pietro metta id
+      ); //<!-- TODO (8): aspettare che Pietro metta id
       return tmp != undefined
         ? tmp
         : {
@@ -1204,7 +1204,7 @@ const edit_course_proposition = async (course_id?: number) => {
 };
 const changeModality = (new_action: Action) => {
   action.value = new_action;
-  // Da sistemare: mettere X a liste
+  //<!-- TODO (6*): mettere X a liste
   trigger.value++;
 };
 const approve = (outcome = true) => {
@@ -1217,11 +1217,9 @@ const approve = (outcome = true) => {
       "&approved=" +
       outcome,
     () => {
-      // Da sistemare: controlla risposta e apri modal
       console.log(outcome ? "Accettato" : "Rifiutato");
     },
     () => {
-      // Da sistemare: controlla risposta e apri modal
       console.log("Operazione non riuscita");
     },
     "put"
@@ -1282,7 +1280,7 @@ const buttons: CustomElement[] = [
     content: {
       url: "/propositions_history",
       method: "get",
-      icon: getIcon("archive"), // Da sistemare: mettere in alto e fare popup
+      icon: getIcon("archive"),
     },
   },
   {
@@ -1375,7 +1373,7 @@ const study_addresses: {
   selected: {},
 };
 const study_years: {
-  // Da sistemare: mettere elenco check e usare card per study_address con X per ogni classe
+  //<!-- TODO (5): mettere elenco check e usare card per study_address con X per ogni classe
   available: {
     [key: string]: {
       [key: string]: { id: number }[];
@@ -1398,7 +1396,7 @@ const teachers: {
   available: [],
   selected: [],
 };
-const num_section: Ref<string> = ref("0"); // Da sistemare: bug di ion-input che da stringa anche con type="number"
+const num_section: Ref<string> = ref("0"); //<!-- TODO (10): bug di ion-input che da stringa anche con type="number"
 const main_teacher = ref(false);
 const teachers_cards: OrderedCardsList<GeneralCardElements> = {
   order: [],
@@ -1432,7 +1430,7 @@ let learning_sessions: LearningSession[] = [];
 let groups: { id: number }[] = [];
 let sections: boolean[] = reactive([]);
 
-/*switch (pages[current_page_index.value]) { // Da sistemare: caricare una volta i vari contenuti
+/*switch (pages[current_page_index.value]) { //<!-- TODO (6): caricare una volta i vari contenuti
   case "teaching_list":
     
     break;
@@ -1444,7 +1442,7 @@ let sections: boolean[] = reactive([]);
     break;
 }*/
 models = await executeLink(
-  "/v1/propositions?recent_models=10", // Da sistemare: fare rework recent_models (mettere filtro su tutti i corsi)
+  "/v1/propositions?recent_models=10", //<!-- TODO (5): fare rework recent_models (mettere filtro su tutti i corsi)
   (response) =>
     response.data.data.map((a: CourseModelProps) => new CourseModel(a)),
   () => []
@@ -1461,7 +1459,7 @@ growth_areas.available = await executeLink(
   () => []
 );
 learning_sessions = await executeLink(
-  "/v1/learning_sessions?future_session=true", // Da sistemare: aggiungere course_id quando Pietro finisce
+  "/v1/learning_sessions?future_session=true", //<!-- TODO (6): aggiungere course_id quando Pietro finisce
   (response) => {
     const tmp_learning_sessions: LearningSession[] = [];
 

@@ -25,7 +25,7 @@ type Menu = {
 };
 
 type BaseElement = {
-    [key: string]: string // Da sistemare: mettere [key in keyof string as Language]
+    [key: string]: string // TODO (9): mettere [key in keyof string as Language]
 }
 
 type ElementsList = {
@@ -51,7 +51,7 @@ type AnnualCredits = {
 
 type OrdinaryClassProps = {
     annual_credits_ref: ResponseItem<AnnualCredits>,
-    english_displayed_name: string, // Da sistemare: sistemare visualizzazione nome classe
+    english_displayed_name: string, // TODO (8): sistemare visualizzazione nome classe
     italian_displayed_name: string,
     school_year: number,
     study_address_ref: ResponseItem<{
@@ -105,7 +105,7 @@ class OrdinaryClassSummary implements OrdinaryClassSummaryProps {
 
 /*class OrdinaryClass {
     annual_credits?: AnnualCredits
-    english_displayed_name?: string // Da sistemare: sistemare visualizzazione nome classe
+    english_displayed_name?: string // TODO (8): sistemare visualizzazione nome classe
     italian_displayed_name?: string
     school_year: number
     address: string
@@ -224,11 +224,9 @@ class Enrollment {
     }
 }
 
-type CardElements = { // Da sistemare: sistemare quando tolti gli altri type-card
+type CardElements = {
     id: string,
     group: any,
-    url?: string,
-    method?: Method,
     colors?: Colors<GeneralSubElements>,
     classes?: Classes<CardSubElements>
 }
@@ -371,8 +369,8 @@ class CourseBase {
     constructor(courseObj: CourseBaseProps) {
         this.id = courseObj.id;
         this.credits = courseObj.credits;
-        this.learning_area_ref = courseObj.learning_area_ref; // Da sistemare: in /courses/:id vengno dati solo i titoli e non l'id
-        this.italian_title = courseObj.italian_title; // Da sistemare: sistemare lingue mettendo get
+        this.learning_area_ref = courseObj.learning_area_ref; // TODO (6): in /courses/:id vengno dati solo i titoli e non l'id
+        this.italian_title = courseObj.italian_title; // TODO (8): sistemare lingue mettendo get
         this.english_title = courseObj.english_title;
     }
 }
@@ -440,7 +438,7 @@ class CourseSummary extends CourseBase {
                 content: tmp_enrollment.getEnrollmentIcon(path, method),
                 colors: tmp_enrollment.getChangeButtonColors(),
                 params: {
-                    border_radius: "10px" // Da sistemare: capire cos'è params
+                    border_radius: "10px" // (10): capire cos'è params
                 }
             });
         }
@@ -476,7 +474,7 @@ class CurriculumCourse extends CourseBase {
         this.intermediate_grades = this.intermediate_grades.concat(grades);
     }*/
 
-    toCard(path?: string, method?: Method): GeneralCardElements { // Da sistemare: per visualizzazione tabella a telefono
+    toCard(path?: string, method?: Method): GeneralCardElements { // ! (3): per visualizzazione tabella a telefono
         const language = getCurrentLanguage();
         return {
             id: "" + this.id,
@@ -511,7 +509,7 @@ class CurriculumCourse extends CourseBase {
                     text: this[`${language}_title`]
                 }
             }, {
-                id: this.id + "_section",
+                id: this.id + "_section", // TODO (8): Mettere differenza tra visualizzazione con corso frequentato una volta e più
                 type: "string",
                 content: this.section
             }, {
@@ -523,7 +521,7 @@ class CurriculumCourse extends CourseBase {
                 type: "string",
                 content: (this.learning_area_ref.data as { id: string }).id
             }, {
-                id: this.id + "_gardes", // Da sistemare: mettere il controllo con future_course al passaggio a curriculum_v2
+                id: this.id + "_gardes", // TODO (4): mettere il controllo con future_course al passaggio a curriculum_v2
                 type: "icon",
                 linkType: "event",
                 content: {
@@ -548,7 +546,7 @@ class CurriculumCourse extends CourseBase {
     }
 }
 
-class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
+class Course extends CourseBase { // TODO (6): "unire" con ModelProposition
 
     creation_school_year: number;
     up_hours: number;
@@ -559,7 +557,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
     admin_confirmation: string;
     italian_expected_learning_results: string;
     english_expected_learning_results: string;
-    italian_criterions: string; // Da sistemare: vedere se conviene raggruppare le cose con le lingue in oggetti, per poter rendere più facile l'aggiunta di lingue
+    italian_criterions: string; // TODO (7): vedere se conviene raggruppare le cose con le lingue in oggetti, per poter rendere più facile l'aggiunta di lingue
     english_criterions: string;
     italian_activities: string;
     english_activities: string;
@@ -817,7 +815,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             id: "" + this.id,
             group: "",
             content: [{
-                id: this.id + "_description", // Da sistemare: usare getCustomMessage
+                id: this.id + "_description", // TODO (9): usare getCustomMessage
                 type: "html",
                 content: this[`${language}_description`]
             }, {
@@ -851,7 +849,7 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
             }, {
                 id: this.id + "_learning_area",
                 type: "html",
-                content: "<b>" + getCurrentElement("learning_area") + "</b>: " + this[`${language}_learning_area`]
+                content: "<b>" + getCurrentElement("learning_area") + "</b>: " + this[`${language}_learning_area`] // TODO (8): mettere grasseto dentro
             }, {
                 id: this.id + "_credits",
                 type: "html",
@@ -864,15 +862,15 @@ class Course extends CourseBase { // Da sistemare: "unire" con ModelProposition
                 id: this.id + "_students_number",
                 type: "html",
                 content: "<b>" + getCurrentElement("students_number") + "</b>: <ul class='ion-no-margin'><li>" + getCurrentElement("min") + ": " + this.min_students + "</li><li>" + getCurrentElement("max") + ": " + this.max_students + "</li></ul>"
+            }, {
+                id: this.id + "_proposer_teacher",
+                type: "html",
+                content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.proposer_teacher.name + " " + this.proposer_teacher.surname
             }]
         };
 
         if (user != undefined && user.user != "student") {
             course.content?.push({
-                id: this.id + "_proposer_teacher",
-                type: "html",
-                content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.proposer_teacher.name + " " + this.proposer_teacher.surname
-            }, {
                 id: this.id + "_creation_date",
                 type: "html",
                 content: "<b>" + getCurrentElement("creation_school_year") + "</b>: " + this.creation_school_year
@@ -897,7 +895,7 @@ type LearningSessionProps = {
     open_day: string;
 }
 
-class LearningSession { // Da sistemare: aggiungi numero sessioni
+class LearningSession { // TODO (4): sistema numero-anno dove visualizzo solo ID
 
     id: number;
     number: number;
@@ -995,7 +993,7 @@ class LearningSession { // Da sistemare: aggiungi numero sessioni
                                 + course[`${language}_title`]
                                 + ((status == LearningSessionStatus.CURRENT || status == LearningSessionStatus.UPCOMING) && course.section != null
                                     ? " - " + getCurrentElement("section") + " " + course.section : "")
-                                + "</li>"; // Da sistemare: vedere se sezione è fissa o meno
+                                + "</li>";
                         }
                     }
                     session_list += "</ul>";
@@ -1016,7 +1014,7 @@ class LearningSession { // Da sistemare: aggiungi numero sessioni
             () => 0);
     }
 
-    async toCard(selected?: boolean, learning_context?: LearningContextSummary, credits?: boolean, courses_list?: boolean, reference = new Date()): Promise<GeneralCardElements> { // Da sistemare: mettere selected all'inizio quando verrà tolto $axios e store
+    async toCard(selected?: boolean, learning_context?: LearningContextSummary, credits?: boolean, courses_list?: boolean, reference = new Date()): Promise<GeneralCardElements> {
 
         const status = this.getStatus(reference);
         const put_credits = credits ?? status == LearningSessionStatus.FUTURE;
@@ -1178,7 +1176,7 @@ type Classes<T extends SubElements | CardsListElements | CardsGridElements | Sel
     }
 }
 
-type CustomElement = { // Da sistemare: togliere type e usare funzioni is... o roba tipo CustomElement<T>
+type CustomElement = { // TODO (6): togliere type e usare funzioni is... o roba tipo CustomElement<T>
     id: string,
     type: ElementType,
     linkType?: LinkType,
@@ -1215,7 +1213,7 @@ class Grade implements GradeProps {
         this.id = hashCode(this.publication.toISOString());
     }
 
-    toCard(): GeneralCardElements { // Da sistemare: per visualizzazione tabella a telefono
+    toCard(): GeneralCardElements { // ! (3): per visualizzazione tabella a telefono
         const language = getCurrentLanguage();
         return {
             id: "" + this.id,
@@ -1251,7 +1249,8 @@ type GradesParameters = {
     course_id: number,
     session_id: number,
     student_id: number,
-    teacher_id?: number
+    teacher_id?: number,
+    associated_teacher?: boolean,
 }
 
 type ProjectClassTeachingsResponse = {
@@ -1283,7 +1282,7 @@ class CourseSectionsTeachings {
         }).id]);
     }
 
-    toCard(group: string, learning_session: string): GeneralCardElements { // Da sistemare: per visualizzazione tabella a telefono
+    toCard(group: string, learning_session: string): GeneralCardElements { // ! (3): per visualizzazione tabella a telefono
         const language = getCurrentLanguage();
         return {
             id: "" + this.id,
@@ -1381,7 +1380,7 @@ class Student extends StudentSummary {
         })
     }
 
-    toCard(): GeneralCardElements { // Da sistemare: per visualizzazione tabella a telefono
+    toCard(): GeneralCardElements { // ! (3): per visualizzazione tabella a telefono
         return {
             id: "" + this.id,
             group: "",
@@ -1398,7 +1397,7 @@ class Student extends StudentSummary {
     }
 
     toTableRow(course_id: string, session_id: string, teacher_id?: number, grades?: boolean, final_grade?: Grade): CustomElement[] {
-        const row_to_return: CustomElement[] = [{ // Da sistemare: rendere cliccabile
+        const row_to_return: CustomElement[] = [{ // TODO (4): rendere cliccabile
             id: this.id + "_name_surname",
             type: "string",
             content: this.name + " " + this.surname
@@ -1418,7 +1417,7 @@ class Student extends StudentSummary {
         }
         if (grades) {
             tmp_row.push({
-                id: this.id + "_gardes", // Da sistemare: Mettere il controllo con future_course al passaggio a curriculum_v2
+                id: this.id + "_gardes", // TODO (4): Mettere il controllo con future_course al passaggio a curriculum_v2
                 type: "icon",
                 linkType: "event",
                 content: {
@@ -1493,7 +1492,7 @@ class StudentInformation extends StudentSummary {
     }
 
     toCard(): GeneralCardElements {
-        return { // Da sistemare: sistemare roba undefined
+        return { // TODO (6): sistemare roba undefined
             id: "" + this.username,
             title: getCustomMessage("title", this.username, "title"),
             group: "",
@@ -1651,7 +1650,7 @@ type UserProps = {
     token: string,
     user: UserType,
     expirationDate: string,
-    // Da sistemare: mettere first_access
+    // ! (3): mettere first_access
 }
 
 class User {
@@ -1727,11 +1726,11 @@ class CourseModel {
         this.italian_title = props.italian_title;
         this.english_title = props.english_title;
         this.creation_school_year = props.creation_school_year;
-        this.project_class_confirmation_date = props.project_class_confirmation_date != null ? new Date(props.project_class_confirmation_date) : undefined; // Da sistemare: guardare quando undefined
+        this.project_class_confirmation_date = props.project_class_confirmation_date != null ? new Date(props.project_class_confirmation_date) : undefined;
         this.project_class_to_be_modified = props.project_class_to_be_modified;
         this.course_confirmation_date = props.course_confirmation_date != null ? new Date(props.course_confirmation_date) : props.course_confirmation_date;
         this.course_to_be_modified = props.course_to_be_modified;
-        // Da sistemare: sistemare id card con id+anno e aggiungere proposer_teacher e certifying_admin quando Pietro finisce
+        // TODO (5): sistemare id card con id+anno e aggiungere proposer_teacher e certifying_admin quando Pietro finisce
     }
 
     toString() {
@@ -1739,7 +1738,7 @@ class CourseModel {
         return this[`${language}_title`] + " - " + this.creation_school_year;
     }
 
-    toCard(user: User, view = false): GeneralCardElements { // Da sistemare: evidenziare quando project_class_to_be_modified | course_to_be_modified una volta unita HiglightCard a GeneralCardElements
+    toCard(user: User, view = false): GeneralCardElements { // TODO (5): evidenziare quando project_class_to_be_modified | course_to_be_modified
         const language = getCurrentLanguage();
 
         return {
@@ -1749,7 +1748,7 @@ class CourseModel {
             side_element: user.user == "admin" ? {
                 id: "status",
                 type: "string",
-                content: this.project_class_confirmation_date instanceof Date && !isNaN(this.project_class_confirmation_date.getMilliseconds()) ? "Approvato" : "Da approvare" // Da sistemare: mettere stato quando disponibile proposer
+                content: this.project_class_confirmation_date instanceof Date && !isNaN(this.project_class_confirmation_date.getMilliseconds()) ? "Approvato" : "Da approvare"
             } : undefined,
             content: [{
                 id: this.id + "_project_class_confirmation_date",
@@ -1761,7 +1760,7 @@ class CourseModel {
                 content: getCurrentElement("course_confirmation_date") + ": " + (this.course_confirmation_date != undefined ? toDateString(this.course_confirmation_date) : "-")
             }],
             link: {
-                url: "/course_proposal?" + (view ? "view" + "=" + this.id : ""), // Da sistemare: mettere guardia che sistema il link, salvando le cose sulla sessione
+                url: "/course_proposal?" + (view ? "view=" + this.id : ""), // TODO (6*): mettere guardia che sistema il link, salvando le cose sulla sessione
                 method: "get"
             }
         }
@@ -1901,13 +1900,13 @@ class ModelProposition {
         if (empty_proposition) {
             this._remaining = ModelProposition.getProps();
         } else {
-            this._remaining = []; // Da sistemare: check remaining
+            this._remaining = []; // TODO (4): check remaining (usare sessione per persistenza)
         }
     }
 
     public static emptyProposition(): PropositionObj {
         return {
-            course_id: 0, // Da sistemare: mettere undefined di base a quelli che possono permetterselo
+            course_id: 0, // TODO (4): mettere undefined di base a quelli che possono permetterselo
             italian_title: "",
             english_title: "",
             up_hours: 0,
@@ -2088,7 +2087,7 @@ class ModelProposition {
 type TitleDescription = {
     [key in keyof string as `${Language}_title`]: string
 } & {
-        [key in keyof string as `${Language}_description`]?: string // Da sistemare: vedere descrizioni che possono essere null
+        [key in keyof string as `${Language}_description`]?: string // TODO (4): vedere descrizioni che possono essere null
     };
 
 type GrowthAreaProps = {
@@ -2326,7 +2325,7 @@ class TeacherProposition {
     }
 
     toCard(disabled = false): GeneralCardElements {
-        return { // Da sistemare: sistemare roba undefined
+        return { // TODO (6): sistemare roba undefined
             id: "" + this.teacher.id,
             group: "",
             side_element: disabled ? undefined : {
@@ -2354,7 +2353,7 @@ class TeacherProposition {
                         icon: getIcon("information_circle"),
                         text: this.teacher.name + " " + this.teacher.surname// + (this.main ? " [" + getCurrentElement("main_teacher") + "]" : "")
                     },
-                },*/ // Da sistemare: creare info teacher
+                },*/ // TODO (6): creare info teacher
                 {
                     id: "name",
                     type: "string",
@@ -2395,7 +2394,7 @@ type OpenToConstraint = {
         [key in keyof string as `${Language}_title`]: string
     }
 
-type AdminProjectClassProps = { // Da sistemare: cambiare nome, dato che possono accederci tutti
+type AdminProjectClassProps = { // TODO (9): cambiare nome, dato che possono accederci tutti
     course_id: number,
     learning_session: number,
     group: number,
@@ -2416,7 +2415,7 @@ type AdminProjectClassProps = { // Da sistemare: cambiare nome, dato che possono
 
 class AdminProjectClass {
     course_id: number;
-    learning_session: LearningSession; // Da sistemare: controllare dove ho messo id, invece che cose da visualizzare
+    learning_session: LearningSession;
     group: number;
     italian_title: string;
     english_title: string;
@@ -2442,7 +2441,7 @@ class AdminProjectClass {
         this.group = props.group;
         this.italian_title = props.italian_title;
         this.english_title = props.english_title;
-        this.teacher_id = (props.teacher_ref.data as { id: number }).id; // Da sistemare: raccogliere in tipo TeacherSummary
+        this.teacher_id = (props.teacher_ref.data as { id: number }).id; // TODO (5): raccogliere in tipo TeacherSummary
         this.teacher_name = props.teacher_name;
         this.teacher_surname = props.teacher_surname;
         this.admin_id = (props.admin_ref.data as { id: number }).id;
@@ -2458,12 +2457,12 @@ class AdminProjectClass {
             });
     }
 
-    toCard(path?: string, user?: User, section?: string, separated_elements = false): GeneralCardElements { // Da sistemare: vedere se usare Higlight...
+    toCard(path?: string, user?: User, section?: string, separated_elements = false): GeneralCardElements {  // TODO (5): evidenziare quando project_class_to_be_modified | course_to_be_modified
         const language = getCurrentLanguage();
         const tmp_card: GeneralCardElements = {
             id: "" + this.course_id + "_" + this.learning_session + "_" + this.group,
             group: "",
-            title: getCustomMessage("title", this[`${language}_title`], "title"), // Da sistemare: mettere titolo
+            title: getCustomMessage("title", this[`${language}_title`], "title"),
             content: [],
             link: path != undefined ? {
                 url: path,
@@ -2496,7 +2495,7 @@ class AdminProjectClass {
                     "<b>" + getCurrentElement("session")
                     + " - " + getCurrentElement("group")
                     + (section != undefined ? " - " + getCurrentElement("section") : "")
-                    + "</b>: (" + this.learning_session.number + " - " + this.learning_session.school_year + "/" + (this.learning_session.school_year % store.state.year_module + 1) // Da sistemare: modificare tutti gli anni scolastici per la visualizzazione
+                    + "</b>: (" + this.learning_session.number + " - " + this.learning_session.school_year + "/" + (this.learning_session.school_year % store.state.year_module + 1) // TODO (4): modificare tutti gli anni scolastici per la visualizzazione
                     + ") - " + this.group
                     + (section != undefined ? " - " + section : ""),
             });
@@ -2505,20 +2504,20 @@ class AdminProjectClass {
             tmp_card.content?.push({
                 id: "title",
                 type: "html",
-                content: "<b>" + getCurrentElement("title") + "</b>: " + this[`${language}_title`], // Da sistemare: mettere <p> o simili
+                content: "<b>" + getCurrentElement("title") + "</b>: " + this[`${language}_title`],
             });
         }
+        tmp_card.content?.push({
+            id: "proposer_teacher",
+            type: "html",
+            content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.teacher_name + " " + this.teacher_surname,
+        });
         if (user == undefined || user.user != "student") {
             tmp_card.content?.push({
-                id: "teacher",
+                id: "admin",
                 type: "html",
-                content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.teacher_name + " " + this.teacher_surname,
-            },
-                {
-                    id: "admin",
-                    type: "html",
-                    content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.admin_name + " " + this.admin_surname,
-                });
+                content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.admin_name + " " + this.admin_surname,
+            });
         }
 
         return tmp_card;

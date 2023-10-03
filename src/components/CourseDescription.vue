@@ -463,11 +463,11 @@ if (props.learning_session_id != undefined) {
           };
         }
         (tmp_card.content as CustomElement[])[0].classes = {
-          item: {
-            top_radius: true,
-          },
           label: {
             "ion-text-wrap": true,
+            "ion-padding-start": true,
+            "ion-padding-top": true,
+            top_radius: true,
           },
         };
         (tmp_card.content as CustomElement[])[1].classes = {

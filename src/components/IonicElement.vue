@@ -22,7 +22,7 @@
       "
       :class="actual_classes.icon"
     />
-    <!-- Da sistemare: mettere il colore alle icone -->
+    <!-- TODO (6): mettere il colore alle icone -->
     <ion-label
       v-else-if="element.type == 'title'"
       :color="
@@ -30,7 +30,7 @@
       "
       :class="actual_classes.label"
       ><!--<h2>-->
-      <!-- Da sistemare: ingrandire titolo -->
+      <!-- TODO (5): ingrandire titolo (magari mettendo un parametro per i gradi) -->
       <b>{{ element.content }}</b>
       <!--</h2>--></ion-label
     >
@@ -321,7 +321,7 @@ const props = defineProps({
     type: Object as PropType<CustomElement>,
     required: true,
   },
-  disabled: Boolean, // Da sistemare: aggiornare posti dove viene usato
+  disabled: Boolean, //<!-- TODO (7): aggiornare posti dove viene usato
 });
 defineEmits(["execute_link", "signal_event"]);
 

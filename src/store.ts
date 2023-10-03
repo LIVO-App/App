@@ -144,7 +144,7 @@ export const store = createStore({
                     },
                     "learning_sessions_management": {
                         url_names: {
-                            "admin": ["learning_sessions_management"], // Da sistemare: non è detto che userò questa pagina, dato che non c'è una seconda lista
+                            "admin": ["learning_sessions_management"], // TODO (8*): non è detto che userò questa pagina, dato che non c'è una seconda lista
                         },
                         icon_ref: "calendar"
                     },
@@ -162,7 +162,7 @@ export const store = createStore({
                         },
                         icon_ref: "settings"
                     },
-                    "logout": { // Da sistemare: spostare in profilo quando verrà creato
+                    "logout": { // TODO (5): spostare in profilo quando verrà creato
                         url_names: {
                             "student": ["logout"],
                             "teacher": ["logout"],
@@ -704,11 +704,11 @@ export const store = createStore({
                 min: 1,
                 max: 11
             },
-            excluded_learning_contexts_id: ["ECA"], // Da sistemare: mettere referenza a contesto di apprendimento
+            excluded_learning_contexts_id: ["ECA"], // TODO (9): mettere referenza a contesto di apprendimento
             main_learning_context: {
                 id: "SPE",
                 credits: null
-            }, // Da sistemare: mettere referenza a contesto di apprendimento
+            }, // TODO (9): mettere referenza a contesto di apprendimento
             courses_per_group: 1,
             year_module: 100,
             static_subscription: true,

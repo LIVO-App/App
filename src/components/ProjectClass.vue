@@ -106,7 +106,10 @@ const setupModalAndOpen = () => {
   switch (window) {
     case "grades":
       grades_title = store.state.event.data.title;
-      grades_parameters = store.state.event.data.parameters;
+      grades_parameters = {
+        ...store.state.event.data.parameters,
+        associated_teacher: associated_teacher,
+      };
       student_grades = grades[grades_parameters.student_id];
       grades_open.value = true;
       break;
@@ -138,7 +141,7 @@ const closeModal = (window: AvailableModal) => {
       description_open.value = false;
   }
 };
-const add_grade = async () => {
+const add_grade = async () => { //<!-- ! (1): Impedire ad insegnanti associati di aggiungere e aggiungere modifica e eliminazione voto
   const data = store.state.event.data;
 
   executeLink(
@@ -151,7 +154,7 @@ const add_grade = async () => {
       "&session_id=" +
       data.session_id +
       "&ita_description=" +
-      data.italian_description + // Da chiedere: cambiare lingue con parole intere
+      data.italian_description +
       "&eng_description=" +
       data.english_description +
       "&grade=" +
@@ -184,8 +187,17 @@ const updateStudents = async () => {
       session_id +
       "/components?section=" +
       selected_section.value +
-      (user.user == "teacher" ? "&teacher_id=" + user.id : ""), // Da sistemare: creare link per pagina per gestire assoc_class e togliere teacher_id
-    (response) => response.data.data.map((a: any) => new Student(a)),
+      (user.user == "teacher" ? "&teacher_id=" + user.id : ""),
+    (response) => {
+      const tmp_students: Student[] = [];
+      
+      associated_teacher = response.data.data.associated_teacher;
+      response.data.data.components.map((a: any) => {
+        tmp_students.push(new Student(a));
+      });
+
+      return tmp_students;
+    },
     () => []
   );
 
@@ -276,9 +288,9 @@ const buttons: CustomElement[] = [
     type: "icon",
     linkType: "request",
     content: {
-      url: "/announcements/" + course_id + "/" + session_id, // Da sistemare: vedere se anche admin può vedere e/o mandare messaggi
+      url: "/announcements/" + course_id + "/" + session_id, //<!-- ? vedere se anche admin può vedere e/o mandare messaggi
       method: "get",
-      icon: getIcon("mail"), // Da sistemare: mettere in alto e fare popup
+      icon: getIcon("mail"),
     },
   },
   {
@@ -288,7 +300,7 @@ const buttons: CustomElement[] = [
     content: {
       event: "course_details",
       data: {
-        title: "", // Da sistemare: mettere titolo quando ce l'avrà anche la pagina
+        title: "", //<!-- TODO (4): mettere titolo quando ce l'avrà anche la pagina
         course_id: parseInt(course_id),
       },
       icon: getIcon("information_circle"),
@@ -304,6 +316,7 @@ let final_grade: Grade | undefined;
 let student_grades: Grade[] | undefined;
 let description_title: string;
 let description_course_id: GradesParameters;
+let associated_teacher: boolean | undefined;
 
 if (user.user == "teacher") {
   firstRow.push(

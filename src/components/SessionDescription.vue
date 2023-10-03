@@ -1,7 +1,7 @@
 <template>
   <ion-grid>
     <ion-row>
-      <!-- Da sistemare: freccetta -->
+      <!-- ? Valutare se mettere freccetta o meno -->
       <!--<ion-col size="auto">
         <ion-icon
           @click="$router.go(-1)"

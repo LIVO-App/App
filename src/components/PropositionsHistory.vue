@@ -115,7 +115,7 @@ const year_propositions: OrderedCardsList<GeneralCardElements> = reactive({
 });
 const trigger = ref(0);
 const propositions: CourseModel[] = await executeLink(
-  "/v1/propositions", // Da sistemare: /v1/propositions?token=<token teacher2> da due corsi (id: 5) uguali
+  "/v1/propositions", //<!-- TODO (5*): /v1/propositions?token=<token teacher2> da due corsi (id: 5) uguali
   (response: any) =>
     response.data.data.map((a: CourseModelProps) => new CourseModel(a)), // Due modelli con titoli diversi non dovrebbero avere id diversi?
   () => []
@@ -124,7 +124,7 @@ const actual_teacher_id = user.id;
 const selected_year_index = ref(-1);
 
 await executeLink(
-  "/v1/teachers/" + actual_teacher_id + "/active_years", // Da sistemare: trovare api per admin
+  "/v1/teachers/" + actual_teacher_id + "/active_years", //<!-- TODO (5): trovare api per admin
   (response) => {
     let id: string;
 
@@ -132,7 +132,6 @@ await executeLink(
       id = "" + a.year;
 
       return {
-        // Da sistemare: creare il suo oggetto
         id: id,
         group: "",
         title: getCustomMessage("title","" + a.year),
