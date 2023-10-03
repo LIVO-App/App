@@ -49,7 +49,7 @@
       </ion-col>
       <ion-col
         :size="tableData.length == 0 ? '12' : undefined"
-        v-if="parameters.teacher_id != undefined && final === false"
+        v-if="parameters.teacher_id != undefined && parameters.associated_teacher === false && final === false"
       >
         <div class="ion-padding-bottom">
           <div class="ion-padding-bottom">

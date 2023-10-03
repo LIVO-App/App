@@ -1249,7 +1249,8 @@ type GradesParameters = {
     course_id: number,
     session_id: number,
     student_id: number,
-    teacher_id?: number
+    teacher_id?: number,
+    associated_teacher?: boolean,
 }
 
 type ProjectClassTeachingsResponse = {
@@ -2511,7 +2512,7 @@ class AdminProjectClass {
             type: "html",
             content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.teacher_name + " " + this.teacher_surname,
         });
-        if (user == undefined || user.user != "student") { // ! (1): cambiare visibilità per studente
+        if (user == undefined || user.user != "student") {
             tmp_card.content?.push({
                 id: "admin",
                 type: "html",

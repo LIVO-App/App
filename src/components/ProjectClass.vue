@@ -106,7 +106,10 @@ const setupModalAndOpen = () => {
   switch (window) {
     case "grades":
       grades_title = store.state.event.data.title;
-      grades_parameters = store.state.event.data.parameters;
+      grades_parameters = {
+        ...store.state.event.data.parameters,
+        associated_teacher: associated_teacher,
+      };
       student_grades = grades[grades_parameters.student_id];
       grades_open.value = true;
       break;
@@ -184,8 +187,17 @@ const updateStudents = async () => {
       session_id +
       "/components?section=" +
       selected_section.value +
-      (user.user == "teacher" ? "&teacher_id=" + user.id : ""), //<!-- ! (1): gestire assoc_class (e togliere teacher_id)
-    (response) => response.data.data.map((a: any) => new Student(a)),
+      (user.user == "teacher" ? "&teacher_id=" + user.id : ""),
+    (response) => {
+      const tmp_students: Student[] = [];
+      
+      associated_teacher = response.data.data.associated_teacher;
+      response.data.data.components.map((a: any) => {
+        tmp_students.push(new Student(a));
+      });
+
+      return tmp_students;
+    },
     () => []
   );
 
@@ -304,6 +316,7 @@ let final_grade: Grade | undefined;
 let student_grades: Grade[] | undefined;
 let description_title: string;
 let description_course_id: GradesParameters;
+let associated_teacher: boolean | undefined;
 
 if (user.user == "teacher") {
   firstRow.push(
