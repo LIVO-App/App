@@ -25,7 +25,7 @@ function isCourse(card: CardElements): card is CourseCardElements {
     return "credits" in card;
 }
 
-async function executeLink(url?: string | undefined, success = (response: any) => response, fail: (err: string) => any = (err: string) => err, method?: Method, body?: { [key: string]: any }) {
+async function executeLink(url?: string | undefined, success = (response: any) => response, fail: (err: any) => any = (err: string) => err, method?: Method, body?: { [key: string]: any }) {
 
     const toExecute = url ?? store.state.request.url;
     const howExecute = method ?? store.state.request.method ?? "get";

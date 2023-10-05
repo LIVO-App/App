@@ -1,5 +1,6 @@
 import { Method } from "axios";
 import { store } from "./store";
+import { AlertButton } from "@ionic/vue"
 import { executeLink, getActualLearningContext, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getCustomMessage, getGender, getIcon, getRagneString, getStatusColor, getStatusString, getStudyAddressVisualization, hashCode, numberToSection, toDateString } from "./utils";
 
 type Language = "italian" | "english";
@@ -1771,6 +1772,10 @@ type PagesType = "pages" | "editor" | "no_inner_props";
 
 type Pages = "course_id" | "title" | "characteristics1" | "characteristics2" | "description" | "expected_learning_results" | "criterions" | "activities" | "access_object" | "specific_information";
 
+type PropositionRequiredKeys = "italian_title" | "english_title" | "italian_descr" | "english_descr" | "up_hours" | "credits" | "italian_exp_l" | "english_exp_l" | "italian_cri" | "english_cri" | "italian_act" | "english_act" | "area_id" | "growth_list" | "min_students" | "max_students" | "session_id" | "access_object" | "teaching_list" | "class_group" | "num_section" | "teacher_list";
+
+type PropositionKeys = PropositionRequiredKeys | "course_id";
+
 type PropositionTitles = {
     [key in keyof string as `${Language}_title`]: string
 };
@@ -1829,6 +1834,8 @@ type PropositionSpecificInformation = {
 }
 
 type PropositionObj = {
+    [key in keyof string as PropositionKeys]: any;
+} & {
     course_id: number;
     access_object: PropositionAccessObject;
 } & PropositionTitles & PropositionCharacteristics1 & PropositionCharacteristics2 & PropositionDescription & PropositionExpectedLearningResults & PropositionCriterions & PropositionActivities & PropositionSpecificInformation;
@@ -2081,6 +2088,168 @@ class ModelProposition {
             access_object: "access_object",
             specific_information: "specific_information"
         }
+    }
+
+    static getPageIndex(page: Pages) {
+        return ModelProposition.getProps().findIndex(a => a == page);
+    }
+
+    getKeyIndex(key: PropositionKeys) {
+        const pages = ModelProposition.getProps("pages");
+
+        let index: number;
+        let count = 0;
+
+        if ((index = pages.findIndex(a => a == key)) == -1) {
+            while (index == -1 && count < pages.length) {
+                if (key in (this[pages[count]] as object)) {
+                    index = count;
+                }
+                count++;
+            }
+        }
+
+        return index;
+    }
+
+    private getRequiredInformation(): {
+        [key in keyof string as PropositionRequiredKeys]: {
+            rule: boolean | number[],
+            error_message: string,
+        }
+    } {
+        return {
+            italian_title: {
+                rule: true,
+                error_message: getCurrentElement("missing_title"),
+            },
+            english_title: {
+                rule: true,
+                error_message: getCurrentElement("missing_title"),
+            },
+            italian_descr: {
+                rule: true,
+                error_message: getCurrentElement("missing_description"),
+            },
+            english_descr: {
+                rule: true,
+                error_message: getCurrentElement("missing_description"),
+            },
+            up_hours: {
+                rule: [0],
+                error_message: getCurrentElement("up_hours_error"),
+            },
+            credits: {
+                rule: [1],
+                error_message: getCurrentElement("credits_error"),
+            },
+            italian_exp_l: {
+                rule: true,
+                error_message: getCurrentElement("missing_expected_learning_results"),
+            },
+            english_exp_l: {
+                rule: true,
+                error_message: getCurrentElement("missing_expected_learning_results"),
+            },
+            italian_cri: {
+                rule: true,
+                error_message: getCurrentElement("missing_criterions"),
+            },
+            english_cri: {
+                rule: true,
+                error_message: getCurrentElement("missing_criterions"),
+            },
+            italian_act: {
+                rule: true,
+                error_message: getCurrentElement("missing_activities"),
+            },
+            english_act: {
+                rule: true,
+                error_message: getCurrentElement("missing_activities"),
+            },
+            area_id: {
+                rule: true,
+                error_message: getCurrentElement("missing_area_id"),
+            },
+            growth_list: {
+                rule: [1],
+                error_message: getCurrentElement("missing_growth_areas"),
+            },
+            min_students: {
+                rule: [1],
+                error_message: getCurrentElement("students_error"),
+            },
+            max_students: {
+                rule: [1],
+                error_message: getCurrentElement("students_error"),
+            },
+            session_id: {
+                rule: [1],
+                error_message: getCurrentElement("missing_session_id"),
+            },
+            access_object: {
+                rule: [1],
+                error_message: getCurrentElement("missing_access"),
+            },
+            teaching_list: {
+                rule: [1, 4],
+                error_message: getCurrentElement("teaching_error"),
+            },
+            class_group: {
+                rule: [1],
+                error_message: getCurrentElement("missing_class_group"),
+            },
+            num_section: {
+                rule: [1],
+                error_message: getCurrentElement("num_sections_error"),
+            },
+            teacher_list: {
+                rule: [1],
+                error_message: getCurrentElement("missing_teachers"),
+            },
+        }
+    }
+
+    check() {
+        const required_information = this.getRequiredInformation(); // TODO (5): trovare un modo per dare un ordine
+        const proposition = this.toProposition();
+        const missing_information: {
+            [key in keyof string as PropositionRequiredKeys]?: string
+        } = {};
+
+        let len: number;
+        let actual_number: number;
+
+        for (const key of Object.keys(required_information) as PropositionRequiredKeys[]) {
+            if (typeof required_information[key].rule == "boolean") {
+                if (proposition[key] == undefined || proposition[key] == "") {
+                    missing_information[key] = required_information[key].error_message;
+                }
+            } else if (Array.isArray(required_information[key].rule)) {
+                len = (required_information[key].rule as number[]).length;
+                if (Array.isArray(proposition[key])) {
+                    if (!(proposition[key].length >= (required_information[key].rule as number[])[0] &&
+                        (len == 1 || proposition[key].length < (required_information[key].rule as number[])[1]))) {
+                        missing_information[key] = required_information[key].error_message;
+                    }
+                } else if (typeof proposition[key] == "number" || (typeof proposition[key] == "string" && (!isNaN(proposition[key]) || !isNaN(parseFloat(proposition[key]))))) {
+                    actual_number = typeof proposition[key] == "number"
+                        ? proposition[key]
+                        : !isNaN(proposition[key])
+                            ? parseInt(proposition[key])
+                            : parseFloat(proposition[key]);
+                    if (actual_number < (required_information[key].rule as number[])[0]) {
+                        missing_information[key] = required_information[key].error_message;
+                    }
+                } else if (key == "access_object") {
+                    if (Object.keys(proposition[key]).length < (required_information[key].rule as number[])[0]) {
+                        missing_information[key] = required_information[key].error_message;
+                    }
+                }
+            }
+        }
+
+        return missing_information;
     }
 }
 
@@ -2553,4 +2722,10 @@ type DefaultLink = {
     index: number,
 }
 
-export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, StringIcon, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, OrderedCardsGrid, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, GeneralCardSubElements, SubElements, CardSubElements, SelectSubElements, CardsCommonElements, CardsListElements, CardsGridElements, Colors, Classes, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, TeacherSummary, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription, DefaultLink }
+type AlertInformation = { // TODO (9): trovare gli altri posti dove metterlo
+    title: string,
+    message: string,
+    buttons: (string | AlertButton)[],
+}
+
+export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, StringIcon, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, OrderedCardsGrid, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, GeneralCardSubElements, SubElements, CardSubElements, SelectSubElements, CardsCommonElements, CardsListElements, CardsGridElements, Colors, Classes, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, PropositionRequiredKeys, PropositionKeys, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, TeacherSummary, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription, DefaultLink, AlertInformation }
