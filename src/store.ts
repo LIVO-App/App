@@ -57,6 +57,12 @@ import {
 } from 'ionicons/icons';
 import { UserProps } from "./types";
 
+const grades_scale = {
+    min: 4,
+    max: 10,
+    only_integer: true,
+};
+
 export const store = createStore({
     mutations: {
         editUser(state: any, user: UserProps | undefined) {
@@ -360,6 +366,7 @@ export const store = createStore({
                     grades: "Valutazioni",
                     final_grade: "Valutazione finale",
                     description: "Descrizione",
+                    context_description: "Descrizione del contesto",
                     date: "Data",
                     evaluation: "Valutazione",
                     intermediate_arithmetic_mean: "Media aritmetica intermedia",
@@ -393,7 +400,7 @@ export const store = createStore({
                     insert_grade: "Inserisci valutazione",
                     grade: "Valutazione",
                     empty_descriptions: "Descrizione vuota",
-                    grade_value_error: "Valore del voto errato",
+                    grade_value_error: "Inserire un voto che sia un numero " + (grades_scale.only_integer ? "intero" : "") + " compreso tra " + grades_scale.min + " e " + grades_scale.max,
                     learning_context: "Contesto di apprendimento",
                     learning_context_choice: "Scegli un contesto di apprendimento",
                     no_messages: "Nessun messaggio",
@@ -564,6 +571,7 @@ export const store = createStore({
                     grades: "Grades",
                     final_grade: "Final grade",
                     description: "Description",
+                    context_description: "Context description",
                     date: "Date",
                     evaluation: "Evaluation",
                     intermediate_arithmetic_mean: "Intermediate arithmetic mean",
@@ -596,7 +604,7 @@ export const store = createStore({
                     insert_grade: "Insert grade",
                     grade: "Grade",
                     empty_descriptions: "Empty description",
-                    grade_value_error: "Incorrect grade value",
+                    grade_value_error: "Insert " + (grades_scale.only_integer ? "an integer" : "a") + " grade between " + grades_scale.min + " and " + grades_scale.max,
                     learning_context: "Learning context",
                     learning_context_choice: "Choose a learning context",
                     no_messages: "No messages",
@@ -742,10 +750,7 @@ export const store = createStore({
             request: {},
             event: {},
             hours_per_credit: 6,
-            grades_scale: {
-                min: 1,
-                max: 11
-            },
+            grades_scale: grades_scale,
             excluded_learning_contexts_id: ["ECA"], // TODO (9): mettere referenza a contesto di apprendimento
             main_learning_context: {
                 id: "SPE",

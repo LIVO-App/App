@@ -131,7 +131,7 @@
                 ).area_id
                   " :list="learning_areas" :label="getCurrentElement('learning_area') + ':'"
                   :aria_label="getCurrentElement('learning_area')" :placeholder="getCurrentElement('area_choice')"
-                  :getCompleteName="learningAreaToString" :disabled="action == 'view'" />
+                  :getCompleteName="learningAreaToString" :disabled="action == 'view'" :no_padding="true" />
               </ion-col>
             </ion-row>
           </template>
@@ -280,9 +280,10 @@
                         : 'group_choice'
                     )
                       " :disabled="action == 'view'" />
-                  <ion-input type="number" v-model="num_section" :label="getCurrentElement('num_section')"
-                    :aria-label="getCurrentElement('num_section')" fill="outline"
-                    class="ion-margin-vertical ion-margin-start" :readonly="action == 'view'" />
+                  <div class="ion-padding">
+                    <ion-input type="number" v-model="num_section" :label="getCurrentElement('num_section')"
+                      :aria-label="getCurrentElement('num_section')" fill="outline" :readonly="action == 'view'" />
+                  </div>
                 </ion-col>
                 <ion-col>
                   <template v-if="action != 'view'">
@@ -305,10 +306,11 @@
                         >{{ getCurrentElement("main_teacher") }}</ion-checkbox
                       >
                     -->
-                    <ion-text>{{ getCurrentElement("sections") }}:
+                    <ion-text class="ion-padding">{{ getCurrentElement("sections") }}:
                       {{
-                        parseInt(num_section) <= 0 ? getCurrentElement("num_section_needed") : "" }}</ion-text>
-                        <ion-list v-if="parseInt(num_section) > 0">
+                        num_section == '' || parseInt(num_section) <= 0 ? getCurrentElement("num_section_needed") : ""
+                      }}</ion-text>
+                        <ion-list v-if="num_section != '' && parseInt(num_section) > 0">
                           <ion-item v-for="(value, index) in sections" :key="numberToSection(index)">
                             <ion-checkbox v-model="sections[index]" :aria-label="numberToSection(index)"
                               class="ion-padding-start" label-placement="start">{{ numberToSection(index)
@@ -494,14 +496,12 @@ const setupModalAndOpen = async (window: AvailableModal, message?: string) => {
       setAlertError(message)
       break;
   }
-  console.log("Aperto");
   alert_open.value = true;
 };
 const setAlertError = (message: string | undefined) => {
   alert_information.title = getCurrentElement("error");
   alert_information.message = message ?? getCurrentElement("general_error");
   alert_information.buttons = [getCurrentElement("ok")];
-  console.log("Roba");
 };
 const getTitle = (obj: any) =>
   `${language}_title` in obj ? obj[`${language}_title`] : undefined;
@@ -978,7 +978,7 @@ const edit_course_proposition = async (course_id?: number) => {
         growth_list: course.growth_list.map((a) => a.id),
         session_id: -1,
         class_group: -1,
-        num_section: 0,
+        num_section: 1,
         min_students: course.min_students,
         max_students: course.max_students,
         teaching_list: course.teaching_list.map((a) => a.id),
@@ -1206,7 +1206,7 @@ const teachers: {
   available: [],
   selected: [],
 };
-const num_section: Ref<string> = ref("0"); //<!-- TODO (10): bug di ion-input che da stringa anche con type="number"
+const num_section: Ref<string> = ref("1"); //<!-- TODO (10): bug di ion-input che da stringa anche con type="number"
 const main_teacher = ref(false);
 const teachers_cards: OrderedCardsList<GeneralCardElements> = {
   order: [],
@@ -1238,7 +1238,7 @@ let models: CourseModel[] = [];
 let learning_areas: LearningArea[] = [];
 let learning_sessions: LearningSession[] = [];
 let groups: { id: number }[] = [];
-let sections: boolean[] = reactive([]);
+let sections: boolean[] = reactive([true]);
 
 /*switch (pages[current_page_index.value]) { //<!-- TODO (6): caricare una volta i vari contenuti
   case "teaching_list":
@@ -1383,17 +1383,17 @@ watch(selected_study_address, (new_study_address) => {
   trigger.value++;
 });
 watch(num_section, (n) => {
-  let actual_n: number;
+  const actual_n = n != "" ? parseInt(n) : 0;
 
-  if (n != "") {
-    actual_n = parseInt(n);
-    course_proposition.specific_information.num_section = actual_n;
-    if (sections.length > actual_n) {
-      sections.splice(actual_n);
-    } else if (sections.length < actual_n) {
-      sections = reactive(
-        sections.concat(new Array(actual_n - sections.length).fill(false))
-      );
+  course_proposition.specific_information.num_section = actual_n;
+  if (sections.length > actual_n) {
+    sections.splice(actual_n);
+  } else if (sections.length < actual_n) {
+    sections = reactive(
+      sections.concat(new Array(actual_n - sections.length).fill(false))
+    );
+    if (sections.length > 0) {
+      sections[0] = true;
     }
   }
 });

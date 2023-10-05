@@ -2404,15 +2404,15 @@ class AccessProposition {
                     type: "string",
                     content: this.study_year + " " + this.study_address[`${language}_title`],
                 },
-                {
+                /*{
                     id: "presidium",
                     type: "string",
                     content: getCurrentElement("presidium") + ": " + this.presidium,
-                },
+                },*/
                 {
                     id: "main_study_year",
                     type: "string",
-                    content: getCurrentElement("main_study_year") + ": " + this.main_study_year,
+                    content: getCurrentElement("main_study_year") + ": " + (this.main_study_year ? getCurrentElement("yes") : getCurrentElement("no")),
                 },
             ],
         }
