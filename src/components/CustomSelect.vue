@@ -8,6 +8,7 @@
     :placeholder="placeholder"
     fill="outline"
     :disabled="disabled"
+    interface="popover"
     :class="{
       ...classes?.select,
       'ion-padding': !no_padding,

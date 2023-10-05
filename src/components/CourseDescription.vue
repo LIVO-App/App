@@ -36,41 +36,6 @@
     <div class="ion-padding">
       <template v-if="course != undefined">
         <template v-if="mode == 'course'">
-          <swiper
-            v-if="course.images.length > 1"
-            :modules="modules"
-            :slides-per-view="1"
-            navigation
-            :autoplay="{
-              delay: 4000,
-              disableOnInteraction: false,
-            }"
-          >
-            <swiper-slide v-for="(image, index) in course.images" :key="index">
-              <ion-img
-                :src="require('@/assets/' + image.url)"
-                :alt="image.caption"
-                style="height: 150px"
-              />
-            </swiper-slide>
-          </swiper>
-          <ion-img
-            v-if="course.images.length == 1"
-            :src="require('@/assets/' + course.images[0].url)"
-            :alt="course.images[0].caption"
-            style="height: 150px"
-          />
-          <ionic-element
-            v-for="element in course_card.content"
-            :key="element.id"
-            :element="element"
-          />
-          <b
-            ><ionic-element
-              :element="
-                getCustomMessage('open_to', getCurrentElement('open_to') + ':')
-              "
-          /></b>
           <list-card
             :emptiness_message="
               getCustomMessage(
@@ -106,6 +71,43 @@
               },
             }"
           />
+          <hr style="border-top: 1px solid var(--ion-color-black);" />
+          <swiper
+            v-if="course.images.length > 1"
+            :modules="modules"
+            :slides-per-view="1"
+            navigation
+            :autoplay="{
+              delay: 4000,
+              disableOnInteraction: false,
+            }"
+          >
+            <swiper-slide v-for="(image, index) in course.images" :key="index">
+              <ion-img
+                :src="require('@/assets/' + image.url)"
+                :alt="image.caption"
+                style="height: 150px"
+              />
+            </swiper-slide>
+          </swiper>
+          <ion-img
+            v-if="course.images.length == 1"
+            :src="require('@/assets/' + course.images[0].url)"
+            :alt="course.images[0].caption"
+            style="height: 150px"
+          />
+          <b><ionic-element :element="getCustomMessage('context_description',getCurrentElement('context_description').toUpperCase())" /></b>
+          <ionic-element
+            v-for="element in course_card.content"
+            :key="element.id"
+            :element="element"
+          />
+          <b
+            ><ionic-element
+              :element="
+                getCustomMessage('open_to', getCurrentElement('open_to') + ':')
+              "
+          /></b>
           <b
             ><ionic-element
               :element="

@@ -122,6 +122,7 @@
               () => {
                 let full = true;
                 let count = 0;
+                let actual_grade: number = grade == '' ? 0 : parseFloat(grade);
 
                 while (
                   count < languages.length &&
@@ -135,6 +136,7 @@
                   };
                   $emit('signal_event');
                 } else if (
+                  isNaN(actual_grade) || (actual_grade % 10) != 0 ||
                   grade < store.state.grades_scale.min ||
                   grade > store.state.grades_scale.max
                 ) {
@@ -268,7 +270,7 @@ const descriptions: {
   italian_description: "",
   english_description: "",
 });
-const grade: Ref<number> = ref(0);
+const grade: Ref<string> = ref("");
 const final_grade: Ref<boolean> = ref(false);
 const colors: Colors<GeneralSubElements> = {
   text: {
