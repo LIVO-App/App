@@ -66,27 +66,46 @@
                   class="ion-margin-vertical"
                 />-->
                 <!-- ! (1): mettere editor html -->
-                <ion-textarea v-else-if="pages[current_page_index] == 'description'" v-model="castToDescription(
-                  course_proposition[pages[current_page_index]]
-                )[`${language}_descr`]
-                  " :label="getCurrentElement(language)" :aria-label="getCurrentElement(language)" fill="outline"
-                  class="ion-margin-vertical" :readonly="action == 'view'" />
-                <ion-textarea v-else-if="pages[current_page_index] == 'expected_learning_results'
-                  " v-model="castToExpectedLearningResults(
-    course_proposition[pages[current_page_index]]
-  )[`${language}_exp_l`]
-    " :label="getCurrentElement(language)" :aria-label="getCurrentElement(language)" fill="outline"
-                  class="ion-margin-vertical" :readonly="action == 'view'" />
-                <ion-textarea v-else-if="pages[current_page_index] == 'criterions'" v-model="castToCriterions(
-                  course_proposition[pages[current_page_index]]
-                )[`${language}_cri`]
-                  " :label="getCurrentElement(language)" :aria-label="getCurrentElement(language)" fill="outline"
-                  class="ion-margin-vertical" :readonly="action == 'view'" />
-                <ion-textarea v-else-if="pages[current_page_index] == 'activities'" v-model="castToActivities(
-                  course_proposition[pages[current_page_index]]
-                )[`${language}_act`]
-                  " :label="getCurrentElement(language)" :aria-label="getCurrentElement(language)" fill="outline"
-                  class="ion-margin-vertical" :readonly="action == 'view'" />
+                <div v-else-if="pages[current_page_index] == 'description'" class="ion-margin-vertical">
+                  <b><ionic-element :element="getCustomMessage(`${language}_descr`, getCurrentElement(language))" /></b>
+                  <editor-wrapper v-model:value="castToDescription(
+                    course_proposition[pages[current_page_index]]
+                  )[`${language}_descr`]" :disabled="action == 'view'" :options="action == 'view' ? {
+  modules: {
+    toolbar: false
+  }
+} : undefined" />
+                </div>
+                <div v-else-if="pages[current_page_index] == 'expected_learning_results'" class="ion-margin-vertical">
+                  <b><ionic-element :element="getCustomMessage(`${language}_exp_l`, getCurrentElement(language))" /></b>
+                  <editor-wrapper v-model:value="castToExpectedLearningResults(
+                    course_proposition[pages[current_page_index]]
+                  )[`${language}_exp_l`]" :disabled="action == 'view'" :options="action == 'view' ? {
+  modules: {
+    toolbar: false
+  }
+} : undefined" />
+                </div>
+                <div v-else-if="pages[current_page_index] == 'criterions'" class="ion-margin-vertical">
+                  <b><ionic-element :element="getCustomMessage(`${language}_cri`, getCurrentElement(language))" /></b>
+                  <editor-wrapper v-model:value="castToCriterions(
+                    course_proposition[pages[current_page_index]]
+                  )[`${language}_cri`]" :disabled="action == 'view'" :options="action == 'view' ? {
+  modules: {
+    toolbar: false
+  }
+} : undefined" />
+                </div>
+                <div v-else-if="pages[current_page_index] == 'activities'" class="ion-margin-vertical">
+                  <b><ionic-element :element="getCustomMessage(`${language}_act`, getCurrentElement(language))" /></b>
+                  <editor-wrapper v-model:value="castToActivities(
+                    course_proposition[pages[current_page_index]]
+                  )[`${language}_act`]" :disabled="action == 'view'" :options="action == 'view' ? {
+  modules: {
+    toolbar: false
+  }
+} : undefined" />
+                </div>
               </ion-col>
             </ion-row>
           </template>
@@ -364,7 +383,6 @@ import {
   CourseModel,
   GrowthArea,
   CustomElement,
-  Pages,
   PropositionRequiredKeys,
   Teaching,
   StudyAddress,
@@ -412,7 +430,6 @@ import {
   IonInput,
   IonButton,
   IonText,
-  IonTextarea,
   IonCheckbox,
   IonList,
   IonItem,
