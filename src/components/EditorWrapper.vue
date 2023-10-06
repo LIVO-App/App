@@ -37,7 +37,7 @@ defineProps({
                     ["clean"],
                 ],
             },
-            placeholder: getCurrentElement("insert_text"),
+            placeholder: false,
             theme: "snow",
         }),
     },
