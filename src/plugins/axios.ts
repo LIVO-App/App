@@ -21,7 +21,7 @@ const options: {
     baseUrl?: string
     token?: string
 } = {
-    baseUrl: "https://backend.livopath.istitutodecarneri.it", // Da sistemare: sfruttare --prod per alternare lui a "http://localhost:5000/api"
+    baseUrl: "https://backend.livopath.istitutodecarneri.it/api", // Da sistemare: sfruttare --prod per alternare lui a "http://localhost:5000/api"
     token: sessionStorage.getItem("token") ?? undefined
 };
 
