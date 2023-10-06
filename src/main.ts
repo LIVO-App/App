@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router';
 import { $axios } from './plugins/axios'
 import { store } from "./store";
+import { quillEditor } from 'vue3-quill'
 
 import { IonicVue } from '@ionic/vue';
 
@@ -36,6 +37,7 @@ import PropositionsHistory from "./components/PropositionsHistory.vue";
 import CardItem from "./components/CardItem.vue";
 import GroupList from "./components/GroupList.vue";
 import CardsGrid from "./components/CardsGrid.vue";
+import EditorWrapper from "./components/EditorWrapper.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -60,6 +62,7 @@ const app = createApp(App)
   .use(store)
   .use(IonicVue)
   .use(router)
+  .use(quillEditor)
   /*.use(axios, {
       baseUrl: 'https://cataas.com/',
   })*/
@@ -91,9 +94,10 @@ const app = createApp(App)
   .component("AuthPanel", AuthPanel)
   .component("CourseProposition", CourseProposition)
   .component("PropositionsHistory", PropositionsHistory)
-  .component("CardItem",CardItem)
-  .component("GroupList",GroupList)
-  .component("CardsGrid",CardsGrid);
+  .component("CardItem", CardItem)
+  .component("GroupList", GroupList)
+  .component("CardsGrid", CardsGrid)
+  .component("EditorWrapper", EditorWrapper);
 
 router.isReady().then(() => {
   app.mount('#app');

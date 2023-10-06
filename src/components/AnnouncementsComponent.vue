@@ -29,7 +29,7 @@
     </div>
     <custom-select v-if="user.user == 'teacher'" v-model="selected_section" :list="sections"
       :label="getCurrentElement('section') + ':'" :aria_label="getCurrentElement('section')"
-      :placeholder="getCurrentElement('section_choice')"></custom-select>
+      :placeholder="getCurrentElement('section_choice')" />
     <suspense>
       <template #default>
         <list-card :key="trigger" :cards_list="messages" :emptiness_message="getCustomMessage(

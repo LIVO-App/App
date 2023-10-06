@@ -542,6 +542,7 @@ export const store = createStore({
                     successful_proposal: "Corso proposto con successo",
                     duplicate_course: "Corso duplicato", /* corso o classe duplicata */
                     successful_operation: "Operazione eseguita con successo",
+                    insert_text: "Inserisci del testo" // ! (1): sistemare e fare i placeholder specializzati
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -745,6 +746,7 @@ export const store = createStore({
                     successful_proposal: "Course proposed successfully",
                     duplicate_course: "Course duplicate",
                     successful_operation: "Operation successfully performed",
+                    insert_text: "Insert some text",
                 }
             },
             logged_user: false,

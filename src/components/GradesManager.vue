@@ -55,6 +55,7 @@
               colors
             )
               " />
+            <!-- TODO (5): mettere EditorWrapper -->
             <ion-textarea v-for="language in languages" :key="language" :auto-grow="true"
               v-model="descriptions[`${language}_description`]" :label="getCurrentElement(language)"
               :aria-label="getCurrentElement(language)" fill="outline" class="ion-margin-vertical" />
