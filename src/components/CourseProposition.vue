@@ -65,7 +65,6 @@
                   fill="outline"
                   class="ion-margin-vertical"
                 />-->
-                <!-- ! (1): mettere editor html -->
                 <div v-else-if="pages[current_page_index] == 'description'" class="ion-margin-vertical">
                   <b><ionic-element :element="getCustomMessage(`${language}_descr`, getCurrentElement(language))" /></b>
                   <editor-wrapper v-model:value="castToDescription(
@@ -186,13 +185,6 @@
                     :list="growth_areas.available" :label="getCurrentElement('growth_area') + ':'"
                     :aria_label="getCurrentElement('growth_area')" :placeholder="getCurrentElement('growth_area_choices')"
                     :getCompleteName="getTitle" />
-                  <ion-button @click="
-                    addElement(
-                      key == 'teaching_list' ? 'teachings' : 'growth_areas'
-                    )
-                    " expand="block" color="primary" fill="solid">
-                    {{ getCurrentElement("add") }}
-                  </ion-button>
                 </template>
                 <list-card :key="trigger + '_list'" :cards_list="key == 'teaching_list'
                   ? teachings_cards
@@ -1424,6 +1416,12 @@ selected_model.value =
   $route.query[action.value] != undefined
     ? parseInt($route.query[action.value] as string)
     : undefined;
+watch(selected_teaching, () => {
+  addElement("teachings");
+});
+watch(selected_growth_area, () => {
+  addElement("growth_areas");
+});
 </script>
 
 <style></style>
