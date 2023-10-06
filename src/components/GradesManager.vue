@@ -7,10 +7,7 @@
             <ionic-element :element="elements.title"></ionic-element>
           </ion-col>
           <ion-col size="auto">
-            <ionic-element
-              :element="elements.close"
-              @signal_event="$emit('close')"
-            ></ionic-element>
+            <ionic-element :element="elements.close" @signal_event="$emit('close')"></ionic-element>
           </ion-col>
         </ion-row>
       </ion-grid>
@@ -20,148 +17,103 @@
     <ion-row>
       <ion-col :size="tableData.length == 0 ? '12' : undefined">
         <template v-if="tableData.length > 0">
-          <ionic-table
-            :data="tableData"
-            :first_row="first_row"
-            :column_sizes="column_sizes"
-          />
+          <ionic-table :data="tableData" :first_row="first_row" :column_sizes="column_sizes" />
           <div class="ion-text-center ion-padding-bottom">
-            <ion-text color="primary"
-              >{{ getCurrentElement("intermediate_arithmetic_mean") }}:
-              {{ mean }}</ion-text
-            >
+            <ion-text color="primary">{{ getCurrentElement("intermediate_arithmetic_mean") }}:
+              {{ mean }}</ion-text>
           </div>
         </template>
         <template v-else>
           <div class="ion-text-center ion-padding">
-            <ionic-element
-              :element="
-                getCustomMessage(
-                  'emptiness_message',
-                  getCurrentElement('no_grades'),
-                  'string',
-                  colors
-                )
-              "
-            />
+            <ionic-element :element="getCustomMessage(
+              'emptiness_message',
+              getCurrentElement('no_grades'),
+              'string',
+              colors
+            )
+              " />
           </div>
         </template>
       </ion-col>
-      <ion-col
-        :size="tableData.length == 0 ? '12' : undefined"
-        v-if="parameters.teacher_id != undefined && parameters.associated_teacher === false && final === false"
-      >
+      <ion-col :size="tableData.length == 0 ? '12' : undefined"
+        v-if="parameters.teacher_id != undefined && parameters.associated_teacher === false && final === false">
         <div class="ion-padding-bottom">
           <div class="ion-padding-bottom">
-            <ionic-element
-              :element="
-                getCustomMessage(
-                  'description',
-                  getCurrentElement('grade_insertion'),
-                  'title',
-                  colors
-                )
-              "
-            />
+            <ionic-element :element="getCustomMessage(
+              'description',
+              getCurrentElement('grade_insertion'),
+              'title',
+              colors
+            )
+              " />
           </div>
           <div>
-            <ionic-element
-              :element="
-                getCustomMessage(
-                  'description',
-                  getCurrentElement('description'),
-                  'string',
-                  colors
-                )
-              "
-            />
-            <ion-textarea
-              v-for="language in languages"
-              :key="language"
-              :auto-grow="true"
-              v-model="descriptions[`${language}_description`]"
-              :label="getCurrentElement(language)"
-              :aria-label="getCurrentElement(language)"
-              fill="outline"
-              class="ion-margin-vertical"
-            />
+            <ionic-element :element="getCustomMessage(
+              'description',
+              getCurrentElement('description'),
+              'string',
+              colors
+            )
+              " />
+            <ion-textarea v-for="language in languages" :key="language" :auto-grow="true"
+              v-model="descriptions[`${language}_description`]" :label="getCurrentElement(language)"
+              :aria-label="getCurrentElement(language)" fill="outline" class="ion-margin-vertical" />
           </div>
-          <hr
-            class="ion-margin-top"
-            style="border-bottom: 1px solid var(--ion-color-medium)"
-          />
+          <hr class="ion-margin-top" style="border-bottom: 1px solid var(--ion-color-medium)" />
           <div>
-            <ion-input
-              type="number"
-              v-model="grade"
-              :label="getCurrentElement('grade')"
-              :aria-label="getCurrentElement('grade')"
-              color="black"
-              style="color: var(--ion-color-primary)"
-              fill="outline"
-              class="ion-margin-vertical"
-            />
-            <ion-label
-              position="floating"
-              :aria-label="getCurrentElement('final_grade')"
-              color="primary"
-              style="color: var(--ion-color-primary)"
-              >{{ getCurrentElement("final_grade") }}</ion-label
-            >
-            <ion-checkbox
-              v-model="final_grade"
-              :aria-label="getCurrentElement('final_grade')"
-              class="ion-padding-start"
-            ></ion-checkbox>
+            <ion-input ref="input_grade" type="tel" v-model="grade" :label="getCurrentElement('grade')"
+              :aria-label="getCurrentElement('grade')" color="black" style="color: var(--ion-color-primary)"
+              fill="outline" class="ion-margin-vertical" @ion-input="() => {
+                if (isNaN(getGradeNumber())) {
+                  grade = grade.substring(0,grade.length-1);
+                }
+              }" />
+            <ion-label position="floating" :aria-label="getCurrentElement('final_grade')" color="primary"
+              style="color: var(--ion-color-primary)">{{ getCurrentElement("final_grade") }}</ion-label>
+            <ion-checkbox v-model="final_grade" :aria-label="getCurrentElement('final_grade')"
+              class="ion-padding-start"></ion-checkbox>
           </div>
           <!-- TODO (4): controllare perchè non funziona nella tabella e mettere popup "Sei sicuro?" -->
         </div>
         <div class="ion-text-center">
-          <ion-button
-            @click="
-              () => {
-                let full = true;
-                let count = 0;
-                let actual_grade: number = grade == '' ? 0 : parseFloat(grade);
+          <ion-button @click="() => {
+            let full = true;
+            let count = 0;
+            let actual_grade: number;
 
-                while (
-                  count < languages.length &&
-                  (full =
-                    descriptions[`${languages[count++]}_description`] != '')
-                );
-                if (!full) {
-                  store.state.event = {
-                    name: 'empty_descriptions',
-                    data: {},
-                  };
-                  $emit('signal_event');
-                } else if (
-                  isNaN(actual_grade) || (actual_grade % 10) != 0 ||
-                  grade < store.state.grades_scale.min ||
-                  grade > store.state.grades_scale.max
-                ) {
-                  store.state.event = {
-                    name: 'grade_value_error',
-                    data: {},
-                  };
-                  $emit('signal_event');
-                } else {
-                  store.state.event = {
-                    name: 'add_grade',
-                    data: {
-                      ...parameters,
-                      ...descriptions,
-                      grade: grade,
-                      final: final_grade,
-                    },
-                    method: 'post',
-                  };
-                  $emit('signal_event');
-                  $emit('close');
-                }
-              }
-            "
-          >
+            while (
+              count < languages.length &&
+              (full =
+                descriptions[`${languages[count++]}_description`] != '')
+            );
+            if (!full) {
+              store.state.event = {
+                name: 'empty_descriptions',
+                data: {},
+              };
+              $emit('signal_event');
+            } else if (isNaN(actual_grade = limitGrade())) {
+              store.state.event = {
+                name: 'grade_value_error',
+                data: {},
+              };
+              $emit('signal_event');
+            } else {
+              store.state.event = {
+                name: 'add_grade',
+                data: {
+                  ...parameters,
+                  ...descriptions,
+                  grade: actual_grade,
+                  final: final_grade,
+                },
+                method: 'post',
+              };
+              $emit('signal_event');
+              $emit('close');
+            }
+          }
+            ">
             {{ getCurrentElement("insert_grade") }}
           </ion-button>
         </div>
@@ -209,6 +161,29 @@ const push_grade = (grade: Grade) => {
   }
   tableData.push(grade.toTableRow());
 };
+const getGradeNumber = () => {
+  const tmp_grade = grade.value;
+  const tmp_regexp = store.state.grades_scale.input_regex;
+  const actual_grade = tmp_regexp.test(tmp_grade) ? parseFloat(tmp_grade) : NaN;
+  tmp_regexp.test(tmp_grade); // Dummy test to reset regex (I don't know why I have to do this)
+
+  if (isNaN(actual_grade) || (actual_grade % 1) != 0) {
+    return NaN;
+  } else {
+    return actual_grade;
+  }
+};
+const limitGrade = () => {
+  let actual_grade: number;
+  
+  if (isNaN((actual_grade = getGradeNumber())) ||
+    actual_grade < store.state.grades_scale.min ||
+    actual_grade > store.state.grades_scale.max) {
+    return NaN;
+  } else {
+    return actual_grade;
+  }
+}
 
 const store = useStore();
 const languages = getAviableLanguages();
@@ -271,6 +246,7 @@ const descriptions: {
   english_description: "",
 });
 const grade: Ref<string> = ref("");
+const input_grade = ref();
 const final_grade: Ref<boolean> = ref(false);
 const colors: Colors<GeneralSubElements> = {
   text: {
@@ -292,14 +268,14 @@ if (props.grades != undefined) {
 } else {
   actual_grades = await executeLink(
     "/v1/students/" +
-      props.parameters.student_id +
-      "/grades?course_id=" +
-      props.parameters.course_id +
-      "&session_id=" +
-      props.parameters.session_id +
-      (props.parameters.teacher_id != undefined
-        ? "&teacher_id=" + props.parameters.teacher_id
-        : ""),
+    props.parameters.student_id +
+    "/grades?course_id=" +
+    props.parameters.course_id +
+    "&session_id=" +
+    props.parameters.session_id +
+    (props.parameters.teacher_id != undefined
+      ? "&teacher_id=" + props.parameters.teacher_id
+      : ""),
     (response) =>
       response.data.data.map((a: GradeProps) => {
         const tmp_grade = new Grade(a);

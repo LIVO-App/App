@@ -61,6 +61,7 @@ const grades_scale = {
     min: 4,
     max: 10,
     only_integer: true,
+    input_regex: /^([0-9]|10)$/g,
 };
 
 export const store = createStore({
