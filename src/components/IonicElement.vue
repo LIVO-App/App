@@ -111,7 +111,7 @@
             $emit('execute_link');
           } else if (!disabled && element.linkType == 'event') {
             store.state.event = {
-              name: castEventString(props.element.content).event,
+              event: castEventString(props.element.content).event,
               data: castEventString(props.element.content).data,
             };
             $emit('signal_event');
@@ -146,7 +146,7 @@
             $emit('execute_link');
           } else if (element.linkType == 'event') {
             store.state.event = {
-              name: (element.type == 'icon'
+              event: (element.type == 'icon'
                 ? castEventIcon(element.content)
                 : castEventStringIcon(element.content)
               ).event,
@@ -252,7 +252,7 @@
               $emit('execute_link');
             } else if (element.linkType == 'event') {
               store.state.event = {
-                name: castEventStringIcon(props.element.content).event,
+                event: castEventStringIcon(props.element.content).event,
                 data: castEventStringIcon(props.element.content).data,
               };
               $emit('signal_event');

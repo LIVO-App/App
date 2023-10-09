@@ -5,7 +5,6 @@
 
 <script setup lang="ts">
 import { Classes, EditorSubElements } from "@/types";
-import { getCurrentElement } from "@/utils";
 import { PropType } from "vue";
 
 defineProps({

@@ -1,7 +1,7 @@
 <template>
   <div class="ion-padding-horizontal">
     <ion-alert :is-open="alert_open" :header="alert_information.title" :message="alert_information.message"
-      :buttons="alert_information.buttons" @didDismiss="closeModal(store.state.event.name)"></ion-alert>
+      :buttons="alert_information.buttons" @didDismiss="closeModal(store.state.event.event)"></ion-alert>
     <ion-modal id="publish_announcement" :is-open="publishment_open" @didDismiss="closeModal('publish_announcement')"
       class="fit">
       <suspense>
@@ -71,7 +71,7 @@ type availableModal =
   | "publish";
 
 const setupModalAndOpen = async () => {
-  const window: availableModal = store.state.event.name;
+  const window: availableModal = store.state.event.event;
   const failed_sections: string[] = [];
 
   switch (window) {

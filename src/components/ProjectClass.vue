@@ -1,11 +1,12 @@
 <template>
   <div class="ion-padding-horizontal">
+    <!-- TODO (5): Mettere alert in App.vue -->
     <ion-alert
       :is-open="alert_open"
       :header="alert_information.title"
       :message="alert_information.message"
       :buttons="alert_information.buttons"
-      @didDismiss="closeModal(store.state.event.name)"
+      @didDismiss="closeModal(store.state.event.event)"
     ></ion-alert>
     <ion-modal
       id="grades_manages"
@@ -20,7 +21,7 @@
             :parameters="grades_parameters"
             :grades="student_grades"
             @close="closeModal('grades')"
-            @signal_event="checkAndAdd()"
+            @signal_event="manageEvent()"
           />
         </template>
         <template #fallback>
@@ -82,6 +83,7 @@
 
 <script setup lang="ts">
 import {
+AlertInformation,
   CustomElement,
   Grade,
   GradeProps,
@@ -98,10 +100,12 @@ type AvailableModal =
   | "grades"
   | "course_details"
   | "empty_descriptions"
-  | "grade_value_error";
+  | "grade_value_error"
+  | "edit_grade"
+  | "remove_grade";
 
 const setupModalAndOpen = () => {
-  const window: AvailableModal = store.state.event.name;
+  const window: AvailableModal = store.state.event.event;
 
   switch (window) {
     case "grades":
@@ -113,12 +117,18 @@ const setupModalAndOpen = () => {
       student_grades = grades[grades_parameters.student_id];
       grades_open.value = true;
       break;
+    case "remove_grade":
+      alert_information.buttons = [getCurrentElement("yes"),getCurrentElement("no")];
+      alert_open.value = true;
+      break;
     case "empty_descriptions":
       alert_information.message = getCurrentElement("empty_descriptions");
+      alert_information.buttons = [getCurrentElement("ok")];
       alert_open.value = true;
       break;
     case "grade_value_error":
       alert_information.message = getCurrentElement("grade_value_error");
+      alert_information.buttons = [getCurrentElement("ok")];
       alert_open.value = true;
       break;
     case "course_details":
@@ -236,8 +246,16 @@ const updateStudents = async () => {
     );
   }
 };
-const checkAndAdd = () => {
-  if (store.state.event.name == "add_grade") {
+const manageEvent = () => {
+  /*switch (store.state.event as AvailableModal) {
+    case "add_grade":
+      add_grade();
+      break;
+    case 
+    default:
+      break;
+  }*/
+  if (store.state.event.event == "add_grade") {
     add_grade();
   } else {
     setupModalAndOpen();
@@ -275,10 +293,10 @@ const grades: {
   [key: string]: Grade[];
 } = {};
 const alert_open = ref(false);
-const alert_information = {
+const alert_information: AlertInformation = {
   title: getCurrentElement("error"),
   message: "",
-  buttons: [getCurrentElement("ok")],
+  buttons: [],
 };
 const sections: { id: string }[] = [];
 const tmp_sections: Set<string> = new Set();
@@ -385,7 +403,7 @@ watch(selected_section, async () => {
 
 <style>
 ion-modal#grades_manages {
-  --width: 75%;
+  --width: 90%;
   --height: fit-content;
 }
 </style>

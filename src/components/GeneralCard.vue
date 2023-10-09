@@ -24,13 +24,13 @@
             store.state.event =
               selected != undefined
                 ? {
-                    name: 'change_selection',
+                    event: 'change_selection',
                     data: {
                       id: id,
                     },
                   }
                 : {
-                    name: link.event,
+                    event: link.event,
                     data: link.data,
                   };
             $emit('signal_event');

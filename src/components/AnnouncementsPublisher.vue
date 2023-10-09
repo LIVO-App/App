@@ -70,12 +70,12 @@ const check_announcement = () => {
 
   if (italian_title.value == "" || italian_message.value == "") {
     store.state.event = {
-      name: "empty_titles_or_messages",
+      event: "empty_titles_or_messages",
       data: {},
     };
   } else if (sections_selections.value.filter((a) => a.value).length == 0) {
     store.state.event = {
-      name: "no_selected_sections",
+      event: "no_selected_sections",
       data: {},
     };
   } else {
@@ -85,7 +85,7 @@ const check_announcement = () => {
       }
     }
     store.state.event = {
-      name: "publish",
+      event: "publish",
       data: {
         title: italian_title,
         message: italian_message,

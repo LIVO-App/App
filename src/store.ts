@@ -542,6 +542,7 @@ export const store = createStore({
                     successful_proposal: "Corso proposto con successo",
                     duplicate_course: "Corso duplicato", /* corso o classe duplicata */
                     successful_operation: "Operazione eseguita con successo",
+                    no_final_grade: "No voto finale",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -745,6 +746,7 @@ export const store = createStore({
                     successful_proposal: "Course proposed successfully",
                     duplicate_course: "Course duplicate",
                     successful_operation: "Operation successfully performed",
+                    no_final_grade: "No final grade",
                 }
             },
             logged_user: false,

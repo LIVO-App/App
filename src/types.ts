@@ -1229,7 +1229,7 @@ class Grade implements GradeProps {
         }
     }
 
-    toTableRow(): CustomElement[] {
+    toTableRow(teacher_id: number): CustomElement[] {
         const language = getCurrentLanguage();
 
         return [{
@@ -1244,7 +1244,31 @@ class Grade implements GradeProps {
             id: this.id + "_value",
             type: "html",
             content: (this.final ? "<b>" + getCurrentElement("final") + "</b><br />" : "") + this.grade
-        }];
+        }/*, {
+            id: this.id + "_edit",
+            type: "icon",
+            linkType: "event",
+            content: {
+                event: "edit_grade",
+                data: {
+                    id: this.id,
+                    teacher_id: teacher_id,
+                },
+                icon: getIcon("pencil")
+            }
+        }, {
+            id: this.id + "_remove",
+            type: "icon",
+            linkType: "event",
+            content: {
+                event: "remove_grade",
+                data: {
+                    id: this.id,
+                    teacher_id: teacher_id,
+                },
+                icon: getIcon("close")
+            }
+        }*/];
     }
 }
 

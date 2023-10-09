@@ -15,11 +15,13 @@
   </ion-header>
   <ion-grid>
     <ion-row>
-      <ion-col :size="tableData.length == 0 ? '12' : undefined">
+      <ion-col :size="parameters.teacher_id != undefined && tableData.length != 0 && final === false ? '7' : '12'">
         <template v-if="tableData.length > 0">
-          <ionic-table :data="tableData" :first_row="first_row" :column_sizes="column_sizes" />
+          <ionic-table :data="tableData" :first_row="first_row" :column_sizes="column_sizes"
+            @signal_event="$emit('signal_event')" />
           <div class="ion-text-center ion-padding-bottom">
-            <ion-text color="primary">{{ getCurrentElement("intermediate_arithmetic_mean") }}:
+            <ion-text color="primary">{{ getCurrentElement("intermediate_arithmetic_mean") }}{{ final === true ? " (" +
+              getCurrentElement("no_final_grade").toLowerCase() + ")" : "" }}:
               {{ mean }}</ion-text>
           </div>
         </template>
@@ -35,7 +37,7 @@
           </div>
         </template>
       </ion-col>
-      <ion-col :size="tableData.length == 0 ? '12' : undefined"
+      <ion-col :size="tableData.length == 0 ? '12' : '5'"
         v-if="parameters.teacher_id != undefined && parameters.associated_teacher === false && final === false">
         <div class="ion-padding-bottom">
           <div class="ion-padding-bottom">
@@ -66,7 +68,7 @@
               :aria-label="getCurrentElement('grade')" color="black" style="color: var(--ion-color-primary)"
               fill="outline" class="ion-margin-vertical" @ion-input="() => {
                 if (isNaN(getGradeNumber())) {
-                  grade = grade.substring(0,grade.length-1);
+                  grade = grade.substring(0, grade.length - 1);
                 }
               }" />
             <ion-label position="floating" :aria-label="getCurrentElement('final_grade')" color="primary"
@@ -89,19 +91,19 @@
             );
             if (!full) {
               store.state.event = {
-                name: 'empty_descriptions',
+                event: 'empty_descriptions',
                 data: {},
               };
               $emit('signal_event');
             } else if (isNaN(actual_grade = limitGrade())) {
               store.state.event = {
-                name: 'grade_value_error',
+                event: 'grade_value_error',
                 data: {},
               };
               $emit('signal_event');
             } else {
               store.state.event = {
-                name: 'add_grade',
+                event: 'add_grade',
                 data: {
                   ...parameters,
                   ...descriptions,
@@ -132,6 +134,7 @@ import {
   Language,
   Colors,
   GeneralSubElements,
+  User,
 } from "@/types";
 import {
   executeLink,
@@ -160,7 +163,7 @@ const push_grade = (grade: Grade) => {
   if (grade.final) {
     final.value = true;
   }
-  tableData.push(grade.toTableRow());
+  tableData.push(grade.toTableRow(user.id));
 };
 const getGradeNumber = () => {
   const tmp_grade = grade.value;
@@ -176,7 +179,7 @@ const getGradeNumber = () => {
 };
 const limitGrade = () => {
   let actual_grade: number;
-  
+
   if (isNaN((actual_grade = getGradeNumber())) ||
     actual_grade < store.state.grades_scale.min ||
     actual_grade > store.state.grades_scale.max) {
@@ -188,6 +191,7 @@ const limitGrade = () => {
 
 const store = useStore();
 const languages = getAviableLanguages();
+const user = User.getLoggedUser() as User;
 
 const props = defineProps({
   title: {
@@ -236,8 +240,18 @@ const first_row: CustomElement[] = [
     type: "string",
     content: getCurrentElement("evaluation"),
   },
+  /*{
+    id: "edit",
+    type: "string",
+    content: "",
+  },
+  {
+    id: "remove",
+    type: "string",
+    content: "",
+  },*/
 ];
-const column_sizes = [6, 3, 3];
+const column_sizes = [6, 3, 3]; //[5, 2, 2, 1, 1];
 const tableData: CustomElement[][] = [];
 const final = ref(false);
 const descriptions: {
@@ -295,7 +309,11 @@ for (const grade of actual_grades) {
   }
 }
 
-mean = (tmp_mean / (actual_grades.length - (finalPresent ? 1 : 0))).toFixed(2);
+if (actual_grades.length > 1 && !finalPresent) {
+  mean = (tmp_mean / (actual_grades.length - (finalPresent ? 1 : 0))).toFixed(2);
+} else {
+  mean = "-";
+}
 </script>
 
 <style scoped>

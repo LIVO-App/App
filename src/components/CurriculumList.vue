@@ -11,7 +11,7 @@
             :title="grades_title"
             :parameters="grades_parameters"
             @close="closeModal('grades')"
-          ></grades-manager>
+          />
         </template>
         <template #fallback>
           <loading-component />
@@ -144,7 +144,7 @@ import { useStore } from "vuex";
 type availableModal = "grades" | "course_details";
 
 const SetupModalAndOpen = () => {
-  const window: availableModal = store.state.event.name;
+  const window: availableModal = store.state.event.event;
   switch (window) {
     case "grades":
       grades_title = store.state.event.data.title;
