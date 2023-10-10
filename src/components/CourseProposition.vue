@@ -21,10 +21,9 @@
     </ion-modal>-->
     <!-- ! (3): spostare pulsanti in alto -->
     <ionic-element :element="buttons[3]" @execute_link="$router.push(store.state.request.url)" />
-    <template v-if="user.user == 'admin'">
-      <ionic-element :element="buttons[4]" @signal_event="approve()" />
-      <ionic-element :element="buttons[5]" @signal_event="approve(false)" />
-      <!-- ! (2): sistemare /approval quando finito da Pietro -->
+    <template v-if="user.user == 'admin' && !approved">
+      <ionic-element :element="buttons[4]" @signal_event="setupModalAndOpen('confirm', undefined, true)" />
+      <ionic-element :element="buttons[5]" @signal_event="setupModalAndOpen('confirm', undefined, false)" />
       <ionic-element :element="action == 'view' ? buttons[6] : buttons[7]"
         @signal_event="changeModality(action == 'view' ? 'edit' : 'view')" />
     </template>
@@ -297,6 +296,7 @@
                   </div>
                 </ion-col>
                 <ion-col>
+                  <ionic-element :element="getCustomMessage('teachers_title',getCurrentElement('teachers'))" />
                   <template v-if="action != 'view'">
                     <div>
                       <custom-select :key="trigger + '_teacher'" v-model="selected_teacher" :list="teachers.available"
@@ -399,7 +399,9 @@ import {
   PropositionTeacher,
   PropositionSpecificInformation,
   GrowthAreaProps,
-  AlertInformation
+  AlertInformation,
+  AdminProjectClassProps,
+  AdminProjectClass
 } from "@/types";
 import {
   executeLink,
@@ -427,7 +429,7 @@ import {
   IonItem,
 } from "@ionic/vue";
 import { reactive, ref, Ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 
 type AvailableModal = "error" | "teacher_info" | "confirm" | "success";
@@ -485,15 +487,19 @@ const closeModal = (alert: boolean) => {
     addition.value = false;
   }
 };
-const setupModalAndOpen = async (window: AvailableModal, message?: string) => {
+const setupModalAndOpen = async (window: AvailableModal, message?: string, approval?: boolean) => {
   switch (window) {
     case "confirm":
       alert_information.title = "";
-      alert_information.message = getCurrentElement("proposition_confrimation");
+      alert_information.message = getCurrentElement(approval == undefined
+        ? "proposition_confrimation"
+        : approval
+          ? "approval_confirmation"
+          : "rejection_confirmation");
       alert_information.buttons = [{
         text: getCurrentElement("yes"),
         role: 'yes',
-        handler: propose,
+        handler: approval == undefined ? propose : () => approve(approval),
       }, getCurrentElement("no")];
       break;
     case "success":
@@ -724,7 +730,7 @@ const addAccess = (
   }
   trigger.value++;
 };
-const addTeacher = (proposition_teacher?: PropositionTeacher) => {
+const addTeacher = (proposition_teacher?: PropositionTeacher, only_card = false) => {
   let actual_teacher_id: number;
   let actual_main_teacher: boolean;
   let tmp_teacher_index: number;
@@ -738,7 +744,6 @@ const addTeacher = (proposition_teacher?: PropositionTeacher) => {
     actual_teacher_id = selected_teacher.value;
     actual_main_teacher = main_teacher.value;
   }
-
   if (
     actual_teacher_id != 0 &&
     (tmp_teacher_index = teachers.available.findIndex(
@@ -755,9 +760,11 @@ const addTeacher = (proposition_teacher?: PropositionTeacher) => {
       sections
     );
 
-    course_proposition.specific_information.teacher_list.push(
-      teacher_proposition.toTeacherObj()
-    );
+    if (!only_card) {
+      course_proposition.specific_information.teacher_list.push(
+        teacher_proposition.toTeacherObj()
+      );
+    }
 
     teachers_cards.cards[""].push(
       teacher_proposition.toCard(action.value == "view")
@@ -962,20 +969,50 @@ const edit_course_proposition = async (course_id?: number) => {
         (response) => response.data.data
       )
     );
+    approved = course.certifying_admin.id != null; //<!-- ! (2): mettere che può essere null
     learning_area = await executeLink("/v1/learning_areas", (response) => {
-      const tmp = response.data.data.find(
+      const tmp_area = response.data.data.find(
         (a: LearningArea) =>
           a.italian_title == course.italian_learning_area &&
           a.english_title == course.english_learning_area
       ); //<!-- TODO (8): aspettare che Pietro metta id
-      return tmp != undefined
-        ? tmp
+      return tmp_area != undefined
+        ? tmp_area
         : {
           id: -1,
           italian_title: "",
           english_title: "",
         };
     });
+    if (tmp_session_id != -1) {
+      project_class = await executeLink(
+        "/v1/project_classes/" + course_id + "/" + tmp_session_id,
+        response => new AdminProjectClass(response.data.data)); //<!-- ! (3): dire a Pietro di mettere num_section sia lì che in quella generale
+      tmp_teachers = await executeLink(
+        "/v1/project_classes/" + course_id + "/" + tmp_session_id + "/teachers",
+        response => {
+          const teachers_summary: {
+            [id: number]: PropositionTeacher
+          } = {};
+          let tmp_id: number;
+
+          for (const teacher_section of response.data.data) {
+            tmp_id = teacher_section.teacher_ref.data.id;
+
+            if (teachers_summary[tmp_id] == undefined) {
+              teachers_summary[tmp_id] = {
+                teacher_id: tmp_id,
+                main: teacher_section.main_teacher === 1,
+                sections: [],
+              };
+            }
+            teachers_summary[tmp_id].sections.push(teacher_section.section);
+          }
+
+          return Object.values(teachers_summary);
+        }
+      );
+    }
     course_proposition = reactive(
       new ModelProposition({
         course_id: course_id,
@@ -985,8 +1022,8 @@ const edit_course_proposition = async (course_id?: number) => {
         credits: course.credits,
         area_id: learning_area.id,
         growth_list: course.growth_list.map((a) => a.id),
-        session_id: -1,
-        class_group: -1,
+        session_id: tmp_session_id,
+        class_group: project_class.group,
         num_section: 1,
         min_students: course.min_students,
         max_students: course.max_students,
@@ -1000,7 +1037,7 @@ const edit_course_proposition = async (course_id?: number) => {
         italian_act: course.italian_activities,
         english_act: course.english_activities,
         access_object: course.access_object,
-        teacher_list: [],
+        teacher_list: tmp_teachers,
       })
     );
     for (const teaching of course_proposition.characteristics2.teaching_list) {
@@ -1016,6 +1053,12 @@ const edit_course_proposition = async (course_id?: number) => {
         addAccess(learning_context_id, access_object, true);
       }
     }
+    if (tmp_session_id != undefined) {
+      selected_session.value = course_proposition.specific_information.session_id;
+      for (const teacher of course_proposition.specific_information.teacher_list) {
+        addTeacher(teacher,true);
+      }
+    }
   } else {
     course_proposition = reactive(new ModelProposition());
   }
@@ -1028,18 +1071,19 @@ const changeModality = (new_action: Action) => {
 };
 const approve = (outcome = true) => {
   executeLink(
-    "/v1/propositions/approval?course_id=" +
-    course_proposition.course_id +
-    "&session_id=" +
-    "2" +
-    //course_proposition.specific_information.session_id +
-    "&approved=" +
-    outcome,
+    "/v1/propositions/approval?course_id=" + course_proposition.course_id
+    + "&session_id=" + course_proposition.specific_information.session_id
+    + "&approved=" + outcome,
     () => {
-      console.log(outcome ? "Accettato" : "Rifiutato");
+      setTimeout(() => {
+        setupModalAndOpen("success", getCurrentElement("successful_" + (outcome ? "confirmation" : "rejection")));
+        $router.push({ name: "propositions_history" });
+      }, 300);
     },
     () => {
-      console.log("Operazione non riuscita");
+      setTimeout(() => {
+        setupModalAndOpen("error", getCurrentElement("general_error"))
+      }, 300);
     },
     "put"
   );
@@ -1053,6 +1097,7 @@ const user = User.getLoggedUser() as User;
 const language = getCurrentLanguage();
 const languages = getAviableLanguages();
 const $route = useRoute();
+const $router = useRouter();
 
 const trigger = ref(0);
 const selected_model: Ref<number | undefined> = ref(undefined);
@@ -1226,6 +1271,8 @@ const teachers_cards: OrderedCardsList<GeneralCardElements> = {
 const action: Ref<Action> = ref(
   $route.query.view != undefined ? "view" : "propose"
 );
+const tmp_project_class_id = $route.query[action.value] != undefined ? ($route.query[action.value] as string).split("_") : [];
+const tmp_session_id = tmp_project_class_id.length > 1 ? parseInt(tmp_project_class_id[1]) : -1;
 /*const correspondences: {
   [key in keyof string as ListTypes]: {
     [key: string]: string
@@ -1248,6 +1295,9 @@ let learning_areas: LearningArea[] = [];
 let learning_sessions: LearningSession[] = [];
 let groups: { id: number }[] = [];
 let sections: boolean[] = reactive([true]);
+let project_class: AdminProjectClassProps;
+let tmp_teachers: PropositionTeacher[];
+let approved: boolean;
 
 /*switch (pages[current_page_index.value]) { //<!-- TODO (6): caricare una volta i vari contenuti
   case "teaching_list":
@@ -1413,8 +1463,8 @@ watch(selected_model, () => {
   trigger.value++;
 });
 selected_model.value =
-  $route.query[action.value] != undefined
-    ? parseInt($route.query[action.value] as string)
+  tmp_project_class_id.length > 0
+    ? parseInt(tmp_project_class_id[0])
     : undefined;
 watch(selected_teaching, () => {
   addElement("teachings");

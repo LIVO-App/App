@@ -1,38 +1,24 @@
 <template>
-  <ion-grid
-    ><!-- v-if="learning_sessions.loaded">-->
+  <ion-grid><!-- v-if="learning_sessions.loaded">-->
     <ion-row>
       <ion-col size="12" size-md="6">
-        <list-card
-          :title="getCustomMessage('title', getCurrentElement('school_years'))"
-          :emptiness_message="
-            getCustomMessage(
-              'emptiness_message',
-              getCurrentElement('no_school_years')
-            )
-          "
-          :cards_list="school_years"
-          @signal_event="changeSelection()"
-        />
+        <list-card :title="getCustomMessage('title', getCurrentElement('school_years'))" :emptiness_message="getCustomMessage(
+          'emptiness_message',
+          getCurrentElement('no_school_years')
+        )
+          " :cards_list="school_years" @signal_event="changeSelection()" />
       </ion-col>
       <ion-col size="12" size-md="6">
-        <list-card
-          :key="trigger"
-          :title="getCustomMessage('title', getCurrentElement('courses'))"
-          :emptiness_message="
-            getCustomMessage(
-              'emptiness_message',
-              getCurrentElement(
-                is_nothing_selected()
-                  ? 'teacher_learning_session_selection_message'
-                  : 'no_project_classes'
-              )
-            )
-          "
-          :cards_list="
-            is_nothing_selected() ? empty_propositions : year_propositions
-          "
-        />
+        <list-card :key="trigger" :title="getCustomMessage('title', getCurrentElement('courses'))" :emptiness_message="getCustomMessage(
+          'emptiness_message',
+          getCurrentElement(
+            is_nothing_selected()
+              ? 'teacher_learning_session_selection_message'
+              : 'no_project_classes'
+          )
+        )
+          " :cards_list="is_nothing_selected() ? empty_propositions : year_propositions
+    " />
       </ion-col>
     </ion-row>
   </ion-grid>
@@ -115,9 +101,12 @@ const year_propositions: OrderedCardsList<GeneralCardElements> = reactive({
 });
 const trigger = ref(0);
 const propositions: CourseModel[] = await executeLink(
-  "/v1/propositions", //<!-- TODO (5*): /v1/propositions?token=<token teacher2> da due corsi (id: 5) uguali
-  (response: any) =>
-    response.data.data.map((a: CourseModelProps) => new CourseModel(a)), // Due modelli con titoli diversi non dovrebbero avere id diversi?
+  "/v1/propositions",
+  async (response: any) => Promise.all(response.data.data.map(async (a: CourseModelProps) => {
+    const tmp_proposition = new CourseModel(a);
+    await tmp_proposition.loadParms(); //<!-- ! (3): mettere chiamata unica a /learning_sessions
+    return tmp_proposition;
+  })),
   () => []
 );
 const actual_teacher_id = user.id;
@@ -134,7 +123,7 @@ await executeLink(
       return {
         id: id,
         group: "",
-        title: getCustomMessage("title","" + a.year),
+        title: getCustomMessage("title", "" + a.year),
         selected: false,
         link: {
           event: "change_selection",
@@ -148,5 +137,4 @@ await executeLink(
 );
 </script>
 
-<style>
-</style>
+<style></style>

@@ -896,20 +896,31 @@ type LearningSessionProps = {
     open_day: string;
 }
 
-class LearningSession { // TODO (4): sistema numero-anno dove visualizzo solo ID
-
+class LearningSessionSummary {
     id: number;
     number: number;
     school_year: number;
+
+    constructor (sessionObj: {
+        id: number,
+        number: number,
+        school_year: number,
+    }) {
+        this.id = sessionObj.id;
+        this.number = sessionObj.number;
+        this.school_year = sessionObj.school_year;
+    }
+}
+
+class LearningSession extends LearningSessionSummary { // TODO (4): sistema numero-anno dove visualizzo solo ID
+
     start: Date;
     end: Date;
     num_groups: number;
     open_day: Date;
 
     constructor(sessionObj: LearningSessionProps) {
-        this.id = sessionObj.id;
-        this.number = sessionObj.number;
-        this.school_year = sessionObj.school_year;
+        super(sessionObj);
         this.start = new Date(sessionObj.start);
         this.end = new Date(sessionObj.end);
         this.num_groups = sessionObj.num_groups;
@@ -1232,6 +1243,7 @@ class Grade implements GradeProps {
     toTableRow(teacher_id: number): CustomElement[] {
         const language = getCurrentLanguage();
 
+        teacher_id + 5; // Temporary dummy use
         return [{
             id: this.id + "_description",
             type: "html",
@@ -1729,10 +1741,21 @@ type CourseModelProps = {
         id: number
     }>,
     creation_school_year: number,
+    learning_session_id: number,
     project_class_confirmation_date: string,
     project_class_to_be_modified: boolean | null,
     course_confirmation_date: string,
-    course_to_be_modified: boolean | null
+    course_to_be_modified: boolean | null,
+    certifying_admin_ref: ResponseItem<{
+        id: number
+    }> | null,
+    admin_name: string | null,
+    admin_surname: string | null,
+    proposer_teacher_ref: ResponseItem<{ // TODO (9): raccogliere ref, name e surname in un unico type
+        id: number
+    }>,
+    teacher_name: string,
+    teacher_surname: string,
 } & {
         [key in keyof string as `${Language}_title`]: string
     }
@@ -1740,16 +1763,24 @@ type CourseModelProps = {
 class CourseModel {
 
     id: number;
+    creation_school_year: number;
+    learning_session: LearningSessionSummary;
     italian_title: string;
     english_title: string;
-    creation_school_year: number;
-    project_class_confirmation_date: Date | undefined;
+    project_class_confirmation_date?: Date;
     project_class_to_be_modified: boolean | null;
-    course_confirmation_date: Date | undefined;
+    course_confirmation_date?: Date;
     course_to_be_modified: boolean | null;
+    certifying_admin?: AdminSummary;
+    proposer_teacher: TeacherSummary;
 
     constructor(props: CourseModelProps) {
         this.id = (props.course_ref.data as { id: number }).id;
+        this.learning_session = new LearningSessionSummary({
+            id: props.learning_session_id,
+            number: -1,
+            school_year: -1,
+        });
         this.italian_title = props.italian_title;
         this.english_title = props.english_title;
         this.creation_school_year = props.creation_school_year;
@@ -1757,7 +1788,21 @@ class CourseModel {
         this.project_class_to_be_modified = props.project_class_to_be_modified;
         this.course_confirmation_date = props.course_confirmation_date != null ? new Date(props.course_confirmation_date) : props.course_confirmation_date;
         this.course_to_be_modified = props.course_to_be_modified;
-        // TODO (5): sistemare id card con id+anno e aggiungere proposer_teacher e certifying_admin quando Pietro finisce
+        this.proposer_teacher = new TeacherSummary({
+            id: (props.proposer_teacher_ref.data as { id: number }).id,
+            name: props.teacher_name,
+            surname: props.teacher_surname
+        }); // Project class
+        this.certifying_admin = props.certifying_admin_ref != null && props.admin_name != null && props.admin_surname != null ? new AdminSummary({
+            id: (props.certifying_admin_ref.data as { id: number }).id,
+            name: props.admin_name,
+            surname: props.admin_surname
+        }) : undefined; // Project class
+    }
+
+    async loadParms() {
+        this.learning_session = await executeLink("/v1/learning_sessions/" + this.learning_session.id,
+            response => new LearningSessionSummary(response.data.data)); // TODO (4): mettere alternativa dove vengono passati i parametri al costruttore per diminuire il numero di richieste
     }
 
     toString() {
@@ -1769,25 +1814,26 @@ class CourseModel {
         const language = getCurrentLanguage();
 
         return {
-            id: "" + this.id,
+            id: this.id + "_" + this.creation_school_year + "_" + this.learning_session.id,
             group: "",
             title: getCustomMessage("title", this[`${language}_title`] + " - " + this.creation_school_year, "title"),
+            subtitle: getCustomMessage("subtitle",getCurrentElement("session") + ": " + this.learning_session.number + " - " + this.learning_session.school_year),
             side_element: user.user == "admin" ? {
                 id: "status",
                 type: "string",
                 content: this.project_class_confirmation_date instanceof Date && !isNaN(this.project_class_confirmation_date.getMilliseconds()) ? "Approvato" : "Da approvare"
             } : undefined,
             content: [{
-                id: this.id + "_project_class_confirmation_date",
-                type: "string",
-                content: getCurrentElement("project_class_confirmation_date") + ": " + (this.project_class_confirmation_date != undefined ? toDateString(this.project_class_confirmation_date) : "-")
-            }, {
                 id: this.id + "_course_confirmation_date",
                 type: "string",
                 content: getCurrentElement("course_confirmation_date") + ": " + (this.course_confirmation_date != undefined ? toDateString(this.course_confirmation_date) : "-")
-            }],
+            }, {
+                id: this.id + "_project_class_confirmation_date",
+                type: "string",
+                content: getCurrentElement("project_class_confirmation_date") + ": " + (this.project_class_confirmation_date != undefined ? toDateString(this.project_class_confirmation_date) : "-")
+            }], // ! (3): finire di sistemare aggiungendo certifying_admin e proposer teacher
             link: {
-                url: "/course_proposal?" + (view ? "view=" + this.id : ""), // TODO (6*): mettere guardia che sistema il link, salvando le cose sulla sessione
+                url: "/course_proposal?" + (view ? "view=" + this.id + "_" + this.learning_session.id : ""), // TODO (6*): mettere guardia che sistema il link, salvando le cose sulla sessione
                 method: "get"
             }
         }

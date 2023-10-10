@@ -59,7 +59,7 @@ async function executeLink(url?: string | undefined, success = (response: any) =
                     return new Promise(() => "Method not defined");
             }
             store.state.request = {};
-            return request.then(success)
+            return await request.then(success)
                 .catch(fail); // TODO (6): mettere finally che cancella store.state.request e store.state.event e gestire success e fail come promise
         } else {
             logout();
