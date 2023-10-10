@@ -542,6 +542,12 @@ export const store = createStore({
                     successful_proposal: "Corso proposto con successo",
                     duplicate_course: "Corso duplicato", /* corso o classe duplicata */
                     successful_operation: "Operazione eseguita con successo",
+                    no_final_grade: "No voto finale",
+                    approval_confirmation: "Confermi di voler approvare il corso?",
+                    rejection_confirmation: "Confermi di voler rifiutare il corso?",
+                    successful_confirmation: "Corso confermato con successo",
+                    successful_rejection: "Corso rifiutato",
+                    project_class_confirmation: "Conferma classe progetto",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -745,6 +751,12 @@ export const store = createStore({
                     successful_proposal: "Course proposed successfully",
                     duplicate_course: "Course duplicate",
                     successful_operation: "Operation successfully performed",
+                    no_final_grade: "No final grade",
+                    approval_confirmation: "Do you confirm your approval of the course?",
+                    rejection_confirmation: "Do you confirm your rejection of the course?",
+                    successful_confirmation: "Course confirmed successfully",
+                    successful_rejection: "Course rejected",
+                    project_class_confirmation: "Project class confirmation",
                 }
             },
             logged_user: false,

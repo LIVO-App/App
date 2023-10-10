@@ -16,7 +16,7 @@ declare module '@vue/runtime-core' {
       body?: Object
     },
     event: {
-      name: string,
+      event: string,
       data: {
         [key: string]: any
       }
