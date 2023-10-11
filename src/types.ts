@@ -1753,9 +1753,9 @@ type CourseModelProps = {
     admin_surname: string | null,
     proposer_teacher_ref: ResponseItem<{ // TODO (9): raccogliere ref, name e surname in un unico type
         id: number
-    }>,
-    teacher_name: string,
-    teacher_surname: string,
+    }> | null,
+    teacher_name: string | null,
+    teacher_surname: string | null,
 } & {
         [key in keyof string as `${Language}_title`]: string
     }
@@ -1772,7 +1772,7 @@ class CourseModel {
     course_confirmation_date?: Date;
     course_to_be_modified: boolean | null;
     certifying_admin?: AdminSummary;
-    proposer_teacher: TeacherSummary;
+    proposer_teacher?: TeacherSummary;
 
     constructor(props: CourseModelProps) {
         this.id = (props.course_ref.data as { id: number }).id;
@@ -1788,11 +1788,12 @@ class CourseModel {
         this.project_class_to_be_modified = props.project_class_to_be_modified;
         this.course_confirmation_date = props.course_confirmation_date != null ? new Date(props.course_confirmation_date) : props.course_confirmation_date;
         this.course_to_be_modified = props.course_to_be_modified;
-        this.proposer_teacher = new TeacherSummary({
+        this.proposer_teacher = props.proposer_teacher_ref != undefined && props.teacher_name != undefined && props.teacher_surname != undefined ? new TeacherSummary({
             id: (props.proposer_teacher_ref.data as { id: number }).id,
             name: props.teacher_name,
             surname: props.teacher_surname
-        }); // Project class
+        }) : undefined; // Project class
+        console.log("Ciaonissimo");
         this.certifying_admin = props.certifying_admin_ref != null && props.admin_name != null && props.admin_surname != null ? new AdminSummary({
             id: (props.certifying_admin_ref.data as { id: number }).id,
             name: props.admin_name,
