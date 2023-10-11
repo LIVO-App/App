@@ -400,7 +400,6 @@ import {
   PropositionSpecificInformation,
   GrowthAreaProps,
   AlertInformation,
-  AdminProjectClassProps,
   AdminProjectClass
 } from "@/types";
 import {
@@ -988,6 +987,7 @@ const edit_course_proposition = async (course_id?: number) => {
       project_class = await executeLink(
         "/v1/project_classes/" + course_id + "/" + tmp_session_id,
         response => new AdminProjectClass(response.data.data)); //<!-- ! (3): dire a Pietro di mettere num_section sia lì che in quella generale
+      approved = approved && project_class.admin_id != undefined;
       tmp_teachers = await executeLink(
         "/v1/project_classes/" + course_id + "/" + tmp_session_id + "/teachers",
         response => {
@@ -1295,7 +1295,7 @@ let learning_areas: LearningArea[] = [];
 let learning_sessions: LearningSession[] = [];
 let groups: { id: number }[] = [];
 let sections: boolean[] = reactive([true]);
-let project_class: AdminProjectClassProps;
+let project_class: AdminProjectClass;
 let tmp_teachers: PropositionTeacher[];
 let approved: boolean;
 
