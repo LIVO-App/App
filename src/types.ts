@@ -1,6 +1,6 @@
 import { Method } from "axios";
 import { store } from "./store";
-import { AlertButton } from "@ionic/vue"
+import { AlertButton, AlertInput } from "@ionic/vue"
 import { executeLink, getActualLearningContext, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getCustomMessage, getGender, getIcon, getRagneString, getStatusColor, getStatusString, getStudyAddressVisualization, hashCode, numberToSection, toDateString } from "./utils";
 
 type Language = "italian" | "english";
@@ -866,7 +866,7 @@ class Course extends CourseBase { // TODO (6): "unire" con ModelProposition
             }, {
                 id: this.id + "_proposer_teacher",
                 type: "html",
-                content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.proposer_teacher.name + " " + this.proposer_teacher.surname
+                content: "<b>" + getCurrentElement("proposer_teacher") + "</b>: " + this.proposer_teacher.surname + " " + this.proposer_teacher.name
             }]
         };
 
@@ -1793,7 +1793,6 @@ class CourseModel {
             name: props.teacher_name,
             surname: props.teacher_surname
         }) : undefined; // Project class
-        console.log("Ciaonissimo");
         this.certifying_admin = props.certifying_admin_ref != null && props.admin_name != null && props.admin_surname != null ? new AdminSummary({
             id: (props.certifying_admin_ref.data as { id: number }).id,
             name: props.admin_name,
@@ -2799,6 +2798,7 @@ type AlertInformation = { // TODO (9): trovare gli altri posti dove metterlo
     title: string,
     message: string,
     buttons: (string | AlertButton)[],
+    inputs?: AlertInput[],
 }
 
 export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, StringIcon, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, OrderedCardsGrid, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, GeneralCardSubElements, SubElements, CardSubElements, SelectSubElements, EditorSubElements, CardsCommonElements, CardsListElements, CardsGridElements, Colors, Classes, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, PropositionRequiredKeys, PropositionKeys, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, TeacherSummary, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription, DefaultLink, AlertInformation }

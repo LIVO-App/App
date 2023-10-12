@@ -1,7 +1,7 @@
 <template>
   <div class="ion-padding-horizontal">
     <ion-alert :is-open="alert_open" :header="alert_information.title" :message="alert_information.message"
-      :buttons="alert_information.buttons" @didDismiss="closeModal(true)"></ion-alert>
+      :buttons="alert_information.buttons" @didDismiss="closeModal(true)" :inputs="alert_information.inputs" />
     <!--<ion-modal
       id="addition"
       :is-open="addition"
@@ -296,7 +296,7 @@
                   </div>
                 </ion-col>
                 <ion-col>
-                  <ionic-element :element="getCustomMessage('teachers_title',getCurrentElement('teachers'))" />
+                  <ionic-element :element="getCustomMessage('teachers_title', getCurrentElement('teachers'))" />
                   <template v-if="action != 'view'">
                     <div>
                       <custom-select :key="trigger + '_teacher'" v-model="selected_teacher" :list="teachers.available"
@@ -487,6 +487,7 @@ const closeModal = (alert: boolean) => {
   }
 };
 const setupModalAndOpen = async (window: AvailableModal, message?: string, approval?: boolean) => {
+  alert_information.inputs = [];
   switch (window) {
     case "confirm":
       alert_information.title = "";
@@ -500,6 +501,15 @@ const setupModalAndOpen = async (window: AvailableModal, message?: string, appro
         role: 'yes',
         handler: approval == undefined ? propose : () => approve(approval),
       }, getCurrentElement("no")];
+      if (approval == false) {
+        alert_information.inputs = [{
+          type: "checkbox",
+          label: getCurrentElement("delete_model"),
+          handler: (input) => {
+            delete_model = input.checked ?? false;
+          }
+        }];
+      }
       break;
     case "success":
       alert_information.title = "";
@@ -1056,7 +1066,7 @@ const edit_course_proposition = async (course_id?: number) => {
     if (tmp_session_id != undefined) {
       selected_session.value = course_proposition.specific_information.session_id;
       for (const teacher of course_proposition.specific_information.teacher_list) {
-        addTeacher(teacher,true);
+        addTeacher(teacher, true);
       }
     }
   } else {
@@ -1073,14 +1083,17 @@ const approve = (outcome = true) => {
   executeLink(
     "/v1/propositions/approval?course_id=" + course_proposition.course_id
     + "&session_id=" + course_proposition.specific_information.session_id
-    + "&approved=" + outcome,
+    + "&approved=" + outcome
+    + (!outcome ? "&total_del=" + delete_model : ""),
     () => {
+      delete_model = false;
       setTimeout(() => {
         setupModalAndOpen("success", getCurrentElement("successful_" + (outcome ? "confirmation" : "rejection")));
         $router.push({ name: "propositions_history" });
       }, 300);
     },
     () => {
+      delete_model = false;
       setTimeout(() => {
         setupModalAndOpen("error", getCurrentElement("general_error"))
       }, 300);
@@ -1106,6 +1119,7 @@ const alert_information: AlertInformation = {
   title: "",
   message: "",
   buttons: [],
+  inputs: [],
 };
 const pages = ModelProposition.getProps("pages");
 const current_page_index = ref(0);
@@ -1298,6 +1312,7 @@ let sections: boolean[] = reactive([true]);
 let project_class: AdminProjectClass;
 let tmp_teachers: PropositionTeacher[];
 let approved: boolean;
+let delete_model = false;
 
 /*switch (pages[current_page_index.value]) { //<!-- TODO (6): caricare una volta i vari contenuti
   case "teaching_list":
@@ -1311,7 +1326,7 @@ let approved: boolean;
     break;
 }*/
 models = await executeLink(
-  "/v1/propositions?recent_models=10", //<!-- TODO (5): fare rework recent_models (mettere filtro su tutti i corsi)
+  "/v1/propositions?recent_models=true", //<!-- TODO (5): fare rework recent_models (mettere filtro su tutti i corsi)
   (response) =>
     response.data.data.map((a: CourseModelProps) => new CourseModel(a)),
   () => []

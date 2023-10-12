@@ -101,7 +101,7 @@ const year_propositions: OrderedCardsList<GeneralCardElements> = reactive({
 });
 const trigger = ref(0);
 const propositions: CourseModel[] = await executeLink(
-  "/v1/propositions",
+  "/v1/propositions?recent_models=false",
   async (response: any) => Promise.all(response.data.data.map(async (a: CourseModelProps) => {
     const tmp_proposition = new CourseModel(a);
     await tmp_proposition.loadParms(); //<!-- ! (3): mettere chiamata unica a /learning_sessions
