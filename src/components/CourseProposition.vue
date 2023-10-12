@@ -501,12 +501,13 @@ const setupModalAndOpen = async (window: AvailableModal, message?: string, appro
         role: 'yes',
         handler: approval == undefined ? propose : () => approve(approval),
       }, getCurrentElement("no")];
-      if (approval == false) {
+      if (approval == true) {
         alert_information.inputs = [{
           type: "checkbox",
-          label: getCurrentElement("delete_model"),
+          label: getCurrentElement("approve_project_class_too"),
+          checked: true,
           handler: (input) => {
-            delete_model = input.checked ?? false;
+            approve_project_class = input.checked ?? true;
           }
         }];
       }
@@ -1084,16 +1085,16 @@ const approve = (outcome = true) => {
     "/v1/propositions/approval?course_id=" + course_proposition.course_id
     + "&session_id=" + course_proposition.specific_information.session_id
     + "&approved=" + outcome
-    + (!outcome ? "&total_del=" + delete_model : ""),
+    + (outcome ? "&proj_class=" + approve_project_class : ""),
     () => {
-      delete_model = false;
+      approve_project_class = true;
       setTimeout(() => {
         setupModalAndOpen("success", getCurrentElement("successful_" + (outcome ? "confirmation" : "rejection")));
         $router.push({ name: "propositions_history" });
       }, 300);
     },
     () => {
-      delete_model = false;
+      approve_project_class = true;
       setTimeout(() => {
         setupModalAndOpen("error", getCurrentElement("general_error"))
       }, 300);
@@ -1312,7 +1313,7 @@ let sections: boolean[] = reactive([true]);
 let project_class: AdminProjectClass;
 let tmp_teachers: PropositionTeacher[];
 let approved: boolean;
-let delete_model = false;
+let approve_project_class = true;
 
 /*switch (pages[current_page_index.value]) { //<!-- TODO (6): caricare una volta i vari contenuti
   case "teaching_list":

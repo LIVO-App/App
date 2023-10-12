@@ -548,7 +548,7 @@ export const store = createStore({
                     successful_confirmation: "Corso confermato con successo",
                     successful_rejection: "Corso rifiutato",
                     project_class_confirmation: "Conferma classe progetto",
-                    delete_model: "Elimina anche il modello (se non ha classi progetto)",
+                    approve_project_class_too: "Approva anche la classe progetto",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -758,7 +758,7 @@ export const store = createStore({
                     successful_confirmation: "Course confirmed successfully",
                     successful_rejection: "Course rejected",
                     project_class_confirmation: "Project class confirmation",
-                    delete_model: "Delete also the model (if it has no project classes)",
+                    approve_project_class_too: "Approve also the project class",
                 }
             },
             logged_user: false,
