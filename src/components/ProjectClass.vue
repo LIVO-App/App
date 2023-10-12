@@ -151,7 +151,7 @@ const closeModal = (window: AvailableModal) => {
       description_open.value = false;
   }
 };
-const add_grade = async () => { //<!-- ! (1): Impedire ad insegnanti associati di aggiungere e aggiungere modifica e eliminazione voto
+const add_grade = async () => { //<!-- ! (2): Impedire ad insegnanti associati di aggiungere e aggiungere modifica e eliminazione voto
   const data = store.state.event.data;
 
   executeLink(

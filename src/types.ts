@@ -993,7 +993,7 @@ class LearningSession extends LearningSessionSummary { // TODO (4): sistema nume
                 courses[learning_area_id].push(course);
             }));
 
-        for (const area of learning_areas) {
+        for (const area of learning_areas) { // ! (3): mettere informazione su corsi pubblicati o no
             session_list += (put_courses_list ? "<label>" : "<li>") + area[`${language}_title`] + ": " + (put_credits ? (courses[area.id] != undefined ? courses[area.id].filter(course => course.pending == "true").reduce((pv, cv) => pv + cv.credits, 0) : 0) + "/" + area.credits : "") + (put_courses_list ? "</label>" : "</li>");
             if (put_courses_list) {
                 courses_presence = courses[area.id] != undefined && courses[area.id].length > 0;
@@ -1039,7 +1039,7 @@ class LearningSession extends LearningSessionSummary { // TODO (4): sistema nume
             content: selected == undefined && (status != LearningSessionStatus.COMPLETED || credits != undefined || courses_list != undefined) ? [{
                 id: this.id + "_open_day",
                 type: "string",
-                content: getCurrentElement("open_day") + ": " + toDateString(this.open_day),
+                content: getCurrentElement("open_day") + ": " + toDateString(this.open_day), // TODO (4): sistemare titoli che appaiono più piccoli, cambiando il tipo in "title"
             }, {
                 id: this.id + "_description",
                 type: "html",
@@ -1831,7 +1831,7 @@ class CourseModel {
                 id: this.id + "_project_class_confirmation_date",
                 type: "string",
                 content: getCurrentElement("project_class_confirmation_date") + ": " + (this.project_class_confirmation_date != undefined ? toDateString(this.project_class_confirmation_date) : "-")
-            }], // ! (3): finire di sistemare aggiungendo certifying_admin e proposer teacher
+            }], // ! (1): finire di sistemare aggiungendo certifying_admin e proposer teacher
             link: {
                 url: "/course_proposal?" + (view ? "view=" + this.id + "_" + this.learning_session.id : ""), // TODO (6*): mettere guardia che sistema il link, salvando le cose sulla sessione
                 method: "get"
@@ -2190,7 +2190,7 @@ class ModelProposition {
             error_message: string,
         }
     } {
-        return {
+        return { // ! (2): togliere cose non richieste appena Pietro finisce
             italian_title: {
                 rule: true,
                 error_message: getCurrentElement("missing_title"),

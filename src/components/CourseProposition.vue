@@ -30,7 +30,7 @@
     <custom-select :key="trigger" v-model="selected_model" :list="models"
       :label="getCurrentElement('reference_model') + ':'" :aria_label="getCurrentElement('reference_model')"
       :placeholder="getCurrentElement('possible_models')" :getCompleteName="modelToString"
-      :disabled="action != 'propose'" />
+      :disabled="action != 'propose'" /> <!-- ! (2): mettere filtro su modelli -->
     <ion-card :key="trigger">
       <ion-card-header color="primary">
         <ion-card-title class="ion-text-center">{{
@@ -317,7 +317,7 @@
                         >{{ getCurrentElement("main_teacher") }}</ion-checkbox
                       >
                     -->
-                    <ion-text class="ion-padding">{{ getCurrentElement("sections") }}:
+                    <ion-text class="ion-padding">{{ getCurrentElement("sections") }}: <!-- ! (1): mettere impostazione per togliere quando non voluta -->
                       {{
                         num_section == '' || parseInt(num_section) <= 0 ? getCurrentElement("num_section_needed") : ""
                       }}</ion-text>
