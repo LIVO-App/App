@@ -24,7 +24,7 @@
             </ion-list-header>
 
             <ion-menu-toggle :auto-hide="false" :key="trigger">
-              <template v-if="user != undefined">
+              <template v-if="user != undefined"> <!-- ! (3): mettere hover -->
                 <ion-item
                   v-for="(p, i) in getMenu(castToUser(user))"
                   :key="i"
