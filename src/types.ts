@@ -1844,9 +1844,9 @@ type PagesType = "pages" | "editor" | "no_inner_props";
 
 type Pages = "course_id" | "title" | "characteristics1" | "characteristics2" | "description" | "expected_learning_results" | "criterions" | "activities" | "access_object" | "specific_information";
 
-type PropositionRequiredKeys = "italian_title" | "english_title" | "italian_descr" | "english_descr" | "up_hours" | "credits" | "italian_exp_l" | "english_exp_l" | "italian_cri" | "english_cri" | "italian_act" | "english_act" | "area_id" | "growth_list" | "min_students" | "max_students" | "session_id" | "access_object" | "teaching_list" | "class_group" | "num_section" | "teacher_list";
+type PropositionRequiredKeys = "italian_title" | "italian_descr" | "up_hours" | "credits" | "italian_exp_l" | "italian_cri" | "italian_act" | "area_id" | "growth_list" | "min_students" | "max_students" | "session_id" | "access_object" | "teaching_list" | "class_group" | "num_section" | "teacher_list";
 
-type PropositionKeys = PropositionRequiredKeys | "course_id";
+type PropositionKeys = PropositionRequiredKeys | "course_id" | "english_title" | "english_descr" | "english_exp_l" | "english_cri" | "english_act";
 
 type PropositionTitles = {
     [key in keyof string as `${Language}_title`]: string
@@ -2193,19 +2193,11 @@ class ModelProposition {
         return { // ! (2): togliere cose non richieste appena Pietro finisce
             italian_title: {
                 rule: true,
-                error_message: getCurrentElement("missing_title"),
-            },
-            english_title: {
-                rule: true,
-                error_message: getCurrentElement("missing_title"),
+                error_message: getCurrentElement("missing_italian_title"),
             },
             italian_descr: {
                 rule: true,
-                error_message: getCurrentElement("missing_description"),
-            },
-            english_descr: {
-                rule: true,
-                error_message: getCurrentElement("missing_description"),
+                error_message: getCurrentElement("missing_italian_description"),
             },
             up_hours: {
                 rule: [0],
@@ -2217,27 +2209,15 @@ class ModelProposition {
             },
             italian_exp_l: {
                 rule: true,
-                error_message: getCurrentElement("missing_expected_learning_results"),
-            },
-            english_exp_l: {
-                rule: true,
-                error_message: getCurrentElement("missing_expected_learning_results"),
+                error_message: getCurrentElement("missing_italian_expected_learning_results"),
             },
             italian_cri: {
                 rule: true,
-                error_message: getCurrentElement("missing_criterions"),
-            },
-            english_cri: {
-                rule: true,
-                error_message: getCurrentElement("missing_criterions"),
+                error_message: getCurrentElement("missing_italian_criterions"),
             },
             italian_act: {
                 rule: true,
-                error_message: getCurrentElement("missing_activities"),
-            },
-            english_act: {
-                rule: true,
-                error_message: getCurrentElement("missing_activities"),
+                error_message: getCurrentElement("missing_italian_activities"),
             },
             area_id: {
                 rule: true,
