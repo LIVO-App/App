@@ -177,7 +177,7 @@
                   )
                 )
                   " />
-                <template v-if="action != 'view'">
+                <template v-if="action == 'propose'">
                   <custom-select v-if="key == 'teaching_list'" :key="trigger + '_teachings_select'"
                     v-model="selected_teaching" :list="teachings.available" :label="getCurrentElement('teaching') + ':'"
                     :aria_label="getCurrentElement('teaching')" :placeholder="getCurrentElement('teaching_choices')"
@@ -208,7 +208,7 @@
           </template>
           <template v-else-if="pages[current_page_index] == 'access_object'">
             <ion-grid>
-              <template v-if="action != 'view'">
+              <template v-if="action == 'propose'">
                 <ion-row>
                   <ion-col>
                     <custom-select v-model="selected_learning_context" :list="learning_contexts.available"
@@ -299,7 +299,7 @@
                 </ion-col>
                 <ion-col>
                   <ionic-element :element="getCustomMessage('teachers_title', getCurrentElement('teachers'))" />
-                  <template v-if="action != 'view'">
+                  <template v-if="action == 'propose'">
                     <div>
                       <custom-select :key="trigger + '_teacher'" v-model="selected_teacher" :list="teachers.available"
                         :label="getCurrentElement('teacher') + ':'" :aria_label="getCurrentElement('teacher')"
@@ -332,7 +332,7 @@
                           </ion-item>
                         </ion-list>
                   </template>
-                  <ion-button v-if="action != 'view'" @click="addElement('teachers')" expand="block" color="primary"
+                  <ion-button v-if="action == 'propose'" @click="addElement('teachers')" expand="block" color="primary"
                     fill="solid">
                     {{ getCurrentElement("add") }}
                   </ion-button>
@@ -616,8 +616,8 @@ const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card 
 const addAccess = (
   learning_context_id?: string,
   access_object?: AccessObject,
-  only_card = false,
-  change_support_list = true
+  only_card = false/*,
+  change_support_list = true*/
 ) => {
   const actual_learning_context_id =
     learning_context_id ?? selected_learning_context.value;
@@ -1041,7 +1041,8 @@ const edit_course_proposition = async (course_id?: number) => {
           }
 
           return Object.values(teachers_summary);
-        }
+        },
+        () => [],
       );
     }
     course_proposition = reactive(
@@ -1121,14 +1122,13 @@ const fillLists = (lists_info: { [key in keyof string as PropositionLists]?: {
       access_propositions_cards.cards = {};
     }
   }
-  for (const learning_context_id in course_proposition.access_object) {
+  for (const learning_context_id in course_proposition.access_object) { //<!-- TODO (9): attenzione, non funziona
     for (const access_object of course_proposition.access_object[
       learning_context_id
     ]) {
-      addAccess(learning_context_id, access_object, lists_info["access_object"]?.only_card ?? true);
+      addAccess(learning_context_id, access_object, lists_info["access_object"]?.only_card ?? true);//, lists_info["access_object"]?.change_support_list);
     }
   }
-  console.log(access_propositions_cards);
   if (course_proposition.specific_information.session_id != undefined) {
     if (lists_info["teacher_list"]?.clear != undefined) {
       if (lists_info["teacher_list"]?.clear.cards == true) {
@@ -1149,12 +1149,12 @@ const fillLists = (lists_info: { [key in keyof string as PropositionLists]?: {
   }
 }
 const changeModality = (new_action: Action) => {
-  const tmp_lists_info = {
+  /*const tmp_lists_info = {
     clear: {
       cards: true,
     },
     change_support_list: false,
-  };
+  };*/
 
   if (action.value == "edit" && new_action == "view") {
     executeLink("/v1/courses/" + course_proposition.course_id,
@@ -1162,20 +1162,16 @@ const changeModality = (new_action: Action) => {
         setupModalAndOpen("error", getCurrentElement("changes_not_made"));
       }, "put", course_proposition.toProposition());
   } else if (action.value == "view" && new_action == "edit") {
-    teachers_cards.cards
-    teachings_cards
-    growth_areas_cards
-    access_propositions_cards
+    /*fillLists({
+      teaching_list: tmp_lists_info,
+      growth_list: tmp_lists_info,
+      access_object: {
+        change_support_list: false,
+      },
+      teacher_list: tmp_lists_info,
+    });*/
   }
   action.value = new_action;
-  fillLists({
-    teaching_list: tmp_lists_info,
-    growth_list: tmp_lists_info,
-    access_object: {
-      change_support_list: false,
-    },
-    teacher_list: tmp_lists_info,
-  });
   trigger.value++;
 };
 const approve = (outcome = true) => {
@@ -1221,7 +1217,7 @@ const alert_information: AlertInformation = {
   inputs: [],
 };
 const pages = ModelProposition.getProps("pages");
-const current_page_index = ref(0); //7
+const current_page_index = ref(0);
 const buttons: CustomElement[] = [
   {
     id: "back",
@@ -1409,7 +1405,7 @@ let learning_sessions: LearningSession[] = [];
 let groups: { id: number }[] = [];
 let sections: boolean[] = reactive([true]);
 let project_class: AdminProjectClass;
-let tmp_teachers: PropositionTeacher[];
+let tmp_teachers: PropositionTeacher[] = [];
 let approved: boolean;
 let approve_project_class = true;
 
