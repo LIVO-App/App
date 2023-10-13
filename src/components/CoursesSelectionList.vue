@@ -714,12 +714,13 @@ if (learning_session != undefined) {
                   ][tmp_course.group] = store.state.courses_per_group;
                 }
                 open_enrollment =
-                  learning_session?.getStatus() ==
+                  learning_session.getStatus() ==
                     LearningSessionStatus.FUTURE &&
                   (learning_session_position == 0 ||
                     learning_sessions[
                       learning_session_position - 1
-                    ]?.getStatus() == LearningSessionStatus.CURRENT);
+                    ]?.getStatus() == LearningSessionStatus.CURRENT) &&
+                  learning_session.open_day <= (new Date());
                 tmp_card = tmp_course.toCard(
                   learning_session as LearningSession,
                   open_enrollment
