@@ -22,8 +22,10 @@
     <!-- ! (3): spostare pulsanti in alto -->
     <ionic-element :element="buttons[3]" @execute_link="$router.push(store.state.request.url)" />
     <template v-if="user.user == 'admin' && !approved">
-      <ionic-element :element="buttons[4]" @signal_event="setupModalAndOpen('confirm', undefined, true)" />
-      <ionic-element :element="buttons[5]" @signal_event="setupModalAndOpen('confirm', undefined, false)" />
+      <ionic-element v-if="action == 'view'" :element="buttons[4]"
+        @signal_event="setupModalAndOpen('confirm', undefined, true)" />
+      <ionic-element v-if="action == 'view'" :element="buttons[5]"
+        @signal_event="setupModalAndOpen('confirm', undefined, false)" />
       <ionic-element :element="action == 'view' ? buttons[6] : buttons[7]"
         @signal_event="changeModality(action == 'view' ? 'edit' : 'view')" />
     </template>
@@ -317,7 +319,8 @@
                         >{{ getCurrentElement("main_teacher") }}</ion-checkbox
                       >
                     -->
-                    <ion-text class="ion-padding">{{ getCurrentElement("sections") }}: <!-- ! (1): mettere impostazione per togliere quando non voluta -->
+                    <ion-text class="ion-padding">{{ getCurrentElement("sections") }}:
+                      <!-- ! (1): mettere impostazione per togliere quando non voluta -->
                       {{
                         num_section == '' || parseInt(num_section) <= 0 ? getCurrentElement("num_section_needed") : ""
                       }}</ion-text>
@@ -354,7 +357,7 @@
           <!--<template v-if="parameters_remaining">-->
           <ion-row>
             <ion-col>
-              <ion-button v-if="action != 'view'" @click="checkAndConfirm" expand="block" color="primary" fill="solid">
+              <ion-button v-if="action == 'propose'" @click="checkAndConfirm" expand="block" color="primary" fill="solid">
                 {{ getCurrentElement("propose") }}
               </ion-button> <!-- TODO (5): salvare le cose man mano che vengono messe per visualizzare poi "propose" -->
             </ion-col>
@@ -400,7 +403,8 @@ import {
   PropositionSpecificInformation,
   GrowthAreaProps,
   AlertInformation,
-  AdminProjectClass
+  AdminProjectClass,
+  PropositionLists
 } from "@/types";
 import {
   executeLink,
@@ -553,7 +557,7 @@ const castToActivities = (activities: any) =>
   activities as PropositionActivities;
 const castToSpecificInformation = (specific_information: any) =>
   specific_information as PropositionSpecificInformation;
-const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card = false) => {
+const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card = false, change_support_list = true) => {
   let actual_id: string | number;
   let reference: SimpleList<Teaching | GrowthArea>;
   let cards_reference: OrderedCardsList<GeneralCardElements>;
@@ -568,32 +572,41 @@ const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card 
     actual_id = id ?? selected_growth_area.value;
     reference = growth_areas;
     cards_reference = growth_areas_cards;
+
   }
+
+  const support_list = change_support_list ? reference.available : reference.selected;
 
   if (
     actual_id != (type == "teachings" ? "" : 0) &&
-    (tmp_index = reference.available.findIndex((a) => a.id == actual_id)) != -1
+    ((tmp_index = support_list.findIndex((a) => a.id == actual_id)) != -1)
   ) {
-    to_add = reference.available[tmp_index];
+    to_add = support_list[tmp_index];
     cards_reference.cards[""].push(to_add.toCard(action.value == "view"));
 
-    if (!only_card) {
-      if (type == "teachings") {
+    if (type == "teachings") {
+      if (!only_card) {
         course_proposition.characteristics2.teaching_list.push(
           to_add.id as string
         );
+      }
+      if (change_support_list) {
         teachings.selected.push(to_add as Teaching);
         teachings.available.splice(tmp_index, 1);
-        if (id == undefined) {
-          selected_teaching.value = "";
-        }
-      } else {
+      }
+      if (id == undefined) {
+        selected_teaching.value = "";
+      }
+    } else {
+      if (!only_card) {
         course_proposition.characteristics2.growth_list.push(to_add.id as number);
+      }
+      if (change_support_list) {
         growth_areas.selected.push(to_add as GrowthArea);
         growth_areas.available.splice(tmp_index, 1);
-        if (id == undefined) {
-          selected_growth_area.value = 0;
-        }
+      }
+      if (id == undefined) {
+        selected_growth_area.value = 0;
       }
     }
 
@@ -603,7 +616,8 @@ const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card 
 const addAccess = (
   learning_context_id?: string,
   access_object?: AccessObject,
-  only_card = false
+  only_card = false,
+  change_support_list = true
 ) => {
   const actual_learning_context_id =
     learning_context_id ?? selected_learning_context.value;
@@ -631,6 +645,8 @@ const addAccess = (
     actual_presidium = presidium.value;
     actual_main_study_year = main_study_year.value;
   }
+  
+  const support_list_index = change_support_list ? "available" : "selected";
 
   if (
     actual_learning_context_id != "" &&
@@ -740,7 +756,7 @@ const addAccess = (
   }
   trigger.value++;
 };
-const addTeacher = (proposition_teacher?: PropositionTeacher, only_card = false) => {
+const addTeacher = (proposition_teacher?: PropositionTeacher, only_card = false, change_support_list = true) => {
   let actual_teacher_id: number;
   let actual_main_teacher: boolean;
   let tmp_teacher_index: number;
@@ -754,16 +770,18 @@ const addTeacher = (proposition_teacher?: PropositionTeacher, only_card = false)
     actual_teacher_id = selected_teacher.value;
     actual_main_teacher = main_teacher.value;
   }
+
+  const support_list = change_support_list ? teachers.available : teachers.selected;
   if (
     actual_teacher_id != 0 &&
-    (tmp_teacher_index = teachers.available.findIndex(
+    (tmp_teacher_index = support_list.findIndex(
       (a) => a.id == actual_teacher_id
     )) != -1 &&
     (proposition_teacher != undefined
       ? proposition_teacher.sections.length > 0
       : sections.find((a) => a))
   ) {
-    teacher = teachers.available[tmp_teacher_index];
+    teacher = support_list[tmp_teacher_index];
     teacher_proposition = new TeacherProposition(
       teacher,
       actual_main_teacher,
@@ -780,8 +798,10 @@ const addTeacher = (proposition_teacher?: PropositionTeacher, only_card = false)
       teacher_proposition.toCard(action.value == "view")
     );
 
-    teachers.selected.push(teacher);
-    teachers.available.splice(tmp_teacher_index, 1);
+    if (change_support_list) {
+      teachers.selected.push(teacher);
+      teachers.available.splice(tmp_teacher_index, 1);
+    }
     if (proposition_teacher == undefined) {
       selected_teacher.value = 0;
       main_teacher.value = false;
@@ -1034,7 +1054,7 @@ const edit_course_proposition = async (course_id?: number) => {
         area_id: learning_area.id,
         growth_list: course.growth_list.map((a) => a.id),
         session_id: tmp_session_id,
-        class_group: project_class.group,
+        class_group: project_class?.group ?? -1,
         num_section: 1,
         min_students: course.min_students,
         max_students: course.max_students,
@@ -1051,33 +1071,108 @@ const edit_course_proposition = async (course_id?: number) => {
         teacher_list: tmp_teachers,
       })
     );
-    for (const teaching of course_proposition.characteristics2.teaching_list) {
-      addToSimpleList("teachings", teaching, true);
-    }
-    for (const growth_area of course_proposition.characteristics2.growth_list) {
-      addToSimpleList("growth_areas", growth_area, true);
-    }
-    for (const learning_context_id in course_proposition.access_object) {
-      for (const access_object of course_proposition.access_object[
-        learning_context_id
-      ]) {
-        addAccess(learning_context_id, access_object, true);
-      }
-    }
-    if (tmp_session_id != undefined) {
-      selected_session.value = course_proposition.specific_information.session_id;
-      for (const teacher of course_proposition.specific_information.teacher_list) {
-        addTeacher(teacher, true);
-      }
-    }
+    fillLists({});
   } else {
     course_proposition = reactive(new ModelProposition());
   }
   trigger.value++;
 };
+const fillLists = (lists_info: { [key in keyof string as PropositionLists]?: {
+  clear?: {
+    cards?: boolean,
+    support_list?: boolean,
+  },
+  only_card?: boolean,
+  change_support_list?: boolean,
+} }) => {
+  if (lists_info["teaching_list"]?.clear != undefined) {
+    if (lists_info["teaching_list"]?.clear.cards == true) {
+      teachings_cards.order = [];
+      teachings_cards.cards = {
+        "": [],
+      };
+    }
+    if (lists_info["teaching_list"]?.clear.support_list == true) {
+      teachings.available = [];
+      teachings.selected = [];
+    }
+  }
+  for (const teaching of course_proposition.characteristics2.teaching_list) {
+    addToSimpleList("teachings", teaching, lists_info["teaching_list"]?.only_card ?? true, lists_info["teaching_list"]?.change_support_list);
+  }
+  if (lists_info["growth_list"]?.clear != undefined) {
+    if (lists_info["growth_list"]?.clear.cards == true) {
+      growth_areas_cards.order = [];
+      growth_areas_cards.cards = {
+        "": [],
+      };
+    }
+    if (lists_info["growth_list"]?.clear.support_list == true) {
+      growth_areas.available = [];
+      growth_areas.selected = [];
+    }
+  }
+  for (const growth_area of course_proposition.characteristics2.growth_list) {
+    addToSimpleList("growth_areas", growth_area, lists_info["growth_list"]?.only_card ?? true, lists_info["growth_list"]?.change_support_list);
+  }
+  if (lists_info["access_object"]?.clear != undefined) {
+    if (lists_info["access_object"]?.clear.cards == true) {
+      access_propositions_cards.order = [];
+      access_propositions_cards.cards = {};
+    }
+  }
+  for (const learning_context_id in course_proposition.access_object) {
+    for (const access_object of course_proposition.access_object[
+      learning_context_id
+    ]) {
+      addAccess(learning_context_id, access_object, lists_info["access_object"]?.only_card ?? true);
+    }
+  }
+  console.log(access_propositions_cards);
+  if (course_proposition.specific_information.session_id != undefined) {
+    if (lists_info["teacher_list"]?.clear != undefined) {
+      if (lists_info["teacher_list"]?.clear.cards == true) {
+        teachers_cards.order = [];
+        teachers_cards.cards = {
+          "": [],
+        };
+      }
+      if (lists_info["teacher_list"]?.clear.support_list == true) {
+        teachers.available = [];
+        teachers.selected = [];
+      }
+    }
+    selected_session.value = course_proposition.specific_information.session_id;
+    for (const teacher of course_proposition.specific_information.teacher_list) {
+      addTeacher(teacher, lists_info["teacher_list"]?.only_card ?? true, lists_info["teacher_list"]?.change_support_list);
+    }
+  }
+}
 const changeModality = (new_action: Action) => {
+  const tmp_lists_info = {
+    clear: {
+      cards: true,
+    },
+    change_support_list: false,
+  };
+  if (action.value == "edit" && new_action == "view") {
+    executeLink("/v1/courses/" + course_proposition.course_id,
+      undefined, () => {
+        setupModalAndOpen("error", getCurrentElement("changes_not_made"));
+      }, "put", course_proposition.toProposition());
+  } else if (action.value == "view" && new_action == "edit") {
+    teachers_cards.cards
+    teachings_cards
+    growth_areas_cards
+    access_propositions_cards
+  }
   action.value = new_action;
-  //<!-- TODO (6*): mettere X a liste
+  fillLists({
+    teaching_list: tmp_lists_info,
+    growth_list: tmp_lists_info,
+    access_object: tmp_lists_info,
+    teacher_list: tmp_lists_info,
+  });
   trigger.value++;
 };
 const approve = (outcome = true) => {
@@ -1123,7 +1218,7 @@ const alert_information: AlertInformation = {
   inputs: [],
 };
 const pages = ModelProposition.getProps("pages");
-const current_page_index = ref(0);
+const current_page_index = ref(7);
 const buttons: CustomElement[] = [
   {
     id: "back",

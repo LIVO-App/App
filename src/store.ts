@@ -549,6 +549,7 @@ export const store = createStore({
                     successful_rejection: "Corso rifiutato",
                     project_class_confirmation: "Conferma classe progetto",
                     approve_project_class_too: "Approva anche la classe progetto",
+                    changes_not_made: "Attenzione! Modifiche non apportate",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -759,6 +760,7 @@ export const store = createStore({
                     successful_rejection: "Course rejected",
                     project_class_confirmation: "Project class confirmation",
                     approve_project_class_too: "Approve also the project class",
+                    changes_not_made: "Warning! Changes not made",
                 }
             },
             logged_user: false,
