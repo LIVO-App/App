@@ -645,8 +645,8 @@ const addAccess = (
     actual_presidium = presidium.value;
     actual_main_study_year = main_study_year.value;
   }
-  
-  const support_list_index = change_support_list ? "available" : "selected";
+
+  //const support_list_index = change_support_list ? "available" : "selected";
 
   if (
     actual_learning_context_id != "" &&
@@ -1155,6 +1155,7 @@ const changeModality = (new_action: Action) => {
     },
     change_support_list: false,
   };
+
   if (action.value == "edit" && new_action == "view") {
     executeLink("/v1/courses/" + course_proposition.course_id,
       undefined, () => {
@@ -1170,7 +1171,9 @@ const changeModality = (new_action: Action) => {
   fillLists({
     teaching_list: tmp_lists_info,
     growth_list: tmp_lists_info,
-    access_object: tmp_lists_info,
+    access_object: {
+      change_support_list: false,
+    },
     teacher_list: tmp_lists_info,
   });
   trigger.value++;
@@ -1218,7 +1221,7 @@ const alert_information: AlertInformation = {
   inputs: [],
 };
 const pages = ModelProposition.getProps("pages");
-const current_page_index = ref(7);
+const current_page_index = ref(0); //7
 const buttons: CustomElement[] = [
   {
     id: "back",
