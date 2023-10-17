@@ -1774,9 +1774,9 @@ class CourseModel {
     certifying_admin?: AdminSummary;
     proposer_teacher: TeacherSummary;
 
-    constructor(props: CourseModelProps) {
+    constructor(props: CourseModelProps, learning_session?: LearningSession) {
         this.id = (props.course_ref.data as { id: number }).id;
-        this.learning_session = new LearningSessionSummary({
+        this.learning_session = learning_session != undefined ? learning_session : new LearningSessionSummary({
             id: props.learning_session_id,
             number: -1,
             school_year: -1,

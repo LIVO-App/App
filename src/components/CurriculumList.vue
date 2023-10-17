@@ -127,7 +127,7 @@ import {
   TmpList,
   User,
 } from "@/types";
-import { executeLink, getCurrentElement, getCurrentLanguage } from "@/utils";
+import { executeLink, getCurrentElement, getCurrentLanguage, getLearningContexts } from "@/utils";
 import {
   IonModal,
   IonGrid,
@@ -317,25 +317,7 @@ school_years =
         },
         () => []
       );
-learning_contexts = await executeLink(
-  "/v1/learning_contexts?",
-  (response) => {
-    const tmp_contexts = [];
-
-    for (const learning_context of response.data.data) {
-      if (
-        store.state.excluded_learning_contexts_id.findIndex(
-          (a: number) => a != learning_context.id
-        ) != -1
-      ) {
-        tmp_contexts.push(learning_context);
-      }
-    }
-
-    return tmp_contexts;
-  },
-  () => []
-);
+learning_contexts = await getLearningContexts(user);
 learning_areas = await executeLink(
   "/v1/learning_areas?all_data=true",
   (response) => response.data.data,

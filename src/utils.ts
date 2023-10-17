@@ -301,12 +301,12 @@ function getBaseUrl() {
     return $axios.defaults.baseURL;
 }
 
-function getLearningContexts(user: User, learning_session_id: string): Promise<LearningContext[]> { // TODO (9): vedere se è ripetuto in altri punti
+function getLearningContexts(user: User, learning_session_id?: string): Promise<LearningContext[]> {
     return executeLink(
         "/v1/learning_contexts?student_id=" +
         user.id +
-        "&session_id=" +
-        learning_session_id,
+        (learning_session_id != undefined ? "&session_id=" +
+        learning_session_id : ""),
         (response) => {
             const tmp_contexts: LearningContext[] = [];
 

@@ -410,6 +410,7 @@ import {
   getCurrentLanguage,
   getCustomMessage,
   getIcon,
+  getLearningContexts,
   numberToSection,
 } from "@/utils";
 import {
@@ -1350,25 +1351,7 @@ teachings.available = await executeLink(
   () => []
 );
 
-learning_contexts.available = await executeLink(
-  "/v1/learning_contexts",
-  (response) => {
-    const tmp_contexts: LearningContext[] = [];
-
-    for (const learning_context of response.data.data) {
-      if (
-        store.state.excluded_learning_contexts_id.findIndex(
-          (a: number) => a != learning_context.id
-        ) != -1
-      ) {
-        tmp_contexts.push(learning_context);
-      }
-    }
-
-    return tmp_contexts;
-  },
-  () => []
-);
+learning_contexts.available = await getLearningContexts(user);
 await executeLink(
   "/v1/study_addresses",
   (response) => {
