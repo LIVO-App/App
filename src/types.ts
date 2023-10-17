@@ -554,8 +554,8 @@ class Course extends CourseBase { // TODO (6): "unire" con ModelProposition
     min_students: number;
     max_students: number;
     proposer_teacher: TeacherSummary;
-    certifying_admin: AdminSummary;
-    admin_confirmation: string;
+    certifying_admin?: AdminSummary;
+    admin_confirmation?: string;
     italian_expected_learning_results: string;
     english_expected_learning_results: string;
     italian_criterions: string; // TODO (7): vedere se conviene raggruppare le cose con le lingue in oggetti, per poter rendere più facile l'aggiunta di lingue
@@ -875,11 +875,14 @@ class Course extends CourseBase { // TODO (6): "unire" con ModelProposition
                 id: this.id + "_creation_date",
                 type: "html",
                 content: "<b>" + getCurrentElement("creation_school_year") + "</b>: " + this.creation_school_year
-            }, {
-                id: this.id + "_certifying_admin",
-                type: "html",
-                content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.certifying_admin.name + " " + this.certifying_admin.surname
             });
+            if(this.certifying_admin != undefined){
+                course.content?.push({
+                    id: this.id + "_certifying_admin",
+                    type: "html",
+                    content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.certifying_admin.name + " " + this.certifying_admin.surname
+                });
+            } 
         }
 
         return course;

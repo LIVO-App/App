@@ -1000,7 +1000,7 @@ const edit_course_proposition = async (course_id?: number) => {
         (response) => response.data.data
       )
     );
-    approved = course.certifying_admin.id != null; //<!-- ! (2): mettere che può essere null
+    approved = course.certifying_admin?.id != null; //<!-- ! (2): mettere che può essere null
     learning_area = await executeLink("/v1/learning_areas", (response) => {
       const tmp_area = response.data.data.find(
         (a: LearningArea) =>
