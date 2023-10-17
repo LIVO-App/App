@@ -28,7 +28,7 @@ import AnnouncementsComponent from "./components/AnnouncementsComponent.vue";
 import AnnouncementViewer from "./components/AnnouncementViewer.vue";
 import AnnouncementsPublisher from "./components/AnnouncementsPublisher.vue";
 import ProjectClassesList from "./components/ProjectClassesList.vue";
-import OrdinaryClassesStudents from "./components/OrdinaryClassesStudents.vue";
+import ProjectClassSelectList from "./components/ProjectClassSelectList.vue";
 import StudentDescription from "./components/StudentDescription.vue";
 import OverallStudentDescription from "./components/OverallStudentDescription.vue";
 import AuthPanel from "./components/AuthPanel.vue";
@@ -88,7 +88,7 @@ const app = createApp(App)
   .component("AnnouncementViewer", AnnouncementViewer)
   .component("AnnouncementsPublisher", AnnouncementsPublisher)
   .component("ProjectClassesList", ProjectClassesList)
-  .component("OrdinaryClassesStudents", OrdinaryClassesStudents)
+  .component("ProjectClassSelectList", ProjectClassSelectList)
   .component("StudentDescription", StudentDescription)
   .component("OverallStudentDescription", OverallStudentDescription)
   .component("AuthPanel", AuthPanel)

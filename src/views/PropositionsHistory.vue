@@ -7,7 +7,7 @@
 
       <suspense>
         <template #default>
-          <propositions-history />
+          <project-class-select-list />
         </template>
         <template #fallback>
           <loading-component />

@@ -7,7 +7,7 @@
 
       <suspense>
         <template #default>
-          <ordinary-classes-students />
+          <project-class-select-list />
         </template>
         <template #fallback>
           <loading-component />

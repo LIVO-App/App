@@ -1,7 +1,7 @@
 import { Method } from "axios";
 import { store } from "./store";
 import { AlertButton, AlertInput } from "@ionic/vue"
-import { executeLink, getActualLearningContext, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getCustomMessage, getGender, getIcon, getRagneString, getStatusColor, getStatusString, getStudyAddressVisualization, hashCode, numberToSection, toDateString } from "./utils";
+import { executeLink, getActualLearningContext, getCompleteSchoolYear, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getCustomMessage, getGender, getIcon, getRagneString, getStatusColor, getStatusString, getStudyAddressVisualization, hashCode, numberToSection, toDateString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -904,7 +904,7 @@ class LearningSessionSummary {
     number: number;
     school_year: number;
 
-    constructor (sessionObj: {
+    constructor(sessionObj: {
         id: number,
         number: number,
         school_year: number,
@@ -1744,10 +1744,10 @@ type CourseModelProps = {
         id: number
     }>,
     creation_school_year: number,
-    learning_session_id: number,
-    project_class_confirmation_date: string,
+    learning_session_id: number | null,
+    project_class_confirmation_date: string | null,
     project_class_to_be_modified: boolean | null,
-    course_confirmation_date: string,
+    course_confirmation_date: string | null,
     course_to_be_modified: boolean | null,
     certifying_admin_ref: ResponseItem<{
         id: number
@@ -1767,30 +1767,30 @@ class CourseModel {
 
     id: number;
     creation_school_year: number;
-    learning_session: LearningSessionSummary;
+    learning_session?: LearningSessionSummary;
     italian_title: string;
     english_title: string;
     project_class_confirmation_date?: Date;
-    project_class_to_be_modified: boolean | null;
+    project_class_to_be_modified?: boolean;
     course_confirmation_date?: Date;
-    course_to_be_modified: boolean | null;
+    course_to_be_modified?: boolean;
     certifying_admin?: AdminSummary;
     proposer_teacher?: TeacherSummary;
 
     constructor(props: CourseModelProps, learning_session?: LearningSession) {
         this.id = (props.course_ref.data as { id: number }).id;
-        this.learning_session = learning_session != undefined ? learning_session : new LearningSessionSummary({
+        this.learning_session = learning_session ?? (props.learning_session_id != undefined ? new LearningSessionSummary({
             id: props.learning_session_id,
             number: -1,
             school_year: -1,
-        });
+        }) : undefined);
         this.italian_title = props.italian_title;
         this.english_title = props.english_title;
         this.creation_school_year = props.creation_school_year;
         this.project_class_confirmation_date = props.project_class_confirmation_date != null ? new Date(props.project_class_confirmation_date) : undefined;
-        this.project_class_to_be_modified = props.project_class_to_be_modified;
-        this.course_confirmation_date = props.course_confirmation_date != null ? new Date(props.course_confirmation_date) : props.course_confirmation_date;
-        this.course_to_be_modified = props.course_to_be_modified;
+        this.project_class_to_be_modified = props.project_class_to_be_modified ?? undefined;
+        this.course_confirmation_date = props.course_confirmation_date != null ? new Date(props.course_confirmation_date) : undefined;
+        this.course_to_be_modified = props.course_to_be_modified ?? undefined;
         this.proposer_teacher = props.proposer_teacher_ref != undefined && props.teacher_name != undefined && props.teacher_surname != undefined ? new TeacherSummary({
             id: (props.proposer_teacher_ref.data as { id: number }).id,
             name: props.teacher_name,
@@ -1804,42 +1804,53 @@ class CourseModel {
     }
 
     async loadParms() {
-        this.learning_session = await executeLink("/v1/learning_sessions/" + this.learning_session.id,
-            response => new LearningSessionSummary(response.data.data)); // TODO (4): mettere alternativa dove vengono passati i parametri al costruttore per diminuire il numero di richieste
+        if (this.learning_session) {
+            this.learning_session = await executeLink("/v1/learning_sessions/" + this.learning_session.id,
+                response => new LearningSessionSummary(response.data.data)); // TODO (4): mettere alternativa dove vengono passati i parametri al costruttore per diminuire il numero di richieste
+        }
+    }
+
+    isApproved() {
+        return this.course_confirmation_date instanceof Date
+            && !isNaN(this.course_confirmation_date.getMilliseconds())
+            && (this.learning_session == undefined
+                || (this.project_class_confirmation_date instanceof Date
+                    && !isNaN(this.project_class_confirmation_date.getMilliseconds())));
     }
 
     toString() {
         const language = getCurrentLanguage();
-        return this[`${language}_title`] + " - " + this.creation_school_year;
+        return this[`${language}_title`] + " - " + getCompleteSchoolYear(this.creation_school_year);
     }
 
     toCard(user: User, view = false): GeneralCardElements { // TODO (5): evidenziare quando project_class_to_be_modified | course_to_be_modified
         const language = getCurrentLanguage();
 
-        return {
-            id: this.id + "_" + this.creation_school_year + "_" + this.learning_session.id,
+        const card: GeneralCardElements = {
+            id: this.id + "_" + this.creation_school_year + (this.learning_session != undefined ? "_" + this.learning_session.id : ""),
             group: "",
             title: getCustomMessage("title", this[`${language}_title`] + " - " + this.creation_school_year, "title"),
-            subtitle: getCustomMessage("subtitle",getCurrentElement("session") + ": " + this.learning_session.number + " - " + this.learning_session.school_year),
-            side_element: user.user == "admin" ? {
-                id: "status",
-                type: "string",
-                content: this.project_class_confirmation_date instanceof Date && !isNaN(this.project_class_confirmation_date.getMilliseconds()) ? "Approvato" : "Da approvare"
-            } : undefined,
+            subtitle: this.learning_session != undefined ? getCustomMessage("subtitle", getCurrentElement("session") + ": " + this.learning_session.number + " - " + this.learning_session.school_year) : undefined,
             content: [{
                 id: this.id + "_course_confirmation_date",
                 type: "string",
                 content: getCurrentElement("course_confirmation_date") + ": " + (this.course_confirmation_date != undefined ? toDateString(this.course_confirmation_date) : "-")
-            }, {
-                id: this.id + "_project_class_confirmation_date",
-                type: "string",
-                content: getCurrentElement("project_class_confirmation_date") + ": " + (this.project_class_confirmation_date != undefined ? toDateString(this.project_class_confirmation_date) : "-")
             }], // ! (1): finire di sistemare aggiungendo certifying_admin e proposer teacher
             link: {
-                url: "/course_proposal?" + (view ? "view=" + this.id + "_" + this.learning_session.id : ""), // TODO (6*): mettere guardia che sistema il link, salvando le cose sulla sessione
+                url: "/course_proposal?" + (view ? "view=" + this.id + (this.learning_session != undefined ? "_" + this.learning_session.id : "") : ""), // TODO (6*): mettere guardia che sistema il link, salvando le cose sulla sessione
                 method: "get"
             }
         }
+
+        if (this.learning_session != undefined && card.content != undefined) {
+            card.content.push({
+                id: this.id + "_project_class_confirmation_date",
+                type: "string",
+                content: getCurrentElement("project_class_confirmation_date") + ": " + (this.project_class_confirmation_date != undefined ? toDateString(this.project_class_confirmation_date) : "-")
+            })
+        }
+
+        return card;
     }
 }
 
@@ -1847,11 +1858,15 @@ type PagesType = "pages" | "editor" | "no_inner_props";
 
 type Pages = "course_id" | "title" | "characteristics1" | "characteristics2" | "description" | "expected_learning_results" | "criterions" | "activities" | "access_object" | "specific_information";
 
-type PropositionLists = "access_object" | "teaching_list" | "growth_list" | "teacher_list"
+type PropositionKeysType = "required" | "optional" | "lists";
 
-type PropositionRequiredKeys = PropositionLists | "italian_title" | "italian_descr" | "up_hours" | "credits" | "italian_exp_l" | "italian_cri" | "italian_act" | "area_id" | "min_students" | "max_students" | "session_id" | "class_group" | "num_section";
+type PropositionListsKeys = "access_object" | "teaching_list" | "growth_list" | "teacher_list";
 
-type PropositionKeys = PropositionRequiredKeys | "course_id" | "english_title" | "english_descr" | "english_exp_l" | "english_cri" | "english_act";
+type PropositionRequiredKeys = PropositionListsKeys | "italian_title" | "italian_descr" | "up_hours" | "credits" | "italian_exp_l" | "italian_cri" | "italian_act" | "area_id" | "min_students" | "max_students" | "session_id" | "class_group" | "num_section";
+
+type PropositionOptionalKeys = "english_title" | "english_descr" | "english_exp_l" | "english_cri" | "english_act";
+
+type PropositionKeys = PropositionRequiredKeys | PropositionOptionalKeys | "course_id";
 
 type PropositionTitles = {
     [key in keyof string as `${Language}_title`]: string
@@ -2189,13 +2204,34 @@ class ModelProposition {
         return index;
     }
 
+    static getPropositionProps(type: PropositionKeysType): PropositionKeys[] {
+        const lists: PropositionListsKeys[] = ["access_object","teaching_list","growth_list","teacher_list"];
+
+        let keys: PropositionKeys[];
+
+        switch (type) {
+            case "required":
+                keys = lists;
+                keys.push("italian_title","italian_descr","up_hours","credits","italian_exp_l","italian_cri","italian_act","area_id","min_students","max_students","session_id","class_group","num_section");
+                break;
+            case "optional":
+                keys = ["english_title","english_descr","english_exp_l","english_cri","english_act"];
+                break;
+            default:
+                keys = [];
+                break;
+        }
+
+        return keys;
+    }
+
     private getRequiredInformation(): {
         [key in keyof string as PropositionRequiredKeys]: {
             rule: boolean | number[],
             error_message: string,
         }
     } {
-        return { // ! (2): togliere cose non richieste appena Pietro finisce
+        return {
             italian_title: {
                 rule: true,
                 error_message: getCurrentElement("missing_italian_title"),
@@ -2786,4 +2822,4 @@ type AlertInformation = { // TODO (9): trovare gli altri posti dove metterlo
     inputs?: AlertInput[],
 }
 
-export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, StringIcon, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, OrderedCardsGrid, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, GeneralCardSubElements, SubElements, CardSubElements, SelectSubElements, EditorSubElements, CardsCommonElements, CardsListElements, CardsGridElements, Colors, Classes, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, PropositionLists, PropositionRequiredKeys, PropositionKeys, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, TeacherSummary, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription, DefaultLink, AlertInformation }
+export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, StringIcon, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, OrderedCardsGrid, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, GeneralCardSubElements, SubElements, CardSubElements, SelectSubElements, EditorSubElements, CardsCommonElements, CardsListElements, CardsGridElements, Colors, Classes, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, RemainingCredits, TmpList, Progression, LoginInformation, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, PropositionListsKeys, PropositionRequiredKeys, PropositionOptionalKeys, PropositionKeys, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, TeacherSummary, Teacher, TeacherProposition, OpenToConstraint, AdminProjectClassProps, AdminProjectClass, CardListDescription, DefaultLink, AlertInformation }
