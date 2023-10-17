@@ -138,7 +138,7 @@ const params: TmpList<any> = reactive({
 });
 const actual_params: TmpList<any> = {};
 const alternatives_login: CustomElement[] = [
-  {
+  { //<!-- TODO (5): rendering bottone da telefono non coincide con parte cliccabile
     id: "google",
     type: "string_icon",
     linkType: "request",
