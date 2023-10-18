@@ -202,8 +202,8 @@ const getPropositions = async () => {
     ? executeLink(
       "/v1/propositions?recent_models=false&session_id=" + learning_sessions_cards.cards[selected_element_indexes.group][selected_element_indexes.index].id,
       async (response: any) => Promise.all(response.data.data.map(async (a: CourseModelProps) => {
-        const tmp_proposition = new CourseModel(a);
-        await tmp_proposition.loadParms(); //<!-- ! (1): mettere chiamata unica a /learning_sessions
+        const tmp_proposition = new CourseModel(a, learning_sessions.find(b => b.id == a.learning_session_id));
+        //await tmp_proposition.loadParms()
         return tmp_proposition;
       })),
       () => []
@@ -266,6 +266,21 @@ const school_years = await executeLink(
   (response: any) => response.data.data.map((a: any) => a.year),
   () => []
 );
+const learning_sessions: LearningSession[] = []/* await executeLink(
+      "/v1/learning_sessions?school_year=" + year,
+      async (response) => {
+        learning_sessions_cards.order.push({
+          key: year,
+          title: getCustomMessage("title", year, "title"),
+        });
+        learning_sessions_cards.cards[year] = [];
+        for (const learning_session of response.data.data) {
+          learning_sessions_cards.cards[year].push(
+            await new LearningSession(learning_session).toCard(false)
+          );
+        }
+      }
+    )*/
 const trigger = ref(0);
 const all_sections: {
   [key: number]: {
@@ -329,6 +344,7 @@ for (const year of school_years) {
         });
         learning_sessions_cards.cards[year] = [];
         for (const learning_session of response.data.data) {
+          learning_sessions.push(new LearningSession(learning_session))
           learning_sessions_cards.cards[year].push(
             await new LearningSession(learning_session).toCard(false)
           );
