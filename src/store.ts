@@ -90,7 +90,7 @@ export const store = createStore({
     state() {
         return {
             menu: {
-                items: {
+                items: { // ! (2): creare pagina tutor-open_day
                     "learning_sessions": {
                         url_names: {
                             "student": ["learning_sessions", "learning_session"],
@@ -487,7 +487,7 @@ export const store = createStore({
                     no_teacher_proposition: "Nessuna insegnante proposto",
                     school_years: "Anni scolastici",
                     no_school_years: "Nessun anno scolastico",
-                    project_class_confirmation_date: "Data conferma classe progetto",
+                    confirmation_date: "Data di conferma",
                     course_confirmation_date: "Data conferma modello di corso",
                     edit: "Modifica",
                     no_elements: "Nessun elemento",
@@ -560,6 +560,8 @@ export const store = createStore({
                     propositions_type_choice: "Scegli il tipo di proposte",
                     project_classes_propositions_selection_message: "Seleziona una sessione di apprendimento per vedere delle proposte delle classi progetto",
                     courses_propositions_selection_message: "Seleziona una sessione di apprendimento per vedere delle proposte di corsi (senza una classe progetto) dell'anno associato",
+                    not_confirmed: "Non confermata",
+                    project_class: "Classe progetto",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -709,7 +711,7 @@ export const store = createStore({
                     no_teacher_proposition: "No teacher proposed",
                     school_years: "School years",
                     no_school_years: "No school years",
-                    project_class_confirmation_date: "Project class confirmation date",
+                    confirmation_date: "Confirmation date",
                     edit: "Edit",
                     no_elements: "No elements",
                     curriculum: "Curriculum",
@@ -781,6 +783,8 @@ export const store = createStore({
                     propositions_type_choice: "Choose the type of propositions",
                     project_classes_propositions_selection_message: "Select a learning session to see the project classes propositions",
                     courses_propositions_selection_message: "Select a learning session to see the courses propositions (without a project class) of the associated year",
+                    not_confirmed: "Not confirmed",
+                    project_class: "Project class",
                 }
             },
             logged_user: false,

@@ -1825,6 +1825,8 @@ class CourseModel {
 
     toCard(user: User, view = false): GeneralCardElements { // TODO (5): evidenziare quando project_class_to_be_modified | course_to_be_modified
         const language = getCurrentLanguage();
+        
+        let project_class = "<label>" + getCurrentElement("project_class") + ":";
 
         const card: GeneralCardElements = {
             id: this.id + "_" + this.creation_school_year + (this.learning_session != undefined ? "_" + this.learning_session.id : ""),
@@ -1835,18 +1837,33 @@ class CourseModel {
                 id: this.id + "_course_confirmation_date",
                 type: "string",
                 content: getCurrentElement("course_confirmation_date") + ": " + (this.course_confirmation_date != undefined ? toDateString(this.course_confirmation_date) : "-")
-            }], // ! (1): finire di sistemare aggiungendo certifying_admin e proposer teacher
+            }],
             link: {
                 url: "/course_proposal?" + (view ? "view=" + this.id + (this.learning_session != undefined ? "_" + this.learning_session.id : "") : ""), // TODO (6*): mettere guardia che sistema il link, salvando le cose sulla sessione
                 method: "get"
             }
         }
 
-        if (this.learning_session != undefined && card.content != undefined) {
-            card.content.push({
-                id: this.id + "_project_class_confirmation_date",
+        if (user.user != "teacher") {
+            card.content?.push({
+                id: this.id + "_proposer_teacher",
                 type: "string",
-                content: getCurrentElement("project_class_confirmation_date") + ": " + (this.project_class_confirmation_date != undefined ? toDateString(this.project_class_confirmation_date) : "-")
+                content: getCurrentElement("proposer_teacher") + ": " + (this.proposer_teacher != undefined ? (this.proposer_teacher.surname + " " + this.proposer_teacher.name) : "-"),
+            });
+        }
+        if (this.learning_session != undefined && card.content != undefined) {
+            if (this.certifying_admin != undefined && this.project_class_confirmation_date != undefined) {
+                project_class += "</label><ul class='ion-no-margin'><li>"
+                    + getCurrentElement("confirmation_date") + ": " + toDateString(this.project_class_confirmation_date) + "</li>"
+                    + "<li>" + getCurrentElement("certifying_admin") + ": " + this.certifying_admin.surname + " " + this.certifying_admin.surname
+                    + "</li></ul>"
+            } else {
+                project_class += " " + getCurrentElement("not_confirmed") + "</label>";
+            }
+            card.content.push({
+                id: this.id + "_project_class",
+                type: "html",
+                content: project_class,
             })
         }
 

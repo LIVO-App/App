@@ -219,7 +219,7 @@
               </ion-col>
             </ion-row>
           </template>
-          <template v-else-if="pages[current_page_index] == 'access_object'">
+          <template v-else-if="pages[current_page_index] == 'access_object'"> <!-- ! (2): dare possibilità di sistemare liste -->
             <ion-grid>
               <template v-if="action == 'propose'">
                 <ion-row>
