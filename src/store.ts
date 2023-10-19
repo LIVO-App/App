@@ -562,6 +562,8 @@ export const store = createStore({
                     courses_propositions_selection_message: "Seleziona una sessione di apprendimento per vedere delle proposte di corsi (senza una classe progetto) dell'anno associato",
                     not_confirmed: "Non confermata",
                     project_class: "Classe progetto",
+                    fully_booked: "Posti esauriti",
+                    wrong_subscription: "Iscrizione non andata a buon fine",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -785,6 +787,8 @@ export const store = createStore({
                     courses_propositions_selection_message: "Select a learning session to see the courses propositions (without a project class) of the associated year",
                     not_confirmed: "Not confirmed",
                     project_class: "Project class",
+                    fully_booked: "Fully booked",
+                    wrong_subscription: "Subscription not successful",
                 }
             },
             logged_user: false,
@@ -800,6 +804,7 @@ export const store = createStore({
             courses_per_group: 1,
             year_module: 100,
             static_subscription: true,
+            sections_use: false,
         }
     }
 });

@@ -219,7 +219,7 @@ class Enrollment {
         }
     }
     toString(): string {
-        return this.isPending() ? getCurrentElement("pending")
+        return this.isPending() ? getCurrentElement(store.state.static_subscription ? "fully_booked" : "pending")
             : (this.enrollment === true ? getCurrentElement("enrolled")
                 : getCurrentElement("not_enrolled"))
     }
