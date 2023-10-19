@@ -1,53 +1,35 @@
 <template>
   <div class="ion-padding-horizontal">
-    <ion-alert
-      :is-open="openAlert"
-      :header="alert_information.title"
-      :message="alert_information.message"
-      :buttons="alert_information.buttons"
-      @didDismiss="closeModal('max_credits')"
-    />
-    <ion-modal
-      :is-open="description_open"
-      @didDismiss="closeModal('course_details')"
-    >
+    <ion-alert :is-open="openAlert" :header="alert_information.title" :message="alert_information.message"
+      :buttons="alert_information.buttons" @didDismiss="closeModal('max_credits')" />
+    <ion-modal :is-open="description_open" @didDismiss="closeModal('course_details')">
       <suspense>
         <template #default>
-          <course-description
-            :title="description.title"
-            :course_id="description.course_id"
-            :learning_session_id="learning_session_id"
-            :section="description.section"
-            @close="closeModal('course_details')"
-          />
+          <course-description :title="description.title" :course_id="description.course_id"
+            :learning_session_id="learning_session_id" :section="description.section"
+            @close="closeModal('course_details')" />
         </template>
         <template #fallback>
           <loading-component />
         </template>
       </suspense>
     </ion-modal>
-    <ion-modal
-      :is-open="confirmation_open"
-      :can-dismiss="() => !confirmation_open"
-    >
+    <ion-modal :is-open="confirmation_open" :can-dismiss="() => !confirmation_open">
       <ion-header>
         <ion-toolbar>
           <ion-title class="ion-text-center">
-            <ionic-element
-              :element="
-                getCustomMessage(
-                  'confirmation_title',
-                  confirmation_data.title,
-                  'title',
-                  {
-                    text: {
-                      name: 'primary',
-                      type: 'var',
-                    },
-                  }
-                )
-              "
-            />
+            <ionic-element :element="getCustomMessage(
+              'confirmation_title',
+              confirmation_data.title,
+              'title',
+              {
+                text: {
+                  name: 'primary',
+                  type: 'var',
+                },
+              }
+            )
+              " />
           </ion-title>
           <ion-progress-bar v-model:value="timer_bar" :color="getBarColor" />
         </ion-toolbar>
@@ -56,41 +38,32 @@
         <ion-grid class="ion-text-center">
           <ion-row>
             <ion-col>
-              <ionic-element
-                :element="
-                  getCustomMessage(
-                    'confirmation_message',
-                    confirmation_data.message
-                  )
-                "
-              />
+              <ionic-element :element="getCustomMessage(
+                'confirmation_message',
+                confirmation_data.message
+              )
+                " />
             </ion-col>
           </ion-row>
           <ion-row>
             <ion-col>
-              <ionic-element
-                :element="
-                  getCustomMessage(
-                    'confirmation_warning',
-                    getCurrentElement('confrimation_warning'),
-                    'string',
-                    {
-                      text: {
-                        name: 'warning',
-                        type: 'var',
-                      },
-                    }
-                  )
-                "
-              />
+              <ionic-element :element="getCustomMessage(
+                'confirmation_warning',
+                getCurrentElement('confrimation_warning'),
+                'string',
+                {
+                  text: {
+                    name: 'warning',
+                    type: 'var',
+                  },
+                }
+              )
+                " />
             </ion-col>
           </ion-row>
           <ion-row>
             <ion-col v-for="i in getNumberSequence(2)" :key="buttons[i].id">
-              <ionic-element
-                :element="buttons[i]"
-                @signal_event="sendConfirmation()"
-              />
+              <ionic-element :element="buttons[i]" @signal_event="sendConfirmation()" />
             </ion-col>
           </ion-row>
         </ion-grid>
@@ -98,13 +71,8 @@
     </ion-modal>
     <suspense v-if="$route.params.id != undefined">
       <template #default>
-        <session-description
-          :key="trigger"
-          :id="$route.params.id"
-          :learning_context="
-            toSummary(learning_contexts.find((a) => a.id == selected_context))
-          "
-        />
+        <session-description :key="trigger" :id="$route.params.id" :learning_context="toSummary(learning_contexts.find((a) => a.id == selected_context))
+          " />
       </template>
       <template #fallback>
         <loading-component />
@@ -113,49 +81,30 @@
     <ion-grid>
       <ion-row>
         <ion-col size="auto">
-          <custom-select
-            v-model="selected_context"
-            :list="learning_contexts"
-            :label="getCurrentElement('learning_context') + ':'"
-            :aria_label="getCurrentElement('learning_context')"
-            :placeholder="getCurrentElement('learning_context_choice')"
-            :getCompleteName="getContextAxronym"
-          />
+          <custom-select v-model="selected_context" :list="learning_contexts"
+            :label="getCurrentElement('learning_context') + ':'" :aria_label="getCurrentElement('learning_context')"
+            :placeholder="getCurrentElement('learning_context_choice')" :getCompleteName="getContextAxronym" />
         </ion-col>
         <ion-col size="auto">
-          <custom-select
-            v-model="selected_area"
-            :list="learning_areas[selected_context]"
-            :label="learning_area + ':'"
-            :aria_label="learning_area"
-            :placeholder="placeholder"
-            :getCompleteName="getCorrectName"
-          />
+          <custom-select v-model="selected_area" :list="learning_areas[selected_context]" :label="learning_area + ':'"
+            :aria_label="learning_area" :placeholder="placeholder" :getCompleteName="getCorrectName" />
         </ion-col>
       </ion-row>
     </ion-grid>
-    <list-card
-      :key="trigger"
-      @execute_link="changeEnrollment()"
-      @signal_event="openDescription()"
-      :emptiness_message="
-        getCustomMessage(
-          'emptiness_message',
-          getCurrentElement('no_proposed_courses')
-        )
-      "
-      v-model:cards_list="courses"
-      :colors="{
-        list_borders: {
-          name: 'black',
-          type: 'var',
-        },
-        text: {
-          name: 'primary',
-          type: 'var',
-        },
-      }"
-    />
+    <list-card :key="trigger" @execute_link="changeEnrollment()" @signal_event="openDescription()" :emptiness_message="getCustomMessage(
+      'emptiness_message',
+      getCurrentElement('no_proposed_courses')
+    )
+      " v-model:cards_list="courses" :colors="{
+    list_borders: {
+      name: 'black',
+      type: 'var',
+    },
+    text: {
+      name: 'primary',
+      type: 'var',
+    },
+  }" />
   </div>
 </template>
 
@@ -206,7 +155,9 @@ type AvailableModal =
   | "course_details"
   | "max_credits"
   | "max_courses"
-  | "confirmation";
+  | "confirmation"
+  | "wrong_subscription";
+  //| "general_error"; //<!-- TODO (4): put general error with refresh button
 
 const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
   const contexts_to_edit = course_correspondences.filter(
@@ -230,8 +181,8 @@ const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
       } else if (!store.state.static_subscription) {
         course.content[3].content = course.enrollment.getEnrollmentIcon(
           pathArray.join("/") +
-            (value === false ? "/subscribe?" : "/unsubscribe?") +
-            requestArray[1],
+          (value === false ? "/subscribe?" : "/unsubscribe?") +
+          requestArray[1],
           course.enrollment.getChangingMethod()
         );
         course.content[3].colors = course.enrollment.getChangeButtonColors();
@@ -263,8 +214,7 @@ const changeEnrollment = async () => {
   let tmp_course: CourseCardElements | undefined = undefined;
   let course: CourseCardElements,
     available_courses: boolean,
-    available_area_credits: boolean,
-    available_context_credits;
+    available_credits: boolean;
 
   while (tmp_course == undefined && count < groups.length) {
     tmp_course = courses.cards[groups[count]].find(
@@ -275,23 +225,15 @@ const changeEnrollment = async () => {
 
   if (tmp_course != undefined) {
     course = tmp_course;
-    available_courses =
-      remaining_courses[selected_context.value][selected_area.value][
-        tmp_course.group
-      ] -
-        1 >=
-      0;
-    available_area_credits =
-      typeof remaining_credits[selected_context.value] == "number" &&
-      (remaining_credits[selected_context.value] as number) >= course.credits;
-    available_context_credits =
-      (remaining_credits[selected_context.value] as TmpList<number>)[
-        selected_area.value
-      ] >= course.credits;
+    count = 0;
+    while ((available_courses = remaining_courses[learning_contexts[count].id][selected_area.value][tmp_course.group] - 1 >= 0) == true
+      && ++count < learning_contexts.length);
+    available_credits = typeof remaining_credits[selected_context.value] == "number"
+      ? (remaining_credits[selected_context.value] as number) >= course.credits
+      : (remaining_credits[selected_context.value] as TmpList<number>)[selected_area.value] >= course.credits;
     if (
       unscribe ||
-      (available_courses && available_area_credits) ||
-      (available_courses && available_context_credits)
+      (available_courses && available_credits)
     ) {
       await executeLink(
         undefined,
@@ -302,9 +244,9 @@ const changeEnrollment = async () => {
           const enrollment_value = isPending
             ? pendingDate
             : unscribe
-            ? false
-            : response.data ?? true;
-
+              ? false
+              : response.data ?? true;
+            
           if (!wasPending && !isPending) {
             if (store.state.static_subscription && !unscribe) {
               confirmation_data.title = (
@@ -329,6 +271,7 @@ const changeEnrollment = async () => {
             ).text;
             confirmation_data.message = getCurrentElement("course_pending");
             confirmation_data.course = course;
+            confirmation_data.enrollment_value = enrollment_value;
             confirmation_data.unscribe = unscribe;
             openConfirmation();
           } else {
@@ -336,7 +279,7 @@ const changeEnrollment = async () => {
             trigger.value++;
           }
         },
-        (err) => console.error(err)
+        () => setAlertAndOpen("wrong_subscription")
       );
     } else {
       if (!available_courses) {
@@ -376,6 +319,10 @@ const setAlertAndOpen = (type: AvailableModal) => {
     case "max_courses":
       alert_information.title = getCurrentElement("error");
       alert_information.message = getCurrentElement("maximum_courses_error");
+      break;
+    case "wrong_subscription":
+      alert_information.title = getCurrentElement("error");
+      alert_information.message = getCurrentElement("wrong_subscription");
       break;
   }
   openAlert.value = true;
@@ -445,13 +392,13 @@ const confirm = async (outcome: boolean, time_expired = false) => {
   try {
     await executeLink(
       "/v1/students/" +
-        confirmation_data.student_id +
-        "/confirmation?course_id=" +
-        confirmation_data.course.id +
-        "&session_id=" +
-        confirmation_data.session_id +
-        "&outcome=" +
-        outcome,
+      confirmation_data.student_id +
+      "/confirmation?course_id=" +
+      confirmation_data.course.id +
+      "&session_id=" +
+      confirmation_data.session_id +
+      "&outcome=" +
+      outcome,
       () => {
         if (!time_expired && outcome) {
           updateCourses(
@@ -464,7 +411,7 @@ const confirm = async (outcome: boolean, time_expired = false) => {
           trigger.value++;
         }
       },
-      () => console.error("Confirmation error"),
+      () => setAlertAndOpen("wrong_subscription"),
       "patch"
     );
   } catch (error) {
@@ -632,9 +579,9 @@ if (learning_session != undefined) {
   for (const context of learning_contexts) {
     await executeLink(
       "/v1/learning_areas?all_data=true&credits=true&session_id=" +
-        learning_session_id +
-        "&context_id=" +
-        context.id,
+      learning_session_id +
+      "&context_id=" +
+      context.id,
       (response) => {
         learning_areas[context.id] = response.data.data.map((a: LearningArea) => {
           return {
@@ -642,7 +589,9 @@ if (learning_session != undefined) {
           }
         });
         response.data.data.forEach(
-          (a: LearningArea) => (tmp_learning_areas[a.id] = a)
+          (a: LearningArea) => {
+            tmp_learning_areas[a.id] = tmp_learning_areas[a.id] == null ? a : Object.assign(tmp_learning_areas[a.id], a);
+          }
         );
       },
       () => []
@@ -654,9 +603,9 @@ if (learning_session != undefined) {
   if (learning_contexts.length > 0 && all_learning_areas.length > 0) {
     tmp_courses = await executeLink(
       "/v2/courses?student_id=" +
-        user.id +
-        "&session_id=" +
-        learning_session_id,
+      user.id +
+      "&session_id=" +
+      learning_session_id,
       (response) => response.data.data,
       () => []
     );
@@ -666,9 +615,9 @@ if (learning_session != undefined) {
 
       await executeLink(
         "/v1/learning_contexts/correspondence?student_id=" +
-          user.id +
-          "&session_id=" +
-          learning_session_id,
+        user.id +
+        "&session_id=" +
+        learning_session_id,
         (response) => {
           let course_props,
             tmp_course: CourseSummary,
@@ -706,7 +655,7 @@ if (learning_session != undefined) {
                 }
                 if (
                   remaining_courses[tmp_learning_context.id][
-                    tmp_learning_area.id
+                  tmp_learning_area.id
                   ][tmp_course.group] == undefined
                 ) {
                   remaining_courses[tmp_learning_context.id][
@@ -715,7 +664,7 @@ if (learning_session != undefined) {
                 }
                 open_enrollment =
                   learning_session.getStatus() ==
-                    LearningSessionStatus.FUTURE &&
+                  LearningSessionStatus.FUTURE &&
                   (learning_session_position == 0 ||
                     learning_sessions[
                       learning_session_position - 1
@@ -725,24 +674,24 @@ if (learning_session != undefined) {
                   learning_session as LearningSession,
                   open_enrollment
                     ? "/v1/students/" +
-                        user.id +
-                        "/" +
-                        (tmp_course.pending !== "false"
-                          ? "unsubscribe"
-                          : "subscribe") +
-                        "?course_id=" +
-                        tmp_course.id +
-                        "&session_id=" +
-                        learning_session_id +
-                        "&context_id=" +
-                        tmp_learning_context.id
+                    user.id +
+                    "/" +
+                    (tmp_course.pending !== "false"
+                      ? "unsubscribe"
+                      : "subscribe") +
+                    "?course_id=" +
+                    tmp_course.id +
+                    "&session_id=" +
+                    learning_session_id +
+                    "&context_id=" +
+                    tmp_learning_context.id
                     : undefined,
                   undefined,
                   open_enrollment
                 );
                 remaining_courses[tmp_learning_context.id][
                   tmp_learning_area.id
-                ][tmp_course.group] -= tmp_card.enrollment.enrollment ? 1 : 0;
+                ][tmp_course.group] -= tmp_card.enrollment.enrollment === true ? 1 : 0;
                 all_courses[tmp_learning_context.id][tmp_learning_area.id].push(
                   tmp_card
                 );
@@ -763,13 +712,13 @@ if (learning_session != undefined) {
                   if (
                     (
                       remaining_credits[
-                        tmp_learning_context.id
+                      tmp_learning_context.id
                       ] as TmpList<number>
                     )[tmp_learning_area.id] == undefined
                   ) {
                     (
                       remaining_credits[
-                        tmp_learning_context.id
+                      tmp_learning_context.id
                       ] as TmpList<number>
                     )[tmp_learning_area.id] =
                       tmp_learning_area.credits as number;
@@ -777,7 +726,7 @@ if (learning_session != undefined) {
                   if (tmp_course.pending === "true") {
                     (
                       remaining_credits[
-                        tmp_learning_context.id
+                      tmp_learning_context.id
                       ] as TmpList<number>
                     )[tmp_learning_area.id] -= tmp_course.credits;
                   }
@@ -815,6 +764,7 @@ if (learning_session != undefined) {
 ion-select {
   width: fit-content;
 }
+
 .modal {
   --height: auto;
 }

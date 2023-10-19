@@ -263,7 +263,7 @@ const manageEvent = () => {
 };
 
 const store = useStore();
-const user = User.getLoggedUser() as User;
+const user = User.getLoggedUser() as User; //<!-- ! (3): finire parte admin e mettere final confirmation
 
 const firstRow: CustomElement[] = [
   {

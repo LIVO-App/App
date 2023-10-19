@@ -424,7 +424,7 @@ http://ionicframework.com/docs/theming/ */
 }
 
 * {
-  font-size: 18px;
+  font-size: 18px !important;
 }
 
 ion-split-pane {

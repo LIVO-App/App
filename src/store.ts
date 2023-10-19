@@ -90,7 +90,7 @@ export const store = createStore({
     state() {
         return {
             menu: {
-                items: {
+                items: { // ! (2): creare pagina tutor-open_day
                     "learning_sessions": {
                         url_names: {
                             "student": ["learning_sessions", "learning_session"],
@@ -487,7 +487,7 @@ export const store = createStore({
                     no_teacher_proposition: "Nessuna insegnante proposto",
                     school_years: "Anni scolastici",
                     no_school_years: "Nessun anno scolastico",
-                    project_class_confirmation_date: "Data conferma classe progetto",
+                    confirmation_date: "Data di conferma",
                     course_confirmation_date: "Data conferma modello di corso",
                     edit: "Modifica",
                     no_elements: "Nessun elemento",
@@ -550,6 +550,20 @@ export const store = createStore({
                     project_class_confirmation: "Conferma classe progetto",
                     approve_project_class_too: "Approva anche la classe progetto",
                     changes_not_made: "Attenzione! Modifiche non apportate",
+                    approved: "Approvato",
+                    to_approve: "Da approvare",
+                    project_classes_propositions: "Proposte di classi progetto",
+                    courses_propositions_per_year: "Proposte di corsi nell'anno",
+                    propositions: "Proposte",
+                    no_propositions: "Nessuna proposta",
+                    no_types_propositions: "Nessun tipo di proposta",
+                    propositions_type_choice: "Scegli il tipo di proposte",
+                    project_classes_propositions_selection_message: "Seleziona una sessione di apprendimento per vedere delle proposte delle classi progetto",
+                    courses_propositions_selection_message: "Seleziona una sessione di apprendimento per vedere delle proposte di corsi (senza una classe progetto) dell'anno associato",
+                    not_confirmed: "Non confermata",
+                    project_class: "Classe progetto",
+                    fully_booked: "Posti esauriti",
+                    wrong_subscription: "Iscrizione non andata a buon fine",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -699,7 +713,7 @@ export const store = createStore({
                     no_teacher_proposition: "No teacher proposed",
                     school_years: "School years",
                     no_school_years: "No school years",
-                    project_class_confirmation_date: "Project class confirmation date",
+                    confirmation_date: "Confirmation date",
                     edit: "Edit",
                     no_elements: "No elements",
                     curriculum: "Curriculum",
@@ -761,6 +775,20 @@ export const store = createStore({
                     project_class_confirmation: "Project class confirmation",
                     approve_project_class_too: "Approve also the project class",
                     changes_not_made: "Warning! Changes not made",
+                    approved: "Approved",
+                    to_approve: "To approve",
+                    project_classes_propositions: "Project classes propositions",
+                    courses_propositions_per_year: "Courses propositions in the year",
+                    propositions: "Propositions",
+                    no_propositions: "No propositions",
+                    no_types_propositions: "No types of propositions",
+                    propositions_type_choice: "Choose the type of propositions",
+                    project_classes_propositions_selection_message: "Select a learning session to see the project classes propositions",
+                    courses_propositions_selection_message: "Select a learning session to see the courses propositions (without a project class) of the associated year",
+                    not_confirmed: "Not confirmed",
+                    project_class: "Project class",
+                    fully_booked: "Fully booked",
+                    wrong_subscription: "Subscription not successful",
                 }
             },
             logged_user: false,
@@ -776,6 +804,7 @@ export const store = createStore({
             courses_per_group: 1,
             year_module: 100,
             static_subscription: true,
+            sections_use: false,
         }
     }
 });
