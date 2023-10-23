@@ -119,7 +119,7 @@ import {
   LearningSessionStatus,
   LearningContext,
   OrderedCardsList,
-  RemainingCredits,
+  AlternateList,
   RequestIcon,
   TmpList,
   User,
@@ -157,7 +157,7 @@ type AvailableModal =
   | "max_courses"
   | "confirmation"
   | "wrong_subscription";
-  //| "general_error"; //<!-- TODO (4): put general error with refresh button
+//| "general_error"; //<!-- TODO (4): put general error with refresh button
 
 const updateCourses = (course: CourseCardElements, value: Date | boolean) => {
   const contexts_to_edit = course_correspondences.filter(
@@ -206,9 +206,8 @@ const changeEnrollment = async () => {
   const learning_session_id = queryArray[0].split("=")[1];
   const action = pathArray[pathArray.length - 1];
   const unscribe = action == "unsubscribe";
-  const groups = Object.keys(
-    remaining_courses[selected_context.value][selected_area.value]
-  );
+  group_remaining_courses = getGroupRemainingCourses(selected_context.value, selected_area.value);
+  const groups = Object.keys(group_remaining_courses);
 
   let count = 0;
   let tmp_course: CourseCardElements | undefined = undefined;
@@ -217,17 +216,21 @@ const changeEnrollment = async () => {
     available_credits: boolean;
 
   while (tmp_course == undefined && count < groups.length) {
-    tmp_course = courses.cards[groups[count]].find(
-      (c) => c.id == "" + learning_session_id
-    );
+    if (courses.cards[groups[count]] != undefined) {
+      tmp_course = courses.cards[groups[count]].find(
+        (c) => c.id == "" + learning_session_id
+      );
+    }
     count++;
   }
 
   if (tmp_course != undefined) {
     course = tmp_course;
     count = 0;
-    while ((available_courses = remaining_courses[learning_contexts[count].id][selected_area.value][tmp_course.group] - 1 >= 0) == true
-      && ++count < learning_contexts.length);
+    /*while ((available_courses = remaining_courses[learning_contexts[count].id][selected_area.value][tmp_course.group] - 1 >= 0) == true
+      && ++count < learning_contexts.length);*/
+    available_courses = group_remaining_courses[tmp_course.group] - 1 >= 0;
+    
     available_credits = typeof remaining_credits[selected_context.value] == "number"
       ? (remaining_credits[selected_context.value] as number) >= course.credits
       : (remaining_credits[selected_context.value] as TmpList<number>)[selected_area.value] >= course.credits;
@@ -246,7 +249,7 @@ const changeEnrollment = async () => {
             : unscribe
               ? false
               : response.data ?? true;
-            
+
           if (!wasPending && !isPending) {
             if (store.state.static_subscription && !unscribe) {
               confirmation_data.title = (
@@ -265,7 +268,7 @@ const changeEnrollment = async () => {
               updateCredits(course, unscribe);
               trigger.value++;
             }
-          } else if (isPending) {
+          } else if (store.state.static_subscription && isPending) {
             confirmation_data.title = (
               course.content[1].content as EventString
             ).text;
@@ -284,7 +287,7 @@ const changeEnrollment = async () => {
     } else {
       if (!available_courses) {
         return new Promise(() => setAlertAndOpen("max_courses"));
-      } else {
+      } else if (!available_credits) {
         return new Promise(() => setAlertAndOpen("max_credits"));
       }
     }
@@ -293,9 +296,8 @@ const changeEnrollment = async () => {
   }
 };
 const updateCredits = (course: CourseCardElements, unsubscribe: boolean) => {
-  remaining_courses[selected_context.value][selected_area.value][
-    course.group
-  ] += unsubscribe ? 1 : -1;
+  group_remaining_courses = getGroupRemainingCourses();
+  group_remaining_courses[course.group] += unsubscribe ? 1 : -1;
   if (typeof remaining_credits[selected_context.value] == "number") {
     (remaining_credits[selected_context.value] as number) +=
       (unsubscribe ? 1 : -1) * course.credits;
@@ -380,6 +382,9 @@ const showCourses = (
     }
     courses.cards[course.group].push(course);
   }
+  courses.order.sort((a, b) => a.key == b.key
+    ? 0
+    : a.key < b.key ? -1 : 1)
   if (Object.keys(courses.cards).length == 0) {
     courses.cards[""] = [];
   }
@@ -428,6 +433,13 @@ const getBarColor = computed(() => {
     return "danger";
   }
 });
+const isLinkedToAreas = (learning_context: LearningContext) => learning_context.credits == undefined;
+const getGroupRemainingCourses = (learning_context_id = selected_context.value, learning_area_id = selected_area.value) => {
+  learning_context_index = learning_contexts.findIndex(a => a.id == learning_context_id);
+  return isLinkedToAreas(learning_contexts[learning_context_index])
+    ? (remaining_courses[learning_context_id] as TmpList<TmpList<number>>)[learning_area_id]
+    : (remaining_courses[learning_context_id] as TmpList<number>);
+}
 
 const store: Store<any> = useStore();
 const $route = useRoute();
@@ -443,7 +455,7 @@ const courses: OrderedCardsList<CourseCardElements> = {
   cards: {},
 };
 const trigger = ref(0);
-const remaining_credits: RemainingCredits<number> = {};
+const remaining_credits: AlternateList<number> = {};
 const learning_area = getCurrentElement("learning_area");
 const placeholder =
   getCurrentElement("select") +
@@ -458,15 +470,7 @@ const alert_information = {
 const selected_area = ref("");
 const description_open = ref(false);
 const confirmation_open = ref(false);
-const remaining_courses: {
-  [key: string]: {
-    // Learning context
-    [key: string]: {
-      // Learning Area
-      [key: number]: number; // Group
-    };
-  };
-} = {};
+const remaining_courses: AlternateList<TmpList<number>> = {};
 const learning_sessions: LearningSession[] = await executeLink(
   "/v1/learning_sessions?year_of=" + learning_session_id,
   (response) => response.data.data.map((a: any) => new LearningSession(a)),
@@ -571,6 +575,8 @@ let course_correspondences: {
 }[];
 let tmp_card;
 let timer: number;
+let learning_context_index: number;
+let group_remaining_courses: TmpList<number>;
 
 if (learning_session != undefined) {
   learning_contexts = await getLearningContexts(user, learning_session_id);
@@ -623,8 +629,8 @@ if (learning_session != undefined) {
             tmp_course: CourseSummary,
             tmp_learning_area: LearningArea | undefined,
             open_enrollment,
-            learning_context_index,
-            tmp_learning_context: LearningContext;
+            tmp_learning_context,
+            context_linked: boolean;
 
           course_correspondences = response.data.data;
           for (const correspondence of course_correspondences) {
@@ -636,6 +642,7 @@ if (learning_session != undefined) {
             );
             if (course_props != undefined && learning_context_index != -1) {
               tmp_learning_context = learning_contexts[learning_context_index];
+              context_linked = isLinkedToAreas(tmp_learning_context);
               tmp_course = new CourseSummary(course_props);
               tmp_learning_area = all_learning_areas.find(
                 (a) =>
@@ -643,25 +650,6 @@ if (learning_session != undefined) {
                   (tmp_course.learning_area_ref.data as { id: string }).id
               );
               if (tmp_learning_area != undefined) {
-                if (all_courses[tmp_learning_context.id] == undefined) {
-                  remaining_courses[tmp_learning_context.id] = {};
-                  all_courses[tmp_learning_context.id] = {};
-                  for (const learning_area of all_learning_areas) {
-                    remaining_courses[tmp_learning_context.id][
-                      learning_area.id
-                    ] = {};
-                    all_courses[tmp_learning_context.id][learning_area.id] = [];
-                  }
-                }
-                if (
-                  remaining_courses[tmp_learning_context.id][
-                  tmp_learning_area.id
-                  ][tmp_course.group] == undefined
-                ) {
-                  remaining_courses[tmp_learning_context.id][
-                    tmp_learning_area.id
-                  ][tmp_course.group] = store.state.courses_per_group;
-                }
                 open_enrollment =
                   learning_session.getStatus() ==
                   LearningSessionStatus.FUTURE &&
@@ -671,7 +659,7 @@ if (learning_session != undefined) {
                     ]?.getStatus() == LearningSessionStatus.CURRENT) &&
                   learning_session.open_day <= (new Date());
                 tmp_card = tmp_course.toCard(
-                  learning_session as LearningSession,
+                  learning_session,
                   open_enrollment
                     ? "/v1/students/" +
                     user.id +
@@ -689,9 +677,32 @@ if (learning_session != undefined) {
                   undefined,
                   open_enrollment
                 );
-                remaining_courses[tmp_learning_context.id][
-                  tmp_learning_area.id
-                ][tmp_course.group] -= tmp_card.enrollment.enrollment === true ? 1 : 0;
+                if (all_courses[tmp_learning_context.id] == undefined) {
+                  all_courses[tmp_learning_context.id] = {};
+                  if (context_linked) {
+                    remaining_courses[tmp_learning_context.id] = {};
+                    for (const learning_area of all_learning_areas) {
+                      (remaining_courses[tmp_learning_context.id] as TmpList<TmpList<number>>)[
+                        learning_area.id
+                      ] = {};
+                      all_courses[tmp_learning_context.id][learning_area.id] = [];
+                    }
+                  } else {
+                    remaining_courses[tmp_learning_context.id] = {};
+                    for (const learning_area of all_learning_areas) {
+                      all_courses[tmp_learning_context.id][learning_area.id] = [];
+                    }
+                  }
+                }
+                group_remaining_courses = getGroupRemainingCourses(tmp_learning_context.id,tmp_learning_area.id);
+                if (
+                  group_remaining_courses[tmp_course.group] == undefined
+                ) {
+                  group_remaining_courses[tmp_course.group] = store.state.courses_per_group;
+                }
+                (context_linked
+                  ? (remaining_courses[tmp_learning_context.id] as TmpList<TmpList<number>>)[tmp_learning_area.id]
+                  : (remaining_courses[tmp_learning_context.id] as TmpList<number>))[tmp_course.group] -= tmp_card.enrollment.enrollment === true ? 1 : 0;
                 all_courses[tmp_learning_context.id][tmp_learning_area.id].push(
                   tmp_card
                 );

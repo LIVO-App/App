@@ -123,7 +123,7 @@ import {
   LearningArea,
   LearningContext,
   Progression,
-  RemainingCredits,
+  AlternateList,
   TmpList,
   User,
 } from "@/types";
@@ -273,7 +273,7 @@ const reference_id: string =
   props.student_id != undefined && user.user != "student"
     ? props.student_id
     : "" + user.id;
-const credits_progression: RemainingCredits<string[]> = {};
+const credits_progression: AlternateList<string[]> = {};
 const selected_year = ref(0);
 const selected_context = ref("");
 
