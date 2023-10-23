@@ -803,7 +803,7 @@ export const store = createStore({
             }, // TODO (9): mettere referenza a contesto di apprendimento
             courses_per_group: 1,
             year_module: 100,
-            static_subscription: false,
+            static_subscription: true,
             sections_use: false,
         }
     }
