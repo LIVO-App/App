@@ -84,7 +84,7 @@ class OrdinaryClassSummary implements OrdinaryClassSummaryProps {
     }
 
     toString(section = true, school_year = false) {
-        return this.study_year + " " + this.address + (section ? " " + this.section : "") + (school_year ? " " + this.school_year : "");
+        return this.study_year + " " + this.address + (store.state.sections_use && section ? " " + this.section : "") + (school_year ? " " + this.school_year : "");
     }
 
     toCard(section = true, school_year = false, selected = false): GeneralCardElements {
@@ -285,23 +285,28 @@ class MinimizedCourse implements MinimumCourseProps {
 
     toCard(path?: string): GeneralCardElements {
         const language = getCurrentLanguage();
-        return {
+        const card: GeneralCardElements = {
             id: "" + this.id + "_" + this.section,
             group: "",
             content: [{
                 id: "title",
                 type: "html",
                 content: this[`${language}_title`]
-            }, {
-                id: "section",
-                type: "string",
-                content: getCurrentElement("section") + ": " + this.section
             }],
             link: path != undefined ? {
                 url: path,
                 method: "get"
             } : undefined
+        };
+        if (store.state.sections_use) {
+            card.content?.push({
+                id: "section",
+                type: "string",
+                content: getCurrentElement("section") + ": " + this.section
+            });
         }
+        
+        return card;
     }
 }
 
@@ -422,7 +427,7 @@ class CourseSummary extends CourseBase {
                         course_id: this.id,
                         section: this.section,
                     },
-                    text: this[`${language}_title`] + (this.section != null ? " - " + getCurrentElement("section") + ": " + this.section : "")
+                    text: this[`${language}_title`] + (store.state.sections_use && this.section != null ? " - " + getCurrentElement("section") + ": " + this.section : "")
                 },
             }, {
                 id: this.id + "_enrollment",
@@ -494,7 +499,7 @@ class CurriculumCourse extends CourseBase {
 
     toTableRow(session_id: number, student_id: number, teacher_id?: number): CustomElement[] {
         const language = getCurrentLanguage();
-        return [
+        const row: CustomElement[] = [
             {
                 id: this.id + "_title",
                 type: "string",
@@ -509,10 +514,6 @@ class CurriculumCourse extends CourseBase {
                     },
                     text: this[`${language}_title`]
                 }
-            }, {
-                id: this.id + "_section", // TODO (8): Mettere differenza tra visualizzazione con corso frequentato una volta e più
-                type: "string",
-                content: this.section
             }, {
                 id: this.id + "_credits",
                 type: "string",
@@ -544,6 +545,14 @@ class CurriculumCourse extends CourseBase {
                 content: this.final_grade != null ? "" + this.final_grade : "-"
             }
         ];
+        if (store.state.sections_use) {
+            row.splice(1,0,{
+                id: this.id + "_section", // TODO (8): Mettere differenza tra visualizzazione con corso frequentato una volta e più
+                type: "string",
+                content: this.section
+            });
+        }
+        return row;
     }
 }
 
@@ -1006,7 +1015,7 @@ class LearningSession extends LearningSessionSummary { // TODO (4): sistema nume
                         if (course.pending == "true") {
                             session_list += "<li>"
                                 + course[`${language}_title`]
-                                + ((status == LearningSessionStatus.CURRENT || status == LearningSessionStatus.UPCOMING) && course.section != null
+                                + (store.state.sections_use && (status == LearningSessionStatus.CURRENT || status == LearningSessionStatus.UPCOMING) && course.section != null
                                     ? " - " + getCurrentElement("section") + " " + course.section : "")
                                 + "</li>";
                         }
@@ -1326,27 +1335,32 @@ class CourseSectionsTeachings {
 
     toCard(group: string, learning_session: string): GeneralCardElements { // ! (3): per visualizzazione tabella a telefono
         const language = getCurrentLanguage();
-        return {
+        const card: GeneralCardElements = {
             id: "" + this.id,
             group: group,
             content: [{
                 id: this.id + "_title",
                 type: "title",
                 content: this[`${language}_title`]
-            }, {
-                id: this.id + "_sections",
-                type: "string",
-                content: getCurrentElement("sections") + ": " + Array.from(this.sections).join(", ")
-            }, {
-                id: this.id + "_my_associated_teachings",
-                type: "string",
-                content: getCurrentElement("my_associated_teachings") + ": " + Array.from(this.my_teaching_refs).join(", ")
             }],
             link: {
                 url: "project_courses/" + this.id + "/" + learning_session,
                 method: "get"
             }
+        };
+        if (store.state.sections_use) {
+            card.content?.push({
+                id: this.id + "_sections",
+                type: "string",
+                content: getCurrentElement("sections") + ": " + Array.from(this.sections).join(", ")
+            });
         }
+        card.content?.push({
+            id: this.id + "_my_associated_teachings",
+            type: "string",
+            content: getCurrentElement("my_associated_teachings") + ": " + Array.from(this.my_teaching_refs).join(", ")
+        });
+        return card;
     }
 }
 
@@ -2604,7 +2618,7 @@ class TeacherProposition {
     }
 
     toCard(disabled = false): GeneralCardElements {
-        return { // TODO (6): sistemare roba undefined
+        const card: GeneralCardElements = { // TODO (6): sistemare roba undefined
             id: "" + this.teacher.id,
             group: "",
             side_element: disabled ? undefined : {
@@ -2645,13 +2659,16 @@ class TeacherProposition {
                         text: this.teacher.name + " " + this.teacher.surname// + (this.main ? " [" + getCurrentElement("main_teacher") + "]" : "")
                     },
                 },
-                {
-                    id: "sections",
-                    type: "string",
-                    content: getCurrentElement("sections") + ": " + this.sections.join(", "),
-                },
             ],
+        };
+        if (store.state.sections_use) {
+            card.content?.push({
+                id: "sections",
+                type: "string",
+                content: getCurrentElement("sections") + ": " + this.sections.join(", "),
+            });
         }
+        return card;
     }
 
     toTeacherObj(): PropositionTeacher {

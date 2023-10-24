@@ -102,8 +102,8 @@
       <template #default>
         <ionic-table
           :key="trigger"
-          :data="tableData"
-          :first_row="firstRow"
+          :data="table_data"
+          :first_row="first_row"
           :column_sizes="column_sizes"
           @signal_event="SetupModalAndOpen()"
         ></ionic-table>
@@ -201,7 +201,7 @@ const updateTable = (
 ) => {
   for (const course of courses) {
     if (year_correspondences[selected_year.value][course.id].length > 0) {
-      tableData.push(
+      table_data.push(
         course.toTableRow(
           year_correspondences[selected_year.value][course.id][
             year_correspondences[selected_year.value][course.id].length - 1
@@ -227,22 +227,18 @@ const language = getCurrentLanguage();
 const props = defineProps({
   student_id: String,
 });
+const sections_use: boolean = store.state.sections_use;
 
 const year_correspondences: {
   [key: number]: {
     [key: number]: number[];
   };
 } = {};
-const firstRow: CustomElement[] = [
+const first_row: CustomElement[] = [
   {
     id: "title",
     type: "string",
     content: getCurrentElement("course"),
-  },
-  {
-    id: "section",
-    type: "string",
-    content: getCurrentElement("section"),
   },
   {
     id: "credits",
@@ -265,7 +261,7 @@ const firstRow: CustomElement[] = [
     content: getCurrentElement("final_grade"),
   },
 ];
-const column_sizes = [4, 1, 1, 2, 2, 2];
+const column_sizes = sections_use ? [4, 1, 1, 2, 2, 2] : [5, 1, 2, 2, 2];
 const grades_open = ref(false);
 const description_open = ref(false);
 const trigger = ref(0);
@@ -291,7 +287,15 @@ let description_section: string;
 let learning_contexts: LearningContext[] = [];
 let learning_areas: LearningArea[] = [];
 let courses_list: CurriculumCourse[] = [];
-let tableData: CustomElement[][] = [];
+let table_data: CustomElement[][] = [];
+
+if (sections_use) {
+  first_row.splice(1,0,{
+    id: "section",
+    type: "string",
+    content: getCurrentElement("section"),
+  });
+}
 
 school_years =
   user.user == "student"
@@ -330,13 +334,13 @@ await getYearCourses();
 
 watch(selected_year, () => {
   getYearCourses();
-  tableData = [];
+  table_data = [];
   updateTable(year_correspondences, courses);
   trigger.value++;
 });
 watch(selected_context, (n) => {
   courses = year_courses[n] ?? [];
-  tableData = [];
+  table_data = [];
   updateTable(year_correspondences, courses);
   trigger.value++;
 });

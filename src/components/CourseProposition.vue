@@ -305,7 +305,7 @@
                         : 'group_choice'
                     )
                       " :disabled="action == 'view' || approved.project_class" />
-                  <div class="ion-padding">
+                  <div v-if="sections_use" class="ion-padding">
                     <ion-input type="number" v-model="num_section" :label="getCurrentElement('num_section')"
                       :aria-label="getCurrentElement('num_section')" fill="outline" :readonly="action == 'view' || approved.project_class" />
                   </div>
@@ -332,20 +332,21 @@
                         >{{ getCurrentElement("main_teacher") }}</ion-checkbox
                       >
                     -->
-                    <ion-text class="ion-padding">{{ getCurrentElement("sections") }}:
-                      <!-- ! (1): mettere impostazione per togliere quando non voluta -->
-                      {{
-                        num_section == '' || parseInt(num_section) <= 0 ? getCurrentElement("num_section_needed") : ""
-                      }}</ion-text>
-                        <ion-list v-if="num_section != '' && parseInt(num_section) > 0">
-                          <ion-item v-for="(value, index) in sections" :key="numberToSection(index)">
-                            <ion-checkbox v-model="sections[index]" :aria-label="numberToSection(index)"
-                              class="ion-padding-start" label-placement="start">{{ numberToSection(index)
-                              }}</ion-checkbox>
-                          </ion-item>
-                        </ion-list>
+                    <template v-if="sections_use">
+                      <ion-text class="ion-padding">{{ getCurrentElement("sections") }}:
+                        {{
+                          num_section == '' || parseInt(num_section) <= 0 ? getCurrentElement("num_section_needed") : ""
+                        }}</ion-text>
+                          <ion-list v-if="num_section != '' && parseInt(num_section) > 0">
+                            <ion-item v-for="(value, index) in sections" :key="numberToSection(index)">
+                              <ion-checkbox v-model="sections[index]" :aria-label="numberToSection(index)"
+                                class="ion-padding-start" label-placement="start">{{ numberToSection(index)
+                                }}</ion-checkbox>
+                            </ion-item>
+                          </ion-list>
+                    </template>
                   </template>
-                  <ion-button v-if="action == 'propose'" @click="addElement('teachers')" expand="block" color="primary"
+                  <ion-button v-if="sections_use && action == 'propose'" @click="addElement('teachers')" expand="block" color="primary"
                     fill="solid">
                     {{ getCurrentElement("add") }}
                   </ion-button>
@@ -822,6 +823,7 @@ const addTeacher = (proposition_teacher?: PropositionTeacher, only_card = false,
       for (const i in sections) {
         sections[i] = false;
       }
+      sections[0] = true;
     }
   }
   trigger.value++;
@@ -1412,6 +1414,7 @@ const approved: {
   course: false,
   project_class: false,
 };
+const sections_use: boolean = store.state.sections_use;
 /*const correspondences: {
   [key in keyof string as ListTypes]: {
     [key: string]: string
@@ -1562,19 +1565,24 @@ watch(selected_study_address, (new_study_address) => {
   }
   trigger.value++;
 });
-watch(num_section, (n) => {
+watch(num_section, (n,o) => {
   const actual_n = n != "" ? parseInt(n) : 0;
 
   course_proposition.specific_information.num_section = actual_n;
-  if (sections.length > actual_n) {
-    sections.splice(actual_n);
-  } else if (sections.length < actual_n) {
-    sections = reactive(
-      sections.concat(new Array(actual_n - sections.length).fill(false))
-    );
-    if (sections.length > 0) {
-      sections[0] = true;
+  if (actual_n > 0) {
+    course_proposition.specific_information.num_section = actual_n;
+    if (sections.length > actual_n) {
+      sections.splice(actual_n);
+    } else if (sections.length < actual_n) {
+      sections = reactive(
+        sections.concat(new Array(actual_n - sections.length).fill(false))
+      );
+      if (sections.length > 0) {
+        sections[0] = true;
+      }
     }
+  } else {
+    num_section.value = o;
   }
 });
 watch(selected_model, () => {
@@ -1593,6 +1601,13 @@ watch(selected_teaching, () => {
 watch(selected_growth_area, () => {
   addElement("growth_areas");
 });
+if (!sections_use) {
+  watch(selected_teacher, n => {
+    if (n != 0) {
+      addElement("teachers");
+    }
+  })
+}
 </script>
 
 <style></style>

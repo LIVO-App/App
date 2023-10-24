@@ -58,6 +58,7 @@
       />
     </div>
     <custom-select
+      v-if="sections_use"
       v-model="selected_section"
       :list="sections"
       :label="getCurrentElement('section') + ':'"
@@ -264,6 +265,7 @@ const manageEvent = () => {
 
 const store = useStore();
 const user = User.getLoggedUser() as User; //<!-- ! (3): finire parte admin e mettere final confirmation
+const sections_use: boolean = store.state.sections_use;
 
 const firstRow: CustomElement[] = [
   {
