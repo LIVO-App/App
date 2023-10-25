@@ -2704,7 +2704,8 @@ type AdminProjectClassProps = { // TODO (9): cambiare nome, dato che possono acc
     }>,
     admin_name: string,
     admin_surname: string,
-    to_be_modified: string | null
+    to_be_modified: string | null,
+    final_confirmation: string | null,
 } & {
         [key in keyof string as `${Language}_title`]: string
     }
@@ -2722,8 +2723,11 @@ class AdminProjectClass {
     admin_name: string;
     admin_surname: string;
     to_be_modified?: string;
+    final_confirmation?: Date;
 
     constructor(props: AdminProjectClassProps) {
+        const tmp_date = new Date(props.final_confirmation ?? "invalid_date");
+
         this.course_id = props.course_id;
         this.learning_session = new LearningSession({
             id: props.learning_session,
@@ -2744,6 +2748,7 @@ class AdminProjectClass {
         this.admin_name = props.admin_name;
         this.admin_surname = props.admin_surname;
         this.to_be_modified = props.to_be_modified ?? undefined;
+        this.final_confirmation = !isNaN(tmp_date.getTime()) ? tmp_date : undefined;
     }
 
     async loadParms() {
@@ -2813,6 +2818,10 @@ class AdminProjectClass {
                 id: "admin",
                 type: "html",
                 content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.admin_name + " " + this.admin_surname,
+            },{
+                id: "final_confirmation",
+                type: "html",
+                content: "<b>" + getCurrentElement("final_confirmation") + "</b>: " + (this.final_confirmation != undefined ? toDateString(this.final_confirmation) : "-"),
             });
         }
 
