@@ -175,20 +175,10 @@ const add_grade = async () => { //<!-- ! (2): Impedire ad insegnanti associati d
   executeLink(
     "/v1/students/" +
     data.student_id +
-    "/grades?teacher_id=" +
-    data.teacher_id +
-    "&course_id=" +
+    "/grades?course_id=" +
     data.course_id +
     "&session_id=" +
-    data.session_id +
-    "&ita_description=" +
-    data.italian_description +
-    "&eng_description=" +
-    data.english_description +
-    "&grade=" +
-    data.grade +
-    "&final=" +
-    data.final,
+    data.session_id,
     (response) => {
       let student_pos: number;
 
@@ -203,7 +193,12 @@ const add_grade = async () => { //<!-- ! (2): Impedire ad insegnanti associati d
       }
     },
     (err) => console.error(err),
-    "post"
+    "post",{
+      ita_description: data.italian_description,
+      eng_description: data.english_description,
+      grade: data.grade,
+      final: data.final,
+    }
   );
 };
 
