@@ -573,6 +573,7 @@ export const store = createStore({
                     project_class_confirmation_date: "Data di conferma della classe progetto",
                     learning_session_not_upcoming: "Sessione di apprendimento non imminente",
                     project_class_already_confirmed: "Classe progetto già confermata",
+                    clear: "Reset",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -807,6 +808,7 @@ export const store = createStore({
                     project_class_confirmation_date: "Project class confirmation date",
                     learning_session_not_upcoming: "Learning session not upcoming",
                     project_class_already_confirmed: "Project class already confirmed",
+                    clear: "Clear",
                 }
             },
             logged_user: false,

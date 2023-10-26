@@ -1,4 +1,8 @@
 <template>
+  <ion-modal :keep-contents-mounted="true">
+    <ion-datetime id="datetime" @ion-change="changeData" :first-day-of-week="1" :max="end_of_day.toISOString()"
+      hour-cycle="h23" :locale="getLocale()" :show-clear-button="true" :clear-text="getCurrentElement('clear')" />
+  </ion-modal>
   <ion-header>
     <ion-toolbar>
       <ion-grid>
@@ -64,6 +68,11 @@
           </div>
           <hr class="ion-margin-top" style="border-bottom: 1px solid var(--ion-color-medium)" />
           <div>
+            <ion-item style="width: fit-content;" lines="none">
+              <ion-label :aria-label="getCurrentElement('date')" color="primary"
+              style="color: var(--ion-color-primary)">{{ getCurrentElement("date") }}</ion-label>
+              <ion-datetime-button datetime="datetime" style="width: fit-content;" class="ion-padding-start" />
+            </ion-item>
             <ion-input ref="input_grade" type="tel" v-model="grade" :label="getCurrentElement('grade')"
               :aria-label="getCurrentElement('grade')" color="black" style="color: var(--ion-color-primary)"
               fill="outline" class="ion-margin-vertical" @ion-input="() => {
@@ -71,10 +80,11 @@
                   grade = grade.substring(0, grade.length - 1);
                 }
               }" />
-            <ion-label position="floating" :aria-label="getCurrentElement('final_grade')" color="primary"
-              style="color: var(--ion-color-primary)">{{ getCurrentElement("final_grade") }}</ion-label>
-            <ion-checkbox v-model="final_grade" :aria-label="getCurrentElement('final_grade')"
-              class="ion-padding-start"></ion-checkbox>
+            <div style="width: fit-content;">
+              <ion-label position="floating" :aria-label="getCurrentElement('final_grade')" color="primary"
+                style="color: var(--ion-color-primary)" class="ion-padding-horizontal">{{ getCurrentElement("final_grade") }}</ion-label>
+              <ion-checkbox v-model="final_grade" :aria-label="getCurrentElement('final_grade')" />
+            </div>
           </div>
           <!-- TODO (4): controllare perchè non funziona nella tabella e mettere popup "Sei sicuro?" -->
         </div>
@@ -107,6 +117,7 @@
                 data: {
                   ...parameters,
                   ...descriptions,
+                  publication_date: date != undefined ? date.toISOString() : undefined,
                   grade: actual_grade,
                   final: final_grade,
                 },
@@ -142,6 +153,7 @@ import {
   getCurrentElement,
   getCustomMessage,
   getIcon,
+  getLocale,
 } from "@/utils";
 import {
   IonHeader,
@@ -155,6 +167,11 @@ import {
   IonCheckbox,
   IonButton,
   IonTextarea,
+  IonDatetime,
+  IonDatetimeButton,
+  IonModal,
+  DatetimeCustomEvent,
+  IonItem,
 } from "@ionic/vue";
 import { PropType, reactive, Ref, ref } from "vue";
 import { useStore } from "vuex";
@@ -186,6 +203,22 @@ const limitGrade = () => {
     return NaN;
   } else {
     return actual_grade;
+  }
+};
+const changeData = (event: DatetimeCustomEvent) => {
+  const tmp_str_date = event.target.value;
+
+  let tmp_date: Date;
+
+  if (typeof tmp_str_date == "string") {
+    tmp_date = new Date(tmp_str_date);
+    if (tmp_date <= end_of_day) {
+      date = tmp_date;
+    } else {
+      date = undefined;
+    }
+  } else {
+    date = undefined;
   }
 }
 
@@ -269,11 +302,14 @@ const colors: Colors<GeneralSubElements> = {
     type: "var",
   },
 };
+const end_of_day = new Date();
+end_of_day.setHours(23, 59, 59, 999);
 
 let actual_grades: Grade[];
 let tmp_mean = 0;
 let mean = "";
 let finalPresent = false;
+let date: Date | undefined = undefined;
 
 if (props.grades != undefined) {
   actual_grades = props.grades.map((a: Grade) => {
@@ -309,8 +345,10 @@ for (const grade of actual_grades) {
   }
 }
 
-if (actual_grades.length > 1 && !finalPresent) {
+if (actual_grades.length > 1) {
   mean = (tmp_mean / (actual_grades.length - (finalPresent ? 1 : 0))).toFixed(2);
+} else if (actual_grades.length == 1 && !finalPresent) {
+  mean = actual_grades[0].grade.toFixed(2);
 } else {
   mean = "-";
 }

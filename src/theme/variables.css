@@ -481,4 +481,9 @@ ion-modal ion-header ion-toolbar {
   --border-radius: 5px;
 }
 
+/* TODO (5): sistemare colori. Non funzionano i colori dei giorni */
+/*ion-datetime {
+  --background: var(--ion-color-white);
+}*/
+
 /* ! (3): creare css per classi generali, mettere manina al mouse per label-bottoni */

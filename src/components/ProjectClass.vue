@@ -196,6 +196,7 @@ const add_grade = async () => { //<!-- ! (2): Impedire ad insegnanti associati d
     "post",{
       ita_description: data.italian_description,
       eng_description: data.english_description,
+      publication_date: data.publication_date,
       grade: data.grade,
       final: data.final,
     }
@@ -355,7 +356,7 @@ const handled_buttons: AlertButton[] = [{
           } else {
             executeLink("/v1/project_classes/" + course_id + "/" + session_id + "/final_confirmation",
               (response) => {
-                project_class!.final_confirmation = response.data.confirmation_date != undefined ? new Date(response.data.confirmation_date) : new Date();
+                (project_class as AdminProjectClass).final_confirmation = response.data.confirmation_date != undefined ? new Date(response.data.confirmation_date) : new Date();
                 setTimeout(() => setupModalAndOpen("success"), 300);
               },
               () => setTimeout(() => setupModalAndOpen("error"), 300),

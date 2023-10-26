@@ -76,7 +76,7 @@ async function executeLink(url?: string | undefined, success = (response: any) =
 
 function getCurrentElement(key: string) {
 
-    const language: Language = store.state.language;
+    const language: Language = getCurrentLanguage();
     const elements: ElementsList = store.state.elements;
 
     return elements[language][key];
@@ -353,4 +353,18 @@ function isTokenExpired(check_user = false) {
     return (check_user && user == undefined) || (user != undefined && user.expiration_date <= new Date());
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence, getUserFromToken, getDefautlLink, setUser, getBaseUrl, getLearningContexts, logout, isTokenExpired }
+function getLocale() {
+    let locale: string;
+    switch (getCurrentLanguage()) {
+        case "italian":
+            locale = "it-IT";
+            break;
+        case "english":
+            locale = "en-GB";
+            break;
+    }
+
+    return locale;
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence, getUserFromToken, getDefautlLink, setUser, getBaseUrl, getLearningContexts, logout, isTokenExpired, getLocale }
