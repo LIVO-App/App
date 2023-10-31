@@ -19,12 +19,14 @@
   </ion-header>
   <ion-grid>
     <ion-row>
-      <ion-col :size="parameters.teacher_id != undefined && tableData.length != 0 && final === false ? '7' : '12'">
-        <template v-if="tableData.length > 0">
-          <ionic-table :data="tableData" :first_row="first_row" :column_sizes="column_sizes"
-            @signal_event="$emit('signal_event')" />
+      <ion-col
+        :size="parameters.teacher_id != undefined && table_data.length != 0 && actual_final_grade_index === -1 ? '7' : '12'">
+        <template v-if="table_data.length > 0">
+          <ionic-table :key="store.state.triggers.grades" :data="table_data" :first_row="first_row"
+            :column_sizes="column_sizes" @signal_event="$emit('signal_event')" />
           <div class="ion-text-center ion-padding-bottom">
-            <ion-text color="primary">{{ getCurrentElement("intermediate_arithmetic_mean") }}{{ final === true ? " (" +
+            <ion-text color="primary">{{ getCurrentElement("intermediate_arithmetic_mean") }}{{ actual_final_grade_index
+              != -1 ? " (" +
               getCurrentElement("no_final_grade").toLowerCase() + ")" : "" }}:
               {{ mean }}</ion-text>
           </div>
@@ -41,8 +43,8 @@
           </div>
         </template>
       </ion-col>
-      <ion-col :size="tableData.length == 0 ? '12' : '5'"
-        v-if="parameters.teacher_id != undefined && parameters.associated_teacher === false && final === false">
+      <ion-col :size="table_data.length == 0 ? '12' : '5'"
+        v-if="parameters.teacher_id != undefined && parameters.associated_teacher === false && actual_final_grade_index === -1">
         <div class="ion-padding-bottom">
           <div class="ion-padding-bottom">
             <ionic-element :element="getCustomMessage(
@@ -70,10 +72,10 @@
           <div>
             <ion-item style="width: fit-content;" lines="none">
               <ion-label :aria-label="getCurrentElement('date')" color="primary"
-              style="color: var(--ion-color-primary)">{{ getCurrentElement("date") }}</ion-label>
+                style="color: var(--ion-color-primary)">{{ getCurrentElement("date") }}</ion-label>
               <ion-datetime-button datetime="datetime" style="width: fit-content;" class="ion-padding-start" />
             </ion-item>
-            <ion-input ref="input_grade" type="tel" v-model="grade" :label="getCurrentElement('grade')"
+            <ion-input type="number" v-model="grade" :label="getCurrentElement('grade')"
               :aria-label="getCurrentElement('grade')" color="black" style="color: var(--ion-color-primary)"
               fill="outline" class="ion-margin-vertical" @ion-input="() => {
                 if (isNaN(getGradeNumber())) {
@@ -82,8 +84,9 @@
               }" />
             <div style="width: fit-content;">
               <ion-label position="floating" :aria-label="getCurrentElement('final_grade')" color="primary"
-                style="color: var(--ion-color-primary)" class="ion-padding-horizontal">{{ getCurrentElement("final_grade") }}</ion-label>
-              <ion-checkbox v-model="final_grade" :aria-label="getCurrentElement('final_grade')" />
+                style="color: var(--ion-color-primary)" class="ion-padding-horizontal">{{ getCurrentElement("final_grade")
+                }}</ion-label>
+              <ion-checkbox v-model="final" :aria-label="getCurrentElement('final_grade')" />
             </div>
           </div>
           <!-- TODO (4): controllare perchè non funziona nella tabella e mettere popup "Sei sicuro?" -->
@@ -107,8 +110,10 @@
               $emit('signal_event');
             } else if (isNaN(actual_grade = limitGrade())) {
               store.state.event = {
-                event: 'grade_value_error',
-                data: {},
+                event: 'error',
+                data: {
+                  message: getCurrentElement('grade_value_error'),
+                },
               };
               $emit('signal_event');
             } else {
@@ -119,7 +124,7 @@
                   ...descriptions,
                   publication_date: date != undefined ? date.toISOString() : undefined,
                   grade: actual_grade,
-                  final: final_grade,
+                  final: final,
                 },
                 method: 'post',
               };
@@ -173,22 +178,16 @@ import {
   DatetimeCustomEvent,
   IonItem,
 } from "@ionic/vue";
-import { PropType, reactive, Ref, ref } from "vue";
+import { PropType, reactive, Ref, ref, watch } from "vue";
 import { useStore } from "vuex";
 
-const push_grade = (grade: Grade) => {
-  if (grade.final) {
-    final.value = true;
-  }
-  tableData.push(grade.toTableRow(user.id));
-};
 const getGradeNumber = () => {
   const tmp_grade = grade.value;
   const tmp_regexp = store.state.grades_scale.input_regex;
   const actual_grade = tmp_regexp.test(tmp_grade) ? parseFloat(tmp_grade) : NaN;
   tmp_regexp.test(tmp_grade); // Dummy test to reset regex (I don't know why I have to do this)
 
-  if (isNaN(actual_grade) || (actual_grade % 1) != 0) {
+  if (isNaN(actual_grade)) {
     return NaN;
   } else {
     return actual_grade;
@@ -221,6 +220,61 @@ const changeData = (event: DatetimeCustomEvent) => {
     date = undefined;
   }
 }
+const setGradesTable = async () => {
+  let tmp_mean = 0;
+
+  table_data = [];
+  if (props.grades != undefined) {
+    actual_grades = props.grades;
+  } else {
+    actual_grades = await executeLink(
+      "/v1/students/" +
+      props.parameters.student_id +
+      "/grades?course_id=" +
+      props.parameters.course_id +
+      "&session_id=" +
+      props.parameters.session_id +
+      (props.parameters.teacher_id != undefined
+        ? "&teacher_id=" + props.parameters.teacher_id
+        : ""),
+      (response) =>
+        response.data.data.map((a: GradeProps) => new Grade(a)),
+      () => []
+    );
+  }
+
+  column_sizes = props.parameters.associated_teacher === false
+    && (actual_final_grade_index == -1
+      || (actual_grades[actual_final_grade_index] != undefined
+        && actual_grades[actual_final_grade_index].isEditable())) ? [5, 2, 2, 1, 1] : [6, 3, 3];
+
+  for (const grade_index in actual_grades) {
+    final_grade_pubblication = actual_final_grade_index != -1 && actual_grades[actual_final_grade_index] != undefined
+      ? actual_grades[actual_final_grade_index].publication
+      : actual_grades[grade_index].final
+        ? actual_grades[grade_index].publication
+        : undefined;
+
+    table_data.push(actual_grades[grade_index].toTableRow(
+      props.parameters.associated_teacher ?? false,
+      user.id, props.parameters.student_id,
+      final_grade_pubblication));
+
+    if (!actual_grades[grade_index].final) {
+      tmp_mean += actual_grades[grade_index].grade;
+    } else {
+      actual_final_grade_index = parseInt(grade_index);
+    }
+  }
+
+  if (actual_grades.length > 1) {
+    mean = (tmp_mean / (actual_grades.length - (actual_final_grade_index != -1 ? 1 : 0))).toFixed(2);
+  } else if (actual_grades.length == 1 && actual_final_grade_index == -1) {
+    mean = actual_grades[0].grade.toFixed(2);
+  } else {
+    mean = "-";
+  }
+}
 
 const store = useStore();
 const languages = getAviableLanguages();
@@ -236,6 +290,7 @@ const props = defineProps({
     required: true,
   },
   grades: Array<Grade>,
+  final_grade_index: Number,
 });
 defineEmits(["signal_event", "close"]);
 
@@ -272,21 +327,8 @@ const first_row: CustomElement[] = [
     id: "evaluation",
     type: "string",
     content: getCurrentElement("evaluation"),
-  },
-  /*{
-    id: "edit",
-    type: "string",
-    content: "",
-  },
-  {
-    id: "remove",
-    type: "string",
-    content: "",
-  },*/
+  }
 ];
-const column_sizes = [6, 3, 3]; //[5, 2, 2, 1, 1];
-const tableData: CustomElement[][] = [];
-const final = ref(false);
 const descriptions: {
   [key in keyof Language as `${Language}_description`]: string;
 } = reactive({
@@ -294,8 +336,7 @@ const descriptions: {
   english_description: "",
 });
 const grade: Ref<string> = ref("");
-const input_grade = ref();
-const final_grade: Ref<boolean> = ref(false);
+const final: Ref<boolean> = ref(false);
 const colors: Colors<GeneralSubElements> = {
   text: {
     name: "primary",
@@ -305,53 +346,29 @@ const colors: Colors<GeneralSubElements> = {
 const end_of_day = new Date();
 end_of_day.setHours(23, 59, 59, 999);
 
-let actual_grades: Grade[];
-let tmp_mean = 0;
+let table_data: CustomElement[][] = [];
 let mean = "";
-let finalPresent = false;
 let date: Date | undefined = undefined;
+let actual_grades: Grade[] = [];
+let actual_final_grade_index = props.final_grade_index ?? -1;
+let column_sizes: number[];
+let final_grade_pubblication: Date | undefined;
 
-if (props.grades != undefined) {
-  actual_grades = props.grades.map((a: Grade) => {
-    push_grade(a);
-    return a;
-  });
-} else {
-  actual_grades = await executeLink(
-    "/v1/students/" +
-    props.parameters.student_id +
-    "/grades?course_id=" +
-    props.parameters.course_id +
-    "&session_id=" +
-    props.parameters.session_id +
-    (props.parameters.teacher_id != undefined
-      ? "&teacher_id=" + props.parameters.teacher_id
-      : ""),
-    (response) =>
-      response.data.data.map((a: GradeProps) => {
-        const tmp_grade = new Grade(a);
-        push_grade(tmp_grade);
-        return tmp_grade;
-      }),
-    () => []
-  );
+if (props.parameters.associated_teacher === false) {
+  first_row.push({
+    id: "edit",
+    type: "string",
+    content: "",
+  },
+    {
+      id: "remove",
+      type: "string",
+      content: "",
+    });
 }
 
-for (const grade of actual_grades) {
-  if (!grade.final) {
-    tmp_mean += grade.grade;
-  } else {
-    finalPresent = true;
-  }
-}
-
-if (actual_grades.length > 1) {
-  mean = (tmp_mean / (actual_grades.length - (finalPresent ? 1 : 0))).toFixed(2);
-} else if (actual_grades.length == 1 && !finalPresent) {
-  mean = actual_grades[0].grade.toFixed(2);
-} else {
-  mean = "-";
-}
+await setGradesTable();
+watch(store.state.triggers, setGradesTable);
 </script>
 
 <style scoped>

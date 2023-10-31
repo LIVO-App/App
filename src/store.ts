@@ -61,7 +61,7 @@ const grades_scale = {
     min: 4,
     max: 10,
     only_integer: true,
-    input_regex: /^([0-9]|10)$/g,
+    input_regex: /^([0-9]|10)([.,][0-9]{0,2})?$/g,
 };
 
 export const store = createStore({
@@ -574,6 +574,9 @@ export const store = createStore({
                     learning_session_not_upcoming: "Sessione di apprendimento non imminente",
                     project_class_already_confirmed: "Classe progetto già confermata",
                     clear: "Reset",
+                    remove_grade_confirmation: "Sicuro di voler rimuovere questo voto?",
+                    no_grade_remotion_permissions: "Non hai i permessi per rimuovere questo voto",
+                    cannot_remove_grade: "Non puoi rimuovere questo voto",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -809,6 +812,9 @@ export const store = createStore({
                     learning_session_not_upcoming: "Learning session not upcoming",
                     project_class_already_confirmed: "Project class already confirmed",
                     clear: "Clear",
+                    remove_grade_confirmation: "Are you sure you want to remove this grade?",
+                    no_grade_remotion_permissions: "You don't have permissions to remove this grade",
+                    cannot_remove_grade: "You cannot remove this grade",
                 }
             },
             logged_user: false,
@@ -825,6 +831,9 @@ export const store = createStore({
             year_module: 100,
             static_subscription: true,
             sections_use: false,
+            triggers: {
+                grades: 0,
+            }
         }
     }
 });

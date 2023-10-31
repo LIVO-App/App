@@ -1,7 +1,7 @@
 import { Method } from "axios";
 import { store } from "./store";
 import { AlertButton, AlertInput } from "@ionic/vue"
-import { executeLink, getActualLearningContext, getCompleteSchoolYear, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getCustomMessage, getGender, getIcon, getRagneString, getStatusColor, getStatusString, getStudyAddressVisualization, hashCode, numberToSection, toDateString } from "./utils";
+import { executeLink, getActualLearningContext, getCompleteSchoolYear, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getCustomMessage, getGender, getIcon, getRagneString, getStatusColor, getStatusString, getStudyAddressVisualization, numberToSection, toDateString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -940,14 +940,14 @@ class LearningSession extends LearningSessionSummary { // TODO (4): sistema nume
     }
 
     getStatus(reference = new Date()) { // future [TDB] upcoming [SD] current [ED] completed
-        const startDate = this.start;
-        const endDate = this.end;
-        const tenDaysBefore = new Date(startDate);
-        tenDaysBefore.setDate(tenDaysBefore.getDate() - 10);
+        const start_date = this.start;
+        const end_date = this.end;
+        const ten_days_before = new Date(start_date);
+        ten_days_before.setDate(ten_days_before.getDate() - 10);
 
-        return reference < tenDaysBefore ? LearningSessionStatus.FUTURE
-            : reference >= tenDaysBefore && reference < startDate ? LearningSessionStatus.UPCOMING
-                : reference >= startDate && reference <= endDate ? LearningSessionStatus.CURRENT
+        return reference < ten_days_before ? LearningSessionStatus.FUTURE
+            : reference >= ten_days_before && reference < start_date ? LearningSessionStatus.UPCOMING
+                : reference >= start_date && reference <= end_date ? LearningSessionStatus.CURRENT
                     : LearningSessionStatus.COMPLETED;
     }
 
@@ -1213,14 +1213,15 @@ type CustomElement = { // TODO (6): togliere type e usare funzioni is... o roba 
 }
 
 type GradeProps = {
+    id: number,
     publication: Date,
     grade: number,
-    final: boolean
+    final: number
 } & {
         [key in keyof string as `${Language}_description`]: string
     }
 
-class Grade implements GradeProps {
+class Grade {
 
     id: number;
     publication: Date;
@@ -1230,13 +1231,22 @@ class Grade implements GradeProps {
     final: boolean;
 
     constructor(props: GradeProps) {
+        this.id = props.id;
         this.publication = new Date(props.publication);
         this.grade = props.grade;
         this.italian_description = props.italian_description;
         this.english_description = props.english_description;
-        this.final = props.final;
+        this.final = props.final == 1;
+    }
 
-        this.id = hashCode(this.publication.toISOString());
+    isEditable(final_grade_pubblication?: Date) {
+        const seven_days_after = final_grade_pubblication != undefined ? new Date(final_grade_pubblication) : undefined;
+
+        if (seven_days_after != undefined) {
+            seven_days_after.setDate(seven_days_after.getDate() +7);
+        }
+
+        return seven_days_after == undefined || (this.final && (new Date()) <= seven_days_after);
     }
 
     toCard(): GeneralCardElements { // ! (3): per visualizzazione tabella a telefono
@@ -1252,11 +1262,10 @@ class Grade implements GradeProps {
         }
     }
 
-    toTableRow(teacher_id: number): CustomElement[] {
+    toTableRow(associated_teacher: boolean, teacher_id: number, student_id: number, final_grade_pubblication?: Date): CustomElement[] {
         const language = getCurrentLanguage();
-
-        teacher_id + 5; // Temporary dummy use
-        return [{
+        
+        const row: CustomElement[] = [{
             id: this.id + "_description",
             type: "html",
             content: this[`${language}_description`]
@@ -1268,31 +1277,49 @@ class Grade implements GradeProps {
             id: this.id + "_value",
             type: "html",
             content: (this.final ? "<b>" + getCurrentElement("final") + "</b><br />" : "") + this.grade
-        }/*, {
-            id: this.id + "_edit",
-            type: "icon",
-            linkType: "event",
-            content: {
-                event: "edit_grade",
-                data: {
-                    id: this.id,
-                    teacher_id: teacher_id,
-                },
-                icon: getIcon("pencil")
-            }
-        }, {
-            id: this.id + "_remove",
-            type: "icon",
-            linkType: "event",
-            content: {
-                event: "remove_grade",
-                data: {
-                    id: this.id,
-                    teacher_id: teacher_id,
-                },
-                icon: getIcon("close")
-            }
-        }*/];
+        }];
+        const editable = this.isEditable(final_grade_pubblication);
+        
+        if (editable && !associated_teacher) {
+            row.push({
+                id: this.id + "_edit",
+                type: "icon",
+                linkType: "event",
+                content: {
+                    event: "edit_grade",
+                    data: {
+                        id: this.id,
+                        teacher_id: teacher_id,
+                        student_id: student_id,
+                    },
+                    icon: getIcon("pencil")
+                }
+            }, {
+                id: this.id + "_remove",
+                type: "icon",
+                linkType: "event",
+                content: {
+                    event: "remove_grade",
+                    data: {
+                        id: this.id,
+                        student_id: student_id,
+                    },
+                    icon: getIcon("close")
+                }
+            });
+        } else if (!editable) {
+            row.push({
+                id: this.id + "_edit",
+                type: "string",
+                content: ""
+            },{
+                id: this.id + "_remove",
+                type: "string",
+                content: ""
+            })
+        }
+        
+        return row;
     }
 }
 
