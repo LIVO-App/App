@@ -1,7 +1,7 @@
 import { Method } from "axios";
 import { store } from "./store";
 import { AlertButton, AlertInput } from "@ionic/vue"
-import { executeLink, getActualLearningContext, getCompleteSchoolYear, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getCustomMessage, getGender, getIcon, getRagneString, getStatusColor, getStatusString, getStudyAddressVisualization, hashCode, numberToSection, toDateString } from "./utils";
+import { executeLink, getActualLearningContext, getCompleteSchoolYear, getCurrentElement, getCurrentLanguage, getCurrentSchoolYear, getCustomMessage, getGender, getIcon, getRagneString, getStatusColor, getStatusString, getStudyAddressVisualization, numberToSection, toDateString } from "./utils";
 
 type Language = "italian" | "english";
 
@@ -84,7 +84,7 @@ class OrdinaryClassSummary implements OrdinaryClassSummaryProps {
     }
 
     toString(section = true, school_year = false) {
-        return this.study_year + " " + this.address + (section ? " " + this.section : "") + (school_year ? " " + this.school_year : "");
+        return this.study_year + " " + this.address + (store.state.sections_use && section ? " " + this.section : "") + (school_year ? " " + this.school_year : "");
     }
 
     toCard(section = true, school_year = false, selected = false): GeneralCardElements {
@@ -285,23 +285,28 @@ class MinimizedCourse implements MinimumCourseProps {
 
     toCard(path?: string): GeneralCardElements {
         const language = getCurrentLanguage();
-        return {
+        const card: GeneralCardElements = {
             id: "" + this.id + "_" + this.section,
             group: "",
             content: [{
                 id: "title",
                 type: "html",
                 content: this[`${language}_title`]
-            }, {
-                id: "section",
-                type: "string",
-                content: getCurrentElement("section") + ": " + this.section
             }],
             link: path != undefined ? {
                 url: path,
                 method: "get"
             } : undefined
+        };
+        if (store.state.sections_use) {
+            card.content?.push({
+                id: "section",
+                type: "string",
+                content: getCurrentElement("section") + ": " + this.section
+            });
         }
+
+        return card;
     }
 }
 
@@ -422,7 +427,7 @@ class CourseSummary extends CourseBase {
                         course_id: this.id,
                         section: this.section,
                     },
-                    text: this[`${language}_title`] + (this.section != null ? " - " + getCurrentElement("section") + ": " + this.section : "")
+                    text: this[`${language}_title`] + (store.state.sections_use && this.section != null ? " - " + getCurrentElement("section") + ": " + this.section : "")
                 },
             }, {
                 id: this.id + "_enrollment",
@@ -494,7 +499,7 @@ class CurriculumCourse extends CourseBase {
 
     toTableRow(session_id: number, student_id: number, teacher_id?: number): CustomElement[] {
         const language = getCurrentLanguage();
-        return [
+        const row: CustomElement[] = [
             {
                 id: this.id + "_title",
                 type: "string",
@@ -509,10 +514,6 @@ class CurriculumCourse extends CourseBase {
                     },
                     text: this[`${language}_title`]
                 }
-            }, {
-                id: this.id + "_section", // TODO (8): Mettere differenza tra visualizzazione con corso frequentato una volta e più
-                type: "string",
-                content: this.section
             }, {
                 id: this.id + "_credits",
                 type: "string",
@@ -544,6 +545,14 @@ class CurriculumCourse extends CourseBase {
                 content: this.final_grade != null ? "" + this.final_grade : "-"
             }
         ];
+        if (store.state.sections_use) {
+            row.splice(1, 0, {
+                id: this.id + "_section", // TODO (8): Mettere differenza tra visualizzazione con corso frequentato una volta e più
+                type: "string",
+                content: this.section
+            });
+        }
+        return row;
     }
 }
 
@@ -876,13 +885,13 @@ class Course extends CourseBase { // TODO (6): "unire" con ModelProposition
                 type: "html",
                 content: "<b>" + getCurrentElement("creation_school_year") + "</b>: " + this.creation_school_year
             });
-            if(this.certifying_admin != undefined){
+            if (this.certifying_admin != undefined) {
                 course.content?.push({
                     id: this.id + "_certifying_admin",
                     type: "html",
                     content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.certifying_admin.name + " " + this.certifying_admin.surname
                 });
-            } 
+            }
         }
 
         return course;
@@ -931,14 +940,14 @@ class LearningSession extends LearningSessionSummary { // TODO (4): sistema nume
     }
 
     getStatus(reference = new Date()) { // future [TDB] upcoming [SD] current [ED] completed
-        const startDate = this.start;
-        const endDate = this.end;
-        const tenDaysBefore = new Date(startDate);
-        tenDaysBefore.setDate(tenDaysBefore.getDate() - 10);
+        const start_date = this.start;
+        const end_date = this.end;
+        const ten_days_before = new Date(start_date);
+        ten_days_before.setDate(ten_days_before.getDate() - 10);
 
-        return reference < tenDaysBefore ? LearningSessionStatus.FUTURE
-            : reference >= tenDaysBefore && reference < startDate ? LearningSessionStatus.UPCOMING
-                : reference >= startDate && reference <= endDate ? LearningSessionStatus.CURRENT
+        return reference < ten_days_before ? LearningSessionStatus.FUTURE
+            : reference >= ten_days_before && reference < start_date ? LearningSessionStatus.UPCOMING
+                : reference >= start_date && reference <= end_date ? LearningSessionStatus.CURRENT
                     : LearningSessionStatus.COMPLETED;
     }
 
@@ -1006,7 +1015,7 @@ class LearningSession extends LearningSessionSummary { // TODO (4): sistema nume
                         if (course.pending == "true") {
                             session_list += "<li>"
                                 + course[`${language}_title`]
-                                + ((status == LearningSessionStatus.CURRENT || status == LearningSessionStatus.UPCOMING) && course.section != null
+                                + (store.state.sections_use && (status == LearningSessionStatus.CURRENT || status == LearningSessionStatus.UPCOMING) && course.section != null
                                     ? " - " + getCurrentElement("section") + " " + course.section : "")
                                 + "</li>";
                         }
@@ -1204,14 +1213,19 @@ type CustomElement = { // TODO (6): togliere type e usare funzioni is... o roba 
 }
 
 type GradeProps = {
-    publication: Date,
+    id: number,
+    publication: string,
     grade: number,
-    final: boolean
+    final: number
 } & {
         [key in keyof string as `${Language}_description`]: string
-    }
+    } & {
+        [key: string]: any;
+    };
 
-class Grade implements GradeProps {
+class Grade {
+
+    [key: string]: any;
 
     id: number;
     publication: Date;
@@ -1221,13 +1235,22 @@ class Grade implements GradeProps {
     final: boolean;
 
     constructor(props: GradeProps) {
+        this.id = props.id;
         this.publication = new Date(props.publication);
         this.grade = props.grade;
         this.italian_description = props.italian_description;
         this.english_description = props.english_description;
-        this.final = props.final;
+        this.final = props.final == 1;
+    }
 
-        this.id = hashCode(this.publication.toISOString());
+    isEditable(final_grade_pubblication?: Date) {
+        const seven_days_after = final_grade_pubblication != undefined ? new Date(final_grade_pubblication) : undefined;
+
+        if (seven_days_after != undefined) {
+            seven_days_after.setDate(seven_days_after.getDate() + 7);
+        }
+
+        return seven_days_after == undefined || (this.final && (new Date()) <= seven_days_after);
     }
 
     toCard(): GeneralCardElements { // ! (3): per visualizzazione tabella a telefono
@@ -1243,11 +1266,10 @@ class Grade implements GradeProps {
         }
     }
 
-    toTableRow(teacher_id: number): CustomElement[] {
+    toTableRow(associated_teacher: boolean, teacher_id: number, student_id: number, final_grade_pubblication?: Date): CustomElement[] {
         const language = getCurrentLanguage();
 
-        teacher_id + 5; // Temporary dummy use
-        return [{
+        const row: CustomElement[] = [{
             id: this.id + "_description",
             type: "html",
             content: this[`${language}_description`]
@@ -1259,31 +1281,60 @@ class Grade implements GradeProps {
             id: this.id + "_value",
             type: "html",
             content: (this.final ? "<b>" + getCurrentElement("final") + "</b><br />" : "") + this.grade
-        }/*, {
-            id: this.id + "_edit",
-            type: "icon",
-            linkType: "event",
-            content: {
-                event: "edit_grade",
-                data: {
-                    id: this.id,
-                    teacher_id: teacher_id,
-                },
-                icon: getIcon("pencil")
-            }
-        }, {
-            id: this.id + "_remove",
-            type: "icon",
-            linkType: "event",
-            content: {
-                event: "remove_grade",
-                data: {
-                    id: this.id,
-                    teacher_id: teacher_id,
-                },
-                icon: getIcon("close")
-            }
-        }*/];
+        }];
+        const editable = this.isEditable(final_grade_pubblication);
+
+        if (editable && !associated_teacher) {
+            row.push({
+                id: this.id + "_edit",
+                type: "icon",
+                linkType: "event",
+                content: {
+                    event: "edit_grade",
+                    data: {
+                        id: this.id,
+                        teacher_id: teacher_id,
+                        student_id: student_id,
+                    },
+                    icon: getIcon("pencil")
+                }
+            }, {
+                id: this.id + "_remove",
+                type: "icon",
+                linkType: "event",
+                content: {
+                    event: "remove_grade",
+                    data: {
+                        id: this.id,
+                        student_id: student_id,
+                    },
+                    icon: getIcon("close")
+                }
+            });
+        } else if (!editable) {
+            row.push({
+                id: this.id + "_edit",
+                type: "string",
+                content: ""
+            }, {
+                id: this.id + "_remove",
+                type: "string",
+                content: ""
+            })
+        }
+
+        return row;
+    }
+
+    toProps(): GradeProps {
+        return {
+            id: this.id,
+            publication: this.publication.toISOString(),
+            italian_description: this.italian_description,
+            english_description: this.english_description,
+            grade: this.grade,
+            final: this.final ? 1 : 0,
+        }
     }
 }
 
@@ -1293,6 +1344,7 @@ type GradesParameters = {
     student_id: number,
     teacher_id?: number,
     associated_teacher?: boolean,
+    final_grade_index?: number,
 }
 
 type ProjectClassTeachingsResponse = {
@@ -1326,27 +1378,32 @@ class CourseSectionsTeachings {
 
     toCard(group: string, learning_session: string): GeneralCardElements { // ! (3): per visualizzazione tabella a telefono
         const language = getCurrentLanguage();
-        return {
+        const card: GeneralCardElements = {
             id: "" + this.id,
             group: group,
             content: [{
                 id: this.id + "_title",
                 type: "title",
                 content: this[`${language}_title`]
-            }, {
-                id: this.id + "_sections",
-                type: "string",
-                content: getCurrentElement("sections") + ": " + Array.from(this.sections).join(", ")
-            }, {
-                id: this.id + "_my_associated_teachings",
-                type: "string",
-                content: getCurrentElement("my_associated_teachings") + ": " + Array.from(this.my_teaching_refs).join(", ")
             }],
             link: {
                 url: "project_courses/" + this.id + "/" + learning_session,
                 method: "get"
             }
+        };
+        if (store.state.sections_use) {
+            card.content?.push({
+                id: this.id + "_sections",
+                type: "string",
+                content: getCurrentElement("sections") + ": " + Array.from(this.sections).join(", ")
+            });
         }
+        card.content?.push({
+            id: this.id + "_my_associated_teachings",
+            type: "string",
+            content: getCurrentElement("my_associated_teachings") + ": " + Array.from(this.my_teaching_refs).join(", ")
+        });
+        return card;
     }
 }
 
@@ -1825,7 +1882,7 @@ class CourseModel {
 
     toCard(user: User, view = false): GeneralCardElements { // TODO (5): evidenziare quando project_class_to_be_modified | course_to_be_modified
         const language = getCurrentLanguage();
-        
+
         let project_class = "<label>" + getCurrentElement("project_class") + ":";
 
         const card: GeneralCardElements = {
@@ -2222,17 +2279,17 @@ class ModelProposition {
     }
 
     static getPropositionProps(type: PropositionKeysType): PropositionKeys[] {
-        const lists: PropositionListsKeys[] = ["access_object","teaching_list","growth_list","teacher_list"];
+        const lists: PropositionListsKeys[] = ["access_object", "teaching_list", "growth_list", "teacher_list"];
 
         let keys: PropositionKeys[];
 
         switch (type) {
             case "required":
                 keys = lists;
-                keys.push("italian_title","italian_descr","up_hours","credits","italian_exp_l","italian_cri","italian_act","area_id","min_students","max_students","session_id","class_group","num_section");
+                keys.push("italian_title", "italian_descr", "up_hours", "credits", "italian_exp_l", "italian_cri", "italian_act", "area_id", "min_students", "max_students", "session_id", "class_group", "num_section");
                 break;
             case "optional":
-                keys = ["english_title","english_descr","english_exp_l","english_cri","english_act"];
+                keys = ["english_title", "english_descr", "english_exp_l", "english_cri", "english_act"];
                 break;
             default:
                 keys = [];
@@ -2604,7 +2661,7 @@ class TeacherProposition {
     }
 
     toCard(disabled = false): GeneralCardElements {
-        return { // TODO (6): sistemare roba undefined
+        const card: GeneralCardElements = { // TODO (6): sistemare roba undefined
             id: "" + this.teacher.id,
             group: "",
             side_element: disabled ? undefined : {
@@ -2645,13 +2702,16 @@ class TeacherProposition {
                         text: this.teacher.name + " " + this.teacher.surname// + (this.main ? " [" + getCurrentElement("main_teacher") + "]" : "")
                     },
                 },
-                {
-                    id: "sections",
-                    type: "string",
-                    content: getCurrentElement("sections") + ": " + this.sections.join(", "),
-                },
             ],
+        };
+        if (store.state.sections_use) {
+            card.content?.push({
+                id: "sections",
+                type: "string",
+                content: getCurrentElement("sections") + ": " + this.sections.join(", "),
+            });
         }
+        return card;
     }
 
     toTeacherObj(): PropositionTeacher {
@@ -2687,7 +2747,8 @@ type AdminProjectClassProps = { // TODO (9): cambiare nome, dato che possono acc
     }>,
     admin_name: string,
     admin_surname: string,
-    to_be_modified: string | null
+    to_be_modified: string | null,
+    final_confirmation: string | null,
 } & {
         [key in keyof string as `${Language}_title`]: string
     }
@@ -2705,8 +2766,11 @@ class AdminProjectClass {
     admin_name: string;
     admin_surname: string;
     to_be_modified?: string;
+    final_confirmation?: Date;
 
     constructor(props: AdminProjectClassProps) {
+        const tmp_date = new Date(props.final_confirmation ?? "invalid_date");
+
         this.course_id = props.course_id;
         this.learning_session = new LearningSession({
             id: props.learning_session,
@@ -2727,6 +2791,7 @@ class AdminProjectClass {
         this.admin_name = props.admin_name;
         this.admin_surname = props.admin_surname;
         this.to_be_modified = props.to_be_modified ?? undefined;
+        this.final_confirmation = !isNaN(tmp_date.getTime()) ? tmp_date : undefined;
     }
 
     async loadParms() {
@@ -2796,6 +2861,10 @@ class AdminProjectClass {
                 id: "admin",
                 type: "html",
                 content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.admin_name + " " + this.admin_surname,
+            }, {
+                id: "final_confirmation",
+                type: "html",
+                content: "<b>" + getCurrentElement("final_confirmation") + "</b>: " + (this.final_confirmation != undefined ? toDateString(this.final_confirmation) : "-"),
             });
         }
 

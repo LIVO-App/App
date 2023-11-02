@@ -28,7 +28,7 @@
                 <ion-item
                   v-for="(p, i) in getMenu(castToUser(user))"
                   :key="i"
-                  @click="selectTitle(castToUser(user), i)"
+                  @click="selectTitle(castToUser(user).user, i)" 
                   router-direction="root"
                   :router-link="{ name: p.url_names[castToUser(user).user][0] }"
                   lines="none"
@@ -75,7 +75,7 @@ import { computed, ComputedRef, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
-import { Menu, MenuItem, User } from "./types";
+import { Menu, MenuItem, User, UserType } from "./types";
 import { getCurrentElement, getDefautlLink, getIcon } from "./utils";
 
 const image = computed(() => require("./assets/Logo_LIVO_Path.png"));
@@ -94,9 +94,9 @@ const getMenu = (user: User) => {
 
   return complete_menu;
 };
-const selectTitle = (user: User, index: number) => {
+const selectTitle = (user_type: UserType, index: number) => {
   store.state.menu.index = index;
-  sessionStorage.setItem("selected_item", menu.order[user.user][index]);
+  sessionStorage.setItem("selected_item", menu.order[user_type][index]);
 };
 const changeTitle = () => {
   const items_titles = Object.keys(menu.items);

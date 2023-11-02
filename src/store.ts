@@ -61,7 +61,7 @@ const grades_scale = {
     min: 4,
     max: 10,
     only_integer: true,
-    input_regex: /^([0-9]|10)$/g,
+    input_regex: /^([0-9]|10)([.,][0-9]{0,2})?$/g,
 };
 
 export const store = createStore({
@@ -562,8 +562,32 @@ export const store = createStore({
                     courses_propositions_selection_message: "Seleziona una sessione di apprendimento per vedere delle proposte di corsi (senza una classe progetto) dell'anno associato",
                     not_confirmed: "Non confermata",
                     project_class: "Classe progetto",
-                    fully_booked: "Posti esauriti",
+                    fully_booked: "Non più disponibile",
                     wrong_subscription: "Iscrizione non andata a buon fine",
+                    confirm: "Conferma",
+                    project_class_confirmation_question: "Confermi di voler confermare questa classe?",
+                    project_class_successful_confirmation: "Classe progetto confermata con successo",
+                    students_number_error: "Il numero di studenti non rispetta i limiti rispettati dal corso", // TODO (4): mettere lista parametri a getCurrentElement
+                    final_confirmation: "Conferma finale classe progetto",
+                    project_class_status: "Stato classe progetto",
+                    project_class_confirmation_date: "Data di conferma della classe progetto",
+                    learning_session_not_upcoming: "Sessione di apprendimento non imminente",
+                    project_class_already_confirmed: "Classe progetto già confermata",
+                    clear: "Reset",
+                    remove_grade_confirmation: "Sicuro di voler rimuovere questo voto?",
+                    no_grade_remotion_permissions: "Non hai i permessi per rimuovere questo voto",
+                    cannot_remove_grade: "Non puoi rimuovere questo voto",
+                    successful_remotion: "Voto rimosso con successo",
+                    cancel: "Annulla",
+                    edit_grade_confirmation: "Sicuro di voler modificare questo voto?",
+                    with_following_edits: "Con le seguenti modifiche?",
+                    italian_description: "Descrizione in italiano",
+                    english_description: "Descrizione in inglese",
+                    no_grade_edit_permissions: "Non hai i permessi per modificare questo voto",
+                    successful_edit: "Voto modificato con successo",
+                    no_future_date: "Non puoi utilizzare una data futura",
+                    grade_edit: "Modifica voto",
+                    no_edits: "Non sono presenti modifiche",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -789,6 +813,30 @@ export const store = createStore({
                     project_class: "Project class",
                     fully_booked: "Fully booked",
                     wrong_subscription: "Subscription not successful",
+                    confirm: "Confirm",
+                    project_class_confirmation_question: "Do you confirm that you want to confirm this class?",
+                    project_class_successful_confirmation: "Project class confirmed successfully",
+                    students_number_error: "The number of students does not respect the limits respected by the course",
+                    final_confirmation: "Final confirmation of the project class",
+                    project_class_status: "Project class status",
+                    project_class_confirmation_date: "Project class confirmation date",
+                    learning_session_not_upcoming: "Learning session not upcoming",
+                    project_class_already_confirmed: "Project class already confirmed",
+                    clear: "Clear",
+                    remove_grade_confirmation: "Are you sure you want to remove this grade?",
+                    no_grade_remotion_permissions: "You don't have permissions to remove this grade",
+                    cannot_remove_grade: "You cannot remove this grade",
+                    successful_remotion: "Grade successfully removed",
+                    cancel: "Cancel",
+                    edit_grade_confirmation: "Are you sure you want to edit this grade?",
+                    with_following_edits: "With the following edits?",
+                    italian_description: "Italian description",
+                    english_description: "English description",
+                    no_grade_edit_permissions: "You don't have permissions to edit this grade",
+                    successful_edit: "Grade successfully edited",
+                    no_future_date: "You cannot use a future date",
+                    grade_edit: "Grade edit",
+                    no_edits: "No changes are present"
                 }
             },
             logged_user: false,
@@ -803,8 +851,12 @@ export const store = createStore({
             }, // TODO (9): mettere referenza a contesto di apprendimento
             courses_per_group: 1,
             year_module: 100,
-            static_subscription: false,
+            static_subscription: true,
             sections_use: false,
+            triggers: {
+                edit_grades: 0,
+                grades: 0,
+            }
         }
     }
 });

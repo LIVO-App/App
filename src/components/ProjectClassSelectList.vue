@@ -12,7 +12,7 @@
           @signal_event="changeSelection()" />
       </ion-col>
       <ion-col size="12" size-md="6">
-        <custom-select v-if="$route.name != 'ordinary_classes' || user.user == 'teacher'" v-model="selected_option"
+        <custom-select v-if="$route.name != 'ordinary_classes' || (sections_use && user.user == 'teacher')" v-model="selected_option"
           :list="options" :label="getCurrentElement($route.name == 'ordinary_classes' ? 'section' : 'propositions') + ':'"
           :aria_label="getCurrentElement($route.name == 'ordinary_classes' ? 'section' : 'propositions')" :placeholder="getCurrentElement(
             is_nothing_selected()
@@ -243,6 +243,7 @@ const getPropositions = async () => {
 const store = useStore();
 const user = User.getLoggedUser() as User;
 const $route = useRoute();
+const sections_use: boolean = store.state.sections_use;
 
 const promises: Promise<any>[] = [];
 const ordinary_classes: OrderedCardsList<GeneralCardElements> = reactive({

@@ -21,13 +21,15 @@
       <ion-input type="text" v-model="italian_message" :label="getCurrentElement('message')"
         :aria-label="getCurrentElement('message')" color="primary" style="color: var(--ion-color-primary)" fill="outline"
         class="ion-margin-vertical" />
-      <ion-label color="primary">{{ getCurrentElement("sections") }}:</ion-label>
-      <ion-list class="ion-margin-top">
-        <ion-item v-for="(selection, index) in sections_selections" :key="index + '_section'">
-          <ion-checkbox v-model="selection.value" :aria-label="sections[index].id" class="ion-padding-start"
-            label-placement="start">{{ sections[index].id }}</ion-checkbox>
-        </ion-item>
-      </ion-list>
+      <template v-if="sections_use">
+        <ion-label color="primary">{{ getCurrentElement("sections") }}:</ion-label>
+        <ion-list class="ion-margin-top">
+          <ion-item v-for="(selection, index) in sections_selections" :key="index + '_section'">
+            <ion-checkbox v-model="selection.value" :aria-label="sections[index].id" class="ion-padding-start"
+              label-placement="start">{{ sections[index].id }}</ion-checkbox>
+          </ion-item>
+        </ion-list>
+      </template>
     </div>
     <div class="ion-text-center">
       <ion-button @click="() => {
@@ -99,6 +101,7 @@ const check_announcement = () => {
 };
 
 const store = useStore();
+const sections_use: boolean = store.state.sections_use;
 
 const props = defineProps({
   sections: {

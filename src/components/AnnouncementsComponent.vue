@@ -27,7 +27,7 @@
     <div v-if="user.user == 'teacher'">
       <ionic-element v-for="button in buttons" :key="button.id" :element="button" @signal_event="setupModalAndOpen()" />
     </div>
-    <custom-select v-if="user.user == 'teacher'" v-model="selected_section" :list="sections"
+    <custom-select v-if="sections_use && user.user == 'teacher'" v-model="selected_section" :list="sections"
       :label="getCurrentElement('section') + ':'" :aria_label="getCurrentElement('section')"
       :placeholder="getCurrentElement('section_choice')" />
     <suspense>
@@ -156,6 +156,7 @@ const updateMessages = async () => {
 
 const store = useStore();
 const user = User.getLoggedUser() as User;
+const sections_use: boolean = store.state.sections_use;
 
 const announcement_open = ref(false);
 const publishment_open = ref(false);
