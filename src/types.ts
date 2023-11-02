@@ -305,7 +305,7 @@ class MinimizedCourse implements MinimumCourseProps {
                 content: getCurrentElement("section") + ": " + this.section
             });
         }
-        
+
         return card;
     }
 }
@@ -546,7 +546,7 @@ class CurriculumCourse extends CourseBase {
             }
         ];
         if (store.state.sections_use) {
-            row.splice(1,0,{
+            row.splice(1, 0, {
                 id: this.id + "_section", // TODO (8): Mettere differenza tra visualizzazione con corso frequentato una volta e più
                 type: "string",
                 content: this.section
@@ -885,13 +885,13 @@ class Course extends CourseBase { // TODO (6): "unire" con ModelProposition
                 type: "html",
                 content: "<b>" + getCurrentElement("creation_school_year") + "</b>: " + this.creation_school_year
             });
-            if(this.certifying_admin != undefined){
+            if (this.certifying_admin != undefined) {
                 course.content?.push({
                     id: this.id + "_certifying_admin",
                     type: "html",
                     content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.certifying_admin.name + " " + this.certifying_admin.surname
                 });
-            } 
+            }
         }
 
         return course;
@@ -1214,14 +1214,18 @@ type CustomElement = { // TODO (6): togliere type e usare funzioni is... o roba 
 
 type GradeProps = {
     id: number,
-    publication: Date,
+    publication: string,
     grade: number,
     final: number
 } & {
         [key in keyof string as `${Language}_description`]: string
-    }
+    } & {
+        [key: string]: any;
+    };
 
 class Grade {
+
+    [key: string]: any;
 
     id: number;
     publication: Date;
@@ -1243,7 +1247,7 @@ class Grade {
         const seven_days_after = final_grade_pubblication != undefined ? new Date(final_grade_pubblication) : undefined;
 
         if (seven_days_after != undefined) {
-            seven_days_after.setDate(seven_days_after.getDate() +7);
+            seven_days_after.setDate(seven_days_after.getDate() + 7);
         }
 
         return seven_days_after == undefined || (this.final && (new Date()) <= seven_days_after);
@@ -1264,7 +1268,7 @@ class Grade {
 
     toTableRow(associated_teacher: boolean, teacher_id: number, student_id: number, final_grade_pubblication?: Date): CustomElement[] {
         const language = getCurrentLanguage();
-        
+
         const row: CustomElement[] = [{
             id: this.id + "_description",
             type: "html",
@@ -1279,7 +1283,7 @@ class Grade {
             content: (this.final ? "<b>" + getCurrentElement("final") + "</b><br />" : "") + this.grade
         }];
         const editable = this.isEditable(final_grade_pubblication);
-        
+
         if (editable && !associated_teacher) {
             row.push({
                 id: this.id + "_edit",
@@ -1312,14 +1316,25 @@ class Grade {
                 id: this.id + "_edit",
                 type: "string",
                 content: ""
-            },{
+            }, {
                 id: this.id + "_remove",
                 type: "string",
                 content: ""
             })
         }
-        
+
         return row;
+    }
+
+    toProps(): GradeProps {
+        return {
+            id: this.id,
+            publication: this.publication.toISOString(),
+            italian_description: this.italian_description,
+            english_description: this.english_description,
+            grade: this.grade,
+            final: this.final ? 1 : 0,
+        }
     }
 }
 
@@ -1329,6 +1344,7 @@ type GradesParameters = {
     student_id: number,
     teacher_id?: number,
     associated_teacher?: boolean,
+    final_grade_index?: number,
 }
 
 type ProjectClassTeachingsResponse = {
@@ -1866,7 +1882,7 @@ class CourseModel {
 
     toCard(user: User, view = false): GeneralCardElements { // TODO (5): evidenziare quando project_class_to_be_modified | course_to_be_modified
         const language = getCurrentLanguage();
-        
+
         let project_class = "<label>" + getCurrentElement("project_class") + ":";
 
         const card: GeneralCardElements = {
@@ -2263,17 +2279,17 @@ class ModelProposition {
     }
 
     static getPropositionProps(type: PropositionKeysType): PropositionKeys[] {
-        const lists: PropositionListsKeys[] = ["access_object","teaching_list","growth_list","teacher_list"];
+        const lists: PropositionListsKeys[] = ["access_object", "teaching_list", "growth_list", "teacher_list"];
 
         let keys: PropositionKeys[];
 
         switch (type) {
             case "required":
                 keys = lists;
-                keys.push("italian_title","italian_descr","up_hours","credits","italian_exp_l","italian_cri","italian_act","area_id","min_students","max_students","session_id","class_group","num_section");
+                keys.push("italian_title", "italian_descr", "up_hours", "credits", "italian_exp_l", "italian_cri", "italian_act", "area_id", "min_students", "max_students", "session_id", "class_group", "num_section");
                 break;
             case "optional":
-                keys = ["english_title","english_descr","english_exp_l","english_cri","english_act"];
+                keys = ["english_title", "english_descr", "english_exp_l", "english_cri", "english_act"];
                 break;
             default:
                 keys = [];
@@ -2845,7 +2861,7 @@ class AdminProjectClass {
                 id: "admin",
                 type: "html",
                 content: "<b>" + getCurrentElement("certifying_admin") + "</b>: " + this.admin_name + " " + this.admin_surname,
-            },{
+            }, {
                 id: "final_confirmation",
                 type: "html",
                 content: "<b>" + getCurrentElement("final_confirmation") + "</b>: " + (this.final_confirmation != undefined ? toDateString(this.final_confirmation) : "-"),

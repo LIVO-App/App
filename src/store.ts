@@ -577,6 +577,17 @@ export const store = createStore({
                     remove_grade_confirmation: "Sicuro di voler rimuovere questo voto?",
                     no_grade_remotion_permissions: "Non hai i permessi per rimuovere questo voto",
                     cannot_remove_grade: "Non puoi rimuovere questo voto",
+                    successful_remotion: "Voto rimosso con successo",
+                    cancel: "Annulla",
+                    edit_grade_confirmation: "Sicuro di voler modificare questo voto?",
+                    with_following_edits: "Con le seguenti modifiche?",
+                    italian_description: "Descrizione in italiano",
+                    english_description: "Descrizione in inglese",
+                    no_grade_edit_permissions: "Non hai i permessi per modificare questo voto",
+                    successful_edit: "Voto modificato con successo",
+                    no_future_date: "Non puoi utilizzare una data futura",
+                    grade_edit: "Modifica voto",
+                    no_edits: "Non sono presenti modifiche",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -815,6 +826,17 @@ export const store = createStore({
                     remove_grade_confirmation: "Are you sure you want to remove this grade?",
                     no_grade_remotion_permissions: "You don't have permissions to remove this grade",
                     cannot_remove_grade: "You cannot remove this grade",
+                    successful_remotion: "Grade successfully removed",
+                    cancel: "Cancel",
+                    edit_grade_confirmation: "Are you sure you want to edit this grade?",
+                    with_following_edits: "With the following edits?",
+                    italian_description: "Italian description",
+                    english_description: "English description",
+                    no_grade_edit_permissions: "You don't have permissions to edit this grade",
+                    successful_edit: "Grade successfully edited",
+                    no_future_date: "You cannot use a future date",
+                    grade_edit: "Grade edit",
+                    no_edits: "No changes are present"
                 }
             },
             logged_user: false,
@@ -832,6 +854,7 @@ export const store = createStore({
             static_subscription: true,
             sections_use: false,
             triggers: {
+                edit_grades: 0,
                 grades: 0,
             }
         }

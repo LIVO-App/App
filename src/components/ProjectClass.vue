@@ -7,7 +7,7 @@
       <suspense>
         <template #default>
           <grades-manager :title="grades_title" :parameters="grades_parameters" :grades="student_grades"
-            :final_grade_index="student_final_grade_index" @close="closeModal('grades')" @signal_event="manageEvent()" />
+            @close="closeModal('grades')" @signal_event="manageEvent()" />
         </template>
         <template #fallback>
           <loading-component />
@@ -82,7 +82,7 @@ import {
   Course,
   AdminProjectClass,
 } from "@/types";
-import { executeLink, getCurrentElement, getCurrentLanguage, getCustomMessage, getIcon, toDateString } from "@/utils";
+import { executeLink, getAviableLanguages, getCurrentElement, getCustomMessage, getIcon, toDateString } from "@/utils";
 import { IonModal, IonAlert, AlertButton, IonButton } from "@ionic/vue";
 import { ref, watch } from "vue";
 import { useStore } from "vuex";
@@ -99,10 +99,11 @@ type AvailableModal =
 
 const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
   const actual_window: AvailableModal = window ?? store.state.event.event;
-  const actual_message: string = message ?? store.state.event.message;
+  const actual_message: string = message ?? store.state.event.data.message;
 
-  let count = 0,
-    tmp_grade: Grade;
+  let tmp_grade: Grade,
+    new_grade: Grade,
+    tmp_description: string;
 
   switch (actual_window) {
     case "grades":
@@ -110,22 +111,49 @@ const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
       grades_parameters = {
         ...store.state.event.data.parameters,
         associated_teacher: associated_teacher,
+        final_grade_index: final_grades_indexes[store.state.event.data.parameters.student_id],
       };
       student_grades = grades[grades_parameters.student_id];
-      student_final_grade_index = final_grades_indexes[grades_parameters.student_id];
       grades_open.value = true;
       break;
     case "remove_grade":
-      while ((grade_index.index = grades[
-        (grade_index.student_id = students[count].id)
-      ].findIndex(a => a.id == store.state.event.data.id)) == -1 && ++count < Object.keys(grades).length);
-
+    case "edit_grade":
+      findGrade();
       if (grade_index.student_id != -1 && grade_index.index != -1) {
         tmp_grade = grades[grade_index.student_id][grade_index.index];
         alert_information.title = "";
-        alert_information.message = getCurrentElement("remove_grade_confirmation")
-          + (grade_index != undefined ? "\n" + getCurrentElement("description") + ": " + tmp_grade[`${language}_description`] + "\n"
-            + getCurrentElement("grade") + ": " + tmp_grade.grade + " [" + getCurrentElement("final") + "]" : "");
+        alert_information.message = getCurrentElement((actual_window == "edit_grade" ? "edit" : "remove") + "_grade_confirmation")
+          /*+ (grade_index != undefined
+            ? "<br />" + getCurrentElement("description") + ": " + tmp_grade[`${language}_description`] + "<br />"
+            + getCurrentElement("grade") + ": " + tmp_grade.grade + " [" + getCurrentElement("final") + "]"
+            : "")*/; //<!-- TODO (5): abilita innerHTMLTemplatesEnabled nelle config per farlo funzionare
+        if (actual_window == "edit_grade") {
+          new_grade = store.state.event.data.new_grade;
+          edits_to_send = {
+            id: false,
+            italian_description: false,
+            english_description: false,
+            publication: false,
+            grade: false,
+            final: false,
+          };
+          //alert_information.message += "\n" + getCurrentElement("with_following_edits");
+          for (const tmp_language of languages) {
+            tmp_description = `${tmp_language}_description`;
+            if (tmp_grade[tmp_description] != new_grade[tmp_description]) {
+              edits_to_send[tmp_description] = true;
+              //alert_information.message += "\n" + getCurrentElement(`${language}_description`) + ": " + new_grade[`${language}_description`];
+            }
+          }
+          if (tmp_grade.publication.getTime() != new_grade.publication.getTime()) {
+            edits_to_send.publication_date = true;
+            //alert_information.message += "\n" + getCurrentElement("date") + ": " + toDateString(new_grade.publication);
+          }
+          if (tmp_grade.grade != new_grade.grade) {
+            edits_to_send.grade = true;
+            //alert_information.message += "\n" + getCurrentElement("grade") + ": " + new_grade.grade;
+          }
+        }
         alert_information.buttons = [handled_buttons[0], getCurrentElement("no")];
         alert_open.value = true;
       } else {
@@ -152,7 +180,7 @@ const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
       break;
     case "success":
       alert_information.title = "";
-      alert_information.message = getCurrentElement("project_class_successful_confirmation");
+      alert_information.message = message ?? getCurrentElement(getCurrentElement("successful_operation"));
       alert_information.buttons = [getCurrentElement("ok")];
       alert_open.value = true;
       break;
@@ -180,7 +208,7 @@ const closeModal = (window: AvailableModal) => {
       break;
   }
 };
-const add_grade = async () => { //<!-- ! (2): Impedire ad insegnanti associati di aggiungere e aggiungere modifica e eliminazione voto
+const add_grade = async () => {
   const data = store.state.event.data;
 
   executeLink(
@@ -191,25 +219,17 @@ const add_grade = async () => { //<!-- ! (2): Impedire ad insegnanti associati d
     "&session_id=" +
     data.session_id,
     (response) => {
-      let student_pos: number;
-
-      grades[data.student_id].push(new Grade({
+      const tmp_grade = new Grade({
         id: response.data.value.id,
         publication: response.data.value.publication,
         italian_description: data.italian_description,
         english_description: data.english_description,
         grade: data.grade,
         final: data.final ? 1 : 0,
-      }));
-      if (data.final == true) {
-        final_grades_indexes[data.student_id] = grades[data.student_id].length;
-        student_pos = table_data.findIndex(
-          (a: CustomElement[]) => a[0].id == data.student_id + "_name_surname"
-        );
-        table_data[student_pos][table_data[student_pos].length - 1].content =
-          data.grade;
-          students_trigger.value++;
-      }
+      });
+
+      grades[data.student_id].push(tmp_grade);
+      updateFinalRefs(data.student_id, tmp_grade);
     },
     (err) => console.error(err),
     "post", {
@@ -294,20 +314,28 @@ const manageEvent = () => {
   }
 };
 const yes_handler = () => {
+  let body: {
+    [key in keyof GradeProps]?: any;
+  }, edits_props: GradeProps,
+    count = 0,
+    something_to_edit = false,
+    edit_keys: string[],
+    tmp_grade: Grade;
+
   switch (store.state.event.event) {
     case "confirmation":
       if (course != undefined && project_class != undefined) {
         if (table_data.length < course.min_students || table_data.length > course.max_students) {
-          setTimeout(() => setupModalAndOpen("error", "students_number_error"), 300);
+          setTimeout(() => setupModalAndOpen("error", getCurrentElement("students_number_error")), 300);
         } else if (learning_session_status != LearningSessionStatus.UPCOMING) {
-          setTimeout(() => setupModalAndOpen("error", "learning_session_not_upcoming"), 300);
+          setTimeout(() => setupModalAndOpen("error", getCurrentElement("learning_session_not_upcoming")), 300);
         } else if (project_class.final_confirmation != undefined) {
-          setTimeout(() => setupModalAndOpen("error", "project_class_already_confirmed"), 300);
+          setTimeout(() => setupModalAndOpen("error", getCurrentElement("project_class_already_confirmed")), 300);
         } else {
           executeLink("/v1/project_classes/" + course_id + "/" + session_id + "/final_confirmation",
             (response) => {
               (project_class as AdminProjectClass).final_confirmation = response.data.confirmation_date != undefined ? new Date(response.data.confirmation_date) : new Date();
-              setTimeout(() => setupModalAndOpen("success"), 300);
+              setTimeout(() => setupModalAndOpen("success", getCurrentElement("project_class_successful_confirmation")), 300);
             },
             () => setTimeout(() => setupModalAndOpen("error"), 300),
             "put");
@@ -318,14 +346,24 @@ const yes_handler = () => {
       break;
     case "remove_grade":
       if (learning_session != undefined) {
+        tmp_grade = grades[grade_index.student_id][grade_index.index];
         if (associated_teacher) {
-          setTimeout(() => setupModalAndOpen("error", "no_grade_remotion_permissions"), 300);
-        } else if (!grades[grade_index.student_id][grade_index.index].isEditable(grades[grade_index.student_id][final_grades_indexes[grade_index.student_id]].publication)) {
-          setTimeout(() => setupModalAndOpen("error", "cannot_remove_grade"), 300);
+          setTimeout(() => setupModalAndOpen("error", getCurrentElement("no_grade_remotion_permissions")), 300);
+        } else if (!tmp_grade.isEditable(
+          final_grades_indexes[grade_index.student_id] != undefined
+            ? grades[grade_index.student_id][final_grades_indexes[grade_index.student_id]].publication
+            : undefined)) {
+          setTimeout(() => setupModalAndOpen("error", getCurrentElement("cannot_remove_grade")), 300);
         } else {
+          updateFinalRefs("" + grade_index.student_id, tmp_grade, true);
+          grades[grade_index.student_id].splice(grade_index.index, 1);
+          setTimeout(() => setupModalAndOpen("success", getCurrentElement("successful_remotion")), 300);
+          store.state.triggers.grades++;
           executeLink("/v1/grades/" + store.state.event.data.id,
             () => {
-              grades[grade_index.student_id].splice(grade_index.index,1);
+              updateFinalRefs("" + grade_index.student_id, tmp_grade, true);
+              grades[grade_index.student_id].splice(grade_index.index, 1);
+              setTimeout(() => setupModalAndOpen("success", getCurrentElement("successful_remotion")), 300);
               store.state.triggers.grades++;
             },
             () => setTimeout(() => setupModalAndOpen("error"), 300),
@@ -335,18 +373,91 @@ const yes_handler = () => {
         setTimeout(() => setupModalAndOpen("error"), 300);
       }
       break;
+    case "edit_grade":
+      if (learning_session != undefined) {
+        edits_props = store.state.event.data.new_grade.toProps();
+        body = {
+          ita_description: edits_to_send.italian_description ? edits_props.italian_description : undefined,
+          eng_description: edits_to_send.english_description ? edits_props.english_description : undefined,
+          grade: edits_to_send.grade ? edits_props.grade : undefined,
+          publication_date: edits_to_send.publication_date ? edits_props.publication : undefined,
+        };
+        //<!-- TODO (6): modificare quando ci sarà coerenza nei parametri
+        /*for (const key in edits_to_send) {
+          if (edits_to_send[key]) {
+            body[key] = edits_props[key];
+          }
+        }*/
+        edit_keys = Object.keys(body);
+
+        while (!(something_to_edit = body[edit_keys[count]] != undefined) && ++count < edit_keys.length);
+        if (associated_teacher) {
+          setTimeout(() => setupModalAndOpen("error", getCurrentElement("no_grade_edit_permissions")), 300);
+        } else if (!something_to_edit) {
+          setTimeout(() => setupModalAndOpen("error", getCurrentElement("no_edits")), 300);
+        } else if (!grades[grade_index.student_id][grade_index.index].isEditable(
+          final_grades_indexes[grade_index.student_id] != undefined
+            ? grades[grade_index.student_id][final_grades_indexes[grade_index.student_id]].publication
+            : undefined)) {
+          setTimeout(() => setupModalAndOpen("error", getCurrentElement("cannot_edit_grade")), 300);
+        } else {
+          executeLink("/v1/grades/" + store.state.event.data.id,
+            () => {
+              Object.assign(grades[grade_index.student_id][grade_index.index], store.state.event.data.new_grade);
+              tmp_grade = grades[grade_index.student_id][grade_index.index];
+              setTimeout(() => setupModalAndOpen("success", getCurrentElement("successful_edit")), 300);
+              updateFinalRefs("" + grade_index.student_id, store.state.event.data.new_grade, false, false);
+              store.state.triggers.grades++;
+              store.state.triggers.edit_grades++;
+            },
+            () => setTimeout(() => setupModalAndOpen("error"), 300),
+            "put", body);
+        }
+      } else {
+        setTimeout(() => setupModalAndOpen("error"), 300);
+      }
+      break;
   }
 };
 const setupError = (message?: string) => {
   alert_information.title = getCurrentElement("error");
-  alert_information.message = getCurrentElement(message ?? "general_error");
+  alert_information.message = message ?? getCurrentElement("general_error");
   alert_information.buttons = [getCurrentElement("ok")];
+};
+const findGrade = () => {
+  let count = 0;
+
+  while ((grade_index.index = grades[
+    (grade_index.student_id = students[count].id)
+  ].findIndex(a => a.id == store.state.event.data.id)) == -1 && ++count < Object.keys(grades).length);
+};
+const updateFinalRefs = (student_id: string, grade: Grade, deleted_grade = false, update_indexes = true) => {
+  let student_pos: number;
+
+  if (grade.final == true) {
+    student_pos = table_data.findIndex(
+      (a: CustomElement[]) => a[0].id == student_id + "_name_surname"
+    );
+    if (update_indexes) {
+      final_grades_indexes[student_id] = grades[student_id].length - 1;
+    }
+    if (deleted_grade) {
+      table_data[student_pos][table_data[student_pos].length - 1].content = "-";
+      grades_parameters.final_grade_index = undefined;
+      delete final_grades_indexes[student_id];
+      store.state.triggers.grades++;
+    } else {
+      table_data[student_pos][table_data[student_pos].length - 1].content =
+        grade.grade;
+    }
+    students_trigger.value++;
+  }
 }
 
 const store = useStore();
 const user = User.getLoggedUser() as User;
 const sections_use: boolean = store.state.sections_use;
-const language = getCurrentLanguage();
+const languages = getAviableLanguages();
 
 const firstRow: CustomElement[] = [
   {
@@ -430,7 +541,6 @@ let table_data: CustomElement[][] = [];
 let grades_title: string;
 let grades_parameters: GradesParameters;
 let student_grades: Grade[] | undefined;
-let student_final_grade_index: number;
 let description_title: string;
 let description_course_id: GradesParameters;
 let associated_teacher: boolean | undefined;
@@ -438,6 +548,9 @@ let learning_session_status: LearningSessionStatus | undefined;
 let course: Course | undefined;
 let project_class: AdminProjectClass | undefined;
 let students: Student[] = [];
+let edits_to_send: {
+  [key in keyof GradeProps]: boolean;
+};
 
 if (user.user == "teacher") {
   firstRow.push(

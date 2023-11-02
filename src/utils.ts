@@ -306,7 +306,7 @@ function getLearningContexts(user: User, learning_session_id?: string): Promise<
         "/v1/learning_contexts?student_id=" +
         user.id +
         (learning_session_id != undefined ? "&session_id=" +
-        learning_session_id : ""),
+            learning_session_id : ""),
         (response) => {
             const tmp_contexts: LearningContext[] = [];
 
@@ -367,4 +367,72 @@ function getLocale() {
     return locale;
 }
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence, getUserFromToken, getDefautlLink, setUser, getBaseUrl, getLearningContexts, logout, isTokenExpired, getLocale }
+function getGradeNumber(grade: string) {
+    const tmp_regexp = store.state.grades_scale.input_regex;
+    const actual_grade = tmp_regexp.test(grade) ? parseFloat(grade) : NaN;
+    tmp_regexp.test(grade); // Dummy test to reset regex (I don't know why I have to do this)
+
+    if (isNaN(actual_grade)) {
+        return NaN;
+    } else {
+        return actual_grade;
+    }
+}
+
+function limitGrade(grade: string) {
+    let actual_grade: number;
+
+    if (isNaN((actual_grade = getGradeNumber(grade))) ||
+        actual_grade < store.state.grades_scale.min ||
+        actual_grade > store.state.grades_scale.max) {
+        return NaN;
+    } else {
+        return actual_grade;
+    }
+}
+
+function checkGradesParameters(descriptions: {
+    [key in keyof Language as `${Language}_description`]: string;
+}, grade: string, date: Date | undefined) {
+    const languages = getAviableLanguages();
+
+    const end_of_day = new Date();
+    end_of_day.setHours(23, 59, 59, 999);
+
+    let full = true;
+    let count = 0;
+    let actual_grade: number | undefined;
+
+    while (
+        count < languages.length &&
+        (full =
+            descriptions[`${languages[count++]}_description`] != '')
+    );
+    if (!full) {
+        store.state.event = {
+            event: 'empty_descriptions',
+            data: {},
+        };
+        actual_grade = undefined;
+    } else if (date != undefined && date > end_of_day) {
+        store.state.event = {
+            event: 'error',
+            data: {
+                message: getCurrentElement("no_future_date"),
+            },
+        };
+        actual_grade = undefined;
+    } else if (isNaN(actual_grade = limitGrade(grade))) {
+        store.state.event = {
+            event: 'error',
+            data: {
+                message: getCurrentElement("grade_value_error"),
+            },
+        };
+        actual_grade = undefined;
+    }
+
+    return actual_grade;
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence, getUserFromToken, getDefautlLink, setUser, getBaseUrl, getLearningContexts, logout, isTokenExpired, getLocale, getGradeNumber, checkGradesParameters }

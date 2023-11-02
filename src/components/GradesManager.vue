@@ -1,7 +1,8 @@
 <template>
   <ion-modal :keep-contents-mounted="true">
-    <ion-datetime id="datetime" @ion-change="changeData" :first-day-of-week="1" :max="end_of_day.toISOString()"
-      hour-cycle="h23" :locale="getLocale()" :show-clear-button="true" :clear-text="getCurrentElement('clear')" />
+    <ion-datetime :key="edit_trigger" id="datetime" @ion-change="changeData" :first-day-of-week="1"
+      :max="end_of_day.toISOString()" hour-cycle="h23" :locale="getLocale()" :show-clear-button="true"
+      :clear-text="getCurrentElement('clear')" :value="date_value" />
   </ion-modal>
   <ion-header>
     <ion-toolbar>
@@ -19,11 +20,17 @@
   </ion-header>
   <ion-grid>
     <ion-row>
-      <ion-col
-        :size="parameters.teacher_id != undefined && table_data.length != 0 && actual_final_grade_index === -1 ? '7' : '12'">
+      <ion-col :key="actual_final_grade_index !== -1 ? edit_trigger + '_grades' : undefined"
+        :size="(parameters.teacher_id != undefined && table_data.length != 0 && actual_final_grade_index === -1) || edit_mode ? '7' : '12'">
         <template v-if="table_data.length > 0">
           <ionic-table :key="store.state.triggers.grades" :data="table_data" :first_row="first_row"
-            :column_sizes="column_sizes" @signal_event="$emit('signal_event')" />
+            :column_sizes="column_sizes" @signal_event="() => {
+              if (store.state.event.event == 'edit_grade') {
+                setupEditMode();
+              } else {
+                $emit('signal_event')
+              }
+            }" />
           <div class="ion-text-center ion-padding-bottom">
             <ion-text color="primary">{{ getCurrentElement("intermediate_arithmetic_mean") }}{{ actual_final_grade_index
               != -1 ? " (" +
@@ -43,13 +50,13 @@
           </div>
         </template>
       </ion-col>
-      <ion-col :size="table_data.length == 0 ? '12' : '5'"
-        v-if="parameters.teacher_id != undefined && parameters.associated_teacher === false && actual_final_grade_index === -1">
+      <ion-col :key="edit_trigger + '_parameters'" :size="table_data.length == 0 ? '12' : '5'"
+        v-if="(parameters.teacher_id != undefined && parameters.associated_teacher === false && actual_final_grade_index === -1) || edit_mode">
         <div class="ion-padding-bottom">
           <div class="ion-padding-bottom">
             <ionic-element :element="getCustomMessage(
               'description',
-              getCurrentElement('grade_insertion'),
+              getCurrentElement('grade_' + (edit_mode ? 'edit' : 'insertion')),
               'title',
               colors
             )
@@ -78,7 +85,7 @@
             <ion-input type="number" v-model="grade" :label="getCurrentElement('grade')"
               :aria-label="getCurrentElement('grade')" color="black" style="color: var(--ion-color-primary)"
               fill="outline" class="ion-margin-vertical" @ion-input="() => {
-                if (isNaN(getGradeNumber())) {
+                if (isNaN(getGradeNumber(grade))) {
                   grade = grade.substring(0, grade.length - 1);
                 }
               }" />
@@ -86,37 +93,41 @@
               <ion-label position="floating" :aria-label="getCurrentElement('final_grade')" color="primary"
                 style="color: var(--ion-color-primary)" class="ion-padding-horizontal">{{ getCurrentElement("final_grade")
                 }}</ion-label>
-              <ion-checkbox v-model="final" :aria-label="getCurrentElement('final_grade')" />
+              <ion-checkbox :disabled="edit_mode" v-model="final" :aria-label="getCurrentElement('final_grade')" />
             </div>
           </div>
           <!-- TODO (4): controllare perchè non funziona nella tabella e mettere popup "Sei sicuro?" -->
         </div>
         <div class="ion-text-center">
-          <ion-button @click="() => {
-            let full = true;
-            let count = 0;
-            let actual_grade: number;
+          <template v-if="edit_mode">
+            <ion-button @click="() => {
+              let actual_grade = checkGradesParameters(descriptions, grade, date);
+              let grade_props: GradeProps;
 
-            while (
-              count < languages.length &&
-              (full =
-                descriptions[`${languages[count++]}_description`] != '')
-            );
-            if (!full) {
-              store.state.event = {
-                event: 'empty_descriptions',
-                data: {},
-              };
+              if (actual_grade != undefined) {
+                grade_props = {
+                  id: store.state.event.data.id,
+                  publication: date != undefined ? date.toISOString() : (date_value ?? to_edit.publication.toISOString()),
+                  italian_description: '',
+                  english_description: '',
+                  grade: actual_grade,
+                  final: final ? 1 : 0,
+                };
+                languages.forEach(a => grade_props[`${a}_description`] = descriptions[`${a}_description`]);
+                store.state.event.data.new_grade = new Grade(grade_props);
+              }
               $emit('signal_event');
-            } else if (isNaN(actual_grade = limitGrade())) {
-              store.state.event = {
-                event: 'error',
-                data: {
-                  message: getCurrentElement('grade_value_error'),
-                },
-              };
-              $emit('signal_event');
-            } else {
+            }">
+              {{ getCurrentElement("edit") }}
+            </ion-button>
+            <ion-button @click="setupEditMode(true)">
+              {{ getCurrentElement("cancel") }}
+            </ion-button>
+          </template>
+          <ion-button v-else @click="() => {
+            let actual_grade = checkGradesParameters(descriptions, grade, date);
+
+            if (actual_grade != undefined) {
               store.state.event = {
                 event: 'add_grade',
                 data: {
@@ -130,9 +141,10 @@
               };
               $emit('signal_event');
               $emit('close');
+            } else {
+              $emit('signal_event');
             }
-          }
-            ">
+          }">
             {{ getCurrentElement("insert_grade") }}
           </ion-button>
         </div>
@@ -159,6 +171,8 @@ import {
   getCustomMessage,
   getIcon,
   getLocale,
+  getGradeNumber,
+  checkGradesParameters
 } from "@/utils";
 import {
   IonHeader,
@@ -181,29 +195,6 @@ import {
 import { PropType, reactive, Ref, ref, watch } from "vue";
 import { useStore } from "vuex";
 
-const getGradeNumber = () => {
-  const tmp_grade = grade.value;
-  const tmp_regexp = store.state.grades_scale.input_regex;
-  const actual_grade = tmp_regexp.test(tmp_grade) ? parseFloat(tmp_grade) : NaN;
-  tmp_regexp.test(tmp_grade); // Dummy test to reset regex (I don't know why I have to do this)
-
-  if (isNaN(actual_grade)) {
-    return NaN;
-  } else {
-    return actual_grade;
-  }
-};
-const limitGrade = () => {
-  let actual_grade: number;
-
-  if (isNaN((actual_grade = getGradeNumber())) ||
-    actual_grade < store.state.grades_scale.min ||
-    actual_grade > store.state.grades_scale.max) {
-    return NaN;
-  } else {
-    return actual_grade;
-  }
-};
 const changeData = (event: DatetimeCustomEvent) => {
   const tmp_str_date = event.target.value;
 
@@ -220,9 +211,13 @@ const changeData = (event: DatetimeCustomEvent) => {
     date = undefined;
   }
 }
-const setGradesTable = async () => {
+const setGradesTable = async (empty = true) => {
   let tmp_mean = 0;
 
+  actual_final_grade_index = props.parameters.final_grade_index ?? -1;
+  if (empty) {
+    setupEditMode(true);
+  }
   table_data = [];
   if (props.grades != undefined) {
     actual_grades = props.grades;
@@ -246,7 +241,7 @@ const setGradesTable = async () => {
   column_sizes = props.parameters.associated_teacher === false
     && (actual_final_grade_index == -1
       || (actual_grades[actual_final_grade_index] != undefined
-        && actual_grades[actual_final_grade_index].isEditable())) ? [5, 2, 2, 1, 1] : [6, 3, 3];
+        && actual_grades[actual_final_grade_index].isEditable())) ? [6, 2, 2, 1, 1] : [6, 3, 3];
 
   for (const grade_index in actual_grades) {
     final_grade_pubblication = actual_final_grade_index != -1 && actual_grades[actual_final_grade_index] != undefined
@@ -275,6 +270,17 @@ const setGradesTable = async () => {
     mean = "-";
   }
 }
+const setupEditMode = (empty = false) => {
+  to_edit = actual_grades[actual_grades.findIndex(a => a.id == store.state.event.data.id)];
+  for (const description of Object.keys(descriptions)) {
+    descriptions[description as keyof typeof descriptions] = empty ? "" : to_edit[description];
+  }
+  date_value = empty ? undefined : to_edit.publication.toISOString();
+  grade.value = "" + (empty ? "" : to_edit.grade);
+  final.value = empty ? false : to_edit.final;
+  edit_trigger.value++;
+  edit_mode = empty ? false : true;
+}
 
 const store = useStore();
 const languages = getAviableLanguages();
@@ -290,7 +296,6 @@ const props = defineProps({
     required: true,
   },
   grades: Array<Grade>,
-  final_grade_index: Number,
 });
 defineEmits(["signal_event", "close"]);
 
@@ -343,6 +348,7 @@ const colors: Colors<GeneralSubElements> = {
     type: "var",
   },
 };
+const edit_trigger = ref(0);
 const end_of_day = new Date();
 end_of_day.setHours(23, 59, 59, 999);
 
@@ -350,9 +356,12 @@ let table_data: CustomElement[][] = [];
 let mean = "";
 let date: Date | undefined = undefined;
 let actual_grades: Grade[] = [];
-let actual_final_grade_index = props.final_grade_index ?? -1;
+let actual_final_grade_index: number;
 let column_sizes: number[];
 let final_grade_pubblication: Date | undefined;
+let edit_mode = false;
+let date_value: string | undefined;
+let to_edit: Grade;
 
 if (props.parameters.associated_teacher === false) {
   first_row.push({
@@ -368,7 +377,12 @@ if (props.parameters.associated_teacher === false) {
 }
 
 await setGradesTable();
-watch(store.state.triggers, setGradesTable);
+watch(() => store.state.triggers.grades, () => {
+  setGradesTable();
+});
+watch(() => store.state.triggers.edit_grades, () => {
+  setGradesTable(true);
+});
 </script>
 
 <style scoped>
