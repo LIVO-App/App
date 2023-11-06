@@ -293,7 +293,7 @@ const updateStudents = async () => {
         session_id,
         user.user == "teacher" ? user.id : undefined,
         user.user == "teacher",
-        grades[student.id][final_grades_indexes[student.id]]
+        user.user == "teacher" ? grades[student.id][final_grades_indexes[student.id]] : undefined
       )
     );
   }
