@@ -69,7 +69,7 @@ const changeSelection = async () => {
         proposition.creation_school_year ==
         parseInt(school_years.cards[""][selected_year_index.value].id)
       ) {
-        year_propositions.cards[""].push(proposition.toCard(user, true));
+        year_propositions.cards[""].push(proposition.toCard(user, true)); //<!-- ! (1): mettere preferenze pending (sia qui che in project class)
       }
     }
   }
