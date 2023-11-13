@@ -1816,6 +1816,7 @@ type CourseModelProps = {
     }> | null,
     teacher_name: string | null,
     teacher_surname: string | null,
+    preferences: number | null,
 } & {
         [key in keyof string as `${Language}_title`]: string
     }
@@ -1833,6 +1834,7 @@ class CourseModel {
     course_to_be_modified?: boolean;
     certifying_admin?: AdminSummary;
     proposer_teacher?: TeacherSummary;
+    preferences?: number;
 
     constructor(props: CourseModelProps, learning_session?: LearningSession) {
         this.id = (props.course_ref.data as { id: number }).id;
@@ -1858,6 +1860,7 @@ class CourseModel {
             name: props.admin_name,
             surname: props.admin_surname
         }) : undefined; // Project class
+        this.preferences = props.preferences ?? undefined;
     }
 
     async loadParms() {
@@ -1912,7 +1915,8 @@ class CourseModel {
             if (this.certifying_admin != undefined && this.project_class_confirmation_date != undefined) {
                 project_class += "</label><ul class='ion-no-margin'><li>"
                     + getCurrentElement("confirmation_date") + ": " + toDateString(this.project_class_confirmation_date) + "</li>"
-                    + "<li>" + getCurrentElement("certifying_admin") + ": " + this.certifying_admin.surname + " " + this.certifying_admin.surname
+                    + "<li>" + getCurrentElement("certifying_admin") + ": " + this.certifying_admin.surname + " " + this.certifying_admin.surname + "</li>"
+                    + "<li>" + getCurrentElement("additional_preferences") + ": " + (this.preferences != undefined ? this.preferences : "0")
                     + "</li></ul>"
             } else {
                 project_class += " " + getCurrentElement("not_confirmed") + "</label>";
