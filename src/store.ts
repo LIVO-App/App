@@ -588,6 +588,7 @@ export const store = createStore({
                     no_future_date: "Non puoi utilizzare una data futura",
                     grade_edit: "Modifica voto",
                     no_edits: "Non sono presenti modifiche",
+                    additional_preferences: "Preferenze aggiuntive",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -836,7 +837,8 @@ export const store = createStore({
                     successful_edit: "Grade successfully edited",
                     no_future_date: "You cannot use a future date",
                     grade_edit: "Grade edit",
-                    no_edits: "No changes are present"
+                    no_edits: "No changes are present",
+                    additional_preferences: "Additional preferences",
                 }
             },
             logged_user: false,
