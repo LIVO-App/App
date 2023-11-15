@@ -1495,7 +1495,7 @@ class Student extends StudentSummary {
         }
     }
 
-    toTableRow(course_id: string, session_id: string, teacher_id?: number, grades?: boolean, final_grade?: Grade): CustomElement[] {
+    toTableRow(course_id: string, session_id: string, teacher_id?: number, grades?: boolean, final_grade?: Grade, final_confirmation?: Date): CustomElement[] { // TODO (7): usare AdminProjectClassProps quando verrà cambiato nome e sistemato in giro
         const row_to_return: CustomElement[] = [{ // TODO (4): rendere cliccabile
             id: this.id + "_name_surname",
             type: "string",
@@ -1538,23 +1538,37 @@ class Student extends StudentSummary {
                 content: final_grade != undefined ? "" + final_grade.grade : "-"
             })
         } else {
-            tmp_row.push({
-                id: this.id + "_edit",
-                type: "icon",
-                linkType: "event",
-                content: {
-                    event: "edit",
-                    data: {
-                        title: this.name + " " + this.surname,
-                        parameters: {
-                            course_id: course_id,
-                            session_id: session_id,
-                            student_id: this.id
-                        }
-                    },
-                    icon: getIcon("pencil")
-                }
-            })
+            if (final_confirmation == undefined) {
+                tmp_row.push({
+                    id: this.id + "_move_student",
+                    type: "icon",
+                    linkType: "event",
+                    content: {
+                        event: "move_student",
+                        data: {
+                            title: this.name + " " + this.surname,
+                            parameters: {
+                                student_id: this.id
+                            }
+                        },
+                        icon: getIcon("pencil")
+                    }
+                }, {
+                    id: this.id + "_remove_student",
+                    type: "icon",
+                    linkType: "event",
+                    content: {
+                        event: "remove_student",
+                        data: {
+                            title: this.name + " " + this.surname,
+                            parameters: {
+                                student_id: this.id
+                            }
+                        },
+                        icon: getIcon("close")
+                    }
+                });
+            }
         }
 
         return row_to_return.concat(tmp_row);
@@ -2737,7 +2751,7 @@ type OpenToConstraint = {
         [key in keyof string as `${Language}_title`]: string
     }
 
-type AdminProjectClassProps = { // TODO (9): cambiare nome, dato che possono accederci tutti
+type AdminProjectClassProps = { // TODO (7): cambiare nome, dato che possono accederci tutti
     course_id: number,
     learning_session: number,
     group: number,

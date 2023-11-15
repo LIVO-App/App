@@ -55,11 +55,14 @@
     </template>
     <custom-select v-if="sections_use" v-model="selected_section" :list="sections"
       :label="getCurrentElement('section') + ':'" :aria_label="getCurrentElement('section')"
-      :placeholder="getCurrentElement('section_choice')"></custom-select>
+      :placeholder="getCurrentElement('section_choice')" />
     <suspense>
       <template #default>
-        <ionic-table :key="students_trigger" :data="table_data" :first_row="firstRow" :column_sizes="column_sizes"
-          @signal_event="setupModalAndOpen()" />
+        <div class="ion-padding-top">
+          <ionic-table v-if="table_data.length > 0" :key="students_trigger" :data="table_data" :first_row="first_row" :column_sizes="column_sizes"
+            @signal_event="setupModalAndOpen()" />
+          <ionic-element v-else :element="getCustomMessage('emptiness_message',getCurrentElement('no_students'))" />
+        </div>
       </template>
       <template #fallback>
         <loading-component />
@@ -93,13 +96,15 @@ type AvailableModal =
   | "empty_descriptions"
   | "edit_grade"
   | "remove_grade"
+  | "move_student"
+  | "remove_student"
   | "confirmation"
   | "success"
   | "error";
 
 const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
   const actual_window: AvailableModal = window ?? store.state.event.event;
-  const actual_message: string = message ?? store.state.event.data.message;
+  const actual_message: string = message ?? store.state.event.data?.message;
 
   let tmp_grade: Grade,
     new_grade: Grade,
@@ -122,11 +127,11 @@ const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
       if (grade_index.student_id != -1 && grade_index.index != -1) {
         tmp_grade = grades[grade_index.student_id][grade_index.index];
         alert_information.title = "";
-        alert_information.message = getCurrentElement((actual_window == "edit_grade" ? "edit" : "remove") + "_grade_confirmation")
-          /*+ (grade_index != undefined
-            ? "<br />" + getCurrentElement("description") + ": " + tmp_grade[`${language}_description`] + "<br />"
-            + getCurrentElement("grade") + ": " + tmp_grade.grade + " [" + getCurrentElement("final") + "]"
-            : "")*/; //<!-- TODO (5): abilita innerHTMLTemplatesEnabled nelle config per farlo funzionare
+        alert_information.message = getCurrentElement((actual_window == "edit_grade" ? "edit" : "remove") + "_grade_confirmation");
+        /*+ (grade_index != undefined
+          ? "<br />" + getCurrentElement("description") + ": " + tmp_grade[`${language}_description`] + "<br />"
+          + getCurrentElement("grade") + ": " + tmp_grade.grade + " [" + getCurrentElement("final") + "]"
+          : "");*/ //<!-- TODO (5): abilita innerHTMLTemplatesEnabled nelle config per farlo funzionare
         if (actual_window == "edit_grade") {
           new_grade = store.state.event.data.new_grade;
           edits_to_send = {
@@ -154,6 +159,18 @@ const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
             //alert_information.message += "\n" + getCurrentElement("grade") + ": " + new_grade.grade;
           }
         }
+        alert_information.buttons = [handled_buttons[0], getCurrentElement("no")];
+        alert_open.value = true;
+      } else {
+        setupError();
+        alert_open.value = true;
+      }
+      break;
+    case "remove_student":
+      findStudent();
+      if (student_index.student_list != -1 && student_index.table != -1) {
+        alert_information.title = "";
+        alert_information.message = getCurrentElement("remove_student_confirmation");
         alert_information.buttons = [handled_buttons[0], getCurrentElement("no")];
         alert_open.value = true;
       } else {
@@ -202,6 +219,7 @@ const closeModal = (window: AvailableModal) => {
     case "remove_grade":
     case "edit_grade":
     case "confirmation":
+    case "remove_student":
     case "success":
     case "error":
       alert_open.value = false;
@@ -243,7 +261,7 @@ const add_grade = async () => {
 };
 
 const updateStudents = async () => {
-  students = await executeLink(
+  students = selected_section.value != "" ? await executeLink(
     "/v1/project_classes/" +
     course_id +
     "/" +
@@ -255,6 +273,25 @@ const updateStudents = async () => {
       const tmp_students: Student[] = [];
 
       associated_teacher = response.data.data.associated_teacher;
+      column_sizes = user.user == "teacher" && associated_teacher == true || user.user == "admin" && project_class?.final_confirmation != undefined
+        ? [7, 3, 2]
+        : [5, 2, 1, 2, 2];
+      if (first_row.length != column_sizes.length) {
+        if (project_class?.final_confirmation == undefined) {
+          first_row.push({
+            id: "move",
+            type: "string",
+            content: getCurrentElement("move"),
+          }, {
+            id: "remove",
+            type: "string",
+            content: getCurrentElement("remove"),
+          });
+        } else {
+          first_row.pop();
+          first_row.pop();
+        }
+      }
       response.data.data.components.map((a: any) => {
         tmp_students.push(new Student(a));
       });
@@ -262,7 +299,7 @@ const updateStudents = async () => {
       return tmp_students;
     },
     () => []
-  );
+  ) : [];
 
   table_data = [];
   for (const student of students) { //<!-- TODO (5): controllare se ci sono più professori e fare richieste voti solamente sul pulsante (evitare problema di professore che aggiunge mentre altro è nella pagina)
@@ -293,7 +330,8 @@ const updateStudents = async () => {
         session_id,
         user.user == "teacher" ? user.id : undefined,
         user.user == "teacher",
-        user.user == "teacher" ? grades[student.id][final_grades_indexes[student.id]] : undefined
+        user.user == "teacher" ? grades[student.id][final_grades_indexes[student.id]] : undefined,
+        project_class?.final_confirmation
       )
     );
   }
@@ -336,6 +374,7 @@ const yes_handler = () => {
             (response) => {
               (project_class as AdminProjectClass).final_confirmation = response.data.confirmation_date != undefined ? new Date(response.data.confirmation_date) : new Date();
               setTimeout(() => setupModalAndOpen("success", getCurrentElement("project_class_successful_confirmation")), 300);
+              students_update.value++;
             },
             () => setTimeout(() => setupModalAndOpen("error"), 300),
             "put");
@@ -355,15 +394,11 @@ const yes_handler = () => {
             : undefined)) {
           setTimeout(() => setupModalAndOpen("error", getCurrentElement("cannot_remove_grade")), 300);
         } else {
-          updateFinalRefs("" + grade_index.student_id, tmp_grade, true);
-          grades[grade_index.student_id].splice(grade_index.index, 1);
-          setTimeout(() => setupModalAndOpen("success", getCurrentElement("successful_remotion")), 300);
-          store.state.triggers.grades++;
           executeLink("/v1/grades/" + store.state.event.data.id,
             () => {
               updateFinalRefs("" + grade_index.student_id, tmp_grade, true);
               grades[grade_index.student_id].splice(grade_index.index, 1);
-              setTimeout(() => setupModalAndOpen("success", getCurrentElement("successful_remotion")), 300);
+              setTimeout(() => setupModalAndOpen("success", getCurrentElement("successful_grade_remotion")), 300);
               store.state.triggers.grades++;
             },
             () => setTimeout(() => setupModalAndOpen("error"), 300),
@@ -417,6 +452,32 @@ const yes_handler = () => {
         setTimeout(() => setupModalAndOpen("error"), 300);
       }
       break;
+    case "remove_student":
+      if (course != undefined && project_class != undefined) {
+        if (project_class.final_confirmation != undefined) {
+          setTimeout(() => setupModalAndOpen("error", getCurrentElement("class_already_confirmed")), 300);
+        } else {
+          console.log({
+            project_class: {
+              course_id: course.id,
+              session_id: project_class.learning_session.id
+            }
+          });
+
+          executeLink("/v1/students/" + store.state.event.data.parameters.student_id + "/remove_class?course_id=" + course.id + "&session_id=" + project_class.learning_session.id,
+            () => {
+              table_data.splice(student_index.table, 1);
+              students.splice(student_index.student_list, 1);
+              setTimeout(() => setupModalAndOpen("success", getCurrentElement("successful_student_remotion")), 300);
+              students_trigger.value++;
+            },
+            () => setTimeout(() => setupModalAndOpen("error"), 300),
+            "delete");
+        }
+      } else {
+        setTimeout(() => setupModalAndOpen("error"), 300);
+      }
+      break;
   }
 };
 const setupError = (message?: string) => {
@@ -430,6 +491,12 @@ const findGrade = () => {
   while ((grade_index.index = grades[
     (grade_index.student_id = students[count].id)
   ].findIndex(a => a.id == store.state.event.data.id)) == -1 && ++count < Object.keys(grades).length);
+};
+const findStudent = () => {
+  const tmp_student_id = store.state.event.data.parameters.student_id;
+
+  student_index.table = table_data.findIndex(a => a[0].id.split("_")[0] == tmp_student_id);
+  student_index.student_list = students.findIndex(a => a.id == tmp_student_id);
 };
 const updateFinalRefs = (student_id: string, grade: Grade, deleted_grade = false, update_indexes = true) => {
   let student_pos: number;
@@ -459,7 +526,7 @@ const user = User.getLoggedUser() as User;
 const sections_use: boolean = store.state.sections_use;
 const languages = getAviableLanguages();
 
-const firstRow: CustomElement[] = [
+const first_row: CustomElement[] = [
   {
     id: "student",
     type: "string",
@@ -476,13 +543,13 @@ const firstRow: CustomElement[] = [
     content: getCurrentElement("class"),
   },
 ];
-const column_sizes = [5, 2, 1, 2, 2];
 const grades_open = ref(false);
 const description_open = ref(false);
 const divided_path = window.location.pathname.split("/");
 const course_id = divided_path[divided_path.length - 2]; //<!-- TODO (5): usare $route
 const session_id = divided_path[divided_path.length - 1];
 const students_trigger = ref(0);
+const students_update = ref(0);
 const grades: {
   [student_id: string]: Grade[]
 } = {};
@@ -531,6 +598,10 @@ const grade_index = {
   student_id: -1,
   index: -1,
 };
+const student_index = {
+  student_list: -1,
+  table: -1,
+};
 const learning_session: LearningSession | undefined = await executeLink(
   "/v1/learning_sessions/" + session_id,
   (response) => new LearningSession(response.data.data),
@@ -551,9 +622,10 @@ let students: Student[] = [];
 let edits_to_send: {
   [key in keyof GradeProps]: boolean;
 };
+let column_sizes: number[] = [];
 
 if (user.user == "teacher") {
-  firstRow.push(
+  first_row.push(
     {
       id: "gardes",
       type: "string",
@@ -591,11 +663,6 @@ if (user.user == "teacher") {
     });
   }
 } else {
-  firstRow.push({
-    id: "edit",
-    type: "string",
-    content: getCurrentElement("edit"),
-  });
   await executeLink(
     "/v1/project_classes/" + course_id + "/" + session_id + "/sections",
     (response) =>
@@ -623,6 +690,10 @@ if (sections.length > 0) {
 
 await updateStudents();
 watch(selected_section, async () => {
+  await updateStudents();
+  students_trigger.value++;
+});
+watch(students_update, async () => {
   await updateStudents();
   students_trigger.value++;
 });
