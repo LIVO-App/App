@@ -7,7 +7,7 @@
 
       <suspense>
         <template #default>
-          <project-class-select-list />
+          <project-class-select-list /> <!-- TODO (5): cambiare nome componente -->
         </template>
         <template #fallback>
           <loading-component />

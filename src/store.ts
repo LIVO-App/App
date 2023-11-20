@@ -90,7 +90,7 @@ export const store = createStore({
     state() {
         return {
             menu: {
-                items: { // ! (2): creare pagina tutor-open_day
+                items: { // ! (1): creare pagina tutor-open_day
                     "learning_sessions": {
                         url_names: {
                             "student": ["learning_sessions", "learning_session"],
@@ -594,6 +594,8 @@ export const store = createStore({
                     class_already_confirmed: "Classe progetto già confermata definitivamente",
                     successful_student_remotion: "Studente rimosso con successo da questa classe progetto",
                     move: "Sposta",
+                    project_class_choice: "Scelta classe progetto",
+                    actual_course: "Corso attuale",
                 },
                 "english": {
                     constraints: "Credits constraints",
@@ -849,6 +851,8 @@ export const store = createStore({
                     class_already_confirmed: "Project class already confirmed definitely",
                     successful_student_remotion: "Student successfully removed from this project class",
                     move: "Move",
+                    project_class_choice: "Project class choice",
+                    actual_course: "Actual course",
                 }
             },
             logged_user: false,
@@ -863,7 +867,7 @@ export const store = createStore({
             }, // TODO (9): mettere referenza a contesto di apprendimento
             courses_per_group: 1,
             year_module: 100,
-            static_subscription: true,
+            static_subscription: false,
             sections_use: false,
             triggers: {
                 edit_grades: 0,

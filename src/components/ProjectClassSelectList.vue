@@ -40,7 +40,7 @@
             )
           )
             " :cards_list="$route.name == 'ordinary_classes' ? students : propositions" />
-      </ion-col>
+      </ion-col> <!-- ! (2): finire questa pagina e usare l'api ordinary_classes/.../non_compliant dentro alla classe scelta -->
     </ion-row>
   </ion-grid>
 </template>

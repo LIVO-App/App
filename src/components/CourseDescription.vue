@@ -401,9 +401,9 @@ if (props.learning_session_id != undefined) {
 
       return tmp_project_class.toCard(
         undefined,
-        user,
         actual_section,
-        true
+        true,
+        user
       );
     },
     () => undefined

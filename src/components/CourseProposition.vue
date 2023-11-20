@@ -29,6 +29,7 @@
       <ionic-element :element="action == 'view' ? buttons[6] : buttons[7]"
         @signal_event="changeModality(action == 'view' ? 'edit' : 'view')" />
     </template>
+    <!-- ! (1): pulsante export -->
     <custom-select :key="trigger" v-model="selected_model" :list="models"
       :label="getCurrentElement('reference_model') + ':'" :aria_label="getCurrentElement('reference_model')"
       :placeholder="getCurrentElement('possible_models')" :getCompleteName="modelToString"
@@ -219,7 +220,7 @@
               </ion-col>
             </ion-row>
           </template>
-          <template v-else-if="pages[current_page_index] == 'access_object'"> <!-- ! (2): dare possibilità di sistemare liste -->
+          <template v-else-if="pages[current_page_index] == 'access_object'"> <!-- ! (1): dare possibilità di sistemare liste -->
             <ion-grid>
               <template v-if="action == 'propose'">
                 <ion-row>
