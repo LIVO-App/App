@@ -87,7 +87,7 @@
                 :src="require('@/assets/' + image.url)"
                 :alt="image.caption"
                 style="height: 150px"
-              />
+              /> <!-- TODO (4): finire di sistemare -->
             </swiper-slide>
           </swiper>
           <ion-img
@@ -401,9 +401,10 @@ if (props.learning_session_id != undefined) {
 
       return tmp_project_class.toCard(
         undefined,
-        user,
         actual_section,
-        true
+        true,
+        false,
+        user
       );
     },
     () => undefined

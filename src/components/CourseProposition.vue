@@ -29,10 +29,11 @@
       <ionic-element :element="action == 'view' ? buttons[6] : buttons[7]"
         @signal_event="changeModality(action == 'view' ? 'edit' : 'view')" />
     </template>
+    <!-- ! (1): pulsante export -->
     <custom-select :key="trigger" v-model="selected_model" :list="models"
       :label="getCurrentElement('reference_model') + ':'" :aria_label="getCurrentElement('reference_model')"
       :placeholder="getCurrentElement('possible_models')" :getCompleteName="modelToString"
-      :disabled="action != 'propose'" /> <!-- ! (2): mettere filtro su modelli -->
+      :disabled="action != 'propose'" /> <!-- ! (3): mettere filtro su modelli -->
     <ion-card :key="trigger">
       <ion-card-header color="primary">
         <ion-card-title class="ion-text-center">{{
@@ -55,7 +56,7 @@
                 ]
                   " :label="getCurrentElement(language)" :aria-label="getCurrentElement(language)" fill="outline"
                   class="ion-margin-vertical"
-                  :readonly="action != 'propose'" />
+                  :readonly="action != 'propose'" /> <!-- ! (2): permettere modifica titolo inglese -->
                 <!-- TODO (9): trovare un modo per rendere la chiamata generale -->
                 <!--<ion-textarea
                   v-else
@@ -150,7 +151,7 @@
                   course_proposition[pages[current_page_index]]
                 ).min_students
                   " :label="getCurrentElement('min_students')" :aria-label="getCurrentElement('min_students')"
-                  fill="outline" class="ion-margin-vertical" :readonly="action == 'view' || approved.course" />
+                  fill="outline" class="ion-margin-vertical" :readonly="action == 'view' || approved.course" /> <!-- ! (2): mettere distanza min-max di 4 durante poposta, togliere durante modifica e catturare errore se corso esiste quando < 4 -->
                 <ion-input type="number" v-model="castToCharacteristics1(
                   course_proposition[pages[current_page_index]]
                 ).max_students
@@ -219,7 +220,7 @@
               </ion-col>
             </ion-row>
           </template>
-          <template v-else-if="pages[current_page_index] == 'access_object'"> <!-- ! (2): dare possibilità di sistemare liste -->
+          <template v-else-if="pages[current_page_index] == 'access_object'"> <!-- ! (1): dare possibilità di sistemare liste -->
             <ion-grid>
               <template v-if="action == 'propose'">
                 <ion-row>

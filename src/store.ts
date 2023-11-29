@@ -90,7 +90,7 @@ export const store = createStore({
     state() {
         return {
             menu: {
-                items: { // ! (2): creare pagina tutor-open_day
+                items: { // ! (3): creare pagina tutor-open_day
                     "learning_sessions": {
                         url_names: {
                             "student": ["learning_sessions", "learning_session"],
@@ -339,7 +339,7 @@ export const store = createStore({
             language: "italian",
             elements: {
                 "italian": {
-                    constraints: "Vincoli crediti",
+                    credits_constraints: "Vincoli crediti",
                     session: "Sessione",
                     current: "Corrente",
                     future: "Future",
@@ -577,7 +577,7 @@ export const store = createStore({
                     remove_grade_confirmation: "Sicuro di voler rimuovere questo voto?",
                     no_grade_remotion_permissions: "Non hai i permessi per rimuovere questo voto",
                     cannot_remove_grade: "Non puoi rimuovere questo voto",
-                    successful_remotion: "Voto rimosso con successo",
+                    successful_grade_remotion: "Voto rimosso con successo",
                     cancel: "Annulla",
                     edit_grade_confirmation: "Sicuro di voler modificare questo voto?",
                     with_following_edits: "Con le seguenti modifiche?",
@@ -589,9 +589,22 @@ export const store = createStore({
                     grade_edit: "Modifica voto",
                     no_edits: "Non sono presenti modifiche",
                     additional_preferences: "Preferenze aggiuntive",
+                    remove: "Rimuovi",
+                    remove_student_confirmation: "Sicuro di voler rimuovere questo studente da questa classe progetto?",
+                    class_already_confirmed: "Classe progetto già confermata definitivamente",
+                    successful_student_remotion: "Studente rimosso con successo da questa classe progetto",
+                    move: "Sposta",
+                    project_class_movement_choice: "Scegli la classe progetto dove spostare questo studente",
+                    actual_course: "Corso attuale",
+                    move_student_confirmation: "Sicuro di voler spostare questo studente?",
+                    cannot_move_for_credits: "Questo studente non può essere spostato in questo corso perchè non possiede crediti liberi sufficienti",
+                    cannot_move_for_group: "Questo studente non può essere spostato in questo corso perchè frequenta già un corso nello stesso gruppo",
+                    groups_courses: "Corsi per gruppo",
+                    constraints: "Vincoli",
+                    student_moved: "Studente spostato con successo",
                 },
                 "english": {
-                    constraints: "Credits constraints",
+                    credits_constraints: "Credits constraints",
                     session: "Session",
                     current: "Current",
                     future: "Future",
@@ -827,7 +840,7 @@ export const store = createStore({
                     remove_grade_confirmation: "Are you sure you want to remove this grade?",
                     no_grade_remotion_permissions: "You don't have permissions to remove this grade",
                     cannot_remove_grade: "You cannot remove this grade",
-                    successful_remotion: "Grade successfully removed",
+                    successful_grade_remotion: "Grade successfully removed",
                     cancel: "Cancel",
                     edit_grade_confirmation: "Are you sure you want to edit this grade?",
                     with_following_edits: "With the following edits?",
@@ -839,6 +852,19 @@ export const store = createStore({
                     grade_edit: "Grade edit",
                     no_edits: "No changes are present",
                     additional_preferences: "Additional preferences",
+                    remove: "Remove",
+                    remove_student_confirmation: "Are you sure you want to remove this student from this project class?",
+                    class_already_confirmed: "Project class already confirmed definitely",
+                    successful_student_remotion: "Student successfully removed from this project class",
+                    move: "Move",
+                    project_class_movement_choice: "Choose the project class where to move this student",
+                    actual_course: "Actual course",
+                    move_student_confirmation: "Are you sure you want to move this student?",
+                    cannot_move_for_credits: "This student cannot be moved to this course because he/she does not have enough free credits",
+                    cannot_move_for_group: "This student cannot be moved to this course because he/she already attends a course in the same group",
+                    groups_courses: "Courses per group",
+                    constraints: "Constraints",
+                    student_moved: "Student moved successfully",
                 }
             },
             logged_user: false,
@@ -853,12 +879,13 @@ export const store = createStore({
             }, // TODO (9): mettere referenza a contesto di apprendimento
             courses_per_group: 1,
             year_module: 100,
-            static_subscription: true,
+            static_subscription: false,
             sections_use: false,
             triggers: {
                 edit_grades: 0,
                 grades: 0,
-            }
+            },
+            default_section: "A", // TODO (6): mettere dove serve
         }
     }
 });

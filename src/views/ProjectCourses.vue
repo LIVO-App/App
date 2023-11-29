@@ -5,6 +5,7 @@
     <ion-content :fullscreen="true">
       <inner-header :title="title" />
 
+      <!-- ! (2): mettere export proposte corsi -->
       <suspense>
         <template #default>
           <learning-sessions-selection />
