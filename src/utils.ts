@@ -1,5 +1,5 @@
 import { Method } from "axios";
-import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters, ContentType, CustomElement, ElementType, Colors, IconAlternatives, Classes, SubElements, ColorObject, GeneralSubElements, User, Menu, UserType, DefaultLink, CourseSummaryProps } from "./types";
+import { GeneralCardElements, CardElements, CourseCardElements, Language, ElementsList, IconsList, LearningSessionStatus, LearningContext, LearningContextSummary, Gender, GenderKeys, LinkParameters, EventParameters, RequestParameters, ContentType, CustomElement, ElementType, Colors, IconAlternatives, Classes, SubElements, ColorObject, GeneralSubElements, User, Menu, UserType, DefaultLink, TmpList, LearningArea, UserSummary } from "./types";
 import { $axios } from "./plugins/axios";
 import { store } from "./store";
 import router from './router';
@@ -21,8 +21,8 @@ function isGeneral(card: CardElements): card is GeneralCardElements {
     return "side_element" in card || !("credits" in card); // TODO (8): vedere se creare un parametro per fare la condizione positiva
 }
 
-function isCourse(card: CardElements): card is CourseCardElements {
-    return "credits" in card;
+function isCourse(element: any): element is CourseCardElements {
+    return "credits" in element;
 }
 
 async function executeLink(url?: string | undefined, success = (response: any) => response, fail: (err: any) => any = (err: string) => err, method?: Method, body?: { [key: string]: any }) {
@@ -301,7 +301,7 @@ function getBaseUrl() {
     return $axios.defaults.baseURL;
 }
 
-function getLearningContexts(user: User, learning_session_id?: string): Promise<LearningContext[]> {
+function getLearningContexts(user: UserSummary, learning_session_id?: string): Promise<LearningContext[]> {
     return executeLink(
         "/v1/learning_contexts?student_id=" +
         user.id +
@@ -435,10 +435,68 @@ function checkGradesParameters(descriptions: {
     return actual_grade;
 }
 
-function getSubscribedCredits(courses: CourseSummaryProps[]) {
-    return courses.reduce((a: number, b: CourseSummaryProps) => a + (b.pending == "true" ? b.credits : 0), 0);
+function getSubscribedCredits(courses_data: {
+    pending: string,
+    credits: number,
+}[]) {
+    return courses_data.reduce((a: number, b: {
+        pending: string,
+        credits: number,
+    }) => a + (b.pending == "true" ? b.credits : 0), 0);
 }
 
-const isLinkedToAreas = (learning_context: LearningContext) => learning_context.credits == undefined;
+function isLinkedToAreas(learning_context: LearningContext) {
+    return learning_context.credits == undefined;
+}
 
-export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence, getUserFromToken, getDefautlLink, setUser, getBaseUrl, getLearningContexts, logout, isTokenExpired, getLocale, getGradeNumber, checkGradesParameters, getSubscribedCredits, isLinkedToAreas }
+async function getLearningAreasStructures(learning_contexts: LearningContext[], learning_session_id: string) {
+
+    const learning_areas_map: {
+        [area_id: string]: LearningArea;
+    } = {};
+    const learning_areas_distribution: TmpList<{ id: string }[]> = {};
+
+    let all_learning_areas: LearningArea[] = [];
+
+    for (const context of learning_contexts) {
+        await executeLink(
+            "/v1/learning_areas?all_data=true&credits=true&session_id=" +
+            learning_session_id +
+            "&context_id=" +
+            context.id,
+            (response) => {
+                learning_areas_distribution[context.id] = response.data.data.map((a: LearningArea) => {
+                    return {
+                        id: a.id
+                    }
+                });
+                response.data.data.forEach(
+                    (a: LearningArea) => {
+                        learning_areas_map[a.id] = learning_areas_map[a.id] == null ? a : Object.assign(learning_areas_map[a.id], a);
+                    }
+                );
+            },
+            () => []
+        );
+        all_learning_areas = Object.values(learning_areas_map);
+    }
+
+    return {
+        distribution: learning_areas_distribution,
+        list: all_learning_areas,
+    }
+}
+
+function getContextAcronym(option: LearningContext) {
+    const language = getCurrentLanguage();
+
+    return option[`${language}_title`];
+}
+
+function getCssColor(text_color: ColorObject) {
+    return text_color.type == "var"
+        ? getCssVariable("--ion-color-" + text_color.name)
+        : text_color.name
+}
+
+export { getCompleteSchoolYear, getCurrentSchoolYear, getRagneString, isGeneral, isCourse, executeLink, getCurrentElement, getIcon, hashCode, castStatus, getActualLearningContext, toSummary, toDateString, getGender, numberToSection, isEvent, isRequest, getStatusString, getStatusColor, getCurrentLanguage, getAviableLanguages, getCustomMessage, nullOperator, getCssVariable, getStudyAddressVisualization, getNumberSequence, getUserFromToken, getDefautlLink, setUser, getBaseUrl, getLearningContexts, logout, isTokenExpired, getLocale, getGradeNumber, checkGradesParameters, getSubscribedCredits, isLinkedToAreas, getLearningAreasStructures, getContextAcronym, getCssColor }

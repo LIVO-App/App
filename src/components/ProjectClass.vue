@@ -25,6 +25,19 @@
         </template>
       </suspense>
     </ion-modal>
+    <ion-modal id="student_mover" :is-open="student_mover_open" @didDismiss="closeModal('student_mover')">
+      <suspense>
+        <template #default>
+          <project-class-selector :title="student_mover_data.title" :student_id="student_mover_data.parameters.student_id"
+            :learning_sessions="learning_sessions" :project_class="project_class?.toProjectClassSummary()"
+            :section="selected_section" :subscriptions_manager="subscriptions_manager" @close="closeModal('student_mover')"
+            @signal_event="manageEvent()" />
+        </template>
+        <template #fallback>
+          <loading-component />
+        </template>
+      </suspense>
+    </ion-modal>
     <div>
       <ionic-element v-for="button in buttons" :key="button.id" :element="button" @signal_event="setupModalAndOpen()"
         @execute_link="$router.push(store.state.request.url)" />
@@ -59,9 +72,9 @@
     <suspense>
       <template #default>
         <div class="ion-padding-top">
-          <ionic-table v-if="table_data.length > 0" :key="students_trigger" :data="table_data" :first_row="first_row" :column_sizes="column_sizes"
-            @signal_event="setupModalAndOpen()" />
-          <ionic-element v-else :element="getCustomMessage('emptiness_message',getCurrentElement('no_students'))" />
+          <ionic-table v-if="table_data.length > 0" :key="students_trigger" :data="table_data" :first_row="first_row"
+            :column_sizes="column_sizes" @signal_event="setupModalAndOpen()" />
+          <ionic-element v-else :element="getCustomMessage('emptiness_message', getCurrentElement('no_students'))" />
         </div>
       </template>
       <template #fallback>
@@ -84,10 +97,15 @@ import {
   LearningSessionStatus,
   Course,
   AdminProjectClass,
+  TmpList,
+  SubscriptionsManagerMode,
+  SubscriptionsManager,
+  EnrollmentAvailability,
 } from "@/types";
 import { executeLink, getAviableLanguages, getCurrentElement, getCustomMessage, getIcon, toDateString } from "@/utils";
 import { IonModal, IonAlert, AlertButton, IonButton } from "@ionic/vue";
 import { ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
 type AvailableModal =
@@ -96,6 +114,7 @@ type AvailableModal =
   | "empty_descriptions"
   | "edit_grade"
   | "remove_grade"
+  | "student_mover"
   | "move_student"
   | "remove_student"
   | "confirmation"
@@ -178,6 +197,19 @@ const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
         alert_open.value = true;
       }
       break;
+    case "student_mover":
+      student_mover_data = {
+        title: store.state.event.data.title,
+        parameters: store.state.event.data.parameters,
+      };
+      student_mover_open.value = true;
+      break;
+    case "move_student":
+      alert_information.title = "";
+      alert_information.message = getCurrentElement("move_student_confirmation");
+      alert_information.buttons = [handled_buttons[0], getCurrentElement("no")];
+      alert_open.value = true;
+      break;
     case "empty_descriptions":
       alert_information.title = getCurrentElement("error");
       alert_information.message = getCurrentElement("empty_descriptions");
@@ -215,9 +247,13 @@ const closeModal = (window: AvailableModal) => {
     case "course_details":
       description_open.value = false;
       break;
+    case "student_mover":
+      student_mover_open.value = false;
+      break;
     case "empty_descriptions":
     case "remove_grade":
     case "edit_grade":
+    case "move_student":
     case "confirmation":
     case "remove_student":
     case "success":
@@ -358,7 +394,8 @@ const yes_handler = () => {
     count = 0,
     something_to_edit = false,
     edit_keys: string[],
-    tmp_grade: Grade;
+    tmp_grade: Grade,
+    enrollment_availability: EnrollmentAvailability;
 
   switch (store.state.event.event) {
     case "confirmation":
@@ -457,13 +494,6 @@ const yes_handler = () => {
         if (project_class.final_confirmation != undefined) {
           setTimeout(() => setupModalAndOpen("error", getCurrentElement("class_already_confirmed")), 300);
         } else {
-          console.log({
-            project_class: {
-              course_id: course.id,
-              session_id: project_class.learning_session.id
-            }
-          });
-
           executeLink("/v1/students/" + store.state.event.data.parameters.student_id + "/remove_class?course_id=" + course.id + "&session_id=" + project_class.learning_session.id,
             () => {
               table_data.splice(student_index.table, 1);
@@ -473,6 +503,51 @@ const yes_handler = () => {
             },
             () => setTimeout(() => setupModalAndOpen("error"), 300),
             "delete");
+        }
+      } else {
+        setTimeout(() => setupModalAndOpen("error"), 300);
+      }
+      break;
+    case "move_student":
+      if (course != undefined && project_class != undefined) {
+        if (project_class.final_confirmation != undefined) {
+          setTimeout(() => setupModalAndOpen("error", getCurrentElement("class_already_confirmed")), 300);
+        } else {
+          enrollment_availability = subscriptions_manager.checkEnrollmentAvailability(
+            store.state.event.data.to.learning_context_id,
+            store.state.event.data.to.learning_area_id,
+            store.state.event.data.to.course_id,
+            store.state.event.data.from.course_id);
+          if (enrollment_availability.course != undefined) {
+            if (enrollment_availability.available_courses && enrollment_availability.available_credits) {
+              executeLink("/v1/students/" + store.state.event.data.student_id + "/move_class",
+              () => {
+                table_data = table_data.filter(a => a[0].id.split("_")[0] != store.state.event.data.student_id);
+                students_trigger.value++;
+                setTimeout(() => setupModalAndOpen("success", getCurrentElement("student_moved")), 300)
+              },
+              () => setTimeout(() => setupModalAndOpen("error"), 300),
+              "put", {
+                from: {
+                  course_id: store.state.event.data.from.course_id,
+                  session_id: store.state.event.data.from.session_id,
+                },
+                to: {
+                  course_id: store.state.event.data.to.course_id,
+                  session_id: store.state.event.data.to.session_id,
+                  section: store.state.event.data.to.section,
+                },
+              });
+              closeModal("move_student");
+              store.state.event.event = "student_mover";
+            } else if (!enrollment_availability.available_courses) {
+              setTimeout(() => setupModalAndOpen("error", getCurrentElement("cannot_move_for_group")), 300);
+            } else if (!enrollment_availability.available_credits) {
+              setTimeout(() => setupModalAndOpen("error", getCurrentElement("cannot_move_for_credits")), 300);
+            }
+          } else {
+            console.error("Course not found");
+          }
         }
       } else {
         setTimeout(() => setupModalAndOpen("error"), 300);
@@ -525,6 +600,7 @@ const store = useStore();
 const user = User.getLoggedUser() as User;
 const sections_use: boolean = store.state.sections_use;
 const languages = getAviableLanguages();
+const $route = useRoute();
 
 const first_row: CustomElement[] = [
   {
@@ -545,9 +621,9 @@ const first_row: CustomElement[] = [
 ];
 const grades_open = ref(false);
 const description_open = ref(false);
-const divided_path = window.location.pathname.split("/");
-const course_id = divided_path[divided_path.length - 2]; //<!-- TODO (5): usare $route
-const session_id = divided_path[divided_path.length - 1];
+const student_mover_open = ref(false);
+const course_id = $route.params.course as string;
+const session_id = $route.params.session as string;
 const students_trigger = ref(0);
 const students_update = ref(0);
 const grades: {
@@ -583,7 +659,7 @@ const buttons: CustomElement[] = [
       event: "course_details",
       data: {
         title: "", //<!-- TODO (4): mettere titolo quando ce l'avrà anche la pagina
-        course_id: parseInt(course_id),
+        course_id: course_id,
       },
       icon: getIcon("information_circle"),
     },
@@ -602,11 +678,19 @@ const student_index = {
   student_list: -1,
   table: -1,
 };
-const learning_session: LearningSession | undefined = await executeLink(
-  "/v1/learning_sessions/" + session_id,
-  (response) => new LearningSession(response.data.data),
-  () => undefined
+const learning_sessions: LearningSession[] = await executeLink(
+  "/v1/learning_sessions?year_of=" + session_id,
+  (response) => response.data.data.map((a: any) => new LearningSession(a)),
+  () => []
 );
+const learning_session_position = learning_sessions.findIndex(
+  (a) => a.id == parseInt(session_id)
+);
+const learning_session =
+  learning_session_position != -1
+    ? learning_sessions[learning_session_position]
+    : undefined;
+const subscriptions_manager = new SubscriptionsManager(SubscriptionsManagerMode.MOVE); // Not ready, loadParameters will be run with project-class-selector
 
 let table_data: CustomElement[][] = [];
 let grades_title: string;
@@ -623,6 +707,7 @@ let edits_to_send: {
   [key in keyof GradeProps]: boolean;
 };
 let column_sizes: number[] = [];
+let student_mover_data: TmpList;
 
 if (user.user == "teacher") {
   first_row.push(
@@ -684,6 +769,9 @@ if (user.user == "teacher") {
     () => undefined
   );
 }
+if (project_class != undefined) {
+  project_class.loadParms();
+}
 if (sections.length > 0) {
   selected_section.value = sections[0].id;
 }
@@ -703,5 +791,10 @@ watch(students_update, async () => {
 ion-modal#grades_manages {
   --width: 90%;
   --height: fit-content;
+}
+
+ion-modal#student_mover {
+  --width: 80%;
+  --height: 80%
 }
 </style>

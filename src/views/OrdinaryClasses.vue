@@ -5,6 +5,7 @@
     <ion-content :fullscreen="true">
       <inner-header :title="title" />
 
+      <!-- ! (2): finire e mettere export studenti in pagina singola -->
       <suspense>
         <template #default>
           <project-class-select-list /> <!-- TODO (5): cambiare nome componente -->

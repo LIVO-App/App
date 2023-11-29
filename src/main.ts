@@ -38,6 +38,7 @@ import CardItem from "./components/CardItem.vue";
 import GroupList from "./components/GroupList.vue";
 import CardsGrid from "./components/CardsGrid.vue";
 import EditorWrapper from "./components/EditorWrapper.vue";
+import ProjectClassSelector from "./components/ProjectClassSelector.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -97,7 +98,8 @@ const app = createApp(App)
   .component("CardItem", CardItem)
   .component("GroupList", GroupList)
   .component("CardsGrid", CardsGrid)
-  .component("EditorWrapper", EditorWrapper);
+  .component("EditorWrapper", EditorWrapper)
+  .component("ProjectClassSelector", ProjectClassSelector);
 
 router.isReady().then(() => {
   app.mount('#app');

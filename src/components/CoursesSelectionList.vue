@@ -86,8 +86,9 @@
             :placeholder="getCurrentElement('learning_context_choice')" :getCompleteName="getContextAcronym" />
         </ion-col>
         <ion-col size="auto">
-          <custom-select v-model="selected_area" :list="learning_areas[selected_context]" :label="learning_area + ':'"
-            :aria_label="learning_area" :placeholder="placeholder" :getCompleteName="getCorrectName" />
+          <custom-select v-model="selected_area" :list="learning_areas_structures.distribution[selected_context]"
+            :label="learning_area_sentence + ':'" :aria_label="learning_area_sentence" :placeholder="placeholder"
+            :getCompleteName="getCorrectName" />
         </ion-col>
       </ion-row>
     </ion-grid>
@@ -119,6 +120,7 @@ import {
   CustomElement,
   EventString,
   SubscriptionsManager,
+  TmpList,
 } from "@/types";
 import {
   executeLink,
@@ -128,6 +130,8 @@ import {
   getLearningContexts,
   getNumberSequence,
   toSummary,
+  getLearningAreasStructures,
+  getContextAcronym,
 } from "@/utils";
 import {
   IonAlert,
@@ -141,7 +145,7 @@ import {
   IonContent,
   IonTitle,
 } from "@ionic/vue";
-import { computed, Ref, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { Store, useStore } from "vuex";
 
@@ -163,6 +167,7 @@ const changeEnrollment = async () => {
   const enrollment_availability = subscriptions_manager.checkEnrollmentAvailability(selected_context.value, selected_area.value, course_id);
 
   //let count;
+  let tmp_card: CourseCardElements;
 
   if (enrollment_availability.course != undefined) {
     /*count = 0;
@@ -186,16 +191,17 @@ const changeEnrollment = async () => {
           let wasPending: boolean;
 
           if (enrollment_availability.course != undefined) {
-            wasPending = enrollment_availability.course.enrollment.isPending();
+            tmp_card = enrollment_availability.course as CourseCardElements;
+            wasPending = tmp_card.enrollment.isPending();
             if (!wasPending && !isPending) {
               if (store.state.static_subscription && !unscribe) {
                 confirmation_data.title = (
-                  enrollment_availability.course.content[1].content as EventString
+                  tmp_card.content[1].content as EventString
                 ).text;
                 confirmation_data.message = getCurrentElement(
                   "course_confirmation"
                 );
-                confirmation_data.course = enrollment_availability.course;
+                confirmation_data.course = tmp_card;
                 confirmation_data.unscribe = unscribe;
                 confirmation_data.enrollment_value = enrollment_value;
                 confirmation_data.update_credits = true;
@@ -207,10 +213,10 @@ const changeEnrollment = async () => {
               }
             } else if (store.state.static_subscription && isPending) {
               confirmation_data.title = (
-                enrollment_availability.course.content[1].content as EventString
+                tmp_card.content[1].content as EventString
               ).text;
               confirmation_data.message = getCurrentElement("course_pending");
-              confirmation_data.course = enrollment_availability.course;
+              confirmation_data.course = tmp_card;
               confirmation_data.enrollment_value = enrollment_value;
               confirmation_data.unscribe = unscribe;
               openConfirmation();
@@ -236,10 +242,12 @@ const changeEnrollment = async () => {
   }
 };
 const getCorrectName = (option: LearningArea) => {
-  const tmp_learning_area = all_learning_areas.find(a => a.id == option.id);
+  const language = getCurrentLanguage();
+
+  const tmp_learning_area = learning_areas_structures.list.find(a => a.id == option.id);
 
   return tmp_learning_area != undefined ? tmp_learning_area[`${language}_title`] : "";
-};
+}
 const setAlertAndOpen = (type: AvailableModal) => {
   switch (type) {
     case "max_credits":
@@ -287,8 +295,6 @@ const openConfirmation = () => {
     }
   }, 300);
 };
-const getContextAcronym = (option: LearningContext) =>
-  option[`${language}_title`];
 const sendConfirmation = async () => {
   await confirm(store.state.event.data.outcome);
 };
@@ -338,17 +344,18 @@ const user = User.getLoggedUser() as User;
 const learning_session_id: string = $route.params.id as string;
 
 const trigger = ref(0);
-const learning_area = getCurrentElement("learning_area");
+const learning_area_sentence = getCurrentElement("learning_area");
 const placeholder =
   getCurrentElement("select") +
   (language == "italian" ? " l'" : " the ") +
-  learning_area;
+  learning_area_sentence; //<!-- TODO (4): sistemare quando verrà messa la lista parametri a getCurrentElement
 const openAlert = ref(false);
 const alert_information = {
   title: "",
   message: "",
   buttons: [getCurrentElement("ok")],
 };
+const selected_context = ref("");
 const selected_area = ref("");
 const description_open = ref(false);
 const confirmation_open = ref(false);
@@ -438,49 +445,25 @@ const buttons: CustomElement[] = [
   },
 ];
 const timer_bar = ref(1);
-const tmp_learning_areas: {
-  [area_id: string]: LearningArea;
-} = {};
-const learning_areas: {
-  [context_id: string]: { id: string }[];
-} = {};
 const subscriptions_manager = new SubscriptionsManager(); // Not ready, later there will be a loadParameters
 
-let all_learning_areas: LearningArea[] = [];
-let selected_context: Ref<string>;
+let learning_areas_structures: {
+  list: LearningArea[],
+  distribution: TmpList<{ id: string }[]>,
+};
 let learning_contexts: LearningContext[] = [];
 let tmp_courses: CourseSummaryProps[];
 let timer: number;
 
 if (learning_session != undefined) {
   learning_contexts = await getLearningContexts(user, learning_session_id);
-  selected_context = ref(learning_contexts[0].id);
+  selected_context.value = learning_contexts[0].id;
 
-  for (const context of learning_contexts) {
-    await executeLink(
-      "/v1/learning_areas?all_data=true&credits=true&session_id=" +
-      learning_session_id +
-      "&context_id=" +
-      context.id,
-      (response) => {
-        learning_areas[context.id] = response.data.data.map((a: LearningArea) => {
-          return {
-            id: a.id
-          }
-        });
-        response.data.data.forEach(
-          (a: LearningArea) => {
-            tmp_learning_areas[a.id] = tmp_learning_areas[a.id] == null ? a : Object.assign(tmp_learning_areas[a.id], a);
-          }
-        );
-      },
-      () => []
-    );
-  }
-  all_learning_areas = Object.values(tmp_learning_areas);
-  selected_area.value = learning_areas[selected_context.value][0].id;
+  learning_areas_structures = await getLearningAreasStructures(learning_contexts, learning_session_id);
 
-  if (learning_contexts.length > 0 && all_learning_areas.length > 0) {
+  selected_area.value = learning_areas_structures.distribution[selected_context.value][0].id;
+
+  if (learning_contexts.length > 0 && learning_areas_structures.list.length > 0) {
     tmp_courses = await executeLink(
       "/v2/courses?student_id=" +
       user.id +
@@ -492,7 +475,7 @@ if (learning_session != undefined) {
 
     if (tmp_courses.length > 0) {
 
-      await subscriptions_manager.loadParameters(user, learning_contexts, all_learning_areas, learning_sessions, tmp_courses, learning_session_id);
+      await subscriptions_manager.loadParameters(user, learning_contexts, learning_areas_structures.list, learning_sessions, tmp_courses, learning_session_id);
       subscriptions_manager.showCourses(selected_context.value, selected_area.value);
 
       watch(selected_area, (new_area) => {
@@ -502,7 +485,7 @@ if (learning_session != undefined) {
     }
   }
   watch(selected_context, (new_context) => {
-    selected_area.value = learning_areas[new_context][0].id;
+    selected_area.value = learning_areas_structures.distribution[new_context][0].id;
     if (tmp_courses.length > 0) {
       subscriptions_manager.showCourses(new_context, selected_area.value);
     }
