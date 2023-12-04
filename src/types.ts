@@ -3352,7 +3352,7 @@ class SubscriptionsManager {
                 if (isCourse(this._all_courses[learning_context_id][learning_areas[count]])) {
                     // TODO (6): da fare
                 } else {
-                    index = (this._all_courses[learning_context_id][learning_areas[count]] as EnrollmentTable).table_data.findIndex(a => a[0].id.split("_")[0]);
+                    index = (this._all_courses[learning_context_id][learning_areas[count]] as EnrollmentTable).table_data.findIndex(a => a[0].id.split("_")[0] == course_id);
                     if (index != -1) {
                         learning_area_id = learning_areas[count];
                     }

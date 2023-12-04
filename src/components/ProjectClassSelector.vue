@@ -244,7 +244,7 @@ const colors: Colors<GeneralSubElements> = {
     },
 };
 const column_sizes = store.state.sections_use ? [2, 2, 5, 2, 1] : [2, 2, 6, 2];
-const project_class_card = props.project_class.toCard(undefined, props.section);
+const project_class_card = props.project_class.toCard(undefined, props.section, false, true);
 const learning_sessions: LearningSession[] = props.learning_sessions ?? await executeLink(
     "/v1/learning_sessions?year_of=" + props.project_class.learning_session.id,
     (response) => response.data.data.map((a: any) => new LearningSession(a)),
