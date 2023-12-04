@@ -30,8 +30,8 @@
         <template #default>
           <project-class-selector :title="student_mover_data.title" :student_id="student_mover_data.parameters.student_id"
             :learning_sessions="learning_sessions" :project_class="project_class?.toProjectClassSummary()"
-            :section="selected_section" :subscriptions_manager="subscriptions_manager" @close="closeModal('student_mover')"
-            @signal_event="manageEvent()" />
+            :section="selected_section" :subscriptions_manager="subscriptions_manager"
+            @close="closeModal('student_mover')" @signal_event="manageEvent()" />
         </template>
         <template #fallback>
           <loading-component />
@@ -310,8 +310,8 @@ const updateStudents = async () => {
 
       associated_teacher = response.data.data.associated_teacher;
       column_sizes = user.user == "teacher" && associated_teacher == true || user.user == "admin" && project_class?.final_confirmation != undefined
-        ? [7, 3, 2]
-        : [5, 2, 1, 2, 2];
+        ? [1, 6, 3, 2]
+        : [1, 4, 2, 1, 2, 2];
       if (first_row.length != column_sizes.length) {
         if (project_class?.final_confirmation == undefined) {
           first_row.push({
@@ -338,11 +338,12 @@ const updateStudents = async () => {
   ) : [];
 
   table_data = [];
-  for (const student of students) { //<!-- TODO (5): controllare se ci sono più professori e fare richieste voti solamente sul pulsante (evitare problema di professore che aggiunge mentre altro è nella pagina)
+  for (const student_index in students) { //<!-- TODO (5): controllare se ci sono più professori e fare richieste voti solamente sul pulsante (evitare problema di professore che aggiunge mentre altro è nella pagina)
+    tmp_student = students[student_index];
     if (user.user == "teacher") {
-      grades[student.id] = await executeLink(
+      grades[tmp_student.id] = await executeLink(
         "/v1/students/" +
-        student.id +
+        tmp_student.id +
         "/grades?course_id=" +
         course_id +
         "&session_id=" +
@@ -353,7 +354,7 @@ const updateStudents = async () => {
           response.data.data.map((a: GradeProps, i: number) => {
             const tmp_grade = new Grade(a);
             if (tmp_grade.final) {
-              final_grades_indexes[student.id] = i;
+              final_grades_indexes[tmp_student.id] = i;
             }
             return tmp_grade;
           }),
@@ -361,14 +362,14 @@ const updateStudents = async () => {
       );
     }
     table_data.push(
-      student.toTableRow(
+      [getCustomMessage("index", parseInt(student_index) + 1)].concat(tmp_student.toTableRow(
         course_id,
         session_id,
         user.user == "teacher" ? user.id : undefined,
         user.user == "teacher",
-        user.user == "teacher" ? grades[student.id][final_grades_indexes[student.id]] : undefined,
+        user.user == "teacher" ? grades[tmp_student.id][final_grades_indexes[tmp_student.id]] : undefined,
         project_class?.final_confirmation
-      )
+      ))
     );
   }
 };
@@ -521,13 +522,16 @@ const yes_handler = () => {
           if (enrollment_availability.course != undefined) {
             if (enrollment_availability.available_courses && enrollment_availability.available_credits) {
               executeLink("/v1/students/" + store.state.event.data.student_id + "/move_class",
-              () => {
-                table_data = table_data.filter(a => a[0].id.split("_")[0] != store.state.event.data.student_id);
-                students_trigger.value++;
-                setTimeout(() => setupModalAndOpen("success", getCurrentElement("student_moved")), 300)
-              },
-              () => setTimeout(() => setupModalAndOpen("error"), 300),
-              "put", {
+                () => {
+                  table_data = table_data.filter(a => a[0].id.split("_")[0] != store.state.event.data.student_id);
+                  students_trigger.value++;
+                  setTimeout(() => setupModalAndOpen("success", getCurrentElement("student_moved")), 300)
+                },
+                () => {
+                  closeModal("move_student");
+                  setTimeout(() => setupModalAndOpen("error"), 300)
+                },
+                "put", {
                 from: {
                   course_id: store.state.event.data.from.course_id,
                   session_id: store.state.event.data.from.session_id,
@@ -603,6 +607,11 @@ const languages = getAviableLanguages();
 const $route = useRoute();
 
 const first_row: CustomElement[] = [
+  {
+    id: "index",
+    type: "string",
+    content: "",
+  },
   {
     id: "student",
     type: "string",
@@ -703,6 +712,7 @@ let learning_session_status: LearningSessionStatus | undefined;
 let course: Course | undefined;
 let project_class: AdminProjectClass | undefined;
 let students: Student[] = [];
+let tmp_student: Student;
 let edits_to_send: {
   [key in keyof GradeProps]: boolean;
 };
