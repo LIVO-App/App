@@ -53,7 +53,9 @@ import {
     medkitSharp,
     medalOutline,
     medalSharp,
-    logoGoogle
+    logoGoogle,
+    downloadOutline,
+    downloadSharp
 } from 'ionicons/icons';
 import { UserProps } from "./types";
 
@@ -333,7 +335,11 @@ export const store = createStore({
                 google: {
                     ios: logoGoogle,
                     md: logoGoogle
-                }
+                },
+                download: {
+                    ios: downloadOutline,
+                    md: downloadSharp
+                },
             },
             languages: ["italian", "english"],
             language: "italian",
@@ -602,6 +608,9 @@ export const store = createStore({
                     groups_courses: "Corsi per gruppo",
                     constraints: "Vincoli",
                     student_moved: "Studente spostato con successo",
+                    export: "Esporta",
+                    non_confirmed_export: "Esporta le proposte della prossima sessione non confermate",
+                    propositions_exported: "Proposte corsi esportate con successo",
                 },
                 "english": {
                     credits_constraints: "Credits constraints",
@@ -865,6 +874,9 @@ export const store = createStore({
                     groups_courses: "Courses per group",
                     constraints: "Constraints",
                     student_moved: "Student moved successfully",
+                    export: "Export",
+                    propositions_exported: "Course proposals successfully exported",
+                    non_confirmed_export: "Export the next session's unconfirmed proposals",
                 }
             },
             logged_user: false,

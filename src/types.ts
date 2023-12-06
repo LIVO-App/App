@@ -505,7 +505,7 @@ class CourseSummary extends CourseBase {
                 data: data,
                 icon: getIcon("checkmark"),
             },
-        })
+        });
 
         return {
             row: tmp_row,

@@ -29,7 +29,6 @@
       <ionic-element :element="action == 'view' ? buttons[6] : buttons[7]"
         @signal_event="changeModality(action == 'view' ? 'edit' : 'view')" />
     </template>
-    <!-- ! (1): pulsante export -->
     <custom-select :key="trigger" v-model="selected_model" :list="models"
       :label="getCurrentElement('reference_model') + ':'" :aria_label="getCurrentElement('reference_model')"
       :placeholder="getCurrentElement('possible_models')" :getCompleteName="modelToString"
