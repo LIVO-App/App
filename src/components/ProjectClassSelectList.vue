@@ -1,5 +1,15 @@
 <template>
+  <ion-alert :is-open="alert_open" :header="alert_information.title" :message="alert_information.message"
+    :buttons="alert_information.buttons" @didDismiss="closeModal('success')" />
   <ion-grid><!-- v-if="learning_sessions.loaded">-->
+    <ion-row>
+      <ionic-element :element="getCustomMessage('export_description', getCurrentElement('non_confirmed_export') + ':', 'string', undefined, {
+        label: {
+          'ion-padding': true,
+        }
+      })" />
+      <ionic-element :element="buttons[0]" @execute_link="exportPropositions" />
+    </ion-row>
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
@@ -12,8 +22,9 @@
           @signal_event="changeSelection()" />
       </ion-col>
       <ion-col size="12" size-md="6">
-        <custom-select v-if="$route.name != 'ordinary_classes' || (sections_use && user.user == 'teacher')" v-model="selected_option"
-          :list="options" :label="getCurrentElement($route.name == 'ordinary_classes' ? 'section' : 'propositions') + ':'"
+        <custom-select v-if="$route.name != 'ordinary_classes' || (sections_use && user.user == 'teacher')"
+          v-model="selected_option" :list="options"
+          :label="getCurrentElement($route.name == 'ordinary_classes' ? 'section' : 'propositions') + ':'"
           :aria_label="getCurrentElement($route.name == 'ordinary_classes' ? 'section' : 'propositions')" :placeholder="getCurrentElement(
             is_nothing_selected()
               ? ($route.name == 'ordinary_classes'
@@ -40,7 +51,8 @@
             )
           )
             " :cards_list="$route.name == 'ordinary_classes' ? students : propositions" />
-      </ion-col> <!-- ! (2): finire questa pagina e usare l'api ordinary_classes/.../non_compliant dentro alla classe scelta -->
+      </ion-col>
+      <!-- ! (2): finire questa pagina e usare l'api ordinary_classes/.../non_compliant dentro alla classe scelta -->
     </ion-row>
   </ion-grid>
 </template>
@@ -57,17 +69,21 @@ import {
   CourseModel,
   CourseModelProps,
   CardsList,
+  AlertInformation,
 } from "@/types";
-import { IonGrid, IonRow, IonCol } from "@ionic/vue";
+import { IonGrid, IonRow, IonCol, IonAlert } from "@ionic/vue";
 import { reactive, Ref, ref, watch } from "vue";
 import { useStore } from "vuex";
-import { executeLink, getCurrentElement, getCustomMessage } from "@/utils";
+import { executeLink, getCurrentElement, getCustomMessage, getIcon } from "@/utils";
 import { useRoute } from "vue-router";
 
 type Indexes = {
   group: string;
   index: number;
 };
+
+type AvailableModal = "success"
+  | "error";
 
 const is_nothing_selected = () =>
   selected_element_indexes.group == "-1" && selected_element_indexes.index == -1;
@@ -213,7 +229,7 @@ const getPropositions = async () => {
       (response: any) => response.data.data.map((a: CourseModelProps) => new CourseModel(a)),
       () => []
     ));
-    
+
   const cards: CardsList<GeneralCardElements> = {
     "approved": [],
     "to_approve": [],
@@ -238,6 +254,44 @@ const getPropositions = async () => {
   }
 
   return cards;
+}
+const setupError = (message?: string) => {
+  alert_information.title = getCurrentElement("error");
+  alert_information.message = message ?? getCurrentElement("general_error");
+  alert_information.buttons = [getCurrentElement("ok")];
+};
+const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
+  const actual_window: AvailableModal = window ?? store.state.event.event;
+  const actual_message: string = message ?? store.state.event.data?.message;
+
+  switch (actual_window) {
+    case "success":
+      alert_information.title = "";
+      alert_information.message = message ?? getCurrentElement(getCurrentElement("successful_operation"));
+      alert_information.buttons = [getCurrentElement("ok")];
+      alert_open.value = true;
+      break;
+    case "error":
+      setupError(actual_message);
+      alert_open.value = true;
+      break;
+  }
+};
+const closeModal = (window: AvailableModal) => {
+  switch (window) {
+    case "success":
+    case "error":
+      alert_open.value = false;
+      break;
+  }
+};
+const exportPropositions = () => {
+  executeLink(undefined,
+    response => setTimeout(() => {
+      console.log(response);
+      setupModalAndOpen('success', getCurrentElement('propositions_exported'))
+    }, 300),
+    () => setTimeout(() => setupModalAndOpen("error"), 300));
 }
 
 const store = useStore();
@@ -289,6 +343,39 @@ const all_sections: {
   };
 } = {};
 const selected_option: Ref<string> = ref($route.name == "ordinary_classes" ? "" : "project_classes");
+const alert_open = ref(false);
+const alert_information: AlertInformation = {
+  title: "",
+  message: "",
+  buttons: [],
+};
+const buttons = [{
+  id: "export",
+  type: "string_icon",
+  linkType: "request",
+  content: {
+    text: getCurrentElement("export"),
+    icon: getIcon("download"),
+    url: "/v1/propositions/export",
+    method: "get",
+    whole_link: true,
+  },
+  colors: {
+    text: {
+      name: "white",
+      type: "var",
+    },
+    background: {
+      name: "primary",
+      type: "var",
+    },
+  },
+  classes: {
+    button: {
+      radius: true,
+    },
+  },
+}];
 
 let selected_element_indexes: Indexes = reactive({
   group: "-1",
@@ -357,13 +444,13 @@ for (const year of school_years) {
 await Promise.all(promises);
 
 watch(selected_option, async (new_option) => {
-  console.log("Sì",new_option);
+  console.log("Sì", new_option);
   if (new_option != undefined && new_option != "") {
     console.log("Ok");
     if ($route.name == "ordinary_classes") {
       students.cards = await getStudents()
     } else {
-      console.log("Va bene",selected_element_indexes);
+      console.log("Va bene", selected_element_indexes);
       if (selected_element_indexes.group != "-1" && selected_element_indexes.index != -1) {
         console.log("Quingi");
         propositions.cards = await getPropositions();
