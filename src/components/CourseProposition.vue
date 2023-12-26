@@ -54,8 +54,7 @@
                   `${language}_title`
                 ]
                   " :label="getCurrentElement(language)" :aria-label="getCurrentElement(language)" fill="outline"
-                  class="ion-margin-vertical" :readonly="action != 'propose'" />
-                <!-- ! (2): permettere modifica titolo inglese -->
+                  class="ion-margin-vertical" :readonly="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_title`) == -1)" />
                 <!-- TODO (9): trovare un modo per rendere la chiamata generale -->
                 <!--<ion-textarea
                   v-else
