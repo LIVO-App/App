@@ -54,8 +54,8 @@
                   `${language}_title`
                 ]
                   " :label="getCurrentElement(language)" :aria-label="getCurrentElement(language)" fill="outline"
-                  class="ion-margin-vertical"
-                  :readonly="action != 'propose'" /> <!-- ! (2): permettere modifica titolo inglese -->
+                  class="ion-margin-vertical" :readonly="action != 'propose'" />
+                <!-- ! (2): permettere modifica titolo inglese -->
                 <!-- TODO (9): trovare un modo per rendere la chiamata generale -->
                 <!--<ion-textarea
                   v-else
@@ -150,7 +150,8 @@
                   course_proposition[pages[current_page_index]]
                 ).min_students
                   " :label="getCurrentElement('min_students')" :aria-label="getCurrentElement('min_students')"
-                  fill="outline" class="ion-margin-vertical" :readonly="action == 'view' || approved.course" /> <!-- ! (2): mettere distanza min-max di 4 durante poposta, togliere durante modifica e catturare errore se corso esiste quando < 4 -->
+                  fill="outline" class="ion-margin-vertical" :readonly="action == 'view' || approved.course" />
+                <!-- ! (2): mettere distanza min-max di 4 durante poposta, togliere durante modifica e catturare errore se corso esiste quando < 4 -->
                 <ion-input type="number" v-model="castToCharacteristics1(
                   course_proposition[pages[current_page_index]]
                 ).max_students
@@ -163,7 +164,8 @@
                 ).area_id
                   " :list="learning_areas" :label="getCurrentElement('learning_area') + ':'"
                   :aria_label="getCurrentElement('learning_area')" :placeholder="getCurrentElement('area_choice')"
-                  :getCompleteName="learningAreaToString" :disabled="action == 'view' || approved.course" :no_padding="true" />
+                  :getCompleteName="learningAreaToString" :disabled="action == 'view' || approved.course"
+                  :no_padding="true" />
               </ion-col>
             </ion-row>
           </template>
@@ -190,7 +192,7 @@
                   )
                 )
                   " />
-                <template v-if="action == 'propose'">
+                <template v-if="action != 'view'">
                   <custom-select v-if="key == 'teaching_list'" :key="trigger + '_teachings_select'"
                     v-model="selected_teaching" :list="teachings.available" :label="getCurrentElement('teaching') + ':'"
                     :aria_label="getCurrentElement('teaching')" :placeholder="getCurrentElement('teaching_choices')"
@@ -219,9 +221,9 @@
               </ion-col>
             </ion-row>
           </template>
-          <template v-else-if="pages[current_page_index] == 'access_object'"> <!-- ! (1): dare possibilità di sistemare liste -->
+          <template v-else-if="pages[current_page_index] == 'access_object'">
             <ion-grid>
-              <template v-if="action == 'propose'">
+              <template v-if="action != 'view'">
                 <ion-row>
                   <ion-col>
                     <custom-select v-model="selected_learning_context" :list="learning_contexts.available"
@@ -268,8 +270,7 @@
                 </ion-row>
                 <ion-row>
                   <ion-col>
-                    <ion-button @click="addElement('access')" expand="block" color="primary"
-                      fill="solid">
+                    <ion-button @click="addElement('access')" expand="block" color="primary" fill="solid">
                       {{ getCurrentElement("add") }}
                     </ion-button>
                   </ion-col>
@@ -307,12 +308,13 @@
                       " :disabled="action == 'view' || approved.project_class" />
                   <div v-if="sections_use" class="ion-padding">
                     <ion-input type="number" v-model="num_section" :label="getCurrentElement('num_section')"
-                      :aria-label="getCurrentElement('num_section')" fill="outline" :readonly="action == 'view' || approved.project_class" />
+                      :aria-label="getCurrentElement('num_section')" fill="outline"
+                      :readonly="action == 'view' || approved.project_class" />
                   </div>
                 </ion-col>
                 <ion-col>
                   <ionic-element :element="getCustomMessage('teachers_title', getCurrentElement('teachers'))" />
-                  <template v-if="action == 'propose'">
+                  <template v-if="action != 'view'">
                     <div>
                       <custom-select :key="trigger + '_teacher'" v-model="selected_teacher" :list="teachers.available"
                         :label="getCurrentElement('teacher') + ':'" :aria_label="getCurrentElement('teacher')"
@@ -346,8 +348,8 @@
                           </ion-list>
                     </template>
                   </template>
-                  <ion-button v-if="sections_use && action == 'propose'" @click="addElement('teachers')" expand="block" color="primary"
-                    fill="solid">
+                  <ion-button v-if="sections_use && action == 'propose'" @click="addElement('teachers')" expand="block"
+                    color="primary" fill="solid">
                     {{ getCurrentElement("add") }}
                   </ion-button>
                   <list-card :key="trigger + '_list'" :cards_list="teachers_cards" :emptiness_message="getCustomMessage(
@@ -587,7 +589,6 @@ const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card 
     actual_id = id ?? selected_growth_area.value;
     reference = growth_areas;
     cards_reference = growth_areas_cards;
-
   }
 
   const support_list = change_support_list ? reference.available : reference.selected;
@@ -631,8 +632,8 @@ const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card 
 const addAccess = (
   learning_context_id?: string,
   access_object?: AccessObject,
-  only_card = false/*,
-  change_support_list = true*/
+  only_card = false,
+  change_support_list = true
 ) => {
   const actual_learning_context_id =
     learning_context_id ?? selected_learning_context.value;
@@ -661,27 +662,40 @@ const addAccess = (
     actual_main_study_year = main_study_year.value;
   }
 
-  //const support_list_index = change_support_list ? "available" : "selected";
+  const support_context_list_index = change_support_list
+    ? "available"
+    : study_addresses.available[actual_learning_context_id] != undefined
+      && Object.keys(study_addresses.available[actual_learning_context_id]).length > 0
+      ? "available"
+      : "selected";
+  const support_address_list_index = change_support_list
+    ? "available"
+    : support_context_list_index != "selected"
+      && study_years.available[actual_learning_context_id][actual_study_address_id] != undefined
+      && Object.keys(study_years.available[actual_learning_context_id][actual_study_address_id]).length > 0
+      ? "available"
+      : "selected";
+  const support_year_list_index = change_support_list ? "available" : "selected";
 
   if (
     actual_learning_context_id != "" &&
-    (tmp_learning_context_index = learning_contexts.available.findIndex(
+    (tmp_learning_context_index = learning_contexts[support_context_list_index].findIndex(
       (a) => a.id == actual_learning_context_id
     )) != -1 &&
     actual_study_address_id != "" &&
-    (tmp_study_address_index = study_addresses.available[
+    (tmp_study_address_index = study_addresses[support_address_list_index][
       actual_learning_context_id
     ].findIndex((a) => a.id == actual_study_address_id)) != -1 &&
     actual_study_year != 0 &&
-    (tmp_study_year_index = study_years.available[actual_learning_context_id][
+    (tmp_study_year_index = study_years[support_year_list_index][actual_learning_context_id][
       actual_study_address_id
     ].findIndex((a) => a.id == actual_study_year)) != -1
   ) {
-    learning_context = learning_contexts.available[tmp_learning_context_index];
+    learning_context = learning_contexts[support_context_list_index][tmp_learning_context_index];
     study_address =
-      study_addresses.available[learning_context.id][tmp_study_address_index];
+      study_addresses[support_address_list_index][learning_context.id][tmp_study_address_index];
     study_year =
-      study_years.available[learning_context.id][study_address.id][
+      study_years[support_year_list_index][learning_context.id][study_address.id][
       tmp_study_year_index
       ];
 
@@ -722,51 +736,53 @@ const addAccess = (
       )
     );
 
-    if (study_years.selected[learning_context.id] == undefined) {
-      study_years.selected[learning_context.id] = {};
-    }
-    if (
-      study_years.selected[learning_context.id][study_address.id] == undefined
-    ) {
-      study_years.selected[learning_context.id][study_address.id] = [];
-    }
-    study_years.selected[learning_context.id][study_address.id].push(
-      study_year
-    );
-    study_years.available[learning_context.id][study_address.id].splice(
-      tmp_study_year_index,
-      1
-    );
-    if (access_object == undefined) {
-      selected_study_year.value = 0;
-    }
-
-    if (
-      study_years.available[learning_context.id][study_address.id].length == 0
-    ) {
-      if (study_addresses.selected[learning_context.id] == undefined) {
-        study_addresses.selected[learning_context.id] = [];
+    if (change_support_list) {
+      if (study_years.selected[learning_context.id] == undefined) {
+        study_years.selected[learning_context.id] = {};
       }
-      study_addresses.selected[learning_context.id].push(study_address);
-      study_addresses.available[learning_context.id].splice(
-        tmp_study_address_index,
+      if (
+        study_years.selected[learning_context.id][study_address.id] == undefined
+      ) {
+        study_years.selected[learning_context.id][study_address.id] = [];
+      }
+      study_years.selected[learning_context.id][study_address.id].push(
+        study_year
+      );
+      study_years.available[learning_context.id][study_address.id].splice(
+        tmp_study_year_index,
         1
       );
       if (access_object == undefined) {
-        selected_study_address.value = "";
+        selected_study_year.value = 0;
       }
-    }
-    if (study_addresses.available[learning_context.id].length == 0) {
-      learning_contexts.selected.push(learning_context);
-      learning_contexts.available.splice(tmp_learning_context_index, 1);
-      if (learning_context == undefined) {
-        selected_learning_context.value = "";
-      }
-    }
 
-    if (access_object == undefined) {
-      presidium.value = false;
-      main_study_year.value = false;
+      if (
+        study_years.available[learning_context.id][study_address.id].length == 0
+      ) {
+        if (study_addresses.selected[learning_context.id] == undefined) {
+          study_addresses.selected[learning_context.id] = [];
+        }
+        study_addresses.selected[learning_context.id].push(study_address);
+        study_addresses.available[learning_context.id].splice(
+          tmp_study_address_index,
+          1
+        );
+        if (access_object == undefined) {
+          selected_study_address.value = "";
+        }
+      }
+      if (study_addresses.available[learning_context.id].length == 0) {
+        learning_contexts.selected.push(learning_context);
+        learning_contexts.available.splice(tmp_learning_context_index, 1);
+        if (learning_context == undefined) {
+          selected_learning_context.value = "";
+        }
+      }
+
+      if (access_object == undefined) {
+        presidium.value = false;
+        main_study_year.value = false;
+      }
     }
   }
   trigger.value++;
@@ -1138,12 +1154,21 @@ const fillLists = (lists_info: { [key in keyof string as PropositionListsKeys]?:
       access_propositions_cards.order = [];
       access_propositions_cards.cards = {};
     }
+    if (lists_info["access_object"]?.clear.support_list == true) {
+      course_proposition.access_object = {};
+      learning_contexts.available = [];
+      learning_contexts.selected = [];
+      study_addresses.available = {};
+      study_addresses.selected = {};
+      study_years.available = {};
+      study_years.selected = {};
+    }
   }
   for (const learning_context_id in course_proposition.access_object) { //<!-- TODO (9): attenzione, non funziona
     for (const access_object of course_proposition.access_object[
       learning_context_id
     ]) {
-      addAccess(learning_context_id, access_object, lists_info["access_object"]?.only_card ?? true);//, lists_info["access_object"]?.change_support_list);
+      addAccess(learning_context_id, access_object, lists_info["access_object"]?.only_card ?? true, lists_info["access_object"]?.change_support_list);
     }
   }
   if (course_proposition.specific_information.session_id != undefined) {
@@ -1166,29 +1191,34 @@ const fillLists = (lists_info: { [key in keyof string as PropositionListsKeys]?:
   }
 }
 const changeModality = (new_action: Action) => {
-  /*const tmp_lists_info = {
+  const tmp_lists_info = {
     clear: {
       cards: true,
     },
     change_support_list: false,
-  };*/
+  };
 
   if (action.value == "edit" && new_action == "view") {
+    action.value = new_action;
     executeLink("/v1/courses/" + course_proposition.course_id,
       undefined, () => {
         setupModalAndOpen("error", getCurrentElement("changes_not_made"));
       }, "put", course_proposition.toProposition());
-  } else if (action.value == "view" && new_action == "edit") {
-    /*fillLists({
+    fillLists({
       teaching_list: tmp_lists_info,
       growth_list: tmp_lists_info,
-      access_object: {
-        change_support_list: false,
-      },
+      access_object: tmp_lists_info,
       teacher_list: tmp_lists_info,
-    });*/
+    });
+  } else if (action.value == "view" && new_action == "edit") {
+    action.value = new_action;
+    fillLists({
+      teaching_list: tmp_lists_info,
+      growth_list: tmp_lists_info,
+      access_object: tmp_lists_info,
+      teacher_list: tmp_lists_info,
+    });
   }
-  action.value = new_action;
   trigger.value++;
 };
 const approve = (outcome = true) => {
@@ -1565,7 +1595,7 @@ watch(selected_study_address, (new_study_address) => {
   }
   trigger.value++;
 });
-watch(num_section, (n,o) => {
+watch(num_section, (n, o) => {
   const actual_n = n != "" ? parseInt(n) : 0;
 
   course_proposition.specific_information.num_section = actual_n;
