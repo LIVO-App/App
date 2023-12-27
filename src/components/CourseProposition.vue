@@ -54,7 +54,8 @@
                   `${language}_title`
                 ]
                   " :label="getCurrentElement(language)" :aria-label="getCurrentElement(language)" fill="outline"
-                  class="ion-margin-vertical" :readonly="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_title`) == -1)" />
+                  class="ion-margin-vertical"
+                  :readonly="action == 'view' || action == 'edit' && language == 'italian' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_title`) == -1)" />
                 <!-- TODO (9): trovare un modo per rendere la chiamata generale -->
                 <!--<ion-textarea
                   v-else
@@ -150,7 +151,6 @@
                 ).min_students
                   " :label="getCurrentElement('min_students')" :aria-label="getCurrentElement('min_students')"
                   fill="outline" class="ion-margin-vertical" :readonly="action == 'view' || approved.course" />
-                <!-- ! (2): mettere distanza min-max di 4 durante poposta, togliere durante modifica e catturare errore se corso esiste quando < 4 -->
                 <ion-input type="number" v-model="castToCharacteristics1(
                   course_proposition[pages[current_page_index]]
                 ).max_students
@@ -191,7 +191,7 @@
                   )
                 )
                   " />
-                <template v-if="action != 'view'">
+                <template v-if="action == 'propose' || (action == 'edit' && !approved.course)">
                   <custom-select v-if="key == 'teaching_list'" :key="trigger + '_teachings_select'"
                     v-model="selected_teaching" :list="teachings.available" :label="getCurrentElement('teaching') + ':'"
                     :aria_label="getCurrentElement('teaching')" :placeholder="getCurrentElement('teaching_choices')"
@@ -222,7 +222,7 @@
           </template>
           <template v-else-if="pages[current_page_index] == 'access_object'">
             <ion-grid>
-              <template v-if="action != 'view'">
+              <template v-if="action == 'propose' || (action == 'edit' && !approved.course)">
                 <ion-row>
                   <ion-col>
                     <custom-select v-model="selected_learning_context" :list="learning_contexts.available"
@@ -419,7 +419,8 @@ import {
   GrowthAreaProps,
   AlertInformation,
   AdminProjectClass,
-  PropositionListsKeys
+  PropositionListsKeys,
+  PropositionActions,
 } from "@/types";
 import {
   executeLink,
@@ -453,7 +454,6 @@ import { useStore } from "vuex";
 
 type AvailableModal = "error" | "teacher_info" | "confirm" | "success";
 type ListTypes = "access" | "teachers" | SimpleListTypes;
-type Action = "view" | "edit" | "propose";
 type SimpleListTypes = "growth_areas" | "teachings";
 type SimpleList<T> = {
   available: T[];
@@ -472,16 +472,24 @@ const go = (direction: boolean) => {
     current_page_index.value -= 1;
   }
 };
-const checkAndConfirm = () => {
-  const missing_information = course_proposition.check();
+const checkAndWarn = () => {
+  const missing_information = course_proposition.check(action.value);
   const information_keys = Object.keys(missing_information) as PropositionRequiredKeys[];
 
-  if (information_keys.length == 0) {
-    setupModalAndOpen("confirm");
-  } else {
+  let outcome = true;
+
+  if (information_keys.length > 0) {
     setupModalAndOpen("error", missing_information[information_keys[0]]);
     current_page_index.value = course_proposition.getKeyIndex(information_keys[0]);
     //<!-- TODO (5): Cambiare colori a componenti per segnalare errori
+    outcome = false;
+  }
+
+  return outcome;
+}
+const checkAndConfirm = () => {
+  if (!checkAndWarn()) {
+    setupModalAndOpen("confirm");
   }
 }
 const propose = () => {
@@ -1189,34 +1197,35 @@ const fillLists = (lists_info: { [key in keyof string as PropositionListsKeys]?:
     }
   }
 }
-const changeModality = (new_action: Action) => {
+const changeModality = (new_action: PropositionActions) => {
   const tmp_lists_info = {
     clear: {
       cards: true,
     },
     change_support_list: false,
   };
+  const lists_info = {
+    teaching_list: !approved.course ? tmp_lists_info : undefined,
+    growth_list: !approved.course ? tmp_lists_info : undefined,
+    access_object: !approved.course ? tmp_lists_info : undefined,
+    teacher_list: tmp_lists_info,
+  };
+
+  //let changes_error = false;
 
   if (action.value == "edit" && new_action == "view") {
-    action.value = new_action;
-    executeLink("/v1/courses/" + course_proposition.course_id,
+    if (checkAndWarn()) {
+      executeLink("/v1/courses/" + course_proposition.course_id,
       undefined, () => {
+        //changes_error = true; //<!-- TODO (6): fare "esci senza salvare"
         setupModalAndOpen("error", getCurrentElement("changes_not_made"));
       }, "put", course_proposition.toProposition());
-    fillLists({
-      teaching_list: tmp_lists_info,
-      growth_list: tmp_lists_info,
-      access_object: tmp_lists_info,
-      teacher_list: tmp_lists_info,
-    });
+      action.value = new_action;
+      fillLists(lists_info);
+    }
   } else if (action.value == "view" && new_action == "edit") {
     action.value = new_action;
-    fillLists({
-      teaching_list: tmp_lists_info,
-      growth_list: tmp_lists_info,
-      access_object: tmp_lists_info,
-      teacher_list: tmp_lists_info,
-    });
+    fillLists(lists_info);
   }
   trigger.value++;
 };
@@ -1431,7 +1440,7 @@ const teachers_cards: OrderedCardsList<GeneralCardElements> = {
     "": [],
   },
 };
-const action: Ref<Action> = ref(
+const action: Ref<PropositionActions> = ref(
   $route.query.view != undefined ? "view" : "propose"
 );
 const tmp_project_class_id = $route.query[action.value] != undefined ? ($route.query[action.value] as string).split("_") : [];

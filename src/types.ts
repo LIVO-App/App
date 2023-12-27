@@ -2036,6 +2036,8 @@ type PropositionOptionalKeys = "english_title" | "english_descr" | "english_exp_
 
 type PropositionKeys = PropositionRequiredKeys | PropositionOptionalKeys | "course_id";
 
+type PropositionActions = "view" | "edit" | "propose";
+
 type PropositionTitles = {
     [key in keyof string as `${Language}_title`]: string
 };
@@ -2395,116 +2397,150 @@ class ModelProposition {
 
     private getRequiredInformation(): {
         [key in keyof string as PropositionRequiredKeys]: {
-            rule: boolean | number[],
+            rule: boolean | number[] | ((proposition: PropositionObj) => boolean),
             error_message: string,
-        }
+            valid: PropositionActions[],
+        }[]
     } {
         return {
-            italian_title: {
+            italian_title: [{
                 rule: true,
                 error_message: getCurrentElement("missing_italian_title"),
-            },
-            italian_descr: {
+                valid: ["propose","edit"],
+            }],
+            italian_descr: [{
                 rule: true,
                 error_message: getCurrentElement("missing_italian_description"),
-            },
-            up_hours: {
+                valid: ["propose","edit"],
+            }],
+            up_hours: [{
                 rule: [0],
                 error_message: getCurrentElement("up_hours_error"),
-            },
-            credits: {
+                valid: ["propose","edit"],
+            }],
+            credits: [{
                 rule: [1],
                 error_message: getCurrentElement("credits_error"),
-            },
-            italian_exp_l: {
+                valid: ["propose","edit"],
+            }],
+            italian_exp_l: [{
                 rule: true,
                 error_message: getCurrentElement("missing_italian_expected_learning_results"),
-            },
-            italian_cri: {
+                valid: ["propose","edit"],
+            }],
+            italian_cri: [{
                 rule: true,
                 error_message: getCurrentElement("missing_italian_criterions"),
-            },
-            italian_act: {
+                valid: ["propose","edit"],
+            }],
+            italian_act: [{
                 rule: true,
                 error_message: getCurrentElement("missing_italian_activities"),
-            },
-            area_id: {
+                valid: ["propose","edit"],
+            }],
+            area_id: [{
                 rule: true,
                 error_message: getCurrentElement("missing_area_id"),
-            },
-            growth_list: {
+                valid: ["propose","edit"],
+            }],
+            growth_list: [{
                 rule: [1],
                 error_message: getCurrentElement("missing_growth_areas"),
-            },
-            min_students: {
+                valid: ["propose","edit"],
+            }],
+            min_students: [{
                 rule: [1],
                 error_message: getCurrentElement("students_error"),
-            },
-            max_students: {
+                valid: ["propose","edit"],
+            }],
+            max_students: [{
                 rule: [1],
                 error_message: getCurrentElement("students_error"),
-            },
-            session_id: {
+                valid: ["propose","edit"],
+            }, {
+                rule: (proposition: PropositionObj) => proposition.max_students - proposition.min_students >= 4,
+                error_message: getCurrentElement("min_max_error"),
+                valid: ["propose"],
+            }, {
+                rule: (proposition: PropositionObj) => proposition.max_students - proposition.min_students > 0,
+                error_message: getCurrentElement("max_greater_min_error"),
+                valid: ["edit"],
+            }],
+            session_id: [{
                 rule: [1],
                 error_message: getCurrentElement("missing_session_id"),
-            },
-            access_object: {
+                valid: ["propose","edit"],
+            }],
+            access_object: [{
                 rule: [1],
                 error_message: getCurrentElement("missing_access"),
-            },
-            teaching_list: {
+                valid: ["propose","edit"],
+            }],
+            teaching_list: [{
                 rule: [1, 4],
                 error_message: getCurrentElement("teaching_error"),
-            },
-            class_group: {
+                valid: ["propose","edit"],
+            }],
+            class_group: [{
                 rule: [1],
                 error_message: getCurrentElement("missing_class_group"),
-            },
-            num_section: {
+                valid: ["propose","edit"],
+            }],
+            num_section: [{
                 rule: [1],
                 error_message: getCurrentElement("num_sections_error"),
-            },
-            teacher_list: {
+                valid: ["propose","edit"],
+            }],
+            teacher_list: [{
                 rule: [1],
                 error_message: getCurrentElement("missing_teachers"),
-            },
+                valid: ["propose","edit"],
+            }],
         }
     }
 
-    check() {
+    check(action: PropositionActions) {
         const required_information = this.getRequiredInformation(); // TODO (5): trovare un modo per dare un ordine
         const proposition = this.toProposition();
         const missing_information: {
-            [key in keyof string as PropositionRequiredKeys]?: string
+            [key in keyof string as PropositionRequiredKeys]?: string // TODO (6): mettere messaggi multipli per singolo campo
         } = {};
 
         let len: number;
         let actual_number: number;
 
         for (const key of Object.keys(required_information) as PropositionRequiredKeys[]) {
-            if (typeof required_information[key].rule == "boolean") {
-                if (proposition[key] == undefined || proposition[key] == "") {
-                    missing_information[key] = required_information[key].error_message;
-                }
-            } else if (Array.isArray(required_information[key].rule)) {
-                len = (required_information[key].rule as number[]).length;
-                if (Array.isArray(proposition[key])) {
-                    if (!(proposition[key].length >= (required_information[key].rule as number[])[0] &&
-                        (len == 1 || proposition[key].length < (required_information[key].rule as number[])[1]))) {
-                        missing_information[key] = required_information[key].error_message;
-                    }
-                } else if (typeof proposition[key] == "number" || (typeof proposition[key] == "string" && (!isNaN(proposition[key]) || !isNaN(parseFloat(proposition[key]))))) {
-                    actual_number = typeof proposition[key] == "number"
-                        ? proposition[key]
-                        : !isNaN(proposition[key])
-                            ? parseInt(proposition[key])
-                            : parseFloat(proposition[key]);
-                    if (actual_number < (required_information[key].rule as number[])[0]) {
-                        missing_information[key] = required_information[key].error_message;
-                    }
-                } else if (key == "access_object") {
-                    if (Object.keys(proposition[key]).length < (required_information[key].rule as number[])[0]) {
-                        missing_information[key] = required_information[key].error_message;
+            for (const rule of required_information[key]) {
+                if (rule.valid.findIndex(a => a == action) != -1) {
+                    if (typeof rule.rule == "boolean") {
+                        if (proposition[key] == undefined || proposition[key] == "") {
+                            missing_information[key] = rule.error_message;
+                        }
+                    } else if (Array.isArray(rule.rule)) {
+                        len = (rule.rule as number[]).length;
+                        if (Array.isArray(proposition[key])) {
+                            if (!(proposition[key].length >= (rule.rule as number[])[0] &&
+                                (len == 1 || proposition[key].length < (rule.rule as number[])[1]))) {
+                                missing_information[key] = rule.error_message;
+                            }
+                        } else if (typeof proposition[key] == "number" || (typeof proposition[key] == "string" && (!isNaN(proposition[key]) || !isNaN(parseFloat(proposition[key]))))) {
+                            actual_number = typeof proposition[key] == "number"
+                                ? proposition[key]
+                                : !isNaN(proposition[key])
+                                    ? parseInt(proposition[key])
+                                    : parseFloat(proposition[key]);
+                            if (actual_number < (rule.rule as number[])[0]) {
+                                missing_information[key] = rule.error_message;
+                            }
+                        } else if (key == "access_object") {
+                            if (Object.keys(proposition[key]).length < (rule.rule as number[])[0]) {
+                                missing_information[key] = rule.error_message;
+                            }
+                        }
+                    } else {
+                        if (!rule.rule(proposition)) {
+                            missing_information[key] = rule.error_message;
+                        }
                     }
                 }
             }
@@ -3645,4 +3681,4 @@ class SubscriptionsManager {
     }
 }
 
-export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, StringIcon, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, OrderedCardsGrid, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, GeneralCardSubElements, SubElements, CardSubElements, SelectSubElements, EditorSubElements, CardsCommonElements, CardsListElements, CardsGridElements, Colors, Classes, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, AlternateList, TmpList, Progression, LoginInformation, UserSummary, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, PropositionListsKeys, PropositionRequiredKeys, PropositionOptionalKeys, PropositionKeys, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, TeacherSummary, Teacher, TeacherProposition, OpenToConstraint, ProjectClassSummaryProps, AdminProjectClassProps, ProjectClassSummary, AdminProjectClass, CardListDescription, DefaultLink, AlertInformation, SubscriptionsManagerMode, EnrollmentAvailability, CourseReferences, SubscriptionsManager }
+export { Language, Menu, MenuItem, BaseElement, ElementsList, OrdinaryClassProps, OrdinaryClassSummaryProps, OrdinaryClassSummary, LearningSessionProps, LearningSession, Enrollment, MinimumCourseProps, MinimizedCourse, CourseSummaryProps, CourseProps, CardElements, GeneralCardElements, CourseCardElements, LearningSessionStatus, LearningArea, CourseBase, CourseSummary, CurriculumCourse, Course, IconAlternatives, IconsList, StringIcon, RequestIcon, EventIcon, RequestString, EventString, RequestStringIcon, EventStringIcon, CardsList, OrderedCardsList, OrderedCardsGrid, RequestParameters, EventParameters, LinkParameters, ElementType, LinkType, ContentType, ColorType, ColorObject, GeneralSubElements, GeneralCardSubElements, SubElements, CardSubElements, SelectSubElements, EditorSubElements, CardsCommonElements, CardsListElements, CardsGridElements, Colors, Classes, CustomElement, GradeProps, Grade, GradesParameters, ProjectClassTeachingsResponse, CourseSectionsTeachings, StudentSummaryProps, StudentProps, StudentInformationProps, StudentSummary, Student, StudentInformation, LearningContextSummary, LearningContext, AnnouncementSummaryProps, Announcement, AnnouncementSummary, AnnouncementParameters, Gender, GenderKeys, AlternateList, TmpList, Progression, LoginInformation, UserSummary, UserType, LoginResponse, SuccessLoginResponse, UserProps, User, CourseModelProps, CourseModel, AccessObject, PropositionAccessObject, PropositionActivities, PropositionCharacteristics1, PropositionCriterions, PropositionDescription, PropositionExpectedLearningResults, PropositionCharacteristics2, PropositionSpecificInformation, PropositionTitles, PropositionTeacher, ModelProposition, GrowthAreaProps, GrowthArea, Pages, PropositionListsKeys, PropositionRequiredKeys, PropositionOptionalKeys, PropositionKeys, PropositionActions, TeachingProps, Teaching, StudyAddress, AccessProposition, TeacherProps, TeacherSummary, Teacher, TeacherProposition, OpenToConstraint, ProjectClassSummaryProps, AdminProjectClassProps, ProjectClassSummary, AdminProjectClass, CardListDescription, DefaultLink, AlertInformation, SubscriptionsManagerMode, EnrollmentAvailability, CourseReferences, SubscriptionsManager }
