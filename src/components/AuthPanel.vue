@@ -7,53 +7,94 @@
       <ion-card-content>
         <template v-if="login_type == 'student'">
           <ion-item>
-            <ion-input v-model="params.username" type="text" :label="getCurrentElement('username')"></ion-input>
+            <ion-input
+              v-model="params.username"
+              type="text"
+              :label="getCurrentElement('username')"
+            ></ion-input>
           </ion-item>
           <ion-item>
-            <ion-input v-model="params.password" type="password" :label="getCurrentElement('password')"></ion-input>
+            <ion-input
+              v-model="params.password"
+              type="password"
+              :label="getCurrentElement('password')"
+            ></ion-input>
           </ion-item>
         </template>
         <template v-else-if="login_type == 'teacher'">
           <ion-item>
-            <ion-input v-model="params.username" type="text" :label="getCurrentElement('username')"></ion-input>
+            <ion-input
+              v-model="params.username"
+              type="text"
+              :label="getCurrentElement('username')"
+            ></ion-input>
           </ion-item>
           <ion-item>
-            <ion-input v-model="params.password" type="password" :label="getCurrentElement('password')"></ion-input>
+            <ion-input
+              v-model="params.password"
+              type="password"
+              :label="getCurrentElement('password')"
+            ></ion-input>
           </ion-item>
         </template>
         <template v-else-if="login_type == 'admin'">
           <ion-item>
-            <ion-input v-model="params.username" type="text" :label="getCurrentElement('username')"></ion-input>
+            <ion-input
+              v-model="params.username"
+              type="text"
+              :label="getCurrentElement('username')"
+            ></ion-input>
           </ion-item>
           <ion-item>
-            <ion-input v-model="params.password" type="password" :label="getCurrentElement('password')"></ion-input>
+            <ion-input
+              v-model="params.password"
+              type="password"
+              :label="getCurrentElement('password')"
+            ></ion-input>
           </ion-item>
         </template>
-        <ion-button @click="
-          takeParameters();
-        $emit('login', {
-          type: login_type,
-          parameters: actual_params,
-        });
-        " expand="block" class="ion-margin-vertical">{{ getCurrentElement("login") }}</ion-button>
+        <ion-button
+          @click="
+            takeParameters();
+            $emit('login', {
+              type: login_type,
+              parameters: actual_params,
+            });
+          "
+          expand="block"
+          class="ion-margin-vertical"
+          >{{ getCurrentElement("login") }}</ion-button
+        >
         <div style="border-top: 1px solid var(--ion-color-dark)">
           <ion-grid>
             <ion-row>
               <ion-col>
-                <ion-button @click="changeType('student')" expand="block" color="primary"
-                  :fill="login_type == 'student' ? 'solid' : 'outline'">
+                <ion-button
+                  @click="changeType('student')"
+                  expand="block"
+                  color="primary"
+                  :fill="login_type == 'student' ? 'solid' : 'outline'"
+                >
                   {{ getCurrentElement("student") }}
                 </ion-button>
               </ion-col>
               <ion-col>
-                <ion-button @click="changeType('teacher')" expand="block" color="primary"
-                  :fill="login_type == 'teacher' ? 'solid' : 'outline'">
+                <ion-button
+                  @click="changeType('teacher')"
+                  expand="block"
+                  color="primary"
+                  :fill="login_type == 'teacher' ? 'solid' : 'outline'"
+                >
                   {{ getCurrentElement("teacher") }}
                 </ion-button>
               </ion-col>
               <ion-col>
-                <ion-button @click="changeType('admin')" expand="block" color="primary"
-                  :fill="login_type == 'admin' ? 'solid' : 'outline'">
+                <ion-button
+                  @click="changeType('admin')"
+                  expand="block"
+                  color="primary"
+                  :fill="login_type == 'admin' ? 'solid' : 'outline'"
+                >
                   {{ getCurrentElement("admin") }}
                 </ion-button>
               </ion-col>
@@ -66,18 +107,24 @@
         <ion-grid class="ion-text-center">
           <ion-row>
             <ion-col>
-              <ionic-element :element="getCustomMessage(
-                'login_with_account',
-                getCurrentElement('login_with_account'),
-                'title'
-              )
-                " />
+              <ionic-element
+                :element="
+                  getCustomMessage(
+                    'login_with_account',
+                    getCurrentElement('login_with_account'),
+                    'title'
+                  )
+                "
+              />
             </ion-col>
           </ion-row>
           <ion-row>
             <ion-col></ion-col>
             <ion-col size="3">
-              <ionic-element :element="alternatives_login[0]" @execute_link="$emit('execute_link')" />
+              <ionic-element
+                :element="alternatives_login[0]"
+                @execute_link="$emit('execute_link')"
+              />
             </ion-col>
             <ion-col></ion-col>
           </ion-row>
@@ -138,7 +185,8 @@ const params: TmpList<any> = reactive({
 });
 const actual_params: TmpList<any> = {};
 const alternatives_login: CustomElement[] = [
-  { //<!-- TODO (5): rendering bottone da telefono non coincide con parte cliccabile
+  {
+    //<!-- TODO (5): rendering bottone da telefono non coincide con parte cliccabile
     id: "google",
     type: "string_icon",
     linkType: "request",

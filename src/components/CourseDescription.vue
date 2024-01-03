@@ -71,7 +71,7 @@
               },
             }"
           />
-          <hr style="border-top: 1px solid var(--ion-color-black);" />
+          <hr style="border-top: 1px solid var(--ion-color-black)" />
           <swiper
             v-if="course.images.length > 1"
             :modules="modules"
@@ -87,7 +87,8 @@
                 :src="require('@/assets/' + image.url)"
                 :alt="image.caption"
                 style="height: 150px"
-              /> <!-- TODO (4): finire di sistemare -->
+              />
+              <!-- TODO (4): finire di sistemare -->
             </swiper-slide>
           </swiper>
           <ion-img
@@ -96,7 +97,15 @@
             :alt="course.images[0].caption"
             style="height: 150px"
           />
-          <b><ionic-element :element="getCustomMessage('context_description',getCurrentElement('context_description').toUpperCase())" /></b>
+          <b
+            ><ionic-element
+              :element="
+                getCustomMessage(
+                  'context_description',
+                  getCurrentElement('context_description').toUpperCase()
+                )
+              "
+          /></b>
           <ionic-element
             v-for="element in course_card.content"
             :key="element.id"
@@ -343,12 +352,10 @@ const course = await Course.newCourse(
     () => null
   )
 );
-course.images.push(
-  {
-    url: "Logo_LIVO_Campus_POS_RGB.png",
-    caption: "Old logo",
-  }
-);
+course.images.push({
+  url: "Logo_LIVO_Campus_POS_RGB.png",
+  caption: "Old logo",
+});
 const access_cards = course.getAccessCardsList();
 const growth_cards = course.getGrowthCardsList();
 const teachings_cards = course.getTeachingCardsList();

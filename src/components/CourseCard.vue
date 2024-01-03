@@ -34,11 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  CustomElement,
-  Colors,
-  GeneralSubElements,
-} from "@/types";
+import { CustomElement, Colors, GeneralSubElements } from "@/types";
 import { Enrollment } from "@/types";
 import { IonCard, IonCardContent, IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { computed, ComputedRef, PropType } from "vue";
@@ -80,5 +76,4 @@ actual_content.value[2].classes.label = {
 };
 </script>
 
-<style>
-</style>
+<style></style>

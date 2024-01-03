@@ -1,24 +1,38 @@
 <template>
-  <ion-grid><!-- v-if="learning_sessions.loaded">-->
+  <ion-grid
+    ><!-- v-if="learning_sessions.loaded">-->
     <ion-row>
       <ion-col size="12" size-md="6">
-        <list-card :title="getCustomMessage('title', getCurrentElement('school_years'))" :emptiness_message="getCustomMessage(
-          'emptiness_message',
-          getCurrentElement('no_school_years')
-        )
-          " :cards_list="school_years" @signal_event="changeSelection()" />
+        <list-card
+          :title="getCustomMessage('title', getCurrentElement('school_years'))"
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement('no_school_years')
+            )
+          "
+          :cards_list="school_years"
+          @signal_event="changeSelection()"
+        />
       </ion-col>
       <ion-col size="12" size-md="6">
-        <list-card :key="trigger" :title="getCustomMessage('title', getCurrentElement('courses'))" :emptiness_message="getCustomMessage(
-          'emptiness_message',
-          getCurrentElement(
-            is_nothing_selected()
-              ? 'teacher_learning_session_selection_message'
-              : 'no_project_classes'
-          )
-        )
-          " :cards_list="is_nothing_selected() ? empty_propositions : year_propositions
-    " />
+        <list-card
+          :key="trigger"
+          :title="getCustomMessage('title', getCurrentElement('courses'))"
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement(
+                is_nothing_selected()
+                  ? 'teacher_learning_session_selection_message'
+                  : 'no_project_classes'
+              )
+            )
+          "
+          :cards_list="
+            is_nothing_selected() ? empty_propositions : year_propositions
+          "
+        />
       </ion-col>
     </ion-row>
   </ion-grid>
@@ -102,11 +116,14 @@ const year_propositions: OrderedCardsList<GeneralCardElements> = reactive({
 const trigger = ref(0);
 const propositions: CourseModel[] = await executeLink(
   "/v1/propositions?recent_models=false",
-  async (response: any) => Promise.all(response.data.data.map(async (a: CourseModelProps) => {
-    const tmp_proposition = new CourseModel(a);
-    await tmp_proposition.loadParms();
-    return tmp_proposition;
-  })),
+  async (response: any) =>
+    Promise.all(
+      response.data.data.map(async (a: CourseModelProps) => {
+        const tmp_proposition = new CourseModel(a);
+        await tmp_proposition.loadParms();
+        return tmp_proposition;
+      })
+    ),
   () => []
 );
 const actual_teacher_id = user.id;

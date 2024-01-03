@@ -1,7 +1,13 @@
 <template>
   <div class="ion-padding-horizontal">
-    <ion-alert :is-open="alert_open" :header="alert_information.title" :message="alert_information.message"
-      :buttons="alert_information.buttons" @didDismiss="closeModal(true)" :inputs="alert_information.inputs" />
+    <ion-alert
+      :is-open="alert_open"
+      :header="alert_information.title"
+      :message="alert_information.message"
+      :buttons="alert_information.buttons"
+      @didDismiss="closeModal(true)"
+      :inputs="alert_information.inputs"
+    />
     <!--<ion-modal
       id="addition"
       :is-open="addition"
@@ -20,19 +26,37 @@
       </suspense>
     </ion-modal>-->
     <!-- ! (3): spostare pulsanti in alto -->
-    <ionic-element :element="buttons[3]" @execute_link="$router.push(store.state.request.url)" />
+    <ionic-element
+      :element="buttons[3]"
+      @execute_link="$router.push(store.state.request.url)"
+    />
     <template v-if="user.user == 'admin' && !allApproed()">
-      <ionic-element v-if="action == 'view'" :element="buttons[4]"
-        @signal_event="setupModalAndOpen('confirm', undefined, true)" />
-      <ionic-element v-if="action == 'view'" :element="buttons[5]"
-        @signal_event="setupModalAndOpen('confirm', undefined, false)" />
-      <ionic-element :element="action == 'view' ? buttons[6] : buttons[7]"
-        @signal_event="changeModality(action == 'view' ? 'edit' : 'view')" />
+      <ionic-element
+        v-if="action == 'view'"
+        :element="buttons[4]"
+        @signal_event="setupModalAndOpen('confirm', undefined, true)"
+      />
+      <ionic-element
+        v-if="action == 'view'"
+        :element="buttons[5]"
+        @signal_event="setupModalAndOpen('confirm', undefined, false)"
+      />
+      <ionic-element
+        :element="action == 'view' ? buttons[6] : buttons[7]"
+        @signal_event="changeModality(action == 'view' ? 'edit' : 'view')"
+      />
     </template>
-    <custom-select :key="trigger" v-model="selected_model" :list="models"
-      :label="getCurrentElement('reference_model') + ':'" :aria_label="getCurrentElement('reference_model')"
-      :placeholder="getCurrentElement('possible_models')" :getCompleteName="modelToString"
-      :disabled="action != 'propose'" /> <!-- ! (3): mettere filtro su modelli -->
+    <custom-select
+      :key="trigger"
+      v-model="selected_model"
+      :list="models"
+      :label="getCurrentElement('reference_model') + ':'"
+      :aria_label="getCurrentElement('reference_model')"
+      :placeholder="getCurrentElement('possible_models')"
+      :getCompleteName="modelToString"
+      :disabled="action != 'propose'"
+    />
+    <!-- ! (3): mettere filtro su modelli -->
     <ion-card :key="trigger">
       <ion-card-header color="primary">
         <ion-card-title class="ion-text-center">{{
@@ -43,19 +67,37 @@
       </ion-card-header>
       <ion-card-content style="overflow-y: auto">
         <ion-grid>
-          <template v-if="pages[current_page_index] == 'title' ||
+          <template
+            v-if="
+              pages[current_page_index] == 'title' ||
               ModelProposition.getProps('editor').findIndex(
                 (a) => a == pages[current_page_index]
               ) != -1
-              ">
+            "
+          >
             <ion-row v-for="language in languages" :key="language">
               <ion-col>
-                <ion-input v-if="pages[current_page_index] == 'title'" type="text" v-model="castToTitles(course_proposition[pages[current_page_index]])[
-                  `${language}_title`
-                ]
-                  " :label="getCurrentElement(language)" :aria-label="getCurrentElement(language)" fill="outline"
+                <ion-input
+                  v-if="pages[current_page_index] == 'title'"
+                  type="text"
+                  v-model="
+                    castToTitles(course_proposition[pages[current_page_index]])[
+                      `${language}_title`
+                    ]
+                  "
+                  :label="getCurrentElement(language)"
+                  :aria-label="getCurrentElement(language)"
+                  fill="outline"
                   class="ion-margin-vertical"
-                  :readonly="action == 'view' || action == 'edit' && language == 'italian' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_title`) == -1)" />
+                  :readonly="
+                    action == 'view' ||
+                    (action == 'edit' && language == 'italian') ||
+                    (approved.course &&
+                      ModelProposition.getPropositionProps('optional').indexOf(
+                        `${language}_title`
+                      ) == -1)
+                  "
+                />
                 <!-- TODO (9): trovare un modo per rendere la chiamata generale -->
                 <!--<ion-textarea
                   v-else
@@ -67,57 +109,175 @@
                   fill="outline"
                   class="ion-margin-vertical"
                 />-->
-                <div v-else-if="pages[current_page_index] == 'description'" class="ion-margin-vertical">
-                  <b><ionic-element :element="getCustomMessage(`${language}_descr`, getCurrentElement(language))" /></b>
-                  <editor-wrapper v-model:value="castToDescription(
-                    course_proposition[pages[current_page_index]]
-                  )[`${language}_descr`]"
-                    :disabled="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_descr`) == -1)"
-                    :options="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_descr`) == -1) ? {
-                      modules: {
-                        toolbar: false
-                      },
-                      placeholder: false,
-                    } : undefined" />
+                <div
+                  v-else-if="pages[current_page_index] == 'description'"
+                  class="ion-margin-vertical"
+                >
+                  <b
+                    ><ionic-element
+                      :element="
+                        getCustomMessage(
+                          `${language}_descr`,
+                          getCurrentElement(language)
+                        )
+                      "
+                  /></b>
+                  <editor-wrapper
+                    v-model:value="
+                      castToDescription(
+                        course_proposition[pages[current_page_index]]
+                      )[`${language}_descr`]
+                    "
+                    :disabled="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_descr`) == -1)
+                    "
+                    :options="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_descr`) == -1)
+                        ? {
+                            modules: {
+                              toolbar: false,
+                            },
+                            placeholder: false,
+                          }
+                        : undefined
+                    "
+                  />
                 </div>
-                <div v-else-if="pages[current_page_index] == 'expected_learning_results'" class="ion-margin-vertical">
-                  <b><ionic-element :element="getCustomMessage(`${language}_exp_l`, getCurrentElement(language))" /></b>
-                  <editor-wrapper v-model:value="castToExpectedLearningResults(
-                    course_proposition[pages[current_page_index]]
-                  )[`${language}_exp_l`]"
-                    :disabled="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_exp_l`) == -1)"
-                    :options="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_exp_l`) == -1) ? {
-                      modules: {
-                        toolbar: false
-                      },
-                      placeholder: false,
-                    } : undefined" />
+                <div
+                  v-else-if="
+                    pages[current_page_index] == 'expected_learning_results'
+                  "
+                  class="ion-margin-vertical"
+                >
+                  <b
+                    ><ionic-element
+                      :element="
+                        getCustomMessage(
+                          `${language}_exp_l`,
+                          getCurrentElement(language)
+                        )
+                      "
+                  /></b>
+                  <editor-wrapper
+                    v-model:value="
+                      castToExpectedLearningResults(
+                        course_proposition[pages[current_page_index]]
+                      )[`${language}_exp_l`]
+                    "
+                    :disabled="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_exp_l`) == -1)
+                    "
+                    :options="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_exp_l`) == -1)
+                        ? {
+                            modules: {
+                              toolbar: false,
+                            },
+                            placeholder: false,
+                          }
+                        : undefined
+                    "
+                  />
                 </div>
-                <div v-else-if="pages[current_page_index] == 'criterions'" class="ion-margin-vertical">
-                  <b><ionic-element :element="getCustomMessage(`${language}_cri`, getCurrentElement(language))" /></b>
-                  <editor-wrapper v-model:value="castToCriterions(
-                    course_proposition[pages[current_page_index]]
-                  )[`${language}_cri`]"
-                    :disabled="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_cri`) == -1)"
-                    :options="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_cri`) == -1) ? {
-                      modules: {
-                        toolbar: false
-                      },
-                      placeholder: false,
-                    } : undefined" />
+                <div
+                  v-else-if="pages[current_page_index] == 'criterions'"
+                  class="ion-margin-vertical"
+                >
+                  <b
+                    ><ionic-element
+                      :element="
+                        getCustomMessage(
+                          `${language}_cri`,
+                          getCurrentElement(language)
+                        )
+                      "
+                  /></b>
+                  <editor-wrapper
+                    v-model:value="
+                      castToCriterions(
+                        course_proposition[pages[current_page_index]]
+                      )[`${language}_cri`]
+                    "
+                    :disabled="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_cri`) == -1)
+                    "
+                    :options="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_cri`) == -1)
+                        ? {
+                            modules: {
+                              toolbar: false,
+                            },
+                            placeholder: false,
+                          }
+                        : undefined
+                    "
+                  />
                 </div>
-                <div v-else-if="pages[current_page_index] == 'activities'" class="ion-margin-vertical">
-                  <b><ionic-element :element="getCustomMessage(`${language}_act`, getCurrentElement(language))" /></b>
-                  <editor-wrapper v-model:value="castToActivities(
-                    course_proposition[pages[current_page_index]]
-                  )[`${language}_act`]"
-                    :disabled="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_act`) == -1)"
-                    :options="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_act`) == -1) ? {
-                      modules: {
-                        toolbar: false
-                      },
-                      placeholder: false,
-                    } : undefined" />
+                <div
+                  v-else-if="pages[current_page_index] == 'activities'"
+                  class="ion-margin-vertical"
+                >
+                  <b
+                    ><ionic-element
+                      :element="
+                        getCustomMessage(
+                          `${language}_act`,
+                          getCurrentElement(language)
+                        )
+                      "
+                  /></b>
+                  <editor-wrapper
+                    v-model:value="
+                      castToActivities(
+                        course_proposition[pages[current_page_index]]
+                      )[`${language}_act`]
+                    "
+                    :disabled="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_act`) == -1)
+                    "
+                    :options="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_act`) == -1)
+                        ? {
+                            modules: {
+                              toolbar: false,
+                            },
+                            placeholder: false,
+                          }
+                        : undefined
+                    "
+                  />
                 </div>
               </ion-col>
             </ion-row>
@@ -125,46 +285,88 @@
           <template v-else-if="pages[current_page_index] == 'characteristics1'">
             <ion-row>
               <ion-col>
-                <ion-input type="number" v-model="castToCharacteristics1(
-                  course_proposition[pages[current_page_index]]
-                ).credits
-                  " :label="getCurrentElement('credits')" :aria-label="getCurrentElement('credits')" fill="outline"
-                  class="ion-margin-vertical" :readonly="action == 'view' || approved.course" />
+                <ion-input
+                  type="number"
+                  v-model="
+                    castToCharacteristics1(
+                      course_proposition[pages[current_page_index]]
+                    ).credits
+                  "
+                  :label="getCurrentElement('credits')"
+                  :aria-label="getCurrentElement('credits')"
+                  fill="outline"
+                  class="ion-margin-vertical"
+                  :readonly="action == 'view' || approved.course"
+                />
               </ion-col>
               <ion-col>
-                <ion-input type="number" v-model="castToCharacteristics1(
-                  course_proposition[pages[current_page_index]]
-                ).up_hours
-                  " :label="getCurrentElement('up_hours')" :aria-label="getCurrentElement('up_hours')" fill="outline"
-                  class="ion-margin-vertical" :readonly="action == 'view' || approved.course" />
+                <ion-input
+                  type="number"
+                  v-model="
+                    castToCharacteristics1(
+                      course_proposition[pages[current_page_index]]
+                    ).up_hours
+                  "
+                  :label="getCurrentElement('up_hours')"
+                  :aria-label="getCurrentElement('up_hours')"
+                  fill="outline"
+                  class="ion-margin-vertical"
+                  :readonly="action == 'view' || approved.course"
+                />
               </ion-col>
             </ion-row>
             <ion-row>
               <ion-col>
-                <ionic-element :element="getCustomMessage(
-                  'title',
-                  getCurrentElement('students_per_section') + ':'
-                )
-                  " />
-                <ion-input type="number" v-model="castToCharacteristics1(
-                  course_proposition[pages[current_page_index]]
-                ).min_students
-                  " :label="getCurrentElement('min_students')" :aria-label="getCurrentElement('min_students')"
-                  fill="outline" class="ion-margin-vertical" :readonly="action == 'view' || approved.course" />
-                <ion-input type="number" v-model="castToCharacteristics1(
-                  course_proposition[pages[current_page_index]]
-                ).max_students
-                  " :label="getCurrentElement('max_students')" :aria-label="getCurrentElement('max_students')"
-                  fill="outline" class="ion-margin-vertical" :readonly="action == 'view' || approved.course" />
+                <ionic-element
+                  :element="
+                    getCustomMessage(
+                      'title',
+                      getCurrentElement('students_per_section') + ':'
+                    )
+                  "
+                />
+                <ion-input
+                  type="number"
+                  v-model="
+                    castToCharacteristics1(
+                      course_proposition[pages[current_page_index]]
+                    ).min_students
+                  "
+                  :label="getCurrentElement('min_students')"
+                  :aria-label="getCurrentElement('min_students')"
+                  fill="outline"
+                  class="ion-margin-vertical"
+                  :readonly="action == 'view' || approved.course"
+                />
+                <ion-input
+                  type="number"
+                  v-model="
+                    castToCharacteristics1(
+                      course_proposition[pages[current_page_index]]
+                    ).max_students
+                  "
+                  :label="getCurrentElement('max_students')"
+                  :aria-label="getCurrentElement('max_students')"
+                  fill="outline"
+                  class="ion-margin-vertical"
+                  :readonly="action == 'view' || approved.course"
+                />
               </ion-col>
               <ion-col>
-                <custom-select v-model="castToCharacteristics1(
-                  course_proposition[pages[current_page_index]]
-                ).area_id
-                  " :list="learning_areas" :label="getCurrentElement('learning_area') + ':'"
-                  :aria_label="getCurrentElement('learning_area')" :placeholder="getCurrentElement('area_choice')"
-                  :getCompleteName="learningAreaToString" :disabled="action == 'view' || approved.course"
-                  :no_padding="true" />
+                <custom-select
+                  v-model="
+                    castToCharacteristics1(
+                      course_proposition[pages[current_page_index]]
+                    ).area_id
+                  "
+                  :list="learning_areas"
+                  :label="getCurrentElement('learning_area') + ':'"
+                  :aria_label="getCurrentElement('learning_area')"
+                  :placeholder="getCurrentElement('area_choice')"
+                  :getCompleteName="learningAreaToString"
+                  :disabled="action == 'view' || approved.course"
+                  :no_padding="true"
+                />
               </ion-col>
             </ion-row>
           </template>
@@ -183,61 +385,110 @@
                   :getCompleteName="growthAreaToString"
                   :disabled="action == 'view' || approved.course"
                 />-->
-              <ion-col v-for="key in Object.keys(course_proposition.characteristics2)" :key="key">
-                <ionic-element :element="getCustomMessage(
-                  'title',
-                  getCurrentElement(
-                    key == 'teaching_list' ? 'teachings' : 'growth_areas'
-                  )
-                )
-                  " />
-                <template v-if="action == 'propose' || (action == 'edit' && !approved.course)">
-                  <custom-select v-if="key == 'teaching_list'" :key="trigger + '_teachings_select'"
-                    v-model="selected_teaching" :list="teachings.available" :label="getCurrentElement('teaching') + ':'"
-                    :aria_label="getCurrentElement('teaching')" :placeholder="getCurrentElement('teaching_choices')"
-                    :getCompleteName="getTitle" />
-                  <custom-select v-else :key="trigger + '_growth_areas_select'" v-model="selected_growth_area"
-                    :list="growth_areas.available" :label="getCurrentElement('growth_area') + ':'"
-                    :aria_label="getCurrentElement('growth_area')" :placeholder="getCurrentElement('growth_area_choices')"
-                    :getCompleteName="getTitle" />
+              <ion-col
+                v-for="key in Object.keys(course_proposition.characteristics2)"
+                :key="key"
+              >
+                <ionic-element
+                  :element="
+                    getCustomMessage(
+                      'title',
+                      getCurrentElement(
+                        key == 'teaching_list' ? 'teachings' : 'growth_areas'
+                      )
+                    )
+                  "
+                />
+                <template
+                  v-if="
+                    action == 'propose' ||
+                    (action == 'edit' && !approved.course)
+                  "
+                >
+                  <custom-select
+                    v-if="key == 'teaching_list'"
+                    :key="trigger + '_teachings_select'"
+                    v-model="selected_teaching"
+                    :list="teachings.available"
+                    :label="getCurrentElement('teaching') + ':'"
+                    :aria_label="getCurrentElement('teaching')"
+                    :placeholder="getCurrentElement('teaching_choices')"
+                    :getCompleteName="getTitle"
+                  />
+                  <custom-select
+                    v-else
+                    :key="trigger + '_growth_areas_select'"
+                    v-model="selected_growth_area"
+                    :list="growth_areas.available"
+                    :label="getCurrentElement('growth_area') + ':'"
+                    :aria_label="getCurrentElement('growth_area')"
+                    :placeholder="getCurrentElement('growth_area_choices')"
+                    :getCompleteName="getTitle"
+                  />
                 </template>
-                <list-card :key="trigger + '_list'" :cards_list="key == 'teaching_list'
-                  ? teachings_cards
-                  : growth_areas_cards
-                  " :emptiness_message="getCustomMessage(
-    'emptiness_message',
-    getCurrentElement(
-      key == 'teaching_list'
-        ? 'no_teachings'
-        : 'no_growth_areas'
-    )
-  )
-    " @signal_event="
-    removeElement(
-      key == 'teaching_list' ? 'teachings' : 'growth_areas'
-    )
-    " />
+                <list-card
+                  :key="trigger + '_list'"
+                  :cards_list="
+                    key == 'teaching_list'
+                      ? teachings_cards
+                      : growth_areas_cards
+                  "
+                  :emptiness_message="
+                    getCustomMessage(
+                      'emptiness_message',
+                      getCurrentElement(
+                        key == 'teaching_list'
+                          ? 'no_teachings'
+                          : 'no_growth_areas'
+                      )
+                    )
+                  "
+                  @signal_event="
+                    removeElement(
+                      key == 'teaching_list' ? 'teachings' : 'growth_areas'
+                    )
+                  "
+                />
               </ion-col>
             </ion-row>
           </template>
           <template v-else-if="pages[current_page_index] == 'access_object'">
             <ion-grid>
-              <template v-if="action == 'propose' || (action == 'edit' && !approved.course)">
+              <template
+                v-if="
+                  action == 'propose' || (action == 'edit' && !approved.course)
+                "
+              >
                 <ion-row>
                   <ion-col>
-                    <custom-select v-model="selected_learning_context" :list="learning_contexts.available"
+                    <custom-select
+                      v-model="selected_learning_context"
+                      :list="learning_contexts.available"
                       :label="getCurrentElement('learning_context') + ':'"
-                      :aria_label="getCurrentElement('learning_context')" :placeholder="getCurrentElement('learning_context_choice')
-                        " :getCompleteName="learningContextToString" />
+                      :aria_label="getCurrentElement('learning_context')"
+                      :placeholder="
+                        getCurrentElement('learning_context_choice')
+                      "
+                      :getCompleteName="learningContextToString"
+                    />
                   </ion-col>
                   <ion-col>
-                    <custom-select :key="trigger + '_study_address'" v-model="selected_study_address" :list="study_addresses.available[selected_learning_context] ??
-                      []
-                      " :label="getCurrentElement('study_address') + ':'"
-                      :aria_label="getCurrentElement('study_address')" :placeholder="selected_learning_context != ''
-                        ? getCurrentElement('study_address_choice')
-                        : getCurrentElement('learning_context_needed')
-                        " :getCompleteName="studyAddressToString" />
+                    <custom-select
+                      :key="trigger + '_study_address'"
+                      v-model="selected_study_address"
+                      :list="
+                        study_addresses.available[selected_learning_context] ??
+                        []
+                      "
+                      :label="getCurrentElement('study_address') + ':'"
+                      :aria_label="getCurrentElement('study_address')"
+                      :placeholder="
+                        selected_learning_context != ''
+                          ? getCurrentElement('study_address_choice')
+                          : getCurrentElement('learning_context_needed')
+                      "
+                      :getCompleteName="studyAddressToString"
+                    />
                     <!--<ion-checkbox
                       v-model="presidium"
                       :aria-label="getCurrentElement('presidium')"
@@ -249,27 +500,44 @@
                 </ion-row>
                 <ion-row>
                   <ion-col>
-                    <custom-select :key="trigger + '_study_year'" v-model="selected_study_year" :list="study_years.available[selected_learning_context] !=
-                      undefined
-                      ? study_years.available[selected_learning_context][
-                      selected_study_address
-                      ] ?? []
-                      : []
-                      " :label="getCurrentElement('study_year') + ':'" :aria_label="getCurrentElement('study_year')"
-                      :placeholder="getCurrentElement(
-                        selected_study_address != undefined
-                          ? 'study_year_choice'
-                          : 'study_address_needed'
-                      )
-                        " />
-                    <ion-checkbox v-model="main_study_year" :aria-label="getCurrentElement('main_study_year')"
-                      class="ion-padding-start" label-placement="start">{{ getCurrentElement("main_study_year")
-                      }}</ion-checkbox>
+                    <custom-select
+                      :key="trigger + '_study_year'"
+                      v-model="selected_study_year"
+                      :list="
+                        study_years.available[selected_learning_context] !=
+                        undefined
+                          ? study_years.available[selected_learning_context][
+                              selected_study_address
+                            ] ?? []
+                          : []
+                      "
+                      :label="getCurrentElement('study_year') + ':'"
+                      :aria_label="getCurrentElement('study_year')"
+                      :placeholder="
+                        getCurrentElement(
+                          selected_study_address != undefined
+                            ? 'study_year_choice'
+                            : 'study_address_needed'
+                        )
+                      "
+                    />
+                    <ion-checkbox
+                      v-model="main_study_year"
+                      :aria-label="getCurrentElement('main_study_year')"
+                      class="ion-padding-start"
+                      label-placement="start"
+                      >{{ getCurrentElement("main_study_year") }}</ion-checkbox
+                    >
                   </ion-col>
                 </ion-row>
                 <ion-row>
                   <ion-col>
-                    <ion-button @click="addElement('access')" expand="block" color="primary" fill="solid">
+                    <ion-button
+                      @click="addElement('access')"
+                      expand="block"
+                      color="primary"
+                      fill="solid"
+                    >
                       {{ getCurrentElement("add") }}
                     </ion-button>
                   </ion-col>
@@ -277,52 +545,92 @@
               </template>
               <ion-row>
                 <ion-col>
-                  <list-card :key="trigger + '_list'" :cards_list="access_propositions_cards" :emptiness_message="getCustomMessage(
-                    'emptiness_message',
-                    getCurrentElement('no_access_proposition')
-                  )
-                    " @signal_event="removeElement('access')" />
+                  <list-card
+                    :key="trigger + '_list'"
+                    :cards_list="access_propositions_cards"
+                    :emptiness_message="
+                      getCustomMessage(
+                        'emptiness_message',
+                        getCurrentElement('no_access_proposition')
+                      )
+                    "
+                    @signal_event="removeElement('access')"
+                  />
                 </ion-col>
               </ion-row>
             </ion-grid>
           </template>
-          <template v-else-if="pages[current_page_index] == 'specific_information'">
+          <template
+            v-else-if="pages[current_page_index] == 'specific_information'"
+          >
             <ion-grid>
               <ion-row>
                 <ion-col>
-                  <custom-select v-model="selected_session" :list="learning_sessions"
+                  <custom-select
+                    v-model="selected_session"
+                    :list="learning_sessions"
                     :label="getCurrentElement('learning_sessions') + ':'"
                     :aria_label="getCurrentElement('learning_sessions')"
                     :placeholder="getCurrentElement('learning_sessions_choice')"
-                    :getCompleteName="learningSessionToString" :disabled="action == 'view' || approved.project_class" />
-                  <custom-select :key="trigger" v-model="castToSpecificInformation(
-                    course_proposition[pages[current_page_index]]
-                  ).class_group
-                    " :list="groups" :label="getCurrentElement('group') + ':'" :aria_label="getCurrentElement('group')"
-                    :placeholder="getCurrentElement(
-                      selected_session == -1
-                        ? 'learning_session_needed'
-                        : 'group_choice'
-                    )
-                      " :disabled="action == 'view' || approved.project_class" />
+                    :getCompleteName="learningSessionToString"
+                    :disabled="action == 'view' || approved.project_class"
+                  />
+                  <custom-select
+                    :key="trigger"
+                    v-model="
+                      castToSpecificInformation(
+                        course_proposition[pages[current_page_index]]
+                      ).class_group
+                    "
+                    :list="groups"
+                    :label="getCurrentElement('group') + ':'"
+                    :aria_label="getCurrentElement('group')"
+                    :placeholder="
+                      getCurrentElement(
+                        selected_session == -1
+                          ? 'learning_session_needed'
+                          : 'group_choice'
+                      )
+                    "
+                    :disabled="action == 'view' || approved.project_class"
+                  />
                   <div v-if="sections_use" class="ion-padding">
-                    <ion-input type="number" v-model="num_section" :label="getCurrentElement('num_section')"
-                      :aria-label="getCurrentElement('num_section')" fill="outline"
-                      :readonly="action == 'view' || approved.project_class" />
+                    <ion-input
+                      type="number"
+                      v-model="num_section"
+                      :label="getCurrentElement('num_section')"
+                      :aria-label="getCurrentElement('num_section')"
+                      fill="outline"
+                      :readonly="action == 'view' || approved.project_class"
+                    />
                   </div>
                 </ion-col>
                 <ion-col>
-                  <ionic-element :element="getCustomMessage('teachers_title', getCurrentElement('teachers'))" />
+                  <ionic-element
+                    :element="
+                      getCustomMessage(
+                        'teachers_title',
+                        getCurrentElement('teachers')
+                      )
+                    "
+                  />
                   <template v-if="action != 'view'">
                     <div>
-                      <custom-select :key="trigger + '_teacher'" v-model="selected_teacher" :list="teachers.available"
-                        :label="getCurrentElement('teacher') + ':'" :aria_label="getCurrentElement('teacher')"
-                        :placeholder="getCurrentElement('teacher_choice')" :getCompleteName="teacherToString" />
+                      <custom-select
+                        :key="trigger + '_teacher'"
+                        v-model="selected_teacher"
+                        :list="teachers.available"
+                        :label="getCurrentElement('teacher') + ':'"
+                        :aria_label="getCurrentElement('teacher')"
+                        :placeholder="getCurrentElement('teacher_choice')"
+                        :getCompleteName="teacherToString"
+                      />
                       <!--<ionic-element
                         v-if="selected_teacher != 0"
                         :element="buttons[2]"
                         @signal_event="setupModalAndOpen('teacher_info')"
-                      />--> <!-- TODO (7): decommentare quando ci saranno le info dell'insegnante -->
+                      />-->
+                      <!-- TODO (7): decommentare quando ci saranno le info dell'insegnante -->
                     </div>
                     <!--
                       <ion-checkbox
@@ -334,47 +642,88 @@
                       >
                     -->
                     <template v-if="sections_use">
-                      <ion-text class="ion-padding">{{ getCurrentElement("sections") }}:
+                      <ion-text class="ion-padding"
+                        >{{ getCurrentElement("sections") }}:
                         {{
-                          num_section == '' || parseInt(num_section) <= 0 ? getCurrentElement("num_section_needed") : ""
-                        }}</ion-text>
-                          <ion-list v-if="num_section != '' && parseInt(num_section) > 0">
-                            <ion-item v-for="(value, index) in sections" :key="numberToSection(index)">
-                              <ion-checkbox v-model="sections[index]" :aria-label="numberToSection(index)"
-                                class="ion-padding-start" label-placement="start">{{ numberToSection(index)
-                                }}</ion-checkbox>
-                            </ion-item>
-                          </ion-list>
+                          num_section == "" || parseInt(num_section) <= 0
+                            ? getCurrentElement("num_section_needed")
+                            : ""
+                        }}</ion-text
+                      >
+                      <ion-list
+                        v-if="num_section != '' && parseInt(num_section) > 0"
+                      >
+                        <ion-item
+                          v-for="(value, index) in sections"
+                          :key="numberToSection(index)"
+                        >
+                          <ion-checkbox
+                            v-model="sections[index]"
+                            :aria-label="numberToSection(index)"
+                            class="ion-padding-start"
+                            label-placement="start"
+                            >{{ numberToSection(index) }}</ion-checkbox
+                          >
+                        </ion-item>
+                      </ion-list>
                     </template>
                   </template>
-                  <ion-button v-if="sections_use && action == 'propose'" @click="addElement('teachers')" expand="block"
-                    color="primary" fill="solid">
+                  <ion-button
+                    v-if="sections_use && action == 'propose'"
+                    @click="addElement('teachers')"
+                    expand="block"
+                    color="primary"
+                    fill="solid"
+                  >
                     {{ getCurrentElement("add") }}
                   </ion-button>
-                  <list-card :key="trigger + '_list'" :cards_list="teachers_cards" :emptiness_message="getCustomMessage(
-                    'emptiness_message',
-                    getCurrentElement('no_teacher_proposition')
-                  )
-                    " @signal_event="removeElement('teachers')" />
+                  <list-card
+                    :key="trigger + '_list'"
+                    :cards_list="teachers_cards"
+                    :emptiness_message="
+                      getCustomMessage(
+                        'emptiness_message',
+                        getCurrentElement('no_teacher_proposition')
+                      )
+                    "
+                    @signal_event="removeElement('teachers')"
+                  />
                 </ion-col>
               </ion-row>
             </ion-grid>
           </template>
-          <ion-row class="ion-text-center" style="border-top: 1px solid var(--ion-color-dark)">
+          <ion-row
+            class="ion-text-center"
+            style="border-top: 1px solid var(--ion-color-dark)"
+          >
             <ion-col>
-              <ionic-element :element="buttons[0]" @signal_event="go(false)" :disabled="current_page_index == 0" />
+              <ionic-element
+                :element="buttons[0]"
+                @signal_event="go(false)"
+                :disabled="current_page_index == 0"
+              />
             </ion-col>
             <ion-col>
-              <ionic-element :element="buttons[1]" @signal_event="go(true)"
-                :disabled="current_page_index == pages.length - 1" />
+              <ionic-element
+                :element="buttons[1]"
+                @signal_event="go(true)"
+                :disabled="current_page_index == pages.length - 1"
+              />
             </ion-col>
           </ion-row>
           <!--<template v-if="parameters_remaining">-->
           <ion-row>
             <ion-col>
-              <ion-button v-if="action == 'propose'" @click="checkAndConfirm" expand="block" color="primary" fill="solid">
+              <ion-button
+                v-if="action == 'propose'"
+                @click="checkAndConfirm"
+                expand="block"
+                color="primary"
+                fill="solid"
+              >
                 {{ getCurrentElement("propose") }}
-              </ion-button> <!-- TODO (5): salvare le cose man mano che vengono messe per visualizzare poi "propose" -->
+              </ion-button>
+              <!-- TODO (5): salvare le cose man mano che vengono messe per visualizzare poi "propose" -->
             </ion-col>
           </ion-row>
           <!--</template>-->
@@ -474,33 +823,49 @@ const go = (direction: boolean) => {
 };
 const checkAndWarn = () => {
   const missing_information = course_proposition.check(action.value);
-  const information_keys = Object.keys(missing_information) as PropositionRequiredKeys[];
+  const information_keys = Object.keys(
+    missing_information
+  ) as PropositionRequiredKeys[];
 
   let outcome = true;
 
   if (information_keys.length > 0) {
     setupModalAndOpen("error", missing_information[information_keys[0]]);
-    current_page_index.value = course_proposition.getKeyIndex(information_keys[0]);
+    current_page_index.value = course_proposition.getKeyIndex(
+      information_keys[0]
+    );
     //<!-- TODO (5): Cambiare colori a componenti per segnalare errori
     outcome = false;
   }
 
   return outcome;
-}
+};
 const checkAndConfirm = () => {
   if (!checkAndWarn()) {
     setupModalAndOpen("confirm");
   }
-}
+};
 const propose = () => {
   executeLink(
     "/v1/propositions",
-    () => setTimeout(() => setupModalAndOpen("success", getCurrentElement("successful_proposal")), 300),
-    error => {
+    () =>
+      setTimeout(
+        () =>
+          setupModalAndOpen(
+            "success",
+            getCurrentElement("successful_proposal")
+          ),
+        300
+      ),
+    (error) => {
       if (error.response.status == 409) {
-        setTimeout(() => setupModalAndOpen("error", getCurrentElement("duplicate_course")), 300)
+        setTimeout(
+          () =>
+            setupModalAndOpen("error", getCurrentElement("duplicate_course")),
+          300
+        );
       } else {
-        setTimeout(() => setupModalAndOpen("error"), 300)
+        setTimeout(() => setupModalAndOpen("error"), 300);
       }
     },
     "post",
@@ -514,39 +879,51 @@ const closeModal = (alert: boolean) => {
     addition.value = false;
   }
 };
-const setupModalAndOpen = async (window: AvailableModal, message?: string, approval?: boolean) => {
+const setupModalAndOpen = async (
+  window: AvailableModal,
+  message?: string,
+  approval?: boolean
+) => {
   alert_information.inputs = [];
   switch (window) {
     case "confirm":
       alert_information.title = "";
-      alert_information.message = getCurrentElement(approval == undefined
-        ? "proposition_confrimation"
-        : approval
+      alert_information.message = getCurrentElement(
+        approval == undefined
+          ? "proposition_confrimation"
+          : approval
           ? "approval_confirmation"
-          : "rejection_confirmation");
-      alert_information.buttons = [{
-        text: getCurrentElement("yes"),
-        role: 'yes',
-        handler: approval == undefined ? propose : () => approve(approval),
-      }, getCurrentElement("no")];
+          : "rejection_confirmation"
+      );
+      alert_information.buttons = [
+        {
+          text: getCurrentElement("yes"),
+          role: "yes",
+          handler: approval == undefined ? propose : () => approve(approval),
+        },
+        getCurrentElement("no"),
+      ];
       if (approval == true) {
-        alert_information.inputs = [{
-          type: "checkbox",
-          label: getCurrentElement("approve_project_class_too"),
-          checked: true,
-          handler: (input) => {
-            approve_project_class = input.checked ?? true;
-          }
-        }];
+        alert_information.inputs = [
+          {
+            type: "checkbox",
+            label: getCurrentElement("approve_project_class_too"),
+            checked: true,
+            handler: (input) => {
+              approve_project_class = input.checked ?? true;
+            },
+          },
+        ];
       }
       break;
     case "success":
       alert_information.title = "";
-      alert_information.message = message ?? getCurrentElement("successful_operation");
+      alert_information.message =
+        message ?? getCurrentElement("successful_operation");
       alert_information.buttons = [getCurrentElement("ok")];
       break;
     case "error":
-      setAlertError(message)
+      setAlertError(message);
       break;
   }
   alert_open.value = true;
@@ -581,7 +958,12 @@ const castToActivities = (activities: any) =>
   activities as PropositionActivities;
 const castToSpecificInformation = (specific_information: any) =>
   specific_information as PropositionSpecificInformation;
-const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card = false, change_support_list = true) => {
+const addToSimpleList = (
+  type: SimpleListTypes,
+  id?: string | number,
+  only_card = false,
+  change_support_list = true
+) => {
   let actual_id: string | number;
   let reference: SimpleList<Teaching | GrowthArea>;
   let cards_reference: OrderedCardsList<GeneralCardElements>;
@@ -598,11 +980,13 @@ const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card 
     cards_reference = growth_areas_cards;
   }
 
-  const support_list = change_support_list ? reference.available : reference.selected;
+  const support_list = change_support_list
+    ? reference.available
+    : reference.selected;
 
   if (
     actual_id != (type == "teachings" ? "" : 0) &&
-    ((tmp_index = support_list.findIndex((a) => a.id == actual_id)) != -1)
+    (tmp_index = support_list.findIndex((a) => a.id == actual_id)) != -1
   ) {
     to_add = support_list[tmp_index];
     cards_reference.cards[""].push(to_add.toCard(action.value == "view"));
@@ -622,7 +1006,9 @@ const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card 
       }
     } else {
       if (!only_card) {
-        course_proposition.characteristics2.growth_list.push(to_add.id as number);
+        course_proposition.characteristics2.growth_list.push(
+          to_add.id as number
+        );
       }
       if (change_support_list) {
         growth_areas.selected.push(to_add as GrowthArea);
@@ -671,40 +1057,53 @@ const addAccess = (
 
   const support_context_list_index = change_support_list
     ? "available"
-    : study_addresses.available[actual_learning_context_id] != undefined
-      && Object.keys(study_addresses.available[actual_learning_context_id]).length > 0
-      ? "available"
-      : "selected";
+    : study_addresses.available[actual_learning_context_id] != undefined &&
+      Object.keys(study_addresses.available[actual_learning_context_id])
+        .length > 0
+    ? "available"
+    : "selected";
   const support_address_list_index = change_support_list
     ? "available"
-    : support_context_list_index != "selected"
-      && study_years.available[actual_learning_context_id][actual_study_address_id] != undefined
-      && Object.keys(study_years.available[actual_learning_context_id][actual_study_address_id]).length > 0
-      ? "available"
-      : "selected";
-  const support_year_list_index = change_support_list ? "available" : "selected";
+    : support_context_list_index != "selected" &&
+      study_years.available[actual_learning_context_id][
+        actual_study_address_id
+      ] != undefined &&
+      Object.keys(
+        study_years.available[actual_learning_context_id][
+          actual_study_address_id
+        ]
+      ).length > 0
+    ? "available"
+    : "selected";
+  const support_year_list_index = change_support_list
+    ? "available"
+    : "selected";
 
   if (
     actual_learning_context_id != "" &&
-    (tmp_learning_context_index = learning_contexts[support_context_list_index].findIndex(
-      (a) => a.id == actual_learning_context_id
-    )) != -1 &&
+    (tmp_learning_context_index = learning_contexts[
+      support_context_list_index
+    ].findIndex((a) => a.id == actual_learning_context_id)) != -1 &&
     actual_study_address_id != "" &&
     (tmp_study_address_index = study_addresses[support_address_list_index][
       actual_learning_context_id
     ].findIndex((a) => a.id == actual_study_address_id)) != -1 &&
     actual_study_year != 0 &&
-    (tmp_study_year_index = study_years[support_year_list_index][actual_learning_context_id][
-      actual_study_address_id
-    ].findIndex((a) => a.id == actual_study_year)) != -1
+    (tmp_study_year_index = study_years[support_year_list_index][
+      actual_learning_context_id
+    ][actual_study_address_id].findIndex((a) => a.id == actual_study_year)) !=
+      -1
   ) {
-    learning_context = learning_contexts[support_context_list_index][tmp_learning_context_index];
+    learning_context =
+      learning_contexts[support_context_list_index][tmp_learning_context_index];
     study_address =
-      study_addresses[support_address_list_index][learning_context.id][tmp_study_address_index];
-    study_year =
-      study_years[support_year_list_index][learning_context.id][study_address.id][
-      tmp_study_year_index
+      study_addresses[support_address_list_index][learning_context.id][
+        tmp_study_address_index
       ];
+    study_year =
+      study_years[support_year_list_index][learning_context.id][
+        study_address.id
+      ][tmp_study_year_index];
 
     tmp_access_proposition = new AccessProposition(
       study_year.id,
@@ -794,7 +1193,11 @@ const addAccess = (
   }
   trigger.value++;
 };
-const addTeacher = (proposition_teacher?: PropositionTeacher, only_card = false, change_support_list = true) => {
+const addTeacher = (
+  proposition_teacher?: PropositionTeacher,
+  only_card = false,
+  change_support_list = true
+) => {
   let actual_teacher_id: number;
   let actual_main_teacher: boolean;
   let tmp_teacher_index: number;
@@ -809,7 +1212,9 @@ const addTeacher = (proposition_teacher?: PropositionTeacher, only_card = false,
     actual_main_teacher = main_teacher.value;
   }
 
-  const support_list = change_support_list ? teachers.available : teachers.selected;
+  const support_list = change_support_list
+    ? teachers.available
+    : teachers.selected;
   if (
     actual_teacher_id != 0 &&
     (tmp_teacher_index = support_list.findIndex(
@@ -936,8 +1341,8 @@ const removeElement = (type: ListTypes) => {
       tmp_study_address_index =
         study_addresses.selected[learning_context_id] != undefined
           ? study_addresses.selected[learning_context_id].findIndex(
-            (a) => a.id == study_address_id
-          )
+              (a) => a.id == study_address_id
+            )
           : -1;
       tmp_study_year_index = study_years.selected[learning_context_id][
         study_address_id
@@ -969,7 +1374,7 @@ const removeElement = (type: ListTypes) => {
 
       study_years.available[learning_context_id][study_address_id].push(
         study_years.selected[learning_context_id][study_address_id][
-        tmp_study_year_index
+          tmp_study_year_index
         ]
       );
       study_years.available[learning_context_id][study_address_id].sort(
@@ -1048,21 +1453,22 @@ const edit_course_proposition = async (course_id?: number) => {
       return tmp_area != undefined
         ? tmp_area
         : {
-          id: -1,
-          italian_title: "",
-          english_title: "",
-        };
+            id: -1,
+            italian_title: "",
+            english_title: "",
+          };
     });
     if (tmp_session_id != -1) {
       project_class = await executeLink(
         "/v1/project_classes/" + course_id + "/" + tmp_session_id,
-        response => new AdminProjectClass(response.data.data)); //<!-- ! (3): dire a Pietro di mettere num_section sia lì che in quella generale
+        (response) => new AdminProjectClass(response.data.data)
+      ); //<!-- ! (3): dire a Pietro di mettere num_section sia lì che in quella generale
       approved.project_class = project_class.admin_id != undefined;
       tmp_teachers = await executeLink(
         "/v1/project_classes/" + course_id + "/" + tmp_session_id + "/teachers",
-        response => {
+        (response) => {
           const teachers_summary: {
-            [id: number]: PropositionTeacher
+            [id: number]: PropositionTeacher;
           } = {};
           let tmp_id: number;
 
@@ -1081,7 +1487,7 @@ const edit_course_proposition = async (course_id?: number) => {
 
           return Object.values(teachers_summary);
         },
-        () => [],
+        () => []
       );
     }
     course_proposition = reactive(
@@ -1118,14 +1524,16 @@ const edit_course_proposition = async (course_id?: number) => {
   }
   trigger.value++;
 };
-const fillLists = (lists_info: { [key in keyof string as PropositionListsKeys]?: {
-  clear?: {
-    cards?: boolean,
-    support_list?: boolean,
-  },
-  only_card?: boolean,
-  change_support_list?: boolean,
-} }) => {
+const fillLists = (lists_info: {
+  [key in keyof string as PropositionListsKeys]?: {
+    clear?: {
+      cards?: boolean;
+      support_list?: boolean;
+    };
+    only_card?: boolean;
+    change_support_list?: boolean;
+  };
+}) => {
   if (lists_info["teaching_list"]?.clear != undefined) {
     if (lists_info["teaching_list"]?.clear.cards == true) {
       teachings_cards.order = [];
@@ -1139,7 +1547,12 @@ const fillLists = (lists_info: { [key in keyof string as PropositionListsKeys]?:
     }
   }
   for (const teaching of course_proposition.characteristics2.teaching_list) {
-    addToSimpleList("teachings", teaching, lists_info["teaching_list"]?.only_card ?? true, lists_info["teaching_list"]?.change_support_list);
+    addToSimpleList(
+      "teachings",
+      teaching,
+      lists_info["teaching_list"]?.only_card ?? true,
+      lists_info["teaching_list"]?.change_support_list
+    );
   }
   if (lists_info["growth_list"]?.clear != undefined) {
     if (lists_info["growth_list"]?.clear.cards == true) {
@@ -1154,7 +1567,12 @@ const fillLists = (lists_info: { [key in keyof string as PropositionListsKeys]?:
     }
   }
   for (const growth_area of course_proposition.characteristics2.growth_list) {
-    addToSimpleList("growth_areas", growth_area, lists_info["growth_list"]?.only_card ?? true, lists_info["growth_list"]?.change_support_list);
+    addToSimpleList(
+      "growth_areas",
+      growth_area,
+      lists_info["growth_list"]?.only_card ?? true,
+      lists_info["growth_list"]?.change_support_list
+    );
   }
   if (lists_info["access_object"]?.clear != undefined) {
     if (lists_info["access_object"]?.clear.cards == true) {
@@ -1171,11 +1589,17 @@ const fillLists = (lists_info: { [key in keyof string as PropositionListsKeys]?:
       study_years.selected = {};
     }
   }
-  for (const learning_context_id in course_proposition.access_object) { //<!-- TODO (9): attenzione, non funziona
+  for (const learning_context_id in course_proposition.access_object) {
+    //<!-- TODO (9): attenzione, non funziona
     for (const access_object of course_proposition.access_object[
       learning_context_id
     ]) {
-      addAccess(learning_context_id, access_object, lists_info["access_object"]?.only_card ?? true, lists_info["access_object"]?.change_support_list);
+      addAccess(
+        learning_context_id,
+        access_object,
+        lists_info["access_object"]?.only_card ?? true,
+        lists_info["access_object"]?.change_support_list
+      );
     }
   }
   if (course_proposition.specific_information.session_id != undefined) {
@@ -1192,11 +1616,16 @@ const fillLists = (lists_info: { [key in keyof string as PropositionListsKeys]?:
       }
     }
     selected_session.value = course_proposition.specific_information.session_id;
-    for (const teacher of course_proposition.specific_information.teacher_list) {
-      addTeacher(teacher, lists_info["teacher_list"]?.only_card ?? true, lists_info["teacher_list"]?.change_support_list);
+    for (const teacher of course_proposition.specific_information
+      .teacher_list) {
+      addTeacher(
+        teacher,
+        lists_info["teacher_list"]?.only_card ?? true,
+        lists_info["teacher_list"]?.change_support_list
+      );
     }
   }
-}
+};
 const changeModality = (new_action: PropositionActions) => {
   const tmp_lists_info = {
     clear: {
@@ -1215,11 +1644,16 @@ const changeModality = (new_action: PropositionActions) => {
 
   if (action.value == "edit" && new_action == "view") {
     if (checkAndWarn()) {
-      executeLink("/v1/courses/" + course_proposition.course_id,
-      undefined, () => {
-        //changes_error = true; //<!-- TODO (6): fare "esci senza salvare"
-        setupModalAndOpen("error", getCurrentElement("changes_not_made"));
-      }, "put", course_proposition.toProposition());
+      executeLink(
+        "/v1/courses/" + course_proposition.course_id,
+        undefined,
+        () => {
+          //changes_error = true; //<!-- TODO (6): fare "esci senza salvare"
+          setupModalAndOpen("error", getCurrentElement("changes_not_made"));
+        },
+        "put",
+        course_proposition.toProposition()
+      );
       action.value = new_action;
       fillLists(lists_info);
     }
@@ -1232,21 +1666,29 @@ const changeModality = (new_action: PropositionActions) => {
 const approve = (outcome = true) => {
   if (course_proposition.specific_information.session_id != -1) {
     executeLink(
-      "/v1/propositions/approval?course_id=" + course_proposition.course_id
-      + "&session_id=" + course_proposition.specific_information.session_id
-      + "&approved=" + outcome
-      + (outcome ? "&proj_class=" + approve_project_class : ""),
+      "/v1/propositions/approval?course_id=" +
+        course_proposition.course_id +
+        "&session_id=" +
+        course_proposition.specific_information.session_id +
+        "&approved=" +
+        outcome +
+        (outcome ? "&proj_class=" + approve_project_class : ""),
       () => {
         approve_project_class = true;
         setTimeout(() => {
-          setupModalAndOpen("success", getCurrentElement("successful_" + (outcome ? "confirmation" : "rejection")));
+          setupModalAndOpen(
+            "success",
+            getCurrentElement(
+              "successful_" + (outcome ? "confirmation" : "rejection")
+            )
+          );
           $router.push({ name: "propositions_history" });
         }, 300);
       },
       () => {
         approve_project_class = true;
         setTimeout(() => {
-          setupModalAndOpen("error", getCurrentElement("general_error"))
+          setupModalAndOpen("error", getCurrentElement("general_error"));
         }, 300);
       },
       "put"
@@ -1254,7 +1696,7 @@ const approve = (outcome = true) => {
   } else {
     approve_project_class = true;
     setTimeout(() => {
-      setupModalAndOpen("error", getCurrentElement("general_error"))
+      setupModalAndOpen("error", getCurrentElement("general_error"));
     }, 300);
   }
 };
@@ -1443,11 +1885,15 @@ const teachers_cards: OrderedCardsList<GeneralCardElements> = {
 const action: Ref<PropositionActions> = ref(
   $route.query.view != undefined ? "view" : "propose"
 );
-const tmp_project_class_id = $route.query[action.value] != undefined ? ($route.query[action.value] as string).split("_") : [];
-const tmp_session_id = tmp_project_class_id.length > 1 ? parseInt(tmp_project_class_id[1]) : -1;
+const tmp_project_class_id =
+  $route.query[action.value] != undefined
+    ? ($route.query[action.value] as string).split("_")
+    : [];
+const tmp_session_id =
+  tmp_project_class_id.length > 1 ? parseInt(tmp_project_class_id[1]) : -1;
 const approved: {
-  course: boolean,
-  project_class: boolean,
+  course: boolean;
+  project_class: boolean;
 } = {
   course: false,
   project_class: false,
@@ -1508,7 +1954,8 @@ growth_areas.available = await executeLink(
   () => []
 );
 learning_sessions = await executeLink(
-  "/v1/learning_sessions?" + (action.value != "view" ? "future_session=true" : ""), //<!-- TODO (6): aggiungere course_id quando Pietro finisce
+  "/v1/learning_sessions?" +
+    (action.value != "view" ? "future_session=true" : ""), //<!-- TODO (6): aggiungere course_id quando Pietro finisce
   (response) => {
     const tmp_learning_sessions: LearningSession[] = [];
 
@@ -1640,11 +2087,11 @@ watch(selected_growth_area, () => {
   addElement("growth_areas");
 });
 if (!sections_use) {
-  watch(selected_teacher, n => {
+  watch(selected_teacher, (n) => {
     if (n != 0) {
       addElement("teachers");
     }
-  })
+  });
 }
 </script>
 

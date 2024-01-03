@@ -10,5 +10,4 @@ const $route = useRoute();
 const student_id: string = $route.params.id as string;
 </script>
 
-<style>
-</style>
+<style></style>

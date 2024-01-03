@@ -45,5 +45,4 @@ defineProps({
 defineEmits(["execute_link", "signal_event"]);
 </script>
 
-<style>
-</style>
+<style></style>

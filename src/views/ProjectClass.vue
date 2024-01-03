@@ -16,8 +16,8 @@
     </ion-content>
   </ion-page>
 </template>
-  
-  <script setup lang="ts">
+
+<script setup lang="ts">
 import { Menu, User } from "@/types";
 import { getCurrentElement } from "@/utils";
 import { IonContent, IonPage } from "@ionic/vue";
@@ -28,7 +28,5 @@ const user = User.getLoggedUser() as User;
 const menu: Menu = store.state.menu;
 const title = getCurrentElement(menu.order[user.user][menu.index]);
 </script>
-  
-  <style scoped>
-</style>
-  
+
+<style scoped></style>

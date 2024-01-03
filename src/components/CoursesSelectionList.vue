@@ -1,35 +1,53 @@
 <template>
   <div class="ion-padding-horizontal">
-    <ion-alert :is-open="openAlert" :header="alert_information.title" :message="alert_information.message"
-      :buttons="alert_information.buttons" @didDismiss="closeModal('max_credits')" />
-    <ion-modal :is-open="description_open" @didDismiss="closeModal('course_details')">
+    <ion-alert
+      :is-open="openAlert"
+      :header="alert_information.title"
+      :message="alert_information.message"
+      :buttons="alert_information.buttons"
+      @didDismiss="closeModal('max_credits')"
+    />
+    <ion-modal
+      :is-open="description_open"
+      @didDismiss="closeModal('course_details')"
+    >
       <suspense>
         <template #default>
-          <course-description :title="description.title" :course_id="description.course_id"
-            :learning_session_id="learning_session_id" :section="description.section"
-            @close="closeModal('course_details')" />
+          <course-description
+            :title="description.title"
+            :course_id="description.course_id"
+            :learning_session_id="learning_session_id"
+            :section="description.section"
+            @close="closeModal('course_details')"
+          />
         </template>
         <template #fallback>
           <loading-component />
         </template>
       </suspense>
     </ion-modal>
-    <ion-modal :is-open="confirmation_open" :can-dismiss="() => !confirmation_open">
+    <ion-modal
+      :is-open="confirmation_open"
+      :can-dismiss="() => !confirmation_open"
+    >
       <ion-header>
         <ion-toolbar>
           <ion-title class="ion-text-center">
-            <ionic-element :element="getCustomMessage(
-              'confirmation_title',
-              confirmation_data.title,
-              'title',
-              {
-                text: {
-                  name: 'primary',
-                  type: 'var',
-                },
-              }
-            )
-              " />
+            <ionic-element
+              :element="
+                getCustomMessage(
+                  'confirmation_title',
+                  confirmation_data.title,
+                  'title',
+                  {
+                    text: {
+                      name: 'primary',
+                      type: 'var',
+                    },
+                  }
+                )
+              "
+            />
           </ion-title>
           <ion-progress-bar v-model:value="timer_bar" :color="getBarColor" />
         </ion-toolbar>
@@ -38,32 +56,41 @@
         <ion-grid class="ion-text-center">
           <ion-row>
             <ion-col>
-              <ionic-element :element="getCustomMessage(
-                'confirmation_message',
-                confirmation_data.message
-              )
-                " />
+              <ionic-element
+                :element="
+                  getCustomMessage(
+                    'confirmation_message',
+                    confirmation_data.message
+                  )
+                "
+              />
             </ion-col>
           </ion-row>
           <ion-row>
             <ion-col>
-              <ionic-element :element="getCustomMessage(
-                'confirmation_warning',
-                getCurrentElement('confrimation_warning'),
-                'string',
-                {
-                  text: {
-                    name: 'warning',
-                    type: 'var',
-                  },
-                }
-              )
-                " />
+              <ionic-element
+                :element="
+                  getCustomMessage(
+                    'confirmation_warning',
+                    getCurrentElement('confrimation_warning'),
+                    'string',
+                    {
+                      text: {
+                        name: 'warning',
+                        type: 'var',
+                      },
+                    }
+                  )
+                "
+              />
             </ion-col>
           </ion-row>
           <ion-row>
             <ion-col v-for="i in getNumberSequence(2)" :key="buttons[i].id">
-              <ionic-element :element="buttons[i]" @signal_event="sendConfirmation()" />
+              <ionic-element
+                :element="buttons[i]"
+                @signal_event="sendConfirmation()"
+              />
             </ion-col>
           </ion-row>
         </ion-grid>
@@ -71,8 +98,13 @@
     </ion-modal>
     <suspense v-if="$route.params.id != undefined">
       <template #default>
-        <session-description :key="trigger" :id="$route.params.id" :learning_context="toSummary(learning_contexts.find((a) => a.id == selected_context))
-          " />
+        <session-description
+          :key="trigger"
+          :id="$route.params.id"
+          :learning_context="
+            toSummary(learning_contexts.find((a) => a.id == selected_context))
+          "
+        />
       </template>
       <template #fallback>
         <loading-component />
@@ -81,31 +113,49 @@
     <ion-grid>
       <ion-row>
         <ion-col size="auto">
-          <custom-select v-model="selected_context" :list="learning_contexts"
-            :label="getCurrentElement('learning_context') + ':'" :aria_label="getCurrentElement('learning_context')"
-            :placeholder="getCurrentElement('learning_context_choice')" :getCompleteName="getContextAcronym" />
+          <custom-select
+            v-model="selected_context"
+            :list="learning_contexts"
+            :label="getCurrentElement('learning_context') + ':'"
+            :aria_label="getCurrentElement('learning_context')"
+            :placeholder="getCurrentElement('learning_context_choice')"
+            :getCompleteName="getContextAcronym"
+          />
         </ion-col>
         <ion-col size="auto">
-          <custom-select v-model="selected_area" :list="learning_areas_structures.distribution[selected_context]"
-            :label="learning_area_sentence + ':'" :aria_label="learning_area_sentence" :placeholder="placeholder"
-            :getCompleteName="getCorrectName" />
+          <custom-select
+            v-model="selected_area"
+            :list="learning_areas_structures.distribution[selected_context]"
+            :label="learning_area_sentence + ':'"
+            :aria_label="learning_area_sentence"
+            :placeholder="placeholder"
+            :getCompleteName="getCorrectName"
+          />
         </ion-col>
       </ion-row>
     </ion-grid>
-    <list-card :key="trigger" @execute_link="changeEnrollment()" @signal_event="openDescription()" :emptiness_message="getCustomMessage(
-      'emptiness_message',
-      getCurrentElement('no_proposed_courses')
-    )
-      " v-model:cards_list="subscriptions_manager.courses" :colors="{
-    list_borders: {
-      name: 'black',
-      type: 'var',
-    },
-    text: {
-      name: 'primary',
-      type: 'var',
-    },
-  }" />
+    <list-card
+      :key="trigger"
+      @execute_link="changeEnrollment()"
+      @signal_event="openDescription()"
+      :emptiness_message="
+        getCustomMessage(
+          'emptiness_message',
+          getCurrentElement('no_proposed_courses')
+        )
+      "
+      v-model:cards_list="subscriptions_manager.courses"
+      :colors="{
+        list_borders: {
+          name: 'black',
+          type: 'var',
+        },
+        text: {
+          name: 'primary',
+          type: 'var',
+        },
+      }"
+    />
   </div>
 </template>
 
@@ -164,7 +214,12 @@ const changeEnrollment = async () => {
   const course_id = queryArray[0].split("=")[1];
   const action = pathArray[pathArray.length - 1];
   const unscribe = action == "unsubscribe";
-  const enrollment_availability = subscriptions_manager.checkEnrollmentAvailability(selected_context.value, selected_area.value, course_id);
+  const enrollment_availability =
+    subscriptions_manager.checkEnrollmentAvailability(
+      selected_context.value,
+      selected_area.value,
+      course_id
+    );
 
   //let count;
   let tmp_card: CourseCardElements;
@@ -175,7 +230,8 @@ const changeEnrollment = async () => {
       && ++count < learning_contexts.length);*/
     if (
       unscribe ||
-      (enrollment_availability.available_courses && enrollment_availability.available_credits)
+      (enrollment_availability.available_courses &&
+        enrollment_availability.available_credits)
     ) {
       await executeLink(
         undefined,
@@ -185,8 +241,8 @@ const changeEnrollment = async () => {
           const enrollment_value = isPending
             ? pendingDate
             : unscribe
-              ? false
-              : response.data ?? true;
+            ? false
+            : response.data ?? true;
 
           let wasPending: boolean;
 
@@ -244,10 +300,14 @@ const changeEnrollment = async () => {
 const getCorrectName = (option: LearningArea) => {
   const language = getCurrentLanguage();
 
-  const tmp_learning_area = learning_areas_structures.list.find(a => a.id == option.id);
+  const tmp_learning_area = learning_areas_structures.list.find(
+    (a) => a.id == option.id
+  );
 
-  return tmp_learning_area != undefined ? tmp_learning_area[`${language}_title`] : "";
-}
+  return tmp_learning_area != undefined
+    ? tmp_learning_area[`${language}_title`]
+    : "";
+};
 const setAlertAndOpen = (type: AvailableModal) => {
   switch (type) {
     case "max_credits":
@@ -303,16 +363,18 @@ const confirm = async (outcome: boolean, time_expired = false) => {
   try {
     await executeLink(
       "/v1/students/" +
-      confirmation_data.student_id +
-      "/confirmation?course_id=" +
-      confirmation_data.course.id +
-      "&session_id=" +
-      confirmation_data.session_id +
-      "&outcome=" +
-      outcome,
+        confirmation_data.student_id +
+        "/confirmation?course_id=" +
+        confirmation_data.course.id +
+        "&session_id=" +
+        confirmation_data.session_id +
+        "&outcome=" +
+        outcome,
       () => {
         if (!time_expired && outcome) {
-          subscriptions_manager.updateCourseAndLinked(confirmation_data.enrollment_value);
+          subscriptions_manager.updateCourseAndLinked(
+            confirmation_data.enrollment_value
+          );
           if (confirmation_data.update_credits) {
             subscriptions_manager.updateCredits(confirmation_data.unscribe);
           }
@@ -448,8 +510,8 @@ const timer_bar = ref(1);
 const subscriptions_manager = new SubscriptionsManager(); // Not ready, later there will be a loadParameters
 
 let learning_areas_structures: {
-  list: LearningArea[],
-  distribution: TmpList<{ id: string }[]>,
+  list: LearningArea[];
+  distribution: TmpList<{ id: string }[]>;
 };
 let learning_contexts: LearningContext[] = [];
 let tmp_courses: CourseSummaryProps[];
@@ -459,24 +521,40 @@ if (learning_session != undefined) {
   learning_contexts = await getLearningContexts(user, learning_session_id);
   selected_context.value = learning_contexts[0].id;
 
-  learning_areas_structures = await getLearningAreasStructures(learning_contexts, learning_session_id);
+  learning_areas_structures = await getLearningAreasStructures(
+    learning_contexts,
+    learning_session_id
+  );
 
-  selected_area.value = learning_areas_structures.distribution[selected_context.value][0].id;
+  selected_area.value =
+    learning_areas_structures.distribution[selected_context.value][0].id;
 
-  if (learning_contexts.length > 0 && learning_areas_structures.list.length > 0) {
+  if (
+    learning_contexts.length > 0 &&
+    learning_areas_structures.list.length > 0
+  ) {
     tmp_courses = await executeLink(
       "/v2/courses?student_id=" +
-      user.id +
-      "&session_id=" +
-      learning_session_id,
+        user.id +
+        "&session_id=" +
+        learning_session_id,
       (response) => response.data.data,
       () => []
     );
 
     if (tmp_courses.length > 0) {
-
-      await subscriptions_manager.loadParameters(user, learning_contexts, learning_areas_structures.list, learning_sessions, tmp_courses, learning_session_id);
-      subscriptions_manager.showCourses(selected_context.value, selected_area.value);
+      await subscriptions_manager.loadParameters(
+        user,
+        learning_contexts,
+        learning_areas_structures.list,
+        learning_sessions,
+        tmp_courses,
+        learning_session_id
+      );
+      subscriptions_manager.showCourses(
+        selected_context.value,
+        selected_area.value
+      );
 
       watch(selected_area, (new_area) => {
         subscriptions_manager.showCourses(selected_context.value, new_area);
@@ -485,7 +563,8 @@ if (learning_session != undefined) {
     }
   }
   watch(selected_context, (new_context) => {
-    selected_area.value = learning_areas_structures.distribution[new_context][0].id;
+    selected_area.value =
+      learning_areas_structures.distribution[new_context][0].id;
     if (tmp_courses.length > 0) {
       subscriptions_manager.showCourses(new_context, selected_area.value);
     }

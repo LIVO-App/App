@@ -119,9 +119,8 @@ if ($route.redirectedFrom?.name == "google_redirect") {
   alert_information.message = getCurrentElement("user_not_valid");
   setTimeout(() => {
     alert_open.value = true;
-  },100);
+  }, 100);
 }
 </script>
 
-<style>
-</style>
+<style></style>

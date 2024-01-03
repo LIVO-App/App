@@ -127,7 +127,12 @@ import {
   TmpList,
   User,
 } from "@/types";
-import { executeLink, getCurrentElement, getCurrentLanguage, getLearningContexts } from "@/utils";
+import {
+  executeLink,
+  getCurrentElement,
+  getCurrentLanguage,
+  getLearningContexts,
+} from "@/utils";
 import {
   IonModal,
   IonGrid,
@@ -154,7 +159,8 @@ const SetupModalAndOpen = () => {
     case "course_details":
       description_title = store.state.event.data.title;
       description_course_id = store.state.event.data.course_id;
-      description_learning_session_id = store.state.event.data.learning_session_id;
+      description_learning_session_id =
+        store.state.event.data.learning_session_id;
       description_section = store.state.event.data.section;
       description_open.value = true;
       break;
@@ -290,7 +296,7 @@ let courses_list: CurriculumCourse[] = [];
 let table_data: CustomElement[][] = [];
 
 if (sections_use) {
-  first_row.splice(1,0,{
+  first_row.splice(1, 0, {
     id: "section",
     type: "string",
     content: getCurrentElement("section"),

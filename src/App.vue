@@ -24,11 +24,12 @@
             </ion-list-header>
 
             <ion-menu-toggle :auto-hide="false" :key="trigger">
-              <template v-if="user != undefined"> <!-- ! (3): mettere hover -->
+              <template v-if="user != undefined">
+                <!-- ! (3): mettere hover -->
                 <ion-item
                   v-for="(p, i) in getMenu(castToUser(user))"
                   :key="i"
-                  @click="selectTitle(castToUser(user).user, i)" 
+                  @click="selectTitle(castToUser(user).user, i)"
                   router-direction="root"
                   :router-link="{ name: p.url_names[castToUser(user).user][0] }"
                   lines="none"

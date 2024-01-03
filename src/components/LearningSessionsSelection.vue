@@ -271,5 +271,4 @@ for (const year of teaching_years) {
 await Promise.all(promises);
 </script>
 
-<style>
-</style>
+<style></style>

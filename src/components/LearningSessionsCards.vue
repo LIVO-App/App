@@ -196,7 +196,8 @@ const current_school_year =
 
 let tmp_element: GeneralCardElements | undefined,
   learning_session: LearningSession;
-let open_enrollment = false, first = true;
+let open_enrollment = false,
+  first = true;
 
 if (current_class != undefined) {
   for (const oc of ordinary_classes) {
@@ -235,7 +236,10 @@ if (current_class != undefined) {
               }
               if (first) {
                 first = false;
-                if (!open_enrollment && learning_session.open_day <= new Date()) {
+                if (
+                  !open_enrollment &&
+                  learning_session.open_day <= new Date()
+                ) {
                   open_enrollment = true;
                 }
               }
@@ -277,11 +281,19 @@ if (current_class != undefined) {
           },
           {
             key: "planned",
-            title: getCustomMessage("title", getCurrentElement("planned"), "title"),
+            title: getCustomMessage(
+              "title",
+              getCurrentElement("planned"),
+              "title"
+            ),
           }
         );
         learning_sessions.future.cards["open_enrollment"] = [];
-        if (open_enrollment && (tmp_element = learning_sessions.future.cards["planned"].shift()) != undefined) {
+        if (
+          open_enrollment &&
+          (tmp_element = learning_sessions.future.cards["planned"].shift()) !=
+            undefined
+        ) {
           learning_sessions.future.cards["open_enrollment"].push(tmp_element);
         }
       }
@@ -298,5 +310,4 @@ if (current_class != undefined) {
 }
 </script>
 
-<style>
-</style>
+<style></style>

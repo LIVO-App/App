@@ -38,7 +38,7 @@
 
 <script lang="ts" setup>
 import { GeneralCardElements, StudentInformation } from "@/types";
-import { executeLink/*, getIcon*/ } from "@/utils";
+import { executeLink /*, getIcon*/ } from "@/utils";
 import {
   IonGrid,
   IonRow,
@@ -66,5 +66,4 @@ const student: StudentInformation = await executeLink(
 const student_card: GeneralCardElements = student.toCard();
 </script>
 
-<style>
-</style>
+<style></style>

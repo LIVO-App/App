@@ -188,7 +188,7 @@ http://ionicframework.com/docs/theming/ */
 
   --ion-card-background: #ffffff;
 
-  --ion-font-family: 'Montserrat';
+  --ion-font-family: "Montserrat";
 }
 
 @media (prefers-color-scheme: light) {
@@ -439,7 +439,7 @@ ion-split-pane {
   box-shadow: none !important;
 }
 
-ion-modal>ion-header::after {
+ion-modal > ion-header::after {
   display: none;
 }
 

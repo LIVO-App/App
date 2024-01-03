@@ -29,5 +29,4 @@ const menu: Menu = store.state.menu;
 const title = getCurrentElement(menu.order[user.user][menu.index]);
 </script>
 
-<style>
-</style>
+<style></style>
