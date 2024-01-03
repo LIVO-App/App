@@ -4737,6 +4737,21 @@ class SubscriptionsManager {
   }
 }
 
+enum SuccessCodes {
+  GENERIC = "0",
+}
+
+enum ErrorCodes {
+  GENERIC = "E_0",
+  BAD_REQUEST = "E_1",
+}
+
+type Outcome = {
+  code: SuccessCodes | ErrorCodes;
+  subcode?: number;
+  message?: string;
+};
+
 export {
   Language,
   Menu,
@@ -4866,4 +4881,7 @@ export {
   EnrollmentAvailability,
   CourseReferences,
   SubscriptionsManager,
+  SuccessCodes,
+  ErrorCodes,
+  Outcome,
 };
