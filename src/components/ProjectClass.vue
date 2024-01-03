@@ -796,6 +796,12 @@ const yes_handler = () => {
                   store.state.event.data.student_id
               ) {
                 table_data.splice(i, 1);
+                if (students[i].id == store.state.event.data.student_id) {
+                  students.splice(i, 1);
+                } else {
+                  findStudent();
+                  students.splice(student_index.student_list, 1);
+                }
                 i--;
                 found = true;
               } else if (found) {
