@@ -30,14 +30,10 @@ import {
   TmpList,
   LearningArea,
   UserSummary,
-  Course,
-  AdminProjectClass,
-  SuccessCodes,
-  ErrorCodes,
-  Outcome,
-  EnrollmentAvailability,
-  SubscriptionsManager,
-  SubscriptionsManagerMode,
+  CardsList,
+  OrderedCardsList,
+  EnrollmentTable,
+  AlertInformation,
 } from "./types";
 import { $axios } from "./plugins/axios";
 import { store } from "./store";
@@ -56,12 +52,46 @@ function getRagneString(start: Date, end: Date) {
   return toDateString(new Date(start)) + "-" + toDateString(new Date(end));
 }
 
-function isGeneral(card: CardElements): card is GeneralCardElements {
-  return "side_element" in card || !("credits" in card); // TODO (8): vedere se creare un parametro per fare la condizione positiva
+function isCard(element: any): element is CardElements {
+  return "group" in element;
+}
+
+function isGeneral(element: any): element is GeneralCardElements {
+  return "side_element" in element || !("credits" in element); // TODO (8): vedere se creare un parametro per fare la condizione positiva
 }
 
 function isCourse(element: any): element is CourseCardElements {
   return "credits" in element;
+}
+
+function isOrderedCardList(element: any): element is OrderedCardsList {
+  return "order" in element;
+}
+
+function isCardLists(element: any): element is TmpList<CardsList> {
+  const first_key = Object.keys(element)[0]; // TODO (6): non è detto che la prima lista abbia una carta. Successivamente sostituire a !isEnrollmentTableList
+  const second_key =
+    first_key != undefined ? Object.keys(element[first_key])[0] : undefined;
+
+  return (
+    first_key != undefined &&
+    second_key != undefined &&
+    isCard(element[first_key][second_key][0])
+  );
+}
+
+function isEnrollmentTableList(
+  element: any
+): element is TmpList<TmpList<EnrollmentTable>> {
+  const first_key = Object.keys(element)[0];
+  const second_key =
+    first_key != undefined ? Object.keys(element[first_key])[0] : undefined;
+
+  return (
+    first_key != undefined &&
+    second_key != undefined &&
+    "table_data" in element[first_key][second_key]
+  );
 }
 
 async function executeLink(
@@ -499,7 +529,7 @@ function checkGradesParameters(
 
 function getSubscribedCredits(
   courses_data: {
-    pending: string;
+    pending: boolean | Date;
     credits: number;
   }[]
 ) {
@@ -507,10 +537,10 @@ function getSubscribedCredits(
     (
       a: number,
       b: {
-        pending: string;
+        pending: boolean | Date;
         credits: number;
       }
-    ) => a + (b.pending == "true" ? b.credits : 0),
+    ) => a + (b.pending === true ? b.credits : 0),
     0
   );
 }
@@ -574,80 +604,54 @@ function getCssColor(text_color: ColorObject) {
     : text_color.name;
 }
 
-function moveStudent(
-  subscriptions_manager: SubscriptionsManager,
-  origin_project_class: AdminProjectClass
-): Outcome {
-  const outcome: Outcome = {
-    code: SuccessCodes.GENERIC,
-  };
+function setupError(message?: string) {
+  // TODO (5): Mettere un unico in App.vue e uniformare il sistema
+  const alert_information: AlertInformation = store.state.alert_information;
 
-  let enrollment_availability: EnrollmentAvailability;
+  alert_information.title = getCurrentElement("error");
+  alert_information.message = message ?? getCurrentElement("general_error");
+  alert_information.buttons = [getCurrentElement("ok")];
+}
 
-  if (subscriptions_manager.mode != SubscriptionsManagerMode.MOVE) {
-    outcome.code = ErrorCodes.BAD_REQUEST;
-  } else if (origin_project_class.final_confirmation != undefined) {
-    outcome.code = ErrorCodes.GENERIC;
-    outcome.subcode = 0;
-    outcome.message = getCurrentElement("class_already_confirmed");
-  } else {
-    enrollment_availability = subscriptions_manager.checkEnrollmentAvailability(
-      store.state.event.data.to.learning_context_id,
-      store.state.event.data.to.learning_area_id,
-      store.state.event.data.to.course_id,
-      store.state.event.data.from.course_id
-    );
-    if (enrollment_availability.course != undefined) {
-      if (
-        enrollment_availability.available_courses &&
-        enrollment_availability.available_credits
-      ) {
-        executeLink(
-          "/v1/students/" + store.state.event.data.student_id + "/move_class",
-          () => {
-            outcome.message = getCurrentElement("student_moved");
-          },
-          () => {
-            outcome.code = ErrorCodes.GENERIC;
-            outcome.subcode = 2;
-          },
-          "put",
-          {
-            from: {
-              course_id: store.state.event.data.from.course_id,
-              session_id: store.state.event.data.from.session_id,
-            },
-            to: {
-              course_id: store.state.event.data.to.course_id,
-              session_id: store.state.event.data.to.session_id,
-              section: store.state.event.data.to.section,
-            },
-          }
-        );
-      } else if (!enrollment_availability.available_courses) {
-        outcome.code = ErrorCodes.GENERIC;
-        outcome.subcode = 3;
-        outcome.message = getCurrentElement("cannot_move_for_group");
-      } else if (!enrollment_availability.available_credits) {
-        outcome.code = ErrorCodes.GENERIC;
-        outcome.subcode = 4;
-        outcome.message = getCurrentElement("cannot_move_for_credits");
-      }
-    } else {
-      outcome.code = ErrorCodes.GENERIC;
-      outcome.subcode = 1;
+function removeTableIndexedElement(
+  table: CustomElement[][],
+  id: string | number
+) {
+  let index = -1;
+
+  for (let i = 0; i < table.length; i++) {
+    if (index == -1 && table[i][0].id.split("_")[0] == id) {
+      table.splice(i, 1);
+      index = i--;
+    } else if (index != -1) {
+      table[i][0] = getCustomMessage(table[i][0].id + "_index", i + 1);
     }
   }
 
-  return outcome;
+  return index;
+}
+
+function insertTableIndexedElement(
+  table: CustomElement[][],
+  element: CustomElement[],
+  index: number
+) {
+  table.splice(index, 0, element);
+  for (let i = index + 1; i < table.length; i++) {
+    table[i][0] = getCustomMessage(table[i][0].id + "_index", i + 1);
+  }
 }
 
 export {
   getCompleteSchoolYear,
   getCurrentSchoolYear,
   getRagneString,
+  isCard,
   isGeneral,
   isCourse,
+  isOrderedCardList,
+  isCardLists,
+  isEnrollmentTableList,
   executeLink,
   getCurrentElement,
   getIcon,
@@ -684,5 +688,7 @@ export {
   getLearningAreasStructures,
   getContextAcronym,
   getCssColor,
-  moveStudent,
+  setupError,
+  removeTableIndexedElement,
+  insertTableIndexedElement,
 };

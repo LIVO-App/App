@@ -25,7 +25,7 @@ import {
 } from "@/utils";
 import { IonPage, IonContent, IonAlert } from "@ionic/vue";
 import { useStore } from "vuex";
-import { LoginInformation, User } from "@/types";
+import { AlertInformation, LoginInformation, User } from "@/types";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -107,13 +107,11 @@ const googleAuth = () => {
 const store = useStore();
 const $router = useRouter();
 const $route = useRoute();
+const alert_information: AlertInformation = store.state.alert_information;
+alert_information.title = getCurrentElement("error");
+alert_information.buttons = [getCurrentElement("ok")];
 
 const alert_open = ref(false);
-const alert_information = {
-  title: getCurrentElement("error"),
-  message: "",
-  buttons: [getCurrentElement("ok")],
-};
 
 if ($route.redirectedFrom?.name == "google_redirect") {
   alert_information.message = getCurrentElement("user_not_valid");

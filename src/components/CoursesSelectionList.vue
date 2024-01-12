@@ -160,6 +160,7 @@
 </template>
 
 <script setup lang="ts">
+import { OrdinaryClass } from "@/types";
 import {
   CourseCardElements,
   CourseSummaryProps,
@@ -169,8 +170,11 @@ import {
   User,
   CustomElement,
   EventString,
+  OrdinaryClassSummary,
   SubscriptionsManager,
   TmpList,
+  AlertInformation,
+  CourseSummary,
 } from "@/types";
 import {
   executeLink,
@@ -182,6 +186,7 @@ import {
   toSummary,
   getLearningAreasStructures,
   getContextAcronym,
+  setupError,
 } from "@/utils";
 import {
   IonAlert,
@@ -196,7 +201,7 @@ import {
   IonTitle,
 } from "@ionic/vue";
 import { computed, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { Store, useStore } from "vuex";
 
 type AvailableModal =
@@ -204,7 +209,8 @@ type AvailableModal =
   | "max_credits"
   | "max_courses"
   | "confirmation"
-  | "wrong_subscription";
+  | "wrong_subscription"
+  | "error";
 //| "general_error"; //<!-- TODO (4): put general error with refresh button
 
 const changeEnrollment = async () => {
@@ -238,11 +244,7 @@ const changeEnrollment = async () => {
         (response: any) => {
           const pendingDate = new Date(response.data.data ?? "no date");
           const isPending = !isNaN(pendingDate.getTime());
-          const enrollment_value = isPending
-            ? pendingDate
-            : unscribe
-            ? false
-            : response.data ?? true;
+          const enrollment_value = isPending ? pendingDate : !unscribe;
 
           let wasPending: boolean;
 
@@ -281,7 +283,7 @@ const changeEnrollment = async () => {
               trigger.value++;
             }
           } else {
-            console.error("Course not found");
+            setAlertAndOpen("error");
           }
         },
         () => setAlertAndOpen("wrong_subscription")
@@ -294,7 +296,7 @@ const changeEnrollment = async () => {
       }
     }
   } else {
-    console.error("Course not found");
+    setAlertAndOpen("error");
   }
 };
 const getCorrectName = (option: LearningArea) => {
@@ -308,8 +310,11 @@ const getCorrectName = (option: LearningArea) => {
     ? tmp_learning_area[`${language}_title`]
     : "";
 };
-const setAlertAndOpen = (type: AvailableModal) => {
-  switch (type) {
+const setAlertAndOpen = (
+  window: AvailableModal = store.state.event.event,
+  message: string = store.state.event.data?.message
+) => {
+  switch (window) {
     case "max_credits":
       alert_information.title = getCurrentElement("error");
       alert_information.message = getCurrentElement("maximum_credits_error");
@@ -321,6 +326,9 @@ const setAlertAndOpen = (type: AvailableModal) => {
     case "wrong_subscription":
       alert_information.title = getCurrentElement("error");
       alert_information.message = getCurrentElement("wrong_subscription");
+      break;
+    case "error":
+      setupError(message);
       break;
   }
   openAlert.value = true;
@@ -385,7 +393,7 @@ const confirm = async (outcome: boolean, time_expired = false) => {
       "patch"
     );
   } catch (error) {
-    console.log(error);
+    setAlertAndOpen();
   }
   closeModal("confirmation");
 };
@@ -401,9 +409,12 @@ const getBarColor = computed(() => {
 
 const store: Store<any> = useStore();
 const $route = useRoute();
+const $router = useRouter();
 const language = getCurrentLanguage();
 const user = User.getLoggedUser() as User;
 const learning_session_id: string = $route.params.id as string;
+const alert_information: AlertInformation = store.state.alert_information;
+alert_information.buttons = [getCurrentElement("ok")];
 
 const trigger = ref(0);
 const learning_area_sentence = getCurrentElement("learning_area");
@@ -412,11 +423,6 @@ const placeholder =
   (language == "italian" ? " l'" : " the ") +
   learning_area_sentence; //<!-- TODO (4): sistemare quando verrà messa la lista parametri a getCurrentElement
 const openAlert = ref(false);
-const alert_information = {
-  title: "",
-  message: "",
-  buttons: [getCurrentElement("ok")],
-};
 const selected_context = ref("");
 const selected_area = ref("");
 const description_open = ref(false);
@@ -433,12 +439,32 @@ const learning_session =
   learning_session_position != -1
     ? learning_sessions[learning_session_position]
     : undefined;
+const ordinary_class: OrdinaryClassSummary =
+  learning_session != undefined
+    ? await executeLink(
+        "/v1/ordinary_classes?student_id=" +
+          user.id +
+          "&school_year=" +
+          learning_session?.school_year,
+        (response) =>
+          new OrdinaryClass(response.data.data).toOrdinaryClassSummary()
+      )
+    : undefined;
 const description = {
   title: "",
   course_id: -1,
   section: "",
 };
-const confirmation_data = {
+const confirmation_data: {
+  title: string;
+  message: string;
+  student_id: number;
+  course: CourseCardElements;
+  session_id: number | undefined;
+  unscribe: boolean;
+  enrollment_value: boolean | Date;
+  update_credits: boolean;
+} = {
   title: "",
   message: "",
   student_id: user.id,
@@ -514,10 +540,10 @@ let learning_areas_structures: {
   distribution: TmpList<{ id: string }[]>;
 };
 let learning_contexts: LearningContext[] = [];
-let tmp_courses: CourseSummaryProps[];
+let tmp_courses: CourseSummary[];
 let timer: number;
 
-if (learning_session != undefined) {
+if (learning_session != undefined && ordinary_class != undefined) {
   learning_contexts = await getLearningContexts(user, learning_session_id);
   selected_context.value = learning_contexts[0].id;
 
@@ -538,13 +564,15 @@ if (learning_session != undefined) {
         user.id +
         "&session_id=" +
         learning_session_id,
-      (response) => response.data.data,
+      (response) =>
+        response.data.data.map((a: CourseSummaryProps) => new CourseSummary(a)),
       () => []
     );
 
     if (tmp_courses.length > 0) {
       await subscriptions_manager.loadParameters(
         user,
+        ordinary_class,
         learning_contexts,
         learning_areas_structures.list,
         learning_sessions,
@@ -570,6 +598,8 @@ if (learning_session != undefined) {
     }
     trigger.value++;
   });
+} else {
+  $router.push({ name: "learning_sessions" });
 }
 </script>
 

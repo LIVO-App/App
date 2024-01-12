@@ -118,6 +118,7 @@
           }
         }
       "
+      class="clickable"
       :class="actual_classes.label"
     >
       {{ castEventString(element.content).text }}
@@ -400,6 +401,9 @@ const border_radius = props.element.params?.border_radius ?? "0px";
   --border-color: v-bind("borders_color");
   --border-style: solid;
   --border-width: 1px;
+}
+.clickable:hover {
+  cursor: pointer;
 }
 /*.paddingButton {
   --padding-top: 10px;

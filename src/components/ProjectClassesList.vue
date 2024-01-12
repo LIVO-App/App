@@ -64,7 +64,6 @@
         />
         <!-- TODO (5): capire perchè con 5 si crea uno spazio inutilizzabile in fondo -->
       </ion-col>
-      <!-- ! (2): usare l'api ordinary_classes/.../non_compliant dentro alla classe scelta -->
     </ion-row>
   </ion-grid>
 </template>
@@ -283,7 +282,12 @@ const getClasses = () => {
         false,
         false,
         false,
-        "/ordinary_classes/" + tmp_class.toString(false, true, "_")
+        "/ordinary_classes/" +
+          tmp_class.study_year +
+          "/" +
+          tmp_class.address +
+          "/" +
+          tmp_class.school_year
       )
     );
   }

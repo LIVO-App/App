@@ -111,6 +111,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import("../views/OrdinaryClasses.vue"),
   },
   {
+    path: "/ordinary_classes/:study_year/:address/:school_year",
+    name: "ordinary_class",
+    component: () => import("../views/OrdinaryClass.vue"),
+  },
+  {
     path: "/students/:id",
     name: "student",
     component: () => import("../views/StudentDescription.vue"),

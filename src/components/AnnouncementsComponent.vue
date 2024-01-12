@@ -87,6 +87,7 @@
 
 <script setup lang="ts">
 import {
+  AlertInformation,
   AnnouncementSummary,
   AnnouncementSummaryProps,
   CustomElement,
@@ -186,10 +187,7 @@ const updateMessages = async () => {
       response.data.data.map((a: AnnouncementSummaryProps) =>
         new AnnouncementSummary(a).toCard()
       ),
-    (err) => {
-      console.log(err);
-      return [];
-    }
+    () => []
   );
   trigger.value++;
 };
@@ -197,6 +195,9 @@ const updateMessages = async () => {
 const store = useStore();
 const user = User.getLoggedUser() as User;
 const sections_use: boolean = store.state.sections_use;
+const alert_information: AlertInformation = store.state.alert_information;
+alert_information.title = getCurrentElement("error");
+alert_information.buttons = [getCurrentElement("ok")];
 
 const announcement_open = ref(false);
 const publishment_open = ref(false);
@@ -218,11 +219,6 @@ const buttons: CustomElement[] = [
   },
 ];
 const alert_open = ref(false);
-const alert_information = {
-  title: getCurrentElement("error"),
-  message: "",
-  buttons: [getCurrentElement("ok")],
-};
 const messages: OrderedCardsList = {
   order: [],
   cards: {

@@ -97,9 +97,9 @@ import {
   getCurrentElement,
   getCustomMessage,
   getIcon,
+  setupError,
 } from "@/utils";
 import { useRoute } from "vue-router";
-import { list } from "ionicons/icons";
 
 type Indexes = {
   group: string;
@@ -285,11 +285,6 @@ const getPropositions = async () => {
 
   return cards;
 };
-const setupError = (message?: string) => {
-  alert_information.title = getCurrentElement("error");
-  alert_information.message = message ?? getCurrentElement("general_error");
-  alert_information.buttons = [getCurrentElement("ok")];
-};
 const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
   const actual_window: AvailableModal = window ?? store.state.event.event;
   const actual_message: string = message ?? store.state.event.data?.message;
@@ -319,14 +314,15 @@ const closeModal = (window: AvailableModal) => {
 const exportPropositions = () => {
   executeLink(
     undefined,
-    (response) =>
-      setTimeout(() => {
-        console.log(response);
-        setupModalAndOpen(
-          "success",
-          getCurrentElement("propositions_exported")
-        );
-      }, 300),
+    () =>
+      setTimeout(
+        () =>
+          setupModalAndOpen(
+            "success",
+            getCurrentElement("propositions_exported")
+          ),
+        300
+      ),
     () => setTimeout(() => setupModalAndOpen("error"), 300)
   );
 };
@@ -334,6 +330,7 @@ const exportPropositions = () => {
 const store = useStore();
 const user = User.getLoggedUser() as User;
 const $route = useRoute();
+const alert_information: AlertInformation = store.state.alert_information;
 
 const promises: Promise<any>[] = [];
 const learning_sessions_cards: OrderedCardsList<GeneralCardElements> = reactive(
@@ -367,20 +364,10 @@ const learning_sessions: LearningSession[] = []; /* await executeLink(
       }
     )*/
 const trigger = ref(0);
-const all_sections: {
-  [key: number]: {
-    [key: string]: { id: string }[];
-  };
-} = {};
 const selected_option: Ref<string> = ref(
   $route.name == "ordinary_classes" ? "" : "project_classes"
 );
 const alert_open = ref(false);
-const alert_information: AlertInformation = {
-  title: "",
-  message: "",
-  buttons: [],
-};
 const buttons = [
   {
     id: "export",

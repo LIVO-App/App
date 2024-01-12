@@ -22,77 +22,82 @@
     <ion-grid>
       <ion-row>
         <ion-col>
-          <ionic-element
-            :element="
-              getCustomMessage(
-                'actual_course',
-                getCurrentElement('actual_course') + ':',
-                'title',
-                colors
-              )
-            "
-          />
-          <div>
+          <template v-if="project_class_card != undefined">
             <ionic-element
               :element="
                 getCustomMessage(
-                  'learning_context_area_title',
-                  getCurrentElement('learning_context') +
-                    ' - ' +
-                    getCurrentElement('learning_area'),
+                  'actual_course',
+                  getCurrentElement('actual_course') + ':',
                   'title',
                   colors
                 )
               "
             />
-            <ionic-element
-              :element="
-                getCustomMessage(
-                  'learning_context_area',
-                  ': ' +
-                    (origin.learning_context != undefined
-                      ? origin.learning_context[`${language}_title`]
-                      : '') +
-                    ' - ' +
-                    (origin.learning_area != undefined
-                      ? origin.learning_area[`${language}_title`]
-                      : ''),
-                  'string',
-                  colors
-                )
-              "
-            />
-          </div>
-          <div :key="element.id" v-for="element in project_class_card.content">
-            <ionic-element :element="element" />
-          </div>
-          <div>
-            <ionic-element
-              :element="
-                getCustomMessage(
-                  'credits',
-                  getCurrentElement('credits'),
-                  'title',
-                  colors
-                )
-              "
-            />
-            <ionic-element
-              :element="
-                getCustomMessage(
-                  'credits',
-                  ': ' +
-                    (origin.course != undefined
-                      ? isCourse(origin.course)
-                        ? origin.course.credits
-                        : origin.course[1].content
-                      : ''),
-                  'string',
-                  colors
-                )
-              "
-            />
-          </div>
+            <div>
+              <ionic-element
+                :element="
+                  getCustomMessage(
+                    'learning_context_area_title',
+                    getCurrentElement('learning_context') +
+                      ' - ' +
+                      getCurrentElement('learning_area'),
+                    'title',
+                    colors
+                  )
+                "
+              />
+              <ionic-element
+                :element="
+                  getCustomMessage(
+                    'learning_context_area',
+                    ': ' +
+                      (origin.learning_context != undefined
+                        ? origin.learning_context[`${language}_title`]
+                        : '') +
+                      ' - ' +
+                      (origin.learning_area != undefined
+                        ? origin.learning_area[`${language}_title`]
+                        : ''),
+                    'string',
+                    colors
+                  )
+                "
+              />
+            </div>
+            <div
+              :key="element.id"
+              v-for="element in project_class_card.content"
+            >
+              <ionic-element :element="element" />
+            </div>
+            <div>
+              <ionic-element
+                :element="
+                  getCustomMessage(
+                    'credits',
+                    getCurrentElement('credits'),
+                    'title',
+                    colors
+                  )
+                "
+              />
+              <ionic-element
+                :element="
+                  getCustomMessage(
+                    'credits',
+                    ': ' +
+                      (origin.course != undefined
+                        ? isCourse(origin.course)
+                          ? origin.course.credits
+                          : origin.course[1].content
+                        : ''),
+                    'string',
+                    colors
+                  )
+                "
+              />
+            </div>
+          </template>
         </ion-col>
       </ion-row>
       <ion-row class="">
@@ -159,7 +164,7 @@
           />
         </ion-col>
       </ion-row>
-      <ion-row v-if="table_data.length > 0">
+      <ion-row>
         <ion-col size="auto">
           <custom-select
             v-model="selected_context"
@@ -181,36 +186,42 @@
           />
         </ion-col>
       </ion-row>
-      <ion-row v-if="table_data.length > 0">
-        <ion-col>
-          <ionic-table
-            :key="trigger"
-            :data="table_data"
-            :first_row="first_row"
-            :column_sizes="column_sizes"
-            @signal_event="
-              store.state.event.data.from = {
-                course_id: project_class.course_id,
-                session_id: project_class.learning_session.id,
-              };
-              $emit('signal_event');
-            "
-          />
+      <ion-row>
+        <ion-col :key="trigger">
+          <div>
+            <ionic-table
+              v-if="table_data.length > 0"
+              :key="trigger"
+              :data="table_data"
+              :first_row="first_row"
+              :column_sizes="column_sizes"
+              @signal_event="
+                if (
+                  subscriptions_manager.mode == SubscriptionsManagerMode.MOVE &&
+                  project_class != undefined
+                ) {
+                  store.state.event.data.from = {
+                    course_id: project_class.course_id,
+                    session_id: project_class.learning_session.id,
+                  };
+                }
+                $emit('signal_event');
+              "
+            />
+            <div v-else class="ion-text-center">
+              <ionic-element
+                :element="
+                  getCustomMessage(
+                    'emptiness_message',
+                    getCurrentElement('no_courses'),
+                    'string',
+                    colors
+                  )
+                "
+              />
+            </div>
+          </div>
         </ion-col>
-      </ion-row>
-      <ion-row v-else>
-        <div class="ion-text-center ion-padding">
-          <ionic-element
-            :element="
-              getCustomMessage(
-                'emptiness_message',
-                getCurrentElement('no_courses'),
-                'string',
-                colors
-              )
-            "
-          />
-        </div>
       </ion-row>
     </ion-grid>
   </ion-content>
@@ -222,6 +233,7 @@ import {
   Colors,
   CourseCardElements,
   CourseReferences,
+  CourseSummary,
   CourseSummaryProps,
   CustomElement,
   GeneralSubElements,
@@ -229,8 +241,11 @@ import {
   LearningContext,
   LearningSession,
   LearningArea,
+  LearningAreasStructures,
+  OrdinaryClassSummary,
   TmpList,
   UserSummary,
+  SubscriptionsManagerMode,
 } from "@/types";
 import {
   executeLink,
@@ -252,7 +267,7 @@ import {
   IonRow,
   IonToolbar,
 } from "@ionic/vue";
-import { PropType, ref, watch } from "vue";
+import { PropType, Ref, ref, watch } from "vue";
 import { useStore } from "vuex";
 
 const getCorrectName = (option: LearningArea) => {
@@ -269,6 +284,7 @@ const getCorrectName = (option: LearningArea) => {
 const getCreditsList = () => {
   //<!-- TODO (7): Vedere se unire con getSessionList
   let list = "";
+  let credits_per_context: TmpList<number>;
 
   for (const context of learning_contexts) {
     list +=
@@ -295,19 +311,20 @@ const getCreditsList = () => {
           : "") +
         ">";
       for (const area of learning_areas_structures.list) {
-        list +=
-          "<li>" +
-          area[`${language}_title`] +
-          ": " +
-          ((area.credits ?? 0) -
-            (
-              props.subscriptions_manager.remaing_credits[
-                context.id
-              ] as TmpList<number>
-            )[area.id]) +
-          "/" +
-          area.credits +
-          "</li>";
+        if (area.credits != undefined) {
+          credits_per_context =
+            (props.subscriptions_manager.remaing_credits[
+              context.id
+            ] as TmpList<number>) ?? {};
+          list +=
+            "<li>" +
+            area[`${language}_title`] +
+            ": " +
+            (area.credits - credits_per_context[area.id]) +
+            "/" +
+            area.credits +
+            "</li>";
+        }
       }
       list += "</ul>";
     }
@@ -392,11 +409,13 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  learning_sessions: Array<LearningSession>,
-  project_class: {
-    type: Object as PropType<ProjectClassSummary>,
+  ordinary_class: {
+    type: Object as PropType<OrdinaryClassSummary>,
     required: true,
   },
+  learning_sessions: Array<LearningSession>,
+  project_class: Object as PropType<ProjectClassSummary>,
+  learning_session: Object as PropType<LearningSession>,
   section: {
     type: String,
     required: true,
@@ -406,7 +425,7 @@ const props = defineProps({
     required: true,
   },
 });
-defineEmits(["signal_event", "close"]);
+const emit = defineEmits(["signal_event", "close", "error", "no_courses"]);
 
 const elements: {
   [key: string]: CustomElement;
@@ -445,19 +464,21 @@ const colors: Colors<GeneralSubElements> = {
   },
 };
 const column_sizes = store.state.sections_use ? [2, 2, 5, 2, 1] : [2, 2, 6, 2];
-const project_class_card = props.project_class.toCard(
-  undefined,
-  props.section,
-  false,
-  true
-);
+const project_class_card =
+  props.project_class != undefined
+    ? props.project_class.toCard(undefined, props.section, false, true)
+    : undefined;
 const learning_sessions: LearningSession[] =
   props.learning_sessions ??
-  (await executeLink(
-    "/v1/learning_sessions?year_of=" + props.project_class.learning_session.id,
-    (response) => response.data.data.map((a: any) => new LearningSession(a)),
-    () => []
-  ));
+  (props.project_class != undefined
+    ? await executeLink(
+        "/v1/learning_sessions?year_of=" +
+          props.project_class.learning_session.id,
+        (response) =>
+          response.data.data.map((a: any) => new LearningSession(a)),
+        () => []
+      )
+    : []);
 const origin: {
   references: CourseReferences | undefined;
   course: CustomElement[] | CourseCardElements | undefined;
@@ -473,119 +494,170 @@ const student = new UserSummary({
   id: props.student_id,
   user: "student",
 });
-const learning_contexts = await getLearningContexts(
-  student,
-  "" + props.project_class.learning_session.id
-); //<!-- TODO (6): sistemare id (es. tutti stringa)
-const learning_areas_structures = await getLearningAreasStructures(
-  learning_contexts,
-  "" + props.project_class.learning_session.id
-);
-
-const selected_context = ref(
-  learning_contexts.length > 0 ? learning_contexts[0].id : ""
-);
-const selected_area = ref(
-  learning_areas_structures.distribution[selected_context.value].length > 0
-    ? learning_areas_structures.distribution[selected_context.value][0].id
-    : ""
-);
 const learning_area_sentence = getCurrentElement("learning_area");
 const placeholder =
   getCurrentElement("select") +
   (language == "italian" ? " l'" : " the ") +
   learning_area_sentence; //<!-- TODO (4): sistemare quando verrà messa la lista parametri a getCurrentElement
 const trigger = ref(0);
+const tmp_courses: CourseSummary[] = [];
+
+let actual_learning_session: LearningSession,
+  learning_contexts: LearningContext[],
+  learning_areas_structures: LearningAreasStructures,
+  selected_context: Ref<string>,
+  selected_area: Ref<string>;
+let table_data: CustomElement[][] = [];
 let credits_list = "";
 let groups_list = "";
+let confirmed_courses = false;
 
-let table_data: CustomElement[][] = [];
-let tmp_courses: CourseSummaryProps[];
-
-project_class_card.colors = colors;
-for (const element of project_class_card.content as CustomElement[]) {
-  element.colors = colors;
-}
-if (learning_contexts.length > 0 && learning_areas_structures.list.length > 0) {
-  if (store.state.sections_use) {
-    first_row.push({
-      id: "section",
-      type: "string",
-      content: getCurrentElement("section"),
-    });
-  }
-  first_row.push({
-    id: "move_student",
-    type: "string",
-    content: "",
-  });
-
-  tmp_courses = await executeLink(
-    "/v2/courses?student_id=" +
-      props.student_id +
-      "&session_id=" +
-      props.project_class.learning_session.id,
-    (response) =>
-      response.data.data.map((a: CourseSummaryProps) => {
-        a.section = "A"; //<!-- TODO (4): gestire sezioni
-        return a;
-      }),
-    () => []
+if (props.project_class != undefined || props.learning_session != undefined) {
+  actual_learning_session =
+    props.project_class != undefined
+      ? props.project_class.learning_session
+      : (props.learning_session as LearningSession);
+  learning_contexts = await getLearningContexts(
+    student,
+    "" + actual_learning_session.id
+  ); //<!-- TODO (6): sistemare id (es. tutti stringa)
+  learning_areas_structures = await getLearningAreasStructures(
+    learning_contexts,
+    "" + actual_learning_session.id
+  );
+  selected_context = ref(
+    learning_contexts.length > 0 ? learning_contexts[0].id : ""
+  );
+  selected_area = ref(
+    learning_areas_structures.distribution[selected_context.value].length > 0
+      ? learning_areas_structures.distribution[selected_context.value][0].id
+      : ""
   );
 
-  if (tmp_courses.length > 0) {
-    await props.subscriptions_manager.loadParameters(
-      student,
-      learning_contexts,
-      learning_areas_structures.list,
-      learning_sessions,
-      tmp_courses,
-      "" + props.project_class.learning_session.id
-    );
-    origin.references = props.subscriptions_manager.getCourseReferences(
-      "" + props.project_class.course_id
-    );
-    origin.course =
-      origin.references != undefined
-        ? props.subscriptions_manager.getCourse(origin.references)
-        : undefined;
-    origin.learning_context = learning_contexts.find(
-      (a) => a.id == origin.references?.learning_context_id
-    );
-    origin.learning_area = learning_areas_structures.list.find(
-      (a) => a.id == origin.references?.learning_area_id
-    );
-    props.subscriptions_manager.showCourses(
-      selected_context.value,
-      selected_area.value,
-      ["" + props.project_class.course_id]
-    );
-    table_data = props.subscriptions_manager.courses as CustomElement[][];
-    credits_list = getCreditsList();
-    groups_list = getGroupsList();
+  if (project_class_card != undefined) {
+    project_class_card.colors = colors;
+    for (const element of project_class_card.content as CustomElement[]) {
+      element.colors = colors;
+    }
+  }
+  if (
+    learning_contexts.length > 0 &&
+    learning_areas_structures.list.length > 0
+  ) {
+    if (store.state.sections_use) {
+      first_row.push({
+        id: "section",
+        type: "string",
+        content: getCurrentElement("section"),
+      });
+    }
+    first_row.push({
+      id: "move_student",
+      type: "string",
+      content: "",
+    });
 
-    watch(selected_area, async (new_area) => {
+    await executeLink(
+      "/v2/courses?student_id=" +
+        props.student_id +
+        "&session_id=" +
+        actual_learning_session.id,
+      (response) => {
+        let tmp_course: CourseSummary;
+        for (const course_props of response.data.data as CourseSummaryProps[]) {
+          course_props.section = "A"; //<!-- TODO (4): gestire sezioni
+          tmp_course = new CourseSummary(course_props);
+          if (tmp_course.final_confirmation == null) {
+            tmp_courses.push(tmp_course);
+          } else {
+            confirmed_courses = true;
+          }
+        }
+      },
+      () => []
+    );
+
+    if (tmp_courses.length > 0) {
+      await props.subscriptions_manager.loadParameters(
+        student,
+        props.ordinary_class,
+        learning_contexts,
+        learning_areas_structures.list,
+        learning_sessions,
+        tmp_courses,
+        "" + actual_learning_session.id
+      );
+      if (props.project_class != undefined) {
+        origin.references = props.subscriptions_manager.getCourseReferences(
+          "" + props.project_class.course_id
+        );
+        origin.course =
+          origin.references != undefined
+            ? props.subscriptions_manager.getCourse(origin.references)
+            : undefined;
+        origin.learning_context = learning_contexts.find(
+          (a) => a.id == origin.references?.learning_context_id
+        );
+        origin.learning_area = learning_areas_structures.list.find(
+          (a) => a.id == origin.references?.learning_area_id
+        );
+      }
       props.subscriptions_manager.showCourses(
         selected_context.value,
-        new_area,
-        ["" + props.project_class.course_id]
+        selected_area.value,
+        props.project_class != undefined
+          ? ["" + props.project_class.course_id]
+          : undefined
       );
       table_data = props.subscriptions_manager.courses as CustomElement[][];
-      trigger.value++;
-    });
+
+      credits_list = getCreditsList();
+      groups_list = getGroupsList();
+
+      watch(selected_area, async (new_area) => {
+        props.subscriptions_manager.showCourses(
+          selected_context.value,
+          new_area,
+          props.project_class != undefined
+            ? ["" + props.project_class.course_id]
+            : undefined
+        );
+        table_data = props.subscriptions_manager.courses as CustomElement[][];
+        trigger.value++;
+      });
+    } else {
+      store.state.event = {
+        event: "no_courses",
+        data: {
+          message: confirmed_courses
+            ? getCurrentElement("all_project_classes_confirmed")
+            : getCurrentElement("no_courses"),
+        },
+      };
+      emit("signal_event");
+    }
   }
+  watch(selected_context, async (new_context) => {
+    selected_area.value =
+      learning_areas_structures.distribution[new_context][0].id;
+    if (tmp_courses.length > 0) {
+      props.subscriptions_manager.showCourses(
+        new_context,
+        selected_area.value,
+        props.project_class != undefined
+          ? ["" + props.project_class.course_id]
+          : undefined
+      );
+      table_data = props.subscriptions_manager.courses as CustomElement[][];
+    }
+    trigger.value++;
+  });
+} else {
+  store.state.event = {
+    event: "error",
+  };
+  emit("signal_event");
 }
-watch(selected_context, async (new_context) => {
-  selected_area.value =
-    learning_areas_structures.distribution[new_context][0].id;
-  if (tmp_courses.length > 0) {
-    props.subscriptions_manager.showCourses(new_context, selected_area.value, [
-      "" + props.project_class.course_id,
-    ]);
-    table_data = props.subscriptions_manager.courses as CustomElement[][];
-  }
-  trigger.value++;
-});
 </script>
 
 <style></style>

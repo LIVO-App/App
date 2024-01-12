@@ -572,7 +572,7 @@
                     :label="getCurrentElement('learning_sessions') + ':'"
                     :aria_label="getCurrentElement('learning_sessions')"
                     :placeholder="getCurrentElement('learning_sessions_choice')"
-                    :getCompleteName="learningSessionToString"
+                    :getCompleteName="LearningSession.toString"
                     :disabled="action == 'view' || approved.project_class"
                   />
                   <custom-select
@@ -939,8 +939,6 @@ const learningContextToString = (learning_context: LearningContext) =>
   learning_context[`${language}_title`];
 const studyAddressToString = (study_address: StudyAddress) =>
   study_address[`${language}_title`];
-const learningSessionToString = (session: LearningSession) =>
-  session.number + " - " + session.school_year;
 const teacherToString = (teacher: Teacher) =>
   teacher.name + " " + teacher.surname;
 const castToTitles = (titles: any) => titles as PropositionTitles;
@@ -1711,16 +1709,11 @@ const language = getCurrentLanguage();
 const languages = getAviableLanguages();
 const $route = useRoute();
 const $router = useRouter();
+const alert_information: AlertInformation = store.state.alert_information;
 
 const trigger = ref(0);
 const selected_model: Ref<number | undefined> = ref(undefined);
 const alert_open = ref(false);
-const alert_information: AlertInformation = {
-  title: "",
-  message: "",
-  buttons: [],
-  inputs: [],
-};
 const pages = ModelProposition.getProps("pages");
 const current_page_index = ref(0);
 const buttons: CustomElement[] = [

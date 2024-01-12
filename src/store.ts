@@ -140,8 +140,8 @@ export const store = createStore({
           },
           ordinary_classes: {
             url_names: {
-              teacher: ["ordinary_classes", "student"],
-              admin: ["ordinary_classes", "student"],
+              teacher: ["ordinary_classes", "ordinary_class", "student"],
+              admin: ["ordinary_classes", "ordinary_class", "student"],
             },
             icon_ref: "people",
           },
@@ -657,6 +657,20 @@ export const store = createStore({
             "Esporta le proposte della prossima sessione non confermate",
           propositions_exported: "Proposte corsi esportate con successo",
           no_years: "Nessun anno disponibile",
+          compliant_students: "Studenti conformi",
+          all_compliant_students: "Tutti gli studenti conformi",
+          non_compliant_students:
+            "Studenti non conformi alla sessione selezionata",
+          no_compliant_students: "Nessuno studente è conforme",
+          orientation_credits: "Crediti di orientamento",
+          clil_credits: "Crediti CLIL",
+          subscribe_to: "Iscrivi",
+          all_project_classes_confirmed:
+            "Tutti le classi progetto sono state confermate",
+          student_subscribed: "Studente iscritto con successo",
+          student_subscribed_and_compliant:
+            "Studente iscritto con successo e ora conforme ai vincoli della sessione",
+          pending_student: "Classe progetto piena. Studente messo in attesa",
         },
         english: {
           credits_constraints: "Credits constraints",
@@ -961,6 +975,18 @@ export const store = createStore({
           non_confirmed_export:
             "Export the next session's unconfirmed proposals",
           no_years: "No years available",
+          compliant_students: "Compliant students to the selected session",
+          all_compliant_students: "All compliant students",
+          non_compliant_students: "Non compliant students",
+          no_compliant_students: "No compliant students",
+          orientation_credits: "Orientation credits",
+          clil_credits: "CLIL credits",
+          subscribe_to: "Subscribe",
+          all_project_classes_confirmed: "All project classes confirmed",
+          student_subscribed: "Student subscribed successfully",
+          student_subscribed_and_compliant:
+            "Student subscribed successfully and now compliant to the selected session's constraints",
+          pending_student: "Project class full. Student put in pending",
         },
       },
       logged_user: false,
@@ -982,6 +1008,12 @@ export const store = createStore({
         grades: 0,
       },
       default_section: "A", // TODO (6): mettere dove serve
+      alert_information: {
+        title: "",
+        message: "",
+        buttons: [],
+        inputs: [],
+      },
     };
   },
 });

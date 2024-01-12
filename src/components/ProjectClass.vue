@@ -1,6 +1,5 @@
 <template>
   <div class="ion-padding-horizontal">
-    <!-- TODO (5): Mettere alert in App.vue -->
     <ion-alert
       :is-open="alert_open"
       :header="alert_information.title"
@@ -58,6 +57,7 @@
           <project-class-selector
             :title="student_mover_data.title"
             :student_id="student_mover_data.parameters.student_id"
+            :ordinary_class="student_mover_data.parameters.ordinary_class"
             :learning_sessions="learning_sessions"
             :project_class="project_class?.toProjectClassSummary()"
             :section="selected_section"
@@ -152,6 +152,7 @@
             :first_row="first_row"
             :column_sizes="column_sizes"
             @signal_event="setupModalAndOpen()"
+            @execute_link="$router.push(store.state.request.url)"
           />
           <ionic-element
             v-else
@@ -168,6 +169,7 @@
         <loading-component />
       </template>
     </suspense>
+    <!-- TODO (5): Aggiungere tabella pending -->
   </div>
 </template>
 
@@ -178,7 +180,7 @@ import {
   Grade,
   GradeProps,
   GradesParameters,
-  Student,
+  ProjectClassStudent,
   User,
   LearningSession,
   LearningSessionStatus,
@@ -190,6 +192,8 @@ import {
   Outcome,
   SuccessCodes,
   ErrorCodes,
+  EnrollmentAvailability,
+  SubscriptionsManagerVisualizzationType,
 } from "@/types";
 import {
   executeLink,
@@ -197,7 +201,8 @@ import {
   getCurrentElement,
   getCustomMessage,
   getIcon,
-  moveStudent,
+  removeTableIndexedElement,
+  setupError,
   toDateString,
 } from "@/utils";
 import { IonModal, IonAlert, AlertButton, IonButton } from "@ionic/vue";
@@ -423,7 +428,7 @@ const updateStudents = async () => {
             selected_section.value +
             (user.user == "teacher" ? "&teacher_id=" + user.id : ""),
           (response) => {
-            const tmp_students: Student[] = [];
+            const tmp_students: ProjectClassStudent[] = [];
 
             associated_teacher = response.data.data.associated_teacher;
             column_sizes =
@@ -452,7 +457,9 @@ const updateStudents = async () => {
               }
             }
             response.data.data.components.map((a: any) => {
-              tmp_students.push(new Student(a));
+              tmp_students.push(
+                new ProjectClassStudent(a, course_id, session_id)
+              );
             });
 
             return tmp_students;
@@ -494,8 +501,6 @@ const updateStudents = async () => {
         ),
       ].concat(
         tmp_student.toTableRow(
-          course_id,
-          session_id,
           user.user == "teacher" ? user.id : undefined,
           user.user == "teacher",
           user.user == "teacher"
@@ -508,21 +513,16 @@ const updateStudents = async () => {
   }
 };
 const manageEvent = () => {
-  /*switch (store.state.event as AvailableModal) {
+  switch (store.state.event.event) {
     case "add_grade":
       add_grade();
       break;
-    case
     default:
+      setupModalAndOpen();
       break;
-  }*/
-  if (store.state.event.event == "add_grade") {
-    add_grade();
-  } else {
-    setupModalAndOpen();
   }
 };
-const yes_handler = () => {
+const yes_handler = async () => {
   let body: {
       [key in keyof GradeProps]?: any;
     },
@@ -532,7 +532,7 @@ const yes_handler = () => {
     edit_keys: string[],
     tmp_grade: Grade,
     outcome: Outcome,
-    found = false;
+    index: number;
 
   switch (store.state.event.event) {
     case "confirmation":
@@ -568,7 +568,7 @@ const yes_handler = () => {
             300
           );
         } else {
-          executeLink(
+          await executeLink(
             "/v1/project_classes/" +
               course_id +
               "/" +
@@ -627,7 +627,7 @@ const yes_handler = () => {
             300
           );
         } else {
-          executeLink(
+          await executeLink(
             "/v1/grades/" + store.state.event.data.id,
             () => {
               updateFinalRefs("" + grade_index.student_id, tmp_grade, true);
@@ -709,7 +709,7 @@ const yes_handler = () => {
             300
           );
         } else {
-          executeLink(
+          await executeLink(
             "/v1/grades/" + store.state.event.data.id,
             () => {
               Object.assign(
@@ -745,6 +745,7 @@ const yes_handler = () => {
       break;
     case "remove_student":
       if (course != undefined && project_class != undefined) {
+        //<!-- TODO (5): mettere controllo contro rimozione numero minimo o parlare con Pietro per toglierlo (anche con move_student)
         if (project_class.final_confirmation != undefined) {
           setTimeout(
             () =>
@@ -755,7 +756,7 @@ const yes_handler = () => {
             300
           );
         } else {
-          executeLink(
+          await executeLink(
             "/v1/students/" +
               store.state.event.data.parameters.student_id +
               "/remove_class?course_id=" +
@@ -785,31 +786,23 @@ const yes_handler = () => {
       break;
     case "move_student":
       if (project_class != undefined) {
-        outcome = moveStudent(subscriptions_manager, project_class);
+        outcome = await moveStudent(subscriptions_manager, project_class);
         closeModal("move_student");
         switch (outcome.code) {
           case SuccessCodes.GENERIC:
-            for (let i = 0; i < table_data.length; i++) {
-              if (
-                !found &&
-                table_data[i][0].id.split("_")[0] ==
-                  store.state.event.data.student_id
-              ) {
-                table_data.splice(i, 1);
-                if (students[i].id == store.state.event.data.student_id) {
-                  students.splice(i, 1);
-                } else {
-                  findStudent();
-                  students.splice(student_index.student_list, 1);
-                }
-                i--;
-                found = true;
-              } else if (found) {
-                table_data[i][0] = getCustomMessage(
-                  tmp_student.id + "_index",
-                  i + 1
-                );
-              }
+            index = removeTableIndexedElement(
+              table_data,
+              store.state.event.data.student_id
+            );
+            if (students[index].id == store.state.event.data.student_id) {
+              students.splice(index, 1);
+            } else {
+              students.splice(
+                students.findIndex(
+                  (a) => a.id == store.state.event.data.student_id
+                ),
+                1
+              );
             }
             students_trigger.value++;
             store.state.event.event = "student_mover";
@@ -828,11 +821,6 @@ const yes_handler = () => {
       }
       break;
   }
-};
-const setupError = (message?: string) => {
-  alert_information.title = getCurrentElement("error");
-  alert_information.message = message ?? getCurrentElement("general_error");
-  alert_information.buttons = [getCurrentElement("ok")];
 };
 const findGrade = () => {
   let count = 0;
@@ -881,12 +869,80 @@ const updateFinalRefs = (
     students_trigger.value++;
   }
 };
+const moveStudent = async (
+  subscriptions_manager: SubscriptionsManager,
+  origin_project_class: AdminProjectClass
+): Promise<Outcome> => {
+  const outcome: Outcome = {
+    code: SuccessCodes.GENERIC,
+  };
+
+  let enrollment_availability: EnrollmentAvailability;
+
+  if (subscriptions_manager.mode != SubscriptionsManagerMode.MOVE) {
+    outcome.code = ErrorCodes.BAD_REQUEST;
+  } else if (
+    origin_project_class.final_confirmation != undefined &&
+    store.state.event.data.to.final_confirmation != undefined
+  ) {
+    outcome.code = ErrorCodes.GENERIC;
+    outcome.subcode = 0;
+    outcome.message = getCurrentElement("class_already_confirmed");
+  } else {
+    enrollment_availability = subscriptions_manager.checkEnrollmentAvailability(
+      store.state.event.data.to.learning_context_id,
+      store.state.event.data.to.learning_area_id,
+      store.state.event.data.to.course_id,
+      store.state.event.data.from.course_id
+    );
+    if (enrollment_availability.course != undefined) {
+      if (!enrollment_availability.available_courses) {
+        outcome.code = ErrorCodes.GENERIC;
+        outcome.subcode = 3;
+        outcome.message = getCurrentElement("cannot_move_for_group");
+      } else if (!enrollment_availability.available_credits) {
+        outcome.code = ErrorCodes.GENERIC;
+        outcome.subcode = 4;
+        outcome.message = getCurrentElement("cannot_move_for_credits");
+      } else {
+        await executeLink(
+          "/v1/students/" + store.state.event.data.student_id + "/move_class",
+          () => {
+            outcome.message = getCurrentElement("student_moved");
+          },
+          () => {
+            outcome.code = ErrorCodes.GENERIC;
+            outcome.subcode = 2;
+          },
+          "put",
+          {
+            from: {
+              course_id: store.state.event.data.from.course_id,
+              session_id: store.state.event.data.from.session_id,
+            },
+            to: {
+              course_id: store.state.event.data.to.course_id,
+              session_id: store.state.event.data.to.session_id,
+              section: store.state.event.data.to.section,
+            },
+          }
+        );
+      }
+    } else {
+      outcome.code = ErrorCodes.GENERIC;
+      outcome.subcode = 1;
+    }
+  }
+
+  return outcome;
+};
 
 const store = useStore();
 const user = User.getLoggedUser() as User;
 const sections_use: boolean = store.state.sections_use;
 const languages = getAviableLanguages();
 const $route = useRoute();
+const alert_information: AlertInformation = store.state.alert_information;
 
 const first_row: CustomElement[] = [
   {
@@ -924,11 +980,6 @@ const final_grades_indexes: {
   [student_id: string]: number;
 } = {};
 const alert_open = ref(false);
-const alert_information: AlertInformation = {
-  title: "",
-  message: "",
-  buttons: [],
-};
 const sections: { id: string }[] = [];
 const tmp_sections: Set<string> = new Set();
 const buttons: CustomElement[] = [
@@ -984,7 +1035,8 @@ const learning_session =
     ? learning_sessions[learning_session_position]
     : undefined;
 const subscriptions_manager = new SubscriptionsManager(
-  SubscriptionsManagerMode.MOVE
+  SubscriptionsManagerMode.MOVE,
+  SubscriptionsManagerVisualizzationType.TABLE
 ); // Not ready, loadParameters will be run with project-class-selector
 
 let table_data: CustomElement[][] = [];
@@ -997,8 +1049,8 @@ let associated_teacher: boolean | undefined;
 let learning_session_status: LearningSessionStatus | undefined;
 let course: Course | undefined;
 let project_class: AdminProjectClass | undefined;
-let students: Student[] = [];
-let tmp_student: Student;
+let students: ProjectClassStudent[] = [];
+let tmp_student: ProjectClassStudent;
 let edits_to_send: {
   [key in keyof GradeProps]: boolean;
 };
