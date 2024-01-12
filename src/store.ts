@@ -671,6 +671,7 @@ export const store = createStore({
           student_subscribed_and_compliant:
             "Studente iscritto con successo e ora conforme ai vincoli della sessione",
           pending_student: "Classe progetto piena. Studente messo in attesa",
+          unauthorized_operation: "Operazione non autorizzata",
         },
         english: {
           credits_constraints: "Credits constraints",
@@ -987,6 +988,7 @@ export const store = createStore({
           student_subscribed_and_compliant:
             "Student subscribed successfully and now compliant to the selected session's constraints",
           pending_student: "Project class full. Student put in pending",
+          unauthorized_operation: "Unauthorized operation",
         },
       },
       logged_user: false,

@@ -48,58 +48,62 @@
       :placeholder="getCurrentElement('learning_sessions_choice')"
       :getCompleteName="LearningSession.toString"
     />
-    <ionic-element
-      :element="
-        getCustomMessage(
-          'title',
-          getCurrentElement('non_compliant_students'),
-          'title',
-          undefined,
-          {
-            label: {
-              'ion-padding': true,
-            },
-          }
-        )
-      "
-    />
-    <suspense>
-      <template #default>
-        <ionic-table
-          v-if="non_compliant_students_index.length > 0"
-          :key="students_trigger"
-          :data="non_compliant_table"
-          :first_row="non_compliant_first_row"
-          :column_sizes="non_compliant_column_sizes"
-          @signal_event="setupModalAndOpen()"
-        />
-        <div class="ion-padding" v-else>
-          <ionic-element
-            :element="
-              getCustomMessage(
-                'emptiness_message',
-                getCurrentElement('all_compliant_students'),
-                'string',
-                undefined,
-                {
-                  label: {
-                    'ion-padding': true,
-                  },
-                }
-              )
-            "
+    <template v-if="user.user == 'admin'">
+      <ionic-element
+        :element="
+          getCustomMessage(
+            'title',
+            getCurrentElement('non_compliant_students'),
+            'title',
+            undefined,
+            {
+              label: {
+                'ion-padding': true,
+              },
+            }
+          )
+        "
+      />
+      <suspense>
+        <template #default>
+          <ionic-table
+            v-if="non_compliant_students_index.length > 0"
+            :key="students_trigger"
+            :data="non_compliant_table"
+            :first_row="non_compliant_first_row"
+            :column_sizes="non_compliant_column_sizes"
+            @signal_event="setupModalAndOpen()"
           />
-        </div>
-      </template>
-      <template #fallback>
-        <loading-component />
-      </template>
-    </suspense>
+          <div class="ion-padding" v-else>
+            <ionic-element
+              :element="
+                getCustomMessage(
+                  'emptiness_message',
+                  getCurrentElement('all_compliant_students'),
+                  'string',
+                  undefined,
+                  {
+                    label: {
+                      'ion-padding': true,
+                    },
+                  }
+                )
+              "
+            />
+          </div>
+        </template>
+        <template #fallback>
+          <loading-component />
+        </template>
+      </suspense>
+    </template>
     <ionic-element
       :element="
         getCustomMessage(
           'title',
-          getCurrentElement('compliant_students'),
+          getCurrentElement(
+            user.user == 'admin' ? 'compliant_students' : 'students'
+          ),
           'title',
           undefined,
           {
@@ -236,9 +240,9 @@ const closeModal = (window: AvailableModal) => {
   }
 };
 const updateStudents = async (
-  new_search = true,
+  do_non_compliants = true,
   do_students = true,
-  do_non_compliants = true
+  new_search = true
 ) => {
   /**
    * @description Update (students, students_table, non_compliant_students_index and non_compliant_table) or (students_table and/or non_compliant_table)
@@ -281,7 +285,7 @@ const updateStudents = async (
       () => []
     );
     if (learning_sessions.length > 0 && students.length > 0) {
-      if (new_search) {
+      if (new_search && user.user == "admin") {
         non_compliant_students_index = await executeLink(
           "/v1/ordinary_classes/" +
             ordinary_class.study_year +
@@ -299,6 +303,8 @@ const updateStudents = async (
         ); // Temporary storage of ids to make the search faster later, since students >= non_compliant_students
       }
     }
+  } else {
+    setupModalAndOpen("error");
   }
   if (new_search || do_non_compliants) {
     non_compliant_table = [];
@@ -427,7 +433,12 @@ const subscribeStudent = async (): Promise<Outcome> => {
 
   let enrollment_availability: EnrollmentAvailability;
 
-  if (subscriptions_manager.mode != SubscriptionsManagerMode.SUBSCRIPTION) {
+  if (user.user != "admin") {
+    outcome.code = ErrorCodes.UNAUTHORIZED;
+    outcome.message = getCurrentElement("unauthorized_operation");
+  } else if (
+    subscriptions_manager.mode != SubscriptionsManagerMode.SUBSCRIPTION
+  ) {
     outcome.code = ErrorCodes.BAD_REQUEST;
   } else if (store.state.event.data.to.final_confirmation != undefined) {
     outcome.code = ErrorCodes.GENERIC;
@@ -496,14 +507,14 @@ const subscribeStudent = async (): Promise<Outcome> => {
 };
 
 const store = useStore();
-//const user = User.getLoggedUser() as User;
+const user = User.getLoggedUser() as User;
 const sections_use: boolean = store.state.sections_use;
-//const languages = getAviableLanguages();
 const $route = useRoute();
 const $router = useRouter();
 const alert_information: AlertInformation = store.state.alert_information;
 
-const students_column_sizes: number[] = [1, 7, 2, 2];
+const students_column_sizes: number[] =
+  user.user == "admin" ? [1, 7, 2, 2] : [1, 11];
 const base_first_row: CustomElement[] = [
   {
     id: "index",
@@ -515,17 +526,22 @@ const base_first_row: CustomElement[] = [
     type: "string",
     content: getCurrentElement("student"),
   },
-  {
-    id: "orientation_credits",
-    type: "string",
-    content: getCurrentElement("orientation_credits"),
-  },
-  {
-    id: "clil_credits",
-    type: "string",
-    content: getCurrentElement("clil_credits"),
-  },
-];
+].concat(
+  user.user == "admin"
+    ? [
+        {
+          id: "orientation_credits",
+          type: "string",
+          content: getCurrentElement("orientation_credits"),
+        },
+        {
+          id: "clil_credits",
+          type: "string",
+          content: getCurrentElement("clil_credits"),
+        },
+      ]
+    : []
+) as CustomElement[];
 const students_first_row: CustomElement[] = base_first_row;
 const student_mover_open = ref(false);
 const students_trigger = ref(0);
@@ -599,17 +615,17 @@ if (
     (a) => a.id == selected_session.value
   );
 
-  await updateStudents();
+  await updateStudents(user.user == "admin");
   watch(selected_session, async () => {
     learning_session = learning_sessions.find(
       (a) => a.id == selected_session.value
     );
-    await updateStudents();
+    await updateStudents(user.user == "admin");
     students_trigger.value++;
   });
   watch(selected_section, async () => {
     ordinary_class.section = selected_section.value;
-    await updateStudents();
+    await updateStudents(user.user == "admin");
     students_trigger.value++;
   });
 } else {

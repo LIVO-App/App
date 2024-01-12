@@ -1567,7 +1567,7 @@ type StringIcon = {
 };
 
 type RequestParameters = {
-  url: string;
+  url: string; // TODO (6): cambiare in Url o RouteLocationRaw (o simile)
   method: Method;
 };
 
@@ -2027,18 +2027,20 @@ class OrdinaryClassStudent extends StudentSummary {
 
   toTableRow(movable = false): CustomElement[] {
     const row_to_return: CustomElement[] = super.toTableRow();
-    row_to_return.push(
-      {
-        id: this.id + "_orientation_credits",
-        type: "string",
-        content: this.orientation_credits,
-      },
-      {
-        id: this.id + "_clil_credits",
-        type: "string",
-        content: this.clil_credits,
-      }
-    );
+    if (User.getLoggedUser()?.user == "admin") {
+      row_to_return.push(
+        {
+          id: this.id + "_orientation_credits",
+          type: "string",
+          content: this.orientation_credits,
+        },
+        {
+          id: this.id + "_clil_credits",
+          type: "string",
+          content: this.clil_credits,
+        }
+      );
+    }
     if (movable) {
       row_to_return.push({
         id: this.id + "_student_mover",
@@ -4942,6 +4944,7 @@ enum SuccessCodes {
 enum ErrorCodes {
   GENERIC = "E_0",
   BAD_REQUEST = "E_1",
+  UNAUTHORIZED = "E_2",
 }
 
 type Outcome = {
