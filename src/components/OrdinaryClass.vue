@@ -73,6 +73,7 @@
             :first_row="non_compliant_first_row"
             :column_sizes="non_compliant_column_sizes"
             @signal_event="setupModalAndOpen()"
+            @execute_link="$router.push(store.state.request.url)"
           />
           <div class="ion-padding" v-else>
             <ionic-element
