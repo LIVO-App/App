@@ -82,7 +82,7 @@
     </div>
     <template
       v-if="
-        user.user == 'admin' &&
+        user.type == 'admin' &&
         learning_session != undefined &&
         project_class != undefined &&
         (learning_session_status == LearningSessionStatus.UPCOMING ||
@@ -426,14 +426,14 @@ const updateStudents = async () => {
             session_id +
             "/components?section=" +
             selected_section.value +
-            (user.user == "teacher" ? "&teacher_id=" + user.id : ""),
+            (user.type == "teacher" ? "&teacher_id=" + user.id : ""),
           (response) => {
             const tmp_students: ProjectClassStudent[] = [];
 
             associated_teacher = response.data.data.associated_teacher;
             column_sizes =
-              (user.user == "teacher" && associated_teacher == true) ||
-              (user.user == "admin" &&
+              (user.type == "teacher" && associated_teacher == true) ||
+              (user.type == "admin" &&
                 project_class?.final_confirmation != undefined)
                 ? [1, 6, 3, 2]
                 : [1, 4, 2, 1, 2, 2];
@@ -472,7 +472,7 @@ const updateStudents = async () => {
   for (const student_index in students) {
     //<!-- TODO (5): controllare se ci sono più professori e fare richieste voti solamente sul pulsante (evitare problema di professore che aggiunge mentre altro è nella pagina)
     tmp_student = students[student_index];
-    if (user.user == "teacher") {
+    if (user.type == "teacher") {
       grades[tmp_student.id] = await executeLink(
         "/v1/students/" +
           tmp_student.id +
@@ -501,9 +501,9 @@ const updateStudents = async () => {
         ),
       ].concat(
         tmp_student.toTableRow(
-          user.user == "teacher" ? user.id : undefined,
-          user.user == "teacher",
-          user.user == "teacher"
+          user.type == "teacher" ? user.id : undefined,
+          user.type == "teacher",
+          user.type == "teacher"
             ? grades[tmp_student.id][final_grades_indexes[tmp_student.id]]
             : undefined,
           project_class?.final_confirmation
@@ -1057,7 +1057,7 @@ let edits_to_send: {
 let column_sizes: number[] = [];
 let student_mover_data: TmpList;
 
-if (user.user == "teacher") {
+if (user.type == "teacher") {
   first_row.push(
     {
       id: "gardes",

@@ -380,7 +380,7 @@ if (props.learning_session_id != undefined) {
 
       let actual_section: string | undefined;
 
-      if (user.user == "student") {
+      if (user.type == "student") {
         actual_section =
           props.section ??
           (await executeLink(

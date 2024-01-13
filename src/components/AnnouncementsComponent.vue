@@ -48,7 +48,7 @@
         </template>
       </suspense>
     </ion-modal>
-    <div v-if="user.user == 'teacher'">
+    <div v-if="user.type == 'teacher'">
       <ionic-element
         v-for="button in buttons"
         :key="button.id"
@@ -57,7 +57,7 @@
       />
     </div>
     <custom-select
-      v-if="sections_use && user.user == 'teacher'"
+      v-if="sections_use && user.type == 'teacher'"
       v-model="selected_section"
       :list="sections"
       :label="getCurrentElement('section') + ':'"
@@ -182,7 +182,7 @@ const updateMessages = async () => {
       "/" +
       session_id +
       "/announcements?" +
-      (user.user == "teacher" ? "&section=" + selected_section.value : ""),
+      (user.type == "teacher" ? "&section=" + selected_section.value : ""),
     (response) =>
       response.data.data.map((a: AnnouncementSummaryProps) =>
         new AnnouncementSummary(a).toCard()
@@ -230,7 +230,7 @@ let selected_section: Ref<string>;
 let announcement_title: string;
 let announcement_id: string;
 
-if (user.user == "teacher") {
+if (user.type == "teacher") {
   await executeLink(
     "/v2/teachers/" +
       user.id +

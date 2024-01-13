@@ -175,7 +175,7 @@ router.beforeEach((to) => {
       } else if (to.name == "google_redirect") {
         if (to.query.token != undefined) {
           tmp_user = getUserFromToken(to.query.token as string);
-          default_link = getDefautlLink(tmp_user.user);
+          default_link = getDefautlLink(tmp_user.type);
           /*await*/ setUser(tmp_user, default_link);
 
           return { name: default_link.name };
@@ -195,10 +195,10 @@ router.beforeEach((to) => {
           to.name !== "logout" &&
           (((selected_item =
             sessionStorage.getItem("selected_item") ??
-            menu.order[user.user][menu.index]) == undefined && // No menu item selected
+            menu.order[user.type][menu.index]) == undefined && // No menu item selected
             find_item_index(user, menu, menu_items, to.name.toString()) ==
               -1) || // Link not found in any menu item
-            (menu.items[selected_item]?.url_names[user.user]?.findIndex(
+            (menu.items[selected_item]?.url_names[user.type]?.findIndex(
               (a) => a == to.name
             ) == -1 && // Link not found in the selected menu item
               find_item_index(user, menu, menu_items, to.name.toString()) ==
@@ -226,8 +226,8 @@ const find_item_index = (
   let tmp_index = -1;
 
   do {
-    if (menu.items[menu_items[count]].url_names[user.user] != undefined) {
-      tmp_index = menu.items[menu_items[count]].url_names[user.user].findIndex(
+    if (menu.items[menu_items[count]].url_names[user.type] != undefined) {
+      tmp_index = menu.items[menu_items[count]].url_names[user.type].findIndex(
         (a) => a == item
       );
     }

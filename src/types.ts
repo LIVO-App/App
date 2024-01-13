@@ -1218,7 +1218,7 @@ class Course extends CourseBase {
       ],
     };
 
-    if (user != undefined && user.user != "student") {
+    if (user != undefined && user.type != "student") {
       course.content?.push({
         id: this.id + "_creation_date",
         type: "html",
@@ -2027,7 +2027,7 @@ class OrdinaryClassStudent extends StudentSummary {
 
   toTableRow(movable = false): CustomElement[] {
     const row_to_return: CustomElement[] = super.toTableRow();
-    if (User.getLoggedUser()?.user == "admin") {
+    if (User.getLoggedUser()?.type == "admin") {
       row_to_return.push(
         {
           id: this.id + "_orientation_credits",
@@ -2392,6 +2392,8 @@ type LoginInformation = {
 
 type UserType = "student" | "teacher" | "admin";
 
+type UserSubType = "tutor";
+
 type LoginResponse = {
   success: boolean;
   message: string;
@@ -2419,30 +2421,55 @@ type UserProps = UserSummaryProps & {
 class UserSummary {
   [key: string]: any;
 
-  id: number;
-  user: UserType;
+  private _id: number;
+  private _type: UserType;
+  private _subtype?: UserSubType;
 
-  constructor(props: UserSummaryProps) {
-    this.id = props.id;
-    this.user = props.user;
+  constructor(props: UserSummaryProps, subtype?: UserSubType) {
+    this._id = props.id;
+    this._type = props.user;
+    this._subtype = subtype;
+  }
+
+  public get id() : number {
+    return this._id;
+  }
+  
+  public get type() : UserType {
+    return this._type;
+  }
+
+  public get subtype() : UserSubType | undefined {
+    return this._subtype;
   }
 
   static getProperties() {
-    return ["id", "user"];
+    return ["id", "type", "subtype"];
   }
 }
 
 class User extends UserSummary {
-  username: string;
-  token: string;
-  expiration_date: Date;
+  _username: string;
+  _token: string;
+  _expiration_date: Date;
 
-  constructor(props: UserProps) {
-    super(props);
-    this.username = props.username;
-    this.token = props.token;
-    this.user = props.user;
-    this.expiration_date = new Date(props.expirationDate);
+  constructor(props: UserProps, subtype?: UserSubType) {
+    super(props, subtype);
+    this._username = props.username;
+    this._token = props.token;
+    this._expiration_date = new Date(props.expirationDate);
+  }
+
+  public get username() : string {
+    return this._username;
+  }
+
+  public get token() : string {
+    return this._token;
+  }
+
+  public get expiration_date() : Date {
+    return this._expiration_date;
   }
 
   static getProperties() {
@@ -2644,7 +2671,7 @@ class CourseModel {
       },
     };
 
-    if (user.user != "teacher") {
+    if (user.type != "teacher") {
       card.content?.push({
         id: this.id + "_proposer_teacher",
         type: "string",
@@ -3943,7 +3970,7 @@ class AdminProjectClass extends ProjectClassSummary {
         " " +
         this.teacher_surname,
     });
-    if (user == undefined || user.user != "student") {
+    if (user == undefined || user.type != "student") {
       tmp_card.content?.push(
         {
           id: "admin",
@@ -5066,6 +5093,7 @@ export {
   LoginInformation,
   UserSummary,
   UserType,
+  UserSubType,
   LoginResponse,
   SuccessLoginResponse,
   UserProps,

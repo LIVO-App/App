@@ -7,7 +7,7 @@
             <ion-list-header class="ion-padding-bottom">
               <router-link
                 v-if="user != undefined"
-                :to="{ name: getDefautlLink(user.user).name }"
+                :to="{ name: getDefautlLink(user.type).name }"
               >
                 <ion-img
                   :src="image"
@@ -29,9 +29,9 @@
                 <ion-item
                   v-for="(p, i) in getMenu(castToUser(user))"
                   :key="i"
-                  @click="selectTitle(castToUser(user).user, i)"
+                  @click="selectTitle(castToUser(user).type, i)"
                   router-direction="root"
-                  :router-link="{ name: p.url_names[castToUser(user).user][0] }"
+                  :router-link="{ name: p.url_names[castToUser(user).type][0] }"
                   lines="none"
                   :detail="false"
                   class="hydrated"
@@ -44,7 +44,7 @@
                     :md="getIcon(p.icon_ref).md"
                   ></ion-icon>
                   <ion-label text-wrap>{{
-                    getCurrentElement(menu.order[castToUser(user).user][i])
+                    getCurrentElement(menu.order[castToUser(user).type][i])
                   }}</ion-label>
                 </ion-item>
               </template>
@@ -86,7 +86,7 @@ const getMenu = (user: User) => {
 
   let tmp_item: MenuItem | undefined;
 
-  for (const item_title of menu.order[user.user]) {
+  for (const item_title of menu.order[user.type]) {
     tmp_item = menu.items[item_title];
     if (tmp_item != undefined) {
       complete_menu.push(tmp_item);
@@ -116,22 +116,22 @@ const changeTitle = () => {
     if (
       selected_item != null &&
       (tmp_index = menu.items[selected_item].url_names[
-        user.value.user
+        user.value.type
       ].findIndex((a) => a == ($route.name as string))) != -1
     ) {
-      tmp_index = menu.order[user.value.user].findIndex(
+      tmp_index = menu.order[user.value.type].findIndex(
         (a) => a == selected_item
       );
     } else {
       while (tmp_index == -1 && count < items_titles.length) {
-        urls = menu.items[items_titles[count]].url_names[user.value.user];
+        urls = menu.items[items_titles[count]].url_names[user.value.type];
         if (urls != undefined) {
           tmp_index = urls.findIndex((a) => a == $route.name);
         }
         count++;
       }
       if (tmp_index != -1) {
-        tmp_index = menu.order[user.value.user].findIndex(
+        tmp_index = menu.order[user.value.type].findIndex(
           (a) => a == items_titles[count - 1]
         );
       }
@@ -139,12 +139,12 @@ const changeTitle = () => {
     menu.index =
       tmp_index != -1
         ? tmp_index
-        : menu.order[user.value.user].findIndex(
-            (a) => a == menu.default_item[(user.value as User).user]
+        : menu.order[user.value.type].findIndex(
+            (a) => a == menu.default_item[(user.value as User).type]
           );
     sessionStorage.setItem(
       "selected_item",
-      menu.order[user.value.user][tmp_index]
+      menu.order[user.value.type][tmp_index]
     );
     trigger.value++;
   }

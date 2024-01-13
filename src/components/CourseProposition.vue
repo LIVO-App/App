@@ -30,7 +30,7 @@
       :element="buttons[3]"
       @execute_link="$router.push(store.state.request.url)"
     />
-    <template v-if="user.user == 'admin' && !allApproed()">
+    <template v-if="user.type == 'admin' && !allApproed()">
       <ionic-element
         v-if="action == 'view'"
         :element="buttons[4]"

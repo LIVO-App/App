@@ -48,7 +48,7 @@
       :placeholder="getCurrentElement('learning_sessions_choice')"
       :getCompleteName="LearningSession.toString"
     />
-    <template v-if="user.user == 'admin'">
+    <template v-if="user.type == 'admin'">
       <ionic-element
         :element="
           getCustomMessage(
@@ -103,7 +103,7 @@
         getCustomMessage(
           'title',
           getCurrentElement(
-            user.user == 'admin' ? 'compliant_students' : 'students'
+            user.type == 'admin' ? 'compliant_students' : 'students'
           ),
           'title',
           undefined,
@@ -286,7 +286,7 @@ const updateStudents = async (
       () => []
     );
     if (learning_sessions.length > 0 && students.length > 0) {
-      if (new_search && user.user == "admin") {
+      if (new_search && user.type == "admin") {
         non_compliant_students_index = await executeLink(
           "/v1/ordinary_classes/" +
             ordinary_class.study_year +
@@ -434,7 +434,7 @@ const subscribeStudent = async (): Promise<Outcome> => {
 
   let enrollment_availability: EnrollmentAvailability;
 
-  if (user.user != "admin") {
+  if (user.type != "admin") {
     outcome.code = ErrorCodes.UNAUTHORIZED;
     outcome.message = getCurrentElement("unauthorized_operation");
   } else if (
@@ -515,7 +515,7 @@ const $router = useRouter();
 const alert_information: AlertInformation = store.state.alert_information;
 
 const students_column_sizes: number[] =
-  user.user == "admin" ? [1, 7, 2, 2] : [1, 11];
+  user.type == "admin" ? [1, 7, 2, 2] : [1, 11];
 const base_first_row: CustomElement[] = [
   {
     id: "index",
@@ -528,7 +528,7 @@ const base_first_row: CustomElement[] = [
     content: getCurrentElement("student"),
   },
 ].concat(
-  user.user == "admin"
+  user.type == "admin"
     ? [
         {
           id: "orientation_credits",
@@ -616,17 +616,17 @@ if (
     (a) => a.id == selected_session.value
   );
 
-  await updateStudents(user.user == "admin");
+  await updateStudents(user.type == "admin");
   watch(selected_session, async () => {
     learning_session = learning_sessions.find(
       (a) => a.id == selected_session.value
     );
-    await updateStudents(user.user == "admin");
+    await updateStudents(user.type == "admin");
     students_trigger.value++;
   });
   watch(selected_section, async () => {
     ordinary_class.section = selected_section.value;
-    await updateStudents(user.user == "admin");
+    await updateStudents(user.type == "admin");
     students_trigger.value++;
   });
 } else {

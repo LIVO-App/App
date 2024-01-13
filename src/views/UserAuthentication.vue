@@ -25,7 +25,7 @@ import {
 } from "@/utils";
 import { IonPage, IonContent, IonAlert } from "@ionic/vue";
 import { useStore } from "vuex";
-import { AlertInformation, LoginInformation, User } from "@/types";
+import { AlertInformation, LoginInformation, User, UserSubType } from "@/types";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -36,6 +36,7 @@ const login = async (payload: LoginInformation) => {
     name: "/",
     index: 0,
   };
+  let subtype: UserSubType | undefined;
 
   try {
     checkParameters(payload, login_parameters);
@@ -44,14 +45,28 @@ const login = async (payload: LoginInformation) => {
       await executeLink(
         "/v1/auth/" + payload.type + "_login",
         async (response) => {
+          if (payload.type == "teacher") {
+            subtype = await executeLink(
+              "/v1/teachers/" +
+                response.data.id +
+                "/tutor_years?token=" +
+                response.data.token,
+              (response) =>
+                response.data.data.length > 0 ? "tutor" : undefined,
+              () => undefined,
+            );
+          }
           await setUser(
-            new User({
-              id: response.data.id,
-              token: response.data.token,
-              username: payload.parameters.username,
-              user: payload.type,
-              expirationDate: response.data.expirationDate,
-            }),
+            new User(
+              {
+                id: response.data.id,
+                token: response.data.token,
+                username: payload.parameters.username,
+                user: payload.type,
+                expirationDate: response.data.expirationDate,
+              },
+              subtype
+            ),
             default_link
           );
 

@@ -26,7 +26,7 @@ import { useStore } from "vuex";
 const store = useStore();
 const user = User.getLoggedUser() as User;
 const menu: Menu = store.state.menu;
-const title = getCurrentElement(menu.order[user.user][menu.index]);
+const title = getCurrentElement(menu.order[user.type][menu.index]);
 </script>
 
 <style scoped>

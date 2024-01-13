@@ -8,7 +8,7 @@
   />
   <ion-grid
     ><!-- v-if="learning_sessions.loaded">-->
-    <ion-row v-if="user.user == 'admin'">
+    <ion-row v-if="user.type == 'admin'">
       <ionic-element
         :element="
           getCustomMessage(

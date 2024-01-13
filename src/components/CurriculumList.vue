@@ -272,7 +272,7 @@ const grades_open = ref(false);
 const description_open = ref(false);
 const trigger = ref(0);
 const reference_id: string =
-  props.student_id != undefined && user.user != "student"
+  props.student_id != undefined && user.type != "student"
     ? props.student_id
     : "" + user.id;
 const credits_progression: AlternateList<string[]> = {};
@@ -304,7 +304,7 @@ if (sections_use) {
 }
 
 school_years =
-  user.user == "student"
+  user.type == "student"
     ? await executeLink(
         "/v1/ordinary_classes?descending=true&student_id=" + user.id,
         (response) => {
