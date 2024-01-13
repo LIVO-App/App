@@ -4,8 +4,6 @@
 
     <ion-content :fullscreen="true">
       <inner-header :title="title" />
-
-      <!-- ! (2): mettere export studenti in pagina singola -->
       <suspense>
         <template #default>
           <project-classes-list />

@@ -1,6 +1,34 @@
 <template>
+  <ion-alert
+    :is-open="alert_open"
+    :header="alert_information.title"
+    :message="alert_information.message"
+    :buttons="alert_information.buttons"
+    @didDismiss="closeModal('success')"
+  />
   <ion-grid
     ><!-- v-if="learning_sessions.loaded">-->
+    <ion-row v-if="user.user == 'admin'">
+      <ionic-element
+        :element="
+          getCustomMessage(
+            'export_description',
+            getCurrentElement('students_export') + ':',
+            'string',
+            undefined,
+            {
+              label: {
+                'ion-padding': true,
+              },
+            }
+          )
+        "
+      />
+      <ionic-element
+        :element="buttons[0]"
+        @execute_link="exportSubscriptions"
+      />
+    </ion-row>
     <ion-row>
       <ion-col size="12" size-md="6">
         <list-card
@@ -82,6 +110,7 @@ import {
   TmpList,
   IconAlternatives,
   ColorObject,
+  AlertInformation,
 } from "@/types";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { reactive, ref } from "vue";
@@ -90,7 +119,9 @@ import {
   executeLink,
   getCurrentElement,
   getCustomMessage,
+  getIcon,
   getStudyAddressVisualization,
+  setupError,
 } from "@/utils";
 import { useRoute } from "vue-router";
 
@@ -98,6 +129,7 @@ type Indexes = {
   group: string;
   index: number;
 };
+type AvailableModal = "success" | "error";
 
 const is_nothing_selected = () =>
   selected_element_indexes.group == "-1" &&
@@ -293,11 +325,82 @@ const getClasses = () => {
   }
   return tmp_classes;
 };
+const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
+  const actual_window: AvailableModal = window ?? store.state.event.event;
+  const actual_message: string = message ?? store.state.event.data?.message;
+
+  switch (actual_window) {
+    case "success":
+      alert_information.title = "";
+      alert_information.message =
+        message ?? getCurrentElement(getCurrentElement("successful_operation"));
+      alert_information.buttons = [getCurrentElement("ok")];
+      alert_open.value = true;
+      break;
+    case "error":
+      setupError(actual_message);
+      alert_open.value = true;
+      break;
+  }
+};
+const closeModal = (window: AvailableModal) => {
+  switch (window) {
+    case "success":
+    case "error":
+      alert_open.value = false;
+      break;
+  }
+};
+const exportSubscriptions = () => {
+  executeLink(
+    undefined,
+    () =>
+      setTimeout(
+        () =>
+          setupModalAndOpen(
+            "success",
+            getCurrentElement("subscriptions_exported")
+          ),
+        300
+      ),
+    () => setTimeout(() => setupModalAndOpen("error"), 300)
+  );
+};
 
 const store = useStore();
 const user = User.getLoggedUser() as User;
 const $route = useRoute();
+const alert_information: AlertInformation = store.state.alert_information;
 
+const buttons = [
+  {
+    id: "export",
+    type: "string_icon",
+    linkType: "request",
+    content: {
+      text: getCurrentElement("export"),
+      icon: getIcon("download"),
+      url: "/v1/subscriptions/export",
+      method: "get",
+      whole_link: true,
+    },
+    colors: {
+      text: {
+        name: "white",
+        type: "var",
+      },
+      background: {
+        name: "primary",
+        type: "var",
+      },
+    },
+    classes: {
+      button: {
+        radius: true,
+      },
+    },
+  },
+];
 const promises: Promise<any>[] = [];
 const learning_sessions: OrderedCardsList<GeneralCardElements> = reactive({
   order: [],
@@ -367,6 +470,7 @@ const school_years =
         () => []
       ); //<!-- ? chiedere se c'è api apposta per anni scolastici passati
 const trigger = ref(0);
+const alert_open = ref(false);
 
 let selected_element_indexes: Indexes = reactive({
   group: "-1",
