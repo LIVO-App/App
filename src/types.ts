@@ -498,16 +498,14 @@ type CourseProps = CourseBaseProps & {
 class CourseBase {
   id: number;
   credits: number;
-  learning_area_ref: ResponseItem<{
-    id: string;
-  }>;
+  learning_area_id: string;
   italian_title: string;
   english_title: string;
 
   constructor(courseObj: CourseBaseProps) {
     this.id = courseObj.id;
     this.credits = courseObj.credits;
-    this.learning_area_ref = courseObj.learning_area_ref; // TODO (6): in /courses/:id vengno dati solo i titoli e non l'id
+    this.learning_area_id = (courseObj.learning_area_ref.data as { id: string}).id; // TODO (6): in /courses/:id vengno dati solo i titoli e non l'id
     this.italian_title = courseObj.italian_title; // TODO (8): sistemare lingue mettendo get
     this.english_title = courseObj.english_title;
   }
@@ -762,7 +760,7 @@ class CurriculumCourse extends CourseBase {
       {
         id: this.id + "_learning_area",
         type: "string",
-        content: (this.learning_area_ref.data as { id: string }).id,
+        content: this.learning_area_id,
       },
       {
         id: this.id + "_gardes", // TODO (4): mettere il controllo con future_course al passaggio a curriculum_v2
@@ -1320,12 +1318,12 @@ class LearningSession extends LearningSessionSummary {
             i : number,
             course_list = "";
         while (courses.length > 0) {
-            tmp_learning_area_id = (courses[0].learning_area_ref.data as {id: string}).id;
+            tmp_learning_area_id = courses[0].learning_area_id;
             tmp_learning_area = learning_areas.find(area => area.id == tmp_learning_area_id);
             course_list += "<label>" + (tmp_learning_area != undefined ? tmp_learning_area[`${language}_title`] : "") + ":</label><br /><ul>";
             i = 0;
             while (i < courses.length) {
-            if ((courses[i].learning_area_ref.data as {id: string}).id == tmp_learning_area_id) {
+            if (courses[i].learning_area_id == tmp_learning_area_id) {
                 course_list += "<li>" + courses[i][`${language}_title`] + "</li>";
                 courses.splice(i,1);
             } else {
@@ -1385,9 +1383,7 @@ class LearningSession extends LearningSessionSummary {
       (response) =>
         (response.data.data as CourseSummaryProps[]).map((x) => {
           const course = new CourseSummary(x);
-          const learning_area_id = (
-            course.learning_area_ref.data as { id: string }
-          ).id;
+          const learning_area_id = course.learning_area_id;
           if (courses[learning_area_id] == undefined) {
             courses[learning_area_id] = [];
           }
@@ -4256,9 +4252,7 @@ class SubscriptionsManager {
               context_linked = isLinkedToAreas(tmp_learning_context);
               actual_course = tmp_course; // Dummy variable to avoid casts in arrow functions
               tmp_learning_area = all_learning_areas.find(
-                (a) =>
-                  a.id ==
-                  (actual_course.learning_area_ref.data as { id: string }).id
+                (a) => a.id == actual_course.learning_area_id
               );
               if (tmp_learning_area != undefined) {
                 previous_session =
