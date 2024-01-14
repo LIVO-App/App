@@ -32,6 +32,9 @@ type MenuItem = {
     [key in keyof string as UserType]: string[];
   };
   icon_ref: string;
+  additional_controls?: {
+    [key in keyof string as UserType]: () => boolean;
+  };
 };
 
 type Menu = {
@@ -2449,9 +2452,9 @@ class UserSummary {
 }
 
 class User extends UserSummary {
-  _username: string;
-  _token: string;
-  _expiration_date: Date;
+  private _username: string;
+  private _token: string;
+  private _expiration_date: Date;
 
   constructor(props: UserProps, subtype?: UserSubType) {
     super(props, subtype);
@@ -2489,9 +2492,9 @@ class User extends UserSummary {
         id: parseInt(session.getItem("id") as string),
         username: session.getItem("username") as string,
         token: session.getItem("token") as string,
-        user: session.getItem("user") as UserType,
+        user: session.getItem("type") as UserType,
         expirationDate: session.getItem("expiration_date") as string,
-      });
+      }, session.getItem("subtype") as UserSubType);
     } else {
       return undefined;
     }

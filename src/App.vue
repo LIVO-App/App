@@ -84,12 +84,22 @@ const castToUser = (user: User | undefined) => user as User;
 const getMenu = (user: User) => {
   const complete_menu: MenuItem[] = [];
 
-  let tmp_item: MenuItem | undefined;
+  let tmp_item: MenuItem | undefined,
+    additional_control: boolean | undefined = undefined;
 
   for (const item_title of menu.order[user.type]) {
     tmp_item = menu.items[item_title];
     if (tmp_item != undefined) {
-      complete_menu.push(tmp_item);
+      if (tmp_item.additional_controls != undefined) {
+        additional_control = tmp_item.additional_controls[user.type] != undefined
+          ? tmp_item.additional_controls[user.type]()
+          : undefined;
+        if (additional_control == undefined || additional_control) {
+          complete_menu.push(tmp_item);
+        }
+      } else {
+        complete_menu.push(tmp_item);
+      }
     }
   }
 
