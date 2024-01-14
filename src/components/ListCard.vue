@@ -184,7 +184,7 @@ import {
   CardElements,
   ColorObject,
   ColorType,
-  CourseCardElements,
+  EnrollmentCardElements,
   CustomElement,
   OrderedCardsList,
   Classes,
@@ -399,7 +399,7 @@ for (const group in groups) {
       tmp_card.colors = setSpecificColors(tmp_card.colors);
     } else if (isCourse(tmp_card)) {
       tmp_card.enrollment = (
-        props.cards_list.cards[groups[group]][card] as CourseCardElements
+        props.cards_list.cards[groups[group]][card] as EnrollmentCardElements
       ).enrollment;
 
       tmp_color = adjustColor(

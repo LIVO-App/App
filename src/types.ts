@@ -19,6 +19,7 @@ import {
   getSubscribedCredits,
   isCourse,
   isEnrollmentTableList,
+  isEventString,
   isLinkedToAreas,
   isOrderedCardList,
   numberToSection,
@@ -357,7 +358,7 @@ type GeneralCardElements = CardElements & {
   link?: LinkParameters;
 };
 
-type CourseCardElements = CardElements & {
+type EnrollmentCardElements = CardElements & {
   credits: number;
   content: CustomElement[];
   enrollment: Enrollment;
@@ -453,9 +454,12 @@ type CourseBaseProps = {
 
 type CourseSummaryProps = CourseBaseProps & {
   section?: string;
-  pending: string;
   group: number;
   final_confirmation: string | null;
+};
+
+type EnrollmentCourseProps = CourseSummaryProps & {
+  pending: string;
 };
 
 type CurriculumCourseProps = CourseBaseProps & {
@@ -505,51 +509,18 @@ class CourseBase {
   constructor(courseObj: CourseBaseProps) {
     this.id = courseObj.id;
     this.credits = courseObj.credits;
-    this.learning_area_id = (courseObj.learning_area_ref.data as { id: string}).id; // TODO (6): in /courses/:id vengno dati solo i titoli e non l'id
+    this.learning_area_id = (
+      courseObj.learning_area_ref.data as { id: string }
+    ).id; // TODO (6): in /courses/:id vengno dati solo i titoli e non l'id
     this.italian_title = courseObj.italian_title; // TODO (8): sistemare lingue mettendo get
     this.english_title = courseObj.english_title;
   }
-}
 
-class CourseSummary extends CourseBase {
-  section?: string | undefined;
-  pending: boolean | Date;
-  group: number;
-  final_confirmation?: Date;
-
-  constructor(courseObj: CourseSummaryProps) {
-    const tmp_pending_date = new Date(courseObj.pending);
-    super(courseObj);
-    this.section = courseObj.section;
-    this.pending = !isNaN(tmp_pending_date.getTime())
-      ? tmp_pending_date
-      : courseObj.pending === "true";
-    this.group = courseObj.group;
-    this.final_confirmation =
-      courseObj.final_confirmation != undefined
-        ? new Date(courseObj.final_confirmation)
-        : undefined;
-  }
-
-  toCard(
-    learning_session: LearningSession,
-    path?: string,
-    method?: Method,
-    open_enrollment = false,
-    reference = new Date()
-  ) {
+  toCard() {
     const language = getCurrentLanguage();
-    const tmp_enrollment = new Enrollment(
-      this.pending,
-      learning_session,
-      reference,
-      open_enrollment
-    );
-    const card: CourseCardElements = {
+    const card: GeneralCardElements = {
       id: "" + this.id,
-      group: this.group,
-      credits: this.credits,
-      enrollment: tmp_enrollment,
+      group: "",
       content: [
         {
           id: this.id + "_credits",
@@ -575,23 +546,91 @@ class CourseSummary extends CourseBase {
             data: {
               title: this[`${language}_title`],
               course_id: this.id,
-              section: this.section,
             },
-            text:
-              this[`${language}_title`] +
-              (store.state.sections_use && this.section != null
-                ? " - " + getCurrentElement("section") + ": " + this.section
-                : ""),
+            text: this[`${language}_title`],
           },
-        },
-        {
-          id: this.id + "_enrollment",
-          type: "string",
-          content: tmp_enrollment.toString(),
-          colors: tmp_enrollment.getStatusColors(),
         },
       ],
     };
+
+    return card;
+  }
+}
+
+class CourseSummary extends CourseBase {
+  section?: string | undefined;
+  group: number;
+  final_confirmation?: Date;
+
+  constructor(courseObj: CourseSummaryProps) {
+    super(courseObj);
+    this.section = courseObj.section;
+    this.group = courseObj.group;
+    this.final_confirmation =
+      courseObj.final_confirmation != undefined
+        ? new Date(courseObj.final_confirmation)
+        : undefined;
+  }
+
+  toCard() {
+    const card: GeneralCardElements = super.toCard();
+
+    card.group = this.group;
+    if (
+      card.content != undefined &&
+      isEventString(card.content[1].content)
+    ) {
+      card.content[1].content.text +=
+        store.state.sections_use && this.section != null
+          ? " - " + getCurrentElement("section") + ": " + this.section
+          : "";
+      if (card.content[1].content.data != undefined) {
+        card.content[1].content.data.section = this.section;
+      }
+    }
+
+    return card;
+  }
+}
+
+class EnrollmentCourse extends CourseSummary {
+  pending: boolean | Date;
+
+  constructor(courseObj: EnrollmentCourseProps) {
+    const tmp_pending_date = new Date(courseObj.pending);
+    super(courseObj);
+    this.pending = !isNaN(tmp_pending_date.getTime())
+      ? tmp_pending_date
+      : courseObj.pending === "true";
+  }
+
+  toEnrollmentCard(
+    learning_session: LearningSession,
+    path?: string,
+    method?: Method,
+    open_enrollment = false,
+    reference = new Date()
+  ) {
+    const tmp_enrollment = new Enrollment(
+      this.pending,
+      learning_session,
+      reference,
+      open_enrollment
+    );
+    const tmp_card: GeneralCardElements = super.toCard();
+    const card: EnrollmentCardElements = {
+      id: tmp_card.id,
+      group: tmp_card.group,
+      credits: this.credits,
+      enrollment: tmp_enrollment,
+      content: tmp_card.content ?? [],
+    };
+    card.content.push({
+      id: this.id + "_enrollment",
+      type: "string",
+      content: tmp_enrollment.toString(),
+      colors: tmp_enrollment.getStatusColors(),
+    });
 
     if (
       (!store.state.static_subscription ||
@@ -1312,7 +1351,7 @@ class LearningSession extends LearningSessionSummary {
 
   /*async getDividedCourseList(session: LearningSession, learning_areas: LearningArea[]) {
         const language = getCurrentLanguage();
-        const courses : CourseSummary[] = (await $axios.get("/v1/courses?student_id=" + user_id + "&session_id=" + session.id)).data.data;
+        const courses : EnrollmentCourse[] = (await $axios.get("/v1/courses?student_id=" + user_id + "&session_id=" + session.id)).data.data;
         let tmp_learning_area_id : string,
             tmp_learning_area : LearningArea | undefined,
             i : number,
@@ -1353,7 +1392,7 @@ class LearningSession extends LearningSessionSummary {
         status == LearningSessionStatus.UPCOMING);
     const actual_learning_context = getActualLearningContext(learning_context);
     const courses: {
-      [learning_area_id: string]: CourseSummary[];
+      [learning_area_id: string]: EnrollmentCourse[];
     } = {};
     const learning_areas = await executeLink(
       "/v1/learning_areas?all_data=true&session_id=" +
@@ -1381,8 +1420,8 @@ class LearningSession extends LearningSessionSummary {
         "&session_id=" +
         this.id,
       (response) =>
-        (response.data.data as CourseSummaryProps[]).map((x) => {
-          const course = new CourseSummary(x);
+        (response.data.data as EnrollmentCourseProps[]).map((x) => {
+          const course = new EnrollmentCourse(x);
           const learning_area_id = course.learning_area_id;
           if (courses[learning_area_id] == undefined) {
             courses[learning_area_id] = [];
@@ -2430,15 +2469,15 @@ class UserSummary {
     this._subtype = subtype;
   }
 
-  public get id() : number {
+  public get id(): number {
     return this._id;
   }
-  
-  public get type() : UserType {
+
+  public get type(): UserType {
     return this._type;
   }
 
-  public get subtype() : UserSubType | undefined {
+  public get subtype(): UserSubType | undefined {
     return this._subtype;
   }
 
@@ -2459,15 +2498,15 @@ class User extends UserSummary {
     this._expiration_date = new Date(props.expirationDate);
   }
 
-  public get username() : string {
+  public get username(): string {
     return this._username;
   }
 
-  public get token() : string {
+  public get token(): string {
     return this._token;
   }
 
-  public get expiration_date() : Date {
+  public get expiration_date(): Date {
     return this._expiration_date;
   }
 
@@ -2484,13 +2523,16 @@ class User extends UserSummary {
     if (user != undefined) {
       return user;
     } else if (session.getItem("id") != undefined) {
-      return new User({
-        id: parseInt(session.getItem("id") as string),
-        username: session.getItem("username") as string,
-        token: session.getItem("token") as string,
-        user: session.getItem("type") as UserType,
-        expirationDate: session.getItem("expiration_date") as string,
-      }, session.getItem("subtype") as UserSubType);
+      return new User(
+        {
+          id: parseInt(session.getItem("id") as string),
+          username: session.getItem("username") as string,
+          token: session.getItem("token") as string,
+          user: session.getItem("type") as UserType,
+          expirationDate: session.getItem("expiration_date") as string,
+        },
+        session.getItem("subtype") as UserSubType
+      );
     } else {
       return undefined;
     }
@@ -4043,12 +4085,12 @@ enum SubscriptionsManagerMode {
 }
 
 enum SubscriptionsManagerVisualizzationType {
-  CARDS, // _all_courses: TmpList<CardsList<CourseCardElements>>, _courses: OrderedCardsList
+  CARDS, // _all_courses: TmpList<CardsList<EnrollmentCardElements>>, _courses: OrderedCardsList
   TABLE, // CustomElement[][]
 }
 
 type EnrollmentAvailability = {
-  course: CustomElement[] | CourseCardElements | undefined;
+  course: CustomElement[] | EnrollmentCardElements | undefined;
   available_courses: boolean;
   available_credits: boolean;
 };
@@ -4064,9 +4106,11 @@ class SubscriptionsManager {
   private _mode: SubscriptionsManagerMode;
   private _visualizzation_type: SubscriptionsManagerVisualizzationType;
   private _all_courses:
-    | TmpList<CardsList<CourseCardElements>>
+    | TmpList<CardsList<EnrollmentCardElements>>
     | TmpList<TmpList<EnrollmentTable>>; // TODO (7*): aggiungere gruppo (gruppi come group e controlli in nuova variabile)
-  private _courses: OrderedCardsList<CourseCardElements> | CustomElement[][];
+  private _courses:
+    | OrderedCardsList<EnrollmentCardElements>
+    | CustomElement[][];
   private _remaining_credits: AlternateList<number>;
   private _remaining_courses: AlternateList<TmpList<number>>;
   private course_correspondences: {
@@ -4154,7 +4198,7 @@ class SubscriptionsManager {
     learning_contexts: LearningContext[],
     all_learning_areas: LearningArea[],
     learning_sessions: LearningSession[],
-    courses_to_divide: CourseSummary[],
+    courses_to_divide: EnrollmentCourse[],
     learning_session_id: string
   ) {
     // TODO (5): mettere facoltativi parametri per il move
@@ -4165,7 +4209,7 @@ class SubscriptionsManager {
       learning_session_position != -1
         ? learning_sessions[learning_session_position]
         : undefined;
-    const courses_ids = courses_to_divide.map((a: CourseSummary) => a.id);
+    const courses_ids = courses_to_divide.map((a: EnrollmentCourse) => a.id);
 
     let previous_session: LearningSession | undefined,
       learning_context_id: string,
@@ -4230,12 +4274,12 @@ class SubscriptionsManager {
           learning_session_id,
         (response) => {
           let tmp_course,
-            actual_course: CourseSummary,
+            actual_course: EnrollmentCourse,
             tmp_learning_area: LearningArea | undefined,
             open_enrollment,
             tmp_learning_context,
             context_linked: boolean,
-            to_add: CourseCardElements | EnrollmentTableRow,
+            to_add: EnrollmentCardElements | EnrollmentTableRow,
             tmp_enrollment_table: EnrollmentTable;
 
           this.course_correspondences = response.data.data;
@@ -4271,7 +4315,7 @@ class SubscriptionsManager {
                     this._visualizzation_type ==
                     SubscriptionsManagerVisualizzationType.CARDS
                   ) {
-                    to_add = actual_course.toCard(
+                    to_add = actual_course.toEnrollmentCard(
                       learning_session,
                       open_enrollment
                         ? "/v1/students/" +
@@ -4350,7 +4394,7 @@ class SubscriptionsManager {
                   (
                     this._all_courses[tmp_learning_context.id][
                       tmp_learning_area.id
-                    ] as CourseCardElements[]
+                    ] as EnrollmentCardElements[]
                   ).push(to_add);
                 } else {
                   tmp_enrollment_table = this._all_courses[
@@ -4396,18 +4440,18 @@ class SubscriptionsManager {
   }
 
   public get courses():
-    | OrderedCardsList<CourseCardElements>
+    | OrderedCardsList<EnrollmentCardElements>
     | CustomElement[][] {
     return this._courses;
   }
 
   public get all_courses():
-    | TmpList<CardsList<CourseCardElements>>
+    | TmpList<CardsList<EnrollmentCardElements>>
     | TmpList<TmpList<EnrollmentTable>> {
     return this._all_courses;
   }
 
-  public get course(): CourseCardElements | CustomElement[] {
+  public get course(): EnrollmentCardElements | CustomElement[] {
     if (
       this.visualizzation_type == SubscriptionsManagerVisualizzationType.CARDS
     ) {
@@ -4636,13 +4680,13 @@ class SubscriptionsManager {
   private updateCourse(
     context_id: string,
     learning_area_id: string,
-    to_update: CourseCardElements | CustomElement[],
+    to_update: EnrollmentCardElements | CustomElement[],
     enrollment?: Date | boolean
   ) {
     if (!isEnrollmentTableList(this._all_courses) && isCourse(to_update)) {
       this.removeCourse(context_id, learning_area_id, to_update.id, enrollment);
       this._all_courses[context_id][learning_area_id].push(
-        to_update as CourseCardElements
+        to_update as EnrollmentCardElements
       );
     } else {
       this.removeCourse(
@@ -4716,7 +4760,7 @@ class SubscriptionsManager {
         ? this.getCourseReferences(origin_course_id)
         : undefined;
 
-    let mentioned_course: CourseCardElements | CustomElement[] | undefined,
+    let mentioned_course: EnrollmentCardElements | CustomElement[] | undefined,
       tmp_index: number,
       enrollment_table: EnrollmentTable;
     let count = 0;
@@ -4736,7 +4780,7 @@ class SubscriptionsManager {
               learning_context_id;
             this.last_mentioned_course.courses_indexes.group = groups[count];
             this.last_mentioned_course.courses_indexes.index = tmp_index;
-            mentioned_course = this.course as CourseCardElements;
+            mentioned_course = this.course as EnrollmentCardElements;
           }
         }
         count++;
@@ -4834,11 +4878,13 @@ class SubscriptionsManager {
           : this.course[0].id.split("_")[0])
     );
 
-    let requestArray: string[], pathArray: string[], card: CourseCardElements;
+    let requestArray: string[],
+      pathArray: string[],
+      card: EnrollmentCardElements;
     let outcome = false;
 
     if (this.last_mentioned_course.id != undefined) {
-      //, edited_course : CourseCardElements;  // TODO (7): forse problema per non aver usato copia profonda di course
+      //, edited_course : EnrollmentCardElements;  // TODO (7): forse problema per non aver usato copia profonda di course
       if (
         this.mode == SubscriptionsManagerMode.MOVE ||
         this.visualizzation_type == SubscriptionsManagerVisualizzationType.TABLE
@@ -4876,7 +4922,7 @@ class SubscriptionsManager {
           this.last_mentioned_course.references.learning_area_id
         );
       } else if (this.mode == SubscriptionsManagerMode.SUBSCRIPTION) {
-        card = this.course as CourseCardElements;
+        card = this.course as EnrollmentCardElements;
         requestArray = (card.content[3].content as RequestIcon).url.split(
           "?"
         ) ?? ["", ""];
@@ -5019,16 +5065,17 @@ export {
   Enrollment,
   MinimumCourseProps,
   MinimizedCourse,
-  CourseSummaryProps,
+  EnrollmentCourseProps,
   CourseProps,
   CardElements,
   GeneralCardElements,
-  CourseCardElements,
+  EnrollmentCardElements,
   EnrollmentTable,
   LearningSessionStatus,
   LearningArea,
   CourseBase,
   CourseSummary,
+  EnrollmentCourse,
   CurriculumCourse,
   Course,
   IconAlternatives,

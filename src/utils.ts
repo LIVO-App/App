@@ -2,7 +2,7 @@ import { Method } from "axios";
 import {
   GeneralCardElements,
   CardElements,
-  CourseCardElements,
+  EnrollmentCardElements,
   Language,
   ElementsList,
   IconsList,
@@ -12,6 +12,7 @@ import {
   Gender,
   GenderKeys,
   LinkParameters,
+  EventString,
   EventParameters,
   RequestParameters,
   ContentType,
@@ -60,7 +61,7 @@ function isGeneral(element: any): element is GeneralCardElements {
   return "side_element" in element || !("credits" in element); // TODO (8): vedere se creare un parametro per fare la condizione positiva
 }
 
-function isCourse(element: any): element is CourseCardElements {
+function isCourse(element: any): element is EnrollmentCardElements {
   return "credits" in element;
 }
 
@@ -223,12 +224,16 @@ function numberToSection(section: number) {
   return String.fromCharCode(65 + section);
 }
 
-function isEvent(link: LinkParameters): link is EventParameters {
+function isEvent(link: any): link is EventParameters {
   return "event" in link;
 }
 
-function isRequest(link: LinkParameters): link is RequestParameters {
+function isRequest(link: any): link is RequestParameters {
   return "url" in link;
+}
+
+function isEventString(element: any): element is EventString {
+  return isEvent(element) && "text" in element;
 }
 
 function getStatusString(status: LearningSessionStatus) {
@@ -664,6 +669,7 @@ export {
   numberToSection,
   isEvent,
   isRequest,
+  isEventString,
   getStatusString,
   getStatusColor,
   getCurrentLanguage,

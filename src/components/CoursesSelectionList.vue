@@ -162,8 +162,8 @@
 <script setup lang="ts">
 import { OrdinaryClass } from "@/types";
 import {
-  CourseCardElements,
-  CourseSummaryProps,
+  EnrollmentCardElements,
+  EnrollmentCourseProps,
   LearningArea,
   LearningSession,
   LearningContext,
@@ -174,7 +174,7 @@ import {
   SubscriptionsManager,
   TmpList,
   AlertInformation,
-  CourseSummary,
+  EnrollmentCourse,
 } from "@/types";
 import {
   executeLink,
@@ -228,7 +228,7 @@ const changeEnrollment = async () => {
     );
 
   //let count;
-  let tmp_card: CourseCardElements;
+  let tmp_card: EnrollmentCardElements;
 
   if (enrollment_availability.course != undefined) {
     /*count = 0;
@@ -249,7 +249,7 @@ const changeEnrollment = async () => {
           let wasPending: boolean;
 
           if (enrollment_availability.course != undefined) {
-            tmp_card = enrollment_availability.course as CourseCardElements;
+            tmp_card = enrollment_availability.course as EnrollmentCardElements;
             wasPending = tmp_card.enrollment.isPending();
             if (!wasPending && !isPending) {
               if (store.state.static_subscription && !unscribe) {
@@ -459,7 +459,7 @@ const confirmation_data: {
   title: string;
   message: string;
   student_id: number;
-  course: CourseCardElements;
+  course: EnrollmentCardElements;
   session_id: number | undefined;
   unscribe: boolean;
   enrollment_value: boolean | Date;
@@ -468,7 +468,7 @@ const confirmation_data: {
   title: "",
   message: "",
   student_id: user.id,
-  course: {} as CourseCardElements,
+  course: {} as EnrollmentCardElements,
   session_id: learning_session?.id,
   unscribe: false,
   enrollment_value: false,
@@ -540,7 +540,7 @@ let learning_areas_structures: {
   distribution: TmpList<{ id: string }[]>;
 };
 let learning_contexts: LearningContext[] = [];
-let tmp_courses: CourseSummary[];
+let tmp_courses: EnrollmentCourse[];
 let timer: number;
 
 if (learning_session != undefined && ordinary_class != undefined) {
@@ -565,7 +565,7 @@ if (learning_session != undefined && ordinary_class != undefined) {
         "&session_id=" +
         learning_session_id,
       (response) =>
-        response.data.data.map((a: CourseSummaryProps) => new CourseSummary(a)),
+        response.data.data.map((a: EnrollmentCourseProps) => new EnrollmentCourse(a)),
       () => []
     );
 

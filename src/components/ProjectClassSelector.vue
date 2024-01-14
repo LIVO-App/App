@@ -231,10 +231,10 @@
 import {
   ProjectClassSummary,
   Colors,
-  CourseCardElements,
+  EnrollmentCardElements,
   CourseReferences,
-  CourseSummary,
-  CourseSummaryProps,
+  EnrollmentCourse,
+  EnrollmentCourseProps,
   CustomElement,
   GeneralSubElements,
   SubscriptionsManager,
@@ -481,7 +481,7 @@ const learning_sessions: LearningSession[] =
     : []);
 const origin: {
   references: CourseReferences | undefined;
-  course: CustomElement[] | CourseCardElements | undefined;
+  course: CustomElement[] | EnrollmentCardElements | undefined;
   learning_context: LearningContext | undefined;
   learning_area: LearningArea | undefined;
 } = {
@@ -500,7 +500,7 @@ const placeholder =
   (language == "italian" ? " l'" : " the ") +
   learning_area_sentence; //<!-- TODO (4): sistemare quando verrà messa la lista parametri a getCurrentElement
 const trigger = ref(0);
-const tmp_courses: CourseSummary[] = [];
+const tmp_courses: EnrollmentCourse[] = [];
 
 let actual_learning_session: LearningSession,
   learning_contexts: LearningContext[],
@@ -563,10 +563,10 @@ if (props.project_class != undefined || props.learning_session != undefined) {
         "&session_id=" +
         actual_learning_session.id,
       (response) => {
-        let tmp_course: CourseSummary;
-        for (const course_props of response.data.data as CourseSummaryProps[]) {
+        let tmp_course: EnrollmentCourse;
+        for (const course_props of response.data.data as EnrollmentCourseProps[]) {
           course_props.section = "A"; //<!-- TODO (4): gestire sezioni
-          tmp_course = new CourseSummary(course_props);
+          tmp_course = new EnrollmentCourse(course_props);
           if (tmp_course.final_confirmation == null) {
             tmp_courses.push(tmp_course);
           } else {
