@@ -20,6 +20,7 @@
 import {
   executeLink,
   getCurrentElement,
+  getCurrentSchoolYear,
   getDefautlLink,
   setUser,
 } from "@/utils";
@@ -45,6 +46,7 @@ const login = async (payload: LoginInformation) => {
       await executeLink(
         "/v1/auth/" + payload.type + "_login",
         async (response) => {
+          const current_school_year = getCurrentSchoolYear();
           if (payload.type == "teacher") {
             subtype = await executeLink(
               "/v1/teachers/" +
@@ -52,8 +54,13 @@ const login = async (payload: LoginInformation) => {
                 "/tutor_years?token=" +
                 response.data.token,
               (response) =>
-                response.data.data.length > 0 ? "tutor" : undefined,
-              () => undefined,
+                response.data.data.findIndex(
+                  (a: { school_year: number }) =>
+                    a.school_year == current_school_year
+                ) != -1
+                  ? "tutor"
+                  : undefined,
+              () => undefined
             );
           }
           await setUser(
