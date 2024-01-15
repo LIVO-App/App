@@ -41,6 +41,7 @@
       :placeholder="getCurrentElement('section_choice')"
     />
     <custom-select
+      v-if="user.type == 'admin'"
       v-model="selected_session"
       :list="learning_sessions"
       :label="getCurrentElement('learning_sessions') + ':'"
@@ -125,6 +126,7 @@
             :first_row="students_first_row"
             :column_sizes="students_column_sizes"
             @signal_event="setupModalAndOpen()"
+            @execute_link="$router.push(store.state.request.url)"
           />
           <ionic-element
             v-else

@@ -25,7 +25,7 @@
 
             <ion-menu-toggle :auto-hide="false" :key="trigger">
               <template v-if="user != undefined">
-                <!-- ! (3): mettere hover -->
+                <!-- ! (3): mettere hover su tutte le liste -->
                 <ion-item
                   v-for="(p, i) in getMenu(castToUser(user))"
                   :key="i"
@@ -132,9 +132,7 @@ const changeTitle = () => {
         user.value.type
       ].findIndex((a) => a == ($route.name as string))) != -1
     ) {
-      tmp_index = order.value.findIndex(
-        (a) => a == selected_item
-      );
+      tmp_index = order.value.findIndex((a) => a == selected_item);
     } else {
       while (tmp_index == -1 && count < items_titles.length) {
         urls = menu.items[items_titles[count]].url_names[user.value.type];
@@ -144,9 +142,7 @@ const changeTitle = () => {
         count++;
       }
       if (tmp_index != -1) {
-        tmp_index = order.value.findIndex(
-          (a) => a == items_titles[count - 1]
-        );
+        tmp_index = order.value.findIndex((a) => a == items_titles[count - 1]);
       }
     }
     menu.index =
@@ -155,10 +151,7 @@ const changeTitle = () => {
         : order.value.findIndex(
             (a) => a == menu.default_item[(user.value as User).type]
           );
-    sessionStorage.setItem(
-      "selected_item",
-      order.value[tmp_index]
-    );
+    sessionStorage.setItem("selected_item", order.value[tmp_index]);
     trigger.value++;
   }
 };
