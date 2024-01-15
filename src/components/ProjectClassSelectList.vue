@@ -274,6 +274,7 @@ const changeSelection = async () => {
             ),
           },
         ];
+        selectedChange(learning_sessions_cards);
         propositions.cards = await getPropositions();
       }
     }
