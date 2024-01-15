@@ -105,7 +105,6 @@ const getMenu = (user: User) => {
   for (const item_title of order.value) {
     complete_menu.push(menu.items[item_title]);
   }
-  console.log(complete_menu);
 
   return complete_menu;
 };

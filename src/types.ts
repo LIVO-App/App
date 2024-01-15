@@ -628,9 +628,9 @@ class EnrollmentCourse extends CourseSummary {
               course_id: this.id,
               section: this.section,
             },
-            text: this[`${language}_title`] + store.state.sections_use && this.section != null
+            text: this[`${language}_title`] + (store.state.sections_use && this.section != null
             ? " - " + getCurrentElement("section") + ": " + this.section
-            : "",
+            : ""),
           },
         },
         {

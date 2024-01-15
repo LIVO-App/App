@@ -447,9 +447,10 @@ const ordinary_class: OrdinaryClassSummary =
           "&school_year=" +
           learning_session?.school_year,
         (response) =>
-          new OrdinaryClass(response.data.data).toOrdinaryClassSummary()
+          response.data.data.map((a: any) => new OrdinaryClass(a).toOrdinaryClassSummary())[0]
       )
     : undefined;
+
 const description = {
   title: "",
   course_id: -1,
