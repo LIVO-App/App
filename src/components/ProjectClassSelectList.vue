@@ -6,9 +6,27 @@
     :buttons="alert_information.buttons"
     @didDismiss="closeModal('success')"
   />
+  <ion-modal
+    :is-open="description_open"
+    @didDismiss="closeModal('course_details')"
+  >
+    <suspense>
+      <template #default>
+        <course-description
+          :title="description_title"
+          :course_id="description_course_id"
+          :learning_session_id="learning_session_id"
+          @close="closeModal('course_details')"
+        />
+      </template>
+      <template #fallback>
+        <loading-component />
+      </template>
+    </suspense>
+  </ion-modal>
   <ion-grid
     ><!-- v-if="learning_sessions.loaded">-->
-    <ion-row>
+    <ion-row v-if="$route.name != 'open_day_courses'">
       <ionic-element
         :element="
           getCustomMessage(
@@ -46,13 +64,27 @@
         <custom-select
           v-model="selected_option"
           :list="options"
-          :label="getCurrentElement('propositions') + ':'"
-          :aria_label="getCurrentElement('propositions')"
+          :label="
+            getCurrentElement(
+              $route.name == 'open_day_courses'
+                ? 'learning_contexts'
+                : 'propositions'
+            ) + ':'
+          "
+          :aria_label="
+            getCurrentElement(
+              $route.name == 'open_day_courses' ? 'courses' : 'propositions'
+            )
+          "
           :placeholder="
             getCurrentElement(
               is_nothing_selected()
-                ? 'no_types_propositions'
-                : 'propositions_choice'
+                ? $route.name == 'open_day_courses'
+                  ? 'learning_context_choice'
+                  : 'propositions_type_choice'
+                : $route.name == 'open_day_courses'
+                ? 'no_learning_contexts'
+                : 'no_types_propositions'
             )
           "
           :getCompleteName="(option: any) => option.title"
@@ -66,12 +98,19 @@
                 is_nothing_selected()
                   ? selected_option == 'project_classes'
                     ? 'project_classes_propositions_selection_message'
+                    : $route.name == 'open_day_courses'
+                    ? 'courses_selection_message'
                     : 'courses_propositions_selection_message'
+                  : $route.name == 'open_day_courses'
+                  ? 'no_courses'
                   : 'no_propositions'
               )
             )
           "
-          :cards_list="propositions"
+          :cards_list="
+            $route.name == 'open_day_courses' ? courses : propositions
+          "
+          @signal_event="setupModalAndOpen()"
         />
       </ion-col>
     </ion-row>
@@ -83,19 +122,23 @@ import {
   GeneralCardElements,
   OrderedCardsList,
   User,
+  LearningArea,
   LearningSession,
   CourseModel,
   CourseModelProps,
+  CourseBase,
   CardsList,
   AlertInformation,
 } from "@/types";
-import { IonGrid, IonRow, IonCol, IonAlert } from "@ionic/vue";
+import { IonGrid, IonRow, IonCol, IonAlert, IonModal } from "@ionic/vue";
 import { reactive, Ref, ref, watch } from "vue";
 import { useStore } from "vuex";
 import {
   executeLink,
   getCurrentElement,
+  getCurrentLanguage,
   getCustomMessage,
+  getLearningContexts,
   getIcon,
   setupError,
 } from "@/utils";
@@ -106,7 +149,7 @@ type Indexes = {
   index: number;
 };
 
-type AvailableModal = "success" | "error";
+type AvailableModal = "course_details" | "success" | "error";
 
 const is_nothing_selected = () =>
   selected_element_indexes.group == "-1" &&
@@ -160,34 +203,12 @@ const changeSelection = async () => {
       group: "-1",
       index: -1,
     };
-    propositions.order = [
-      {
-        key: "to_approve",
-        title: getCustomMessage(
-          "to_approve",
-          getCurrentElement("to_approve"),
-          "title"
-        ),
-      },
-      {
-        key: "approved",
-        title: getCustomMessage(
-          "approved",
-          getCurrentElement("approved"),
-          "title"
-        ),
-      },
-    ];
-    propositions.cards = {
-      to_approve: [],
-      approved: [],
-    };
-    selected_option.value = "project_classes";
-  } else {
-    group_changed = selected_element_indexes.group != tmp_selected.group;
-    selected_element_indexes = tmp_selected;
-    selectedChange(learning_sessions_cards);
-    if (selected_option.value != "courses" || group_changed) {
+    if (selected_option.value == "open_day_courses") {
+      courses.order = [];
+      courses.cards = {};
+      options = [];
+      selected_option.value = "";
+    } else {
       propositions.order = [
         {
           key: "to_approve",
@@ -206,7 +227,55 @@ const changeSelection = async () => {
           ),
         },
       ];
-      propositions.cards = await getPropositions();
+      propositions.cards = {
+        to_approve: [],
+        approved: [],
+      };
+      selected_option.value = "project_classes";
+    }
+  } else {
+    group_changed = selected_element_indexes.group != tmp_selected.group;
+    selected_element_indexes = tmp_selected;
+    learning_session_id =
+      learning_sessions_cards.cards[selected_element_indexes.group][
+        selected_element_indexes.index
+      ].id;
+    if ($route.name == "open_day_courses") {
+      options = (await getLearningContexts(user, learning_session_id)).map(
+        (a) => {
+          return {
+            id: a.id,
+            title: a[`${language}_title`],
+          };
+        }
+      );
+      selected_option.value = options.length > 0 ? options[0].id : "";
+      selectedChange(learning_sessions_cards);
+      tmp_card_list = await getCourses();
+      courses.cards = tmp_card_list.cards;
+      courses.order = tmp_card_list.order;
+    } else {
+      if (selected_option.value != "courses" || group_changed) {
+        propositions.order = [
+          {
+            key: "to_approve",
+            title: getCustomMessage(
+              "to_approve",
+              getCurrentElement("to_approve"),
+              "title"
+            ),
+          },
+          {
+            key: "approved",
+            title: getCustomMessage(
+              "approved",
+              getCurrentElement("approved"),
+              "title"
+            ),
+          },
+        ];
+        propositions.cards = await getPropositions();
+      }
     }
   }
 };
@@ -224,9 +293,7 @@ const getPropositions = async () => {
   "project_classes"
     ? executeLink(
         "/v1/propositions?recent_models=false&session_id=" +
-          learning_sessions_cards.cards[selected_element_indexes.group][
-            selected_element_indexes.index
-          ].id,
+          learning_session_id,
         async (response: any) =>
           Promise.all(
             response.data.data.map(async (a: CourseModelProps) => {
@@ -242,9 +309,7 @@ const getPropositions = async () => {
       )
     : executeLink(
         "/v1/propositions?recent_models=false&session_id=" +
-          learning_sessions_cards.cards[selected_element_indexes.group][
-            selected_element_indexes.index
-          ].id +
+          learning_session_id +
           "&school_year=" +
           selected_element_indexes.group,
         (response: any) =>
@@ -262,10 +327,7 @@ const getPropositions = async () => {
       if (
         proposition.creation_school_year ==
           parseInt(selected_element_indexes.group) &&
-        "" + proposition.learning_session?.id ==
-          learning_sessions_cards.cards[selected_element_indexes.group][
-            selected_element_indexes.index
-          ].id
+        "" + proposition.learning_session?.id == learning_session_id
       ) {
         cards[proposition.isApproved() ? "approved" : "to_approve"].push(
           proposition.toCard(user, true)
@@ -285,11 +347,55 @@ const getPropositions = async () => {
 
   return cards;
 };
+const getCourses = async () => {
+  const tutor_courses: CourseBase[] = await executeLink(
+    "/v1/teachers/" +
+      user.id +
+      "/tutor_courses?session_id=" +
+      learning_session_id +
+      "&context_id=" +
+      selected_option.value,
+    (response: any) => response.data.data.map((a: any) => new CourseBase(a)),
+    () => []
+  );
+
+  const ordered_cards: OrderedCardsList<GeneralCardElements> = {
+    order: [],
+    cards: {},
+  };
+
+  let tmp_area: LearningArea | undefined;
+
+  for (const course of tutor_courses) {
+    if (ordered_cards.cards[course.learning_area_id] == undefined) {
+      tmp_area = learning_areas.find((a) => a.id == course.learning_area_id);
+      ordered_cards.cards[course.learning_area_id] = [];
+      ordered_cards.order.push({
+        key: course.learning_area_id,
+        title: getCustomMessage(
+          "title",
+          tmp_area != undefined
+            ? tmp_area[`${language}_title`]
+            : course.learning_area_id,
+          "title"
+        ),
+      });
+    }
+    ordered_cards.cards[course.learning_area_id].push(course.toCard());
+  }
+
+  return ordered_cards;
+};
 const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
   const actual_window: AvailableModal = window ?? store.state.event.event;
   const actual_message: string = message ?? store.state.event.data?.message;
 
   switch (actual_window) {
+    case "course_details":
+      description_title = store.state.event.data.title;
+      description_course_id = store.state.event.data.course_id;
+      description_open.value = true;
+      break;
     case "success":
       alert_information.title = "";
       alert_information.message =
@@ -305,6 +411,9 @@ const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
 };
 const closeModal = (window: AvailableModal) => {
   switch (window) {
+    case "course_details":
+      description_open.value = false;
+      break;
     case "success":
     case "error":
       alert_open.value = false;
@@ -331,6 +440,7 @@ const store = useStore();
 const user = User.getLoggedUser() as User;
 const $route = useRoute();
 const alert_information: AlertInformation = store.state.alert_information;
+const language = getCurrentLanguage();
 
 const promises: Promise<any>[] = [];
 const learning_sessions_cards: OrderedCardsList<GeneralCardElements> = reactive(
@@ -343,9 +453,25 @@ const propositions: OrderedCardsList<GeneralCardElements> = reactive({
   order: [],
   cards: {},
 });
-const school_years = await executeLink(
-  "/v1/teachers/" + user.id + "/active_years",
-  (response: any) => response.data.data.map((a: any) => a.year),
+const courses: OrderedCardsList<GeneralCardElements> = reactive({
+  order: [],
+  cards: {},
+});
+const school_years =
+  $route.name == "open_day_courses"
+    ? await executeLink(
+        "/v1/teachers/" + user.id + "/tutor_years",
+        (response: any) => response.data.data.map((a: any) => a.school_year),
+        () => []
+      )
+    : await executeLink(
+        "/v1/teachers/" + user.id + "/active_years",
+        (response: any) => response.data.data.map((a: any) => a.year),
+        () => []
+      );
+const learning_areas: LearningArea[] = await executeLink(
+  "/v1/learning_areas",
+  (response: any) => response.data.data,
   () => []
 );
 const learning_sessions: LearningSession[] = []; /* await executeLink(
@@ -365,9 +491,10 @@ const learning_sessions: LearningSession[] = []; /* await executeLink(
     )*/
 const trigger = ref(0);
 const selected_option: Ref<string> = ref(
-  $route.name == "ordinary_classes" ? "" : "project_classes"
+  $route.name == "open_day_courses" ? "" : "project_classes"
 );
 const alert_open = ref(false);
+const description_open = ref(false);
 const buttons = [
   {
     id: "export",
@@ -398,15 +525,14 @@ const buttons = [
   },
 ];
 
-let selected_element_indexes: Indexes = reactive({
-  group: "-1",
-  index: -1,
-});
-const options: {
+let tmp_card_list: OrderedCardsList<GeneralCardElements>,
+  description_title: string,
+  description_course_id: number;
+let options: {
   id: string;
   title?: string;
 }[] =
-  $route.name == "ordinary_classes"
+  $route.name == "open_day_courses"
     ? []
     : [
         {
@@ -418,6 +544,11 @@ const options: {
           title: getCurrentElement("courses_propositions_per_year"),
         },
       ];
+let selected_element_indexes: Indexes = reactive({
+  group: "-1",
+  index: -1,
+});
+let learning_session_id = "-1";
 
 for (const year of school_years) {
   promises.push(
@@ -447,7 +578,13 @@ watch(selected_option, async (new_option) => {
       selected_element_indexes.group != "-1" &&
       selected_element_indexes.index != -1
     ) {
-      propositions.cards = await getPropositions();
+      if ($route.name == "open_day_courses") {
+        tmp_card_list = await getCourses();
+        courses.cards = tmp_card_list.cards;
+        courses.order = tmp_card_list.order;
+      } else {
+        propositions.cards = await getPropositions();
+      }
     }
   }
   trigger.value++;

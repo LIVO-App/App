@@ -521,36 +521,18 @@ class CourseBase {
     const card: GeneralCardElements = {
       id: "" + this.id,
       group: "",
-      content: [
-        {
-          id: this.id + "_credits",
-          type: "string",
-          content: getCurrentElement("credits") + ": " + this.credits,
-          colors: {
-            text: {
-              name: "white",
-              type: "var",
-            },
-            background: {
-              name: "primary",
-              type: "var",
-            },
-          },
+      title: getCustomMessage(
+        "title",
+        this[`${language}_title`],
+        "title"
+      ),
+      link: {
+        event: "course_details",
+        data: {
+          title: this[`${language}_title`],
+          course_id: this.id,
         },
-        {
-          id: this.id + "_title",
-          type: "string",
-          linkType: "event",
-          content: {
-            event: "course_details",
-            data: {
-              title: this[`${language}_title`],
-              course_id: this.id,
-            },
-            text: this[`${language}_title`],
-          },
-        },
-      ],
+      }
     };
 
     return card;
@@ -577,16 +559,12 @@ class CourseSummary extends CourseBase {
 
     card.group = this.group;
     if (
-      card.content != undefined &&
-      isEventString(card.content[1].content)
+      card.title != undefined
     ) {
-      card.content[1].content.text +=
+      card.title.content +=
         store.state.sections_use && this.section != null
           ? " - " + getCurrentElement("section") + ": " + this.section
           : "";
-      if (card.content[1].content.data != undefined) {
-        card.content[1].content.data.section = this.section;
-      }
     }
 
     return card;
@@ -611,26 +589,58 @@ class EnrollmentCourse extends CourseSummary {
     open_enrollment = false,
     reference = new Date()
   ) {
+    const language = getCurrentLanguage();
     const tmp_enrollment = new Enrollment(
       this.pending,
       learning_session,
       reference,
       open_enrollment
     );
-    const tmp_card: GeneralCardElements = super.toCard();
     const card: EnrollmentCardElements = {
-      id: tmp_card.id,
-      group: tmp_card.group,
+      id: "" + this.id,
+      group: this.group,
       credits: this.credits,
       enrollment: tmp_enrollment,
-      content: tmp_card.content ?? [],
+      content: [
+        {
+          id: this.id + "_credits",
+          type: "string",
+          content: getCurrentElement("credits") + ": " + this.credits,
+          colors: {
+            text: {
+              name: "white",
+              type: "var",
+            },
+            background: {
+              name: "primary",
+              type: "var",
+            },
+          },
+        },
+        {
+          id: this.id + "_title",
+          type: "string",
+          linkType: "event",
+          content: {
+            event: "course_details",
+            data: {
+              title: this[`${language}_title`],
+              course_id: this.id,
+              section: this.section,
+            },
+            text: this[`${language}_title`] + store.state.sections_use && this.section != null
+            ? " - " + getCurrentElement("section") + ": " + this.section
+            : "",
+          },
+        },
+        {
+          id: this.id + "_enrollment",
+          type: "string",
+          content: tmp_enrollment.toString(),
+          colors: tmp_enrollment.getStatusColors(),
+        },
+      ],
     };
-    card.content.push({
-      id: this.id + "_enrollment",
-      type: "string",
-      content: tmp_enrollment.toString(),
-      colors: tmp_enrollment.getStatusColors(),
-    });
 
     if (
       (!store.state.static_subscription ||

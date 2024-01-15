@@ -57,7 +57,7 @@ import {
   downloadOutline,
   downloadSharp,
 } from "ionicons/icons";
-import { UserProps } from "./types";
+import { User, UserProps } from "./types";
 
 const grades_scale = {
   min: 4,
@@ -169,6 +169,15 @@ export const store = createStore({
             },
             icon_ref: "link",
           },
+          open_day_courses: {
+            url_names: {
+              teacher: ["open_day_courses"],
+            },
+            icon_ref: "easel",
+            additional_controls: {
+              teacher: () => User.getLoggedUser()?.subtype == "tutor"
+            }
+          },
           settings: {
             url_names: {
               student: ["settings"],
@@ -209,6 +218,7 @@ export const store = createStore({
           teacher: [
             "project_courses",
             "course_proposal",
+            "open_day_courses",
             "ordinary_classes",
             "settings",
             "logout",
@@ -674,6 +684,11 @@ export const store = createStore({
           unauthorized_operation: "Operazione non autorizzata",
           students_export: "Esporta iscrizioni prossima sessione",
           subscriptions_exported: "Iscrizioni esportate con successo",
+          open_day_courses: "Corsi orientation day",
+          no_learning_contexts: "Nessun contesto di apprendimento",
+          courses_selection_message:
+            "Seleziona una sessione di apprendimento per vedere i corsi disponibili",
+          learning_contexts: "Contesti di apprendimento",
         },
         english: {
           credits_constraints: "Credits constraints",
@@ -993,6 +1008,12 @@ export const store = createStore({
           unauthorized_operation: "Unauthorized operation",
           students_export: "Export next session subscriptions",
           subscriptions_exported: "Subscriptions exported successfully",
+          open_day_courses: "Orientation day courses",
+          courses_choice: "Choose a course",
+          no_learning_contexts: "No learning contexts",
+          courses_selection_message:
+            "Select a learning session to see the available courses",
+          learning_contexts: "Learning contexts",
         },
       },
       logged_user: false,

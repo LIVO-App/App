@@ -141,6 +141,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import("../views/NotImplemented.vue"),
   },
   {
+    path: "/open_day_courses",
+    name: "open_day_courses",
+    component: () => import("../views/OpenDayCourses.vue"),
+  },
+  {
     path: "/auth/google",
     name: "google_auth",
     component: () => import("../components/LoadingComponent.vue"),
