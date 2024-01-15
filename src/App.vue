@@ -34,7 +34,7 @@
                   :router-link="{ name: p.url_names[castToUser(user).type][0] }"
                   lines="none"
                   :detail="false"
-                  class="hydrated"
+                  class="hydrated hoverable_item"
                   :class="{ selected: menu.index === i }"
                 >
                   <ion-icon
@@ -289,5 +289,11 @@ ion-note {
 
 ion-item.selected {
   --color: var(--ion-color-primary);
+}
+
+/** change cursor and background of menu item on hover */
+.hoverable_item:hover {
+  cursor: pointer;
+  --background: rgba(var(--ion-color-light-rgb), 0.14);
 }
 </style>
