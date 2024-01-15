@@ -260,6 +260,7 @@
 <script setup lang="ts">
 import {
   CustomElement,
+  EditableState,
   Grade,
   GradeProps,
   GradesParameters,
@@ -341,14 +342,6 @@ const setGradesTable = async (empty = true) => {
     );
   }
 
-  column_sizes =
-    props.parameters.associated_teacher === false &&
-    (actual_final_grade_index == -1 ||
-      (actual_grades[actual_final_grade_index] != undefined &&
-        actual_grades[actual_final_grade_index].isEditable()))
-      ? [6, 2, 2, 1, 1]
-      : [6, 3, 3];
-
   for (const grade_index in actual_grades) {
     final_grade_pubblication =
       actual_final_grade_index != -1 &&
@@ -359,12 +352,14 @@ const setGradesTable = async (empty = true) => {
         : undefined;
 
     table_data.push(
-      actual_grades[grade_index].toTableRow(
-        props.parameters.associated_teacher ?? false,
-        user.id,
-        props.parameters.student_id,
-        final_grade_pubblication
-      )
+      user.type == "teacher"
+        ? actual_grades[grade_index].toTableRow(
+            props.parameters.associated_teacher ?? false,
+            user.id,
+            props.parameters.student_id,
+            final_grade_pubblication
+          )
+        : actual_grades[grade_index].toTableRow()
     );
 
     if (!actual_grades[grade_index].final) {
@@ -383,6 +378,32 @@ const setGradesTable = async (empty = true) => {
     mean = actual_grades[0].grade.toFixed(2);
   } else {
     mean = "-";
+  }
+
+  if (
+    user.type == "teacher" &&
+    props.parameters.associated_teacher === false &&
+    (actual_final_grade_index == -1 ||
+      (actual_grades[actual_final_grade_index] != undefined &&
+        actual_grades[actual_final_grade_index].getEditableStatus(
+          final_grade_pubblication
+        ) != EditableState.AFTER_7_DAYS))
+  ) {
+    column_sizes = [6, 2, 2, 1, 1];
+    first_row = base_row.concat(
+      {
+        id: "edit",
+        type: "string",
+        content: "",
+      },
+      {
+        id: "remove",
+        type: "string",
+        content: "",
+      }
+    );
+  } else {
+    column_sizes = [6, 3, 3];
   }
 };
 const setupEditMode = (empty = false) => {
@@ -437,7 +458,7 @@ const elements: {
     content: props.title,
   },
 };
-const first_row: CustomElement[] = [
+const base_row: CustomElement[] = [
   {
     id: "description",
     type: "string",
@@ -472,6 +493,7 @@ const edit_trigger = ref(0);
 const end_of_day = new Date();
 end_of_day.setHours(23, 59, 59, 999);
 
+let first_row: CustomElement[] = base_row;
 let table_data: CustomElement[][] = [];
 let mean = "";
 let date: Date | undefined = undefined;
@@ -482,21 +504,6 @@ let final_grade_pubblication: Date | undefined;
 let edit_mode = false;
 let date_value: string | undefined;
 let to_edit: Grade;
-
-if (props.parameters.associated_teacher === false) {
-  first_row.push(
-    {
-      id: "edit",
-      type: "string",
-      content: "",
-    },
-    {
-      id: "remove",
-      type: "string",
-      content: "",
-    }
-  );
-}
 
 await setGradesTable();
 watch(

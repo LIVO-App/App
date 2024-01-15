@@ -177,6 +177,7 @@
 import {
   AlertInformation,
   CustomElement,
+  EditableState,
   Grade,
   GradeProps,
   GradesParameters,
@@ -610,13 +611,13 @@ const yes_handler = async () => {
             300
           );
         } else if (
-          !tmp_grade.isEditable(
+          tmp_grade.getEditableStatus(
             final_grades_indexes[grade_index.student_id] != undefined
               ? grades[grade_index.student_id][
                   final_grades_indexes[grade_index.student_id]
                 ].publication
               : undefined
-          )
+          ) != EditableState.EDITABLE
         ) {
           setTimeout(
             () =>
@@ -692,13 +693,13 @@ const yes_handler = async () => {
             300
           );
         } else if (
-          !grades[grade_index.student_id][grade_index.index].isEditable(
+          grades[grade_index.student_id][grade_index.index].getEditableStatus(
             final_grades_indexes[grade_index.student_id] != undefined
               ? grades[grade_index.student_id][
                   final_grades_indexes[grade_index.student_id]
                 ].publication
               : undefined
-          )
+          ) != EditableState.EDITABLE
         ) {
           setTimeout(
             () =>
@@ -852,7 +853,7 @@ const updateFinalRefs = (
 
   if (grade.final == true) {
     student_pos = table_data.findIndex(
-      (a: CustomElement[]) => a[0].id == student_id + "_name_surname"
+      (a: CustomElement[]) => a[0].id.split("_")[0] == student_id
     );
     if (update_indexes) {
       final_grades_indexes[student_id] = grades[student_id].length - 1;

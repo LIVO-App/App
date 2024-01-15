@@ -521,18 +521,14 @@ class CourseBase {
     const card: GeneralCardElements = {
       id: "" + this.id,
       group: "",
-      title: getCustomMessage(
-        "title",
-        this[`${language}_title`],
-        "title"
-      ),
+      title: getCustomMessage("title", this[`${language}_title`], "title"),
       link: {
         event: "course_details",
         data: {
           title: this[`${language}_title`],
           course_id: this.id,
         },
-      }
+      },
     };
 
     return card;
@@ -558,9 +554,7 @@ class CourseSummary extends CourseBase {
     const card: GeneralCardElements = super.toCard();
 
     card.group = this.group;
-    if (
-      card.title != undefined
-    ) {
+    if (card.title != undefined) {
       card.title.content +=
         store.state.sections_use && this.section != null
           ? " - " + getCurrentElement("section") + ": " + this.section
@@ -628,9 +622,11 @@ class EnrollmentCourse extends CourseSummary {
               course_id: this.id,
               section: this.section,
             },
-            text: this[`${language}_title`] + (store.state.sections_use && this.section != null
-            ? " - " + getCurrentElement("section") + ": " + this.section
-            : ""),
+            text:
+              this[`${language}_title`] +
+              (store.state.sections_use && this.section != null
+                ? " - " + getCurrentElement("section") + ": " + this.section
+                : ""),
           },
         },
         {
@@ -1752,6 +1748,12 @@ type CustomElement = {
   content: ContentType;
 };
 
+enum EditableState {
+  NOT_EDITABLE,
+  EDITABLE,
+  AFTER_7_DAYS,
+}
+
 type GradeProps = {
   id: number;
   publication: string;
@@ -1782,7 +1784,7 @@ class Grade {
     this.final = props.final == 1;
   }
 
-  isEditable(final_grade_pubblication?: Date) {
+  getEditableStatus(final_grade_pubblication?: Date) {
     const seven_days_after =
       final_grade_pubblication != undefined
         ? new Date(final_grade_pubblication)
@@ -1792,10 +1794,12 @@ class Grade {
       seven_days_after.setDate(seven_days_after.getDate() + 7);
     }
 
-    return (
-      seven_days_after == undefined ||
+    return seven_days_after == undefined ||
       (this.final && new Date() <= seven_days_after)
-    );
+      ? EditableState.EDITABLE
+      : new Date() > seven_days_after
+      ? EditableState.AFTER_7_DAYS
+      : EditableState.NOT_EDITABLE;
   }
 
   toCard(): GeneralCardElements {
@@ -1815,9 +1819,9 @@ class Grade {
   }
 
   toTableRow(
-    associated_teacher: boolean,
-    teacher_id: number,
-    student_id: number,
+    associated_teacher?: boolean,
+    teacher_id?: number,
+    student_id?: number,
     final_grade_pubblication?: Date
   ): CustomElement[] {
     const language = getCurrentLanguage();
@@ -1842,51 +1846,59 @@ class Grade {
             : "") + this.grade,
       },
     ];
-    const editable = this.isEditable(final_grade_pubblication);
+    const editable = this.getEditableStatus(final_grade_pubblication);
 
-    if (editable && !associated_teacher) {
-      row.push(
-        {
-          id: this.id + "_edit",
-          type: "icon",
-          linkType: "event",
-          content: {
-            event: "edit_grade",
-            data: {
-              id: this.id,
-              teacher_id: teacher_id,
-              student_id: student_id,
+    if (
+      student_id != undefined &&
+      teacher_id != undefined &&
+      associated_teacher != undefined
+    ) {
+      if (editable == EditableState.EDITABLE && !associated_teacher) {
+        // Teacher that can edit and editable grade
+        row.push(
+          {
+            id: this.id + "_edit",
+            type: "icon",
+            linkType: "event",
+            content: {
+              event: "edit_grade",
+              data: {
+                id: this.id,
+                teacher_id: teacher_id,
+                student_id: student_id,
+              },
+              icon: getIcon("pencil"),
             },
-            icon: getIcon("pencil"),
           },
-        },
-        {
-          id: this.id + "_remove",
-          type: "icon",
-          linkType: "event",
-          content: {
-            event: "remove_grade",
-            data: {
-              id: this.id,
-              student_id: student_id,
+          {
+            id: this.id + "_remove",
+            type: "icon",
+            linkType: "event",
+            content: {
+              event: "remove_grade",
+              data: {
+                id: this.id,
+                student_id: student_id,
+              },
+              icon: getIcon("close"),
             },
-            icon: getIcon("close"),
+          }
+        );
+      } else if (editable == EditableState.NOT_EDITABLE) {
+        // Teacher that can edit but not editable grade
+        row.push(
+          {
+            id: this.id + "_edit",
+            type: "string",
+            content: "",
           },
-        }
-      );
-    } else if (!editable) {
-      row.push(
-        {
-          id: this.id + "_edit",
-          type: "string",
-          content: "",
-        },
-        {
-          id: this.id + "_remove",
-          type: "string",
-          content: "",
-        }
-      );
+          {
+            id: this.id + "_remove",
+            type: "string",
+            content: "",
+          }
+        );
+      }
     }
 
     return row;
@@ -5120,6 +5132,7 @@ export {
   Colors,
   Classes,
   CustomElement,
+  EditableState,
   GradeProps,
   Grade,
   GradesParameters,
