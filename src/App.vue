@@ -44,7 +44,7 @@
                     :md="getIcon(p.icon_ref).md"
                   ></ion-icon>
                   <ion-label text-wrap>{{
-                    getCurrentElement(menu.order[castToUser(user).type][i])
+                    getCurrentElement(order[i])
                   }}</ion-label>
                 </ion-item>
               </template>
@@ -81,33 +81,37 @@ import { getCurrentElement, getDefautlLink, getIcon } from "./utils";
 
 const image = computed(() => require("./assets/Logo_LIVO_Path.png"));
 const castToUser = (user: User | undefined) => user as User;
+const executeAdditionalControl = (user: User, item: MenuItem) => {
+  let additional_control: boolean | undefined = undefined;
+
+  if (item != undefined) {
+    if (item.additional_controls != undefined) {
+      additional_control =
+        item.additional_controls[user.type] != undefined
+          ? item.additional_controls[user.type]()
+          : undefined;
+    } else {
+      additional_control = undefined;
+    }
+  }
+
+  return additional_control;
+};
 const getMenu = (user: User) => {
   const complete_menu: MenuItem[] = [];
 
-  let tmp_item: MenuItem | undefined,
-    additional_control: boolean | undefined = undefined;
+  let tmp_item: MenuItem | undefined;
 
-  for (const item_title of menu.order[user.type]) {
-    tmp_item = menu.items[item_title];
-    if (tmp_item != undefined) {
-      if (tmp_item.additional_controls != undefined) {
-        additional_control = tmp_item.additional_controls[user.type] != undefined
-          ? tmp_item.additional_controls[user.type]()
-          : undefined;
-        if (additional_control == undefined || additional_control) {
-          complete_menu.push(tmp_item);
-        }
-      } else {
-        complete_menu.push(tmp_item);
-      }
-    }
+  for (const item_title of order.value) {
+    complete_menu.push(menu.items[item_title]);
   }
+  console.log(complete_menu);
 
   return complete_menu;
 };
 const selectTitle = (user_type: UserType, index: number) => {
   store.state.menu.index = index;
-  sessionStorage.setItem("selected_item", menu.order[user_type][index]);
+  sessionStorage.setItem("selected_item", order.value[index]);
 };
 const changeTitle = () => {
   const items_titles = Object.keys(menu.items);
@@ -129,7 +133,7 @@ const changeTitle = () => {
         user.value.type
       ].findIndex((a) => a == ($route.name as string))) != -1
     ) {
-      tmp_index = menu.order[user.value.type].findIndex(
+      tmp_index = order.value.findIndex(
         (a) => a == selected_item
       );
     } else {
@@ -141,7 +145,7 @@ const changeTitle = () => {
         count++;
       }
       if (tmp_index != -1) {
-        tmp_index = menu.order[user.value.type].findIndex(
+        tmp_index = order.value.findIndex(
           (a) => a == items_titles[count - 1]
         );
       }
@@ -149,12 +153,12 @@ const changeTitle = () => {
     menu.index =
       tmp_index != -1
         ? tmp_index
-        : menu.order[user.value.type].findIndex(
+        : order.value.findIndex(
             (a) => a == menu.default_item[(user.value as User).type]
           );
     sessionStorage.setItem(
       "selected_item",
-      menu.order[user.value.type][tmp_index]
+      order.value[tmp_index]
     );
     trigger.value++;
   }
@@ -167,6 +171,15 @@ const menu: Menu = store.state.menu;
 const trigger = ref(0);
 const user: ComputedRef<User | undefined> = computed(
   () => store.state.user ?? User.getLoggedUser()
+);
+const order = computed(() =>
+  user.value != undefined
+    ? menu.order[castToUser(user.value).type].filter((a) =>
+        user.value != undefined
+          ? executeAdditionalControl(user.value, menu.items[a]) != false
+          : false
+      )
+    : []
 );
 
 changeTitle();

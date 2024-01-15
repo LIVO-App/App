@@ -1044,7 +1044,7 @@ let grades_title: string;
 let grades_parameters: GradesParameters;
 let student_grades: Grade[] | undefined;
 let description_title: string;
-let description_course_id: GradesParameters;
+let description_course_id: number;
 let associated_teacher: boolean | undefined;
 let learning_session_status: LearningSessionStatus | undefined;
 let course: Course | undefined;

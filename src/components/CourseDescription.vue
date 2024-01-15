@@ -314,7 +314,6 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  learning_block_id: Number,
   learning_session_id: String,
   section: String,
 });

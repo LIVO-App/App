@@ -112,7 +112,7 @@ import {
   ColorObject,
   AlertInformation,
 } from "@/types";
-import { IonGrid, IonRow, IonCol } from "@ionic/vue";
+import { IonGrid, IonRow, IonCol, IonAlert } from "@ionic/vue";
 import { reactive, ref } from "vue";
 import { useStore } from "vuex";
 import {
