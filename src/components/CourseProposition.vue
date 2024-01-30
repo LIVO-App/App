@@ -841,7 +841,7 @@ const checkAndWarn = () => {
   return outcome;
 };
 const checkAndConfirm = () => {
-  if (!checkAndWarn()) {
+  if (checkAndWarn()) {
     setupModalAndOpen("confirm");
   }
 };
