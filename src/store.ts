@@ -93,7 +93,6 @@ export const store = createStore({
     return {
       menu: {
         items: {
-          // ! (3): creare pagina tutor-open_day
           learning_sessions: {
             url_names: {
               student: ["learning_sessions", "learning_session"],
@@ -175,8 +174,8 @@ export const store = createStore({
             },
             icon_ref: "easel",
             additional_controls: {
-              teacher: () => User.getLoggedUser()?.subtype == "tutor"
-            }
+              teacher: () => User.getLoggedUser()?.subtype == "tutor",
+            },
           },
           settings: {
             url_names: {
@@ -689,6 +688,7 @@ export const store = createStore({
           courses_selection_message:
             "Seleziona una sessione di apprendimento per vedere i corsi disponibili",
           learning_contexts: "Contesti di apprendimento",
+          consultable_courses: "corsi consultabili",
         },
         english: {
           credits_constraints: "Credits constraints",
@@ -1014,6 +1014,7 @@ export const store = createStore({
           courses_selection_message:
             "Select a learning session to see the available courses",
           learning_contexts: "Learning contexts",
+          consultable_courses: "consultable courses",
         },
       },
       logged_user: false,

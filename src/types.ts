@@ -1437,7 +1437,6 @@ class LearningSession extends LearningSessionSummary {
     );
 
     for (const area of learning_areas) {
-      // ! (3): mettere informazione su corsi pubblicati o no
       session_list +=
         (put_courses_list ? "<label>" : "<li>") +
         area[`${language}_title`] +
@@ -1483,7 +1482,7 @@ class LearningSession extends LearningSessionSummary {
   async getSubscribedCredits(
     learning_context_id: string,
     user = User.getLoggedUser() as UserSummary
-  ): Promise<number> {
+  ): Promise<{ credits: number; courses_presence: boolean }> {
     return await executeLink(
       "/v1/courses?student_id=" +
         user.id +
@@ -1491,7 +1490,12 @@ class LearningSession extends LearningSessionSummary {
         this.id +
         "&context_id=" +
         learning_context_id,
-      (response) => getSubscribedCredits(response.data.data),
+      (response) => {
+        return {
+          credits: getSubscribedCredits(response.data.data),
+          courses_presence: response.data.data.length > 0,
+        };
+      },
       () => 0
     );
   }
@@ -1501,12 +1505,24 @@ class LearningSession extends LearningSessionSummary {
     learning_context?: LearningContextSummary,
     credits?: boolean,
     courses_list?: boolean,
+    courses_badge = false,
     reference = new Date()
   ): Promise<GeneralCardElements> {
     const status = this.getStatus(reference);
     const put_credits = credits ?? status == LearningSessionStatus.FUTURE;
     const actual_learning_context: LearningContextSummary =
       getActualLearningContext(learning_context);
+    const subscribed_credits =
+      selected == undefined &&
+      (status != LearningSessionStatus.COMPLETED ||
+        credits != undefined ||
+        courses_list != undefined) &&
+      put_credits
+        ? await this.getSubscribedCredits(actual_learning_context.id)
+        : {
+            credits: 0,
+            courses_presence: false,
+          };
     const tmp_element: GeneralCardElements = {
       id: "" + this.id,
       group: this.school_year,
@@ -1540,12 +1556,15 @@ class LearningSession extends LearningSessionSummary {
                   (put_credits
                     ? "<label>" +
                       getCurrentElement("credits_constraints") +
+                      (courses_badge && subscribed_credits.courses_presence
+                        ? " <b>[" +
+                          getCurrentElement("consultable_courses") +
+                          "]</b>"
+                        : "") +
                       ":" +
                       (actual_learning_context.credits != null
                         ? " " +
-                          (await this.getSubscribedCredits(
-                            actual_learning_context.id
-                          )) +
+                          subscribed_credits.credits +
                           "/" +
                           actual_learning_context.credits
                         : "") +

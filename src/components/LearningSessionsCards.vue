@@ -225,9 +225,40 @@ if (current_class != undefined) {
     executeLink(
       "/v1/learning_sessions?school_year=" + current_school_year,
       async (response) => {
+        learning_sessions.completed.order.push({
+          key: current_school_year,
+          title: getCustomMessage("title", current_school_year, "title"),
+        });
+        learning_sessions.future.order = learning_sessions.future.order.concat(
+          {
+            key: "open_enrollment",
+            title: getCustomMessage(
+              "title",
+              getCurrentElement("open_enrollment"),
+              "title"
+            ),
+          },
+          {
+            key: "planned",
+            title: getCustomMessage(
+              "title",
+              getCurrentElement("planned"),
+              "title"
+            ),
+          }
+        );
+        learning_sessions.future.cards["open_enrollment"] = [];
+        learning_sessions.future.cards["planned"] = [];
+
         for (const session of response.data.data) {
           learning_session = new LearningSession(session);
-          tmp_element = await learning_session.toCard(undefined);
+          tmp_element = await learning_session.toCard(
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            true
+          );
 
           switch (learning_session.getStatus()) {
             case LearningSessionStatus.FUTURE:
@@ -267,28 +298,7 @@ if (current_class != undefined) {
               break;
           }
         }
-        learning_sessions.completed.order.push({
-          key: current_school_year,
-          title: getCustomMessage("title", current_school_year, "title"),
-        });
-        learning_sessions.future.order = learning_sessions.future.order.concat(
-          {
-            key: "open_enrollment",
-            title: getCustomMessage(
-              "title",
-              getCurrentElement("open_enrollment")
-            ),
-          },
-          {
-            key: "planned",
-            title: getCustomMessage(
-              "title",
-              getCurrentElement("planned"),
-              "title"
-            ),
-          }
-        );
-        learning_sessions.future.cards["open_enrollment"] = [];
+
         if (
           open_enrollment &&
           (tmp_element = learning_sessions.future.cards["planned"].shift()) !=
