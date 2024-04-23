@@ -4144,6 +4144,7 @@ type CourseReferences = {
 
 class SubscriptionsManager {
   // TODO (4): fare tutte combinazioni tra mode e visualization_type e tenere conto anche dell'utente per risultato carta/riga
+  // TODO (4): rifare tutto questo sistema andando a cambiare il funzionamento della tabella in modo tale che sia un array di oggetti o simile ([{row_id,row,enrollment}]) e diventi simile alle card
   private _mode: SubscriptionsManagerMode;
   private _visualizzation_type: SubscriptionsManagerVisualizzationType;
   private _all_courses:
@@ -4679,16 +4680,20 @@ class SubscriptionsManager {
   private removeCourse(
     context_id: string,
     learning_area_id: string,
-    course_id: string,
-    enrollment?: Date | boolean
+    course_id: string
   ) {
     let all_courses_tables: TmpList<TmpList<EnrollmentTable>>,
-      course_index: number;
+      course_index: number,
+      deleted_element: EnrollmentCardElements | EnrollmentTableRow;
 
     if (!isEnrollmentTableList(this._all_courses)) {
-      this._all_courses[context_id][learning_area_id] = this._all_courses[
-        context_id
-      ][learning_area_id].filter((a) => a.id != course_id);
+      course_index = this._all_courses[context_id][learning_area_id].findIndex(
+        (a) => a.id != course_id
+      );
+      deleted_element = this._all_courses[context_id][learning_area_id].splice(
+        course_index,
+        1
+      )[0];
     } else {
       all_courses_tables = this._all_courses as TmpList<
         TmpList<EnrollmentTable>
@@ -4696,26 +4701,18 @@ class SubscriptionsManager {
       course_index = all_courses_tables[context_id][
         learning_area_id
       ].table_data.findIndex((a) => a[0].id.split("_")[0] == course_id);
-      all_courses_tables[context_id][learning_area_id].table_data =
-        all_courses_tables[context_id][learning_area_id].table_data.splice(
+      deleted_element = {
+        row: all_courses_tables[context_id][learning_area_id].table_data.splice(
           course_index,
           1
-        );
-
-      all_courses_tables[context_id][learning_area_id].enrollments[
-        course_index
-      ].enrollment = enrollment as Date | boolean;
-      all_courses_tables[context_id][learning_area_id].enrollments.push(
-        all_courses_tables[context_id][learning_area_id].enrollments[
-          course_index
-        ]
-      );
-      all_courses_tables[context_id][learning_area_id].enrollments =
-        all_courses_tables[context_id][learning_area_id].enrollments.splice(
-          course_index,
-          1
-        );
+        )[0],
+        enrollment: all_courses_tables[context_id][
+          learning_area_id
+        ].enrollments.splice(course_index, 1)[0],
+      };
     }
+
+    return deleted_element;
   }
 
   private updateCourse(
@@ -4724,21 +4721,31 @@ class SubscriptionsManager {
     to_update: EnrollmentCardElements | CustomElement[],
     enrollment?: Date | boolean
   ) {
+    let all_courses_tables: TmpList<TmpList<EnrollmentTable>>,
+      deleted_element: EnrollmentCardElements | EnrollmentTableRow;
+
     if (!isEnrollmentTableList(this._all_courses) && isCourse(to_update)) {
-      this.removeCourse(context_id, learning_area_id, to_update.id, enrollment);
+      this.removeCourse(context_id, learning_area_id, to_update.id);
       this._all_courses[context_id][learning_area_id].push(
         to_update as EnrollmentCardElements
       );
     } else {
-      this.removeCourse(
+      deleted_element = this.removeCourse(
         context_id,
         learning_area_id,
-        (to_update as CustomElement[])[0].id.split("_")[0],
-        enrollment
+        (to_update as CustomElement[])[0].id.split("_")[0]
       );
-      (this._all_courses as TmpList<TmpList<EnrollmentTable>>)[context_id][
-        learning_area_id
-      ].table_data.push(to_update as CustomElement[]);
+      all_courses_tables = this._all_courses as TmpList<
+        TmpList<EnrollmentTable>
+      >;
+      all_courses_tables[context_id][learning_area_id].table_data.push(
+        to_update as CustomElement[]
+      );
+
+      deleted_element.enrollment.enrollment = enrollment as Date | boolean;
+      all_courses_tables[context_id][learning_area_id].enrollments.push(
+        deleted_element.enrollment
+      );
     }
   }
 
@@ -4950,10 +4957,15 @@ class SubscriptionsManager {
               value
             );
           } else {
-            this.removeCourse(
+            /*this.removeCourse(
               context_reference.context_id,
               this.last_mentioned_course.references.learning_area_id,
-              (this.course as CustomElement[])[0].id.split("_")[0],
+              (this.course as CustomElement[])[0].id.split("_")[0]
+            );*/ // TODO (4): rimettere quando sarà tutto sistemato
+            this.updateCourse(
+              context_reference.context_id,
+              this.last_mentioned_course.references.learning_area_id,
+              this.course,
               value
             );
           }
