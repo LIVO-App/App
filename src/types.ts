@@ -4768,21 +4768,30 @@ class SubscriptionsManager {
   }
 
   isStudentCompliant() {
+    const learning_contexts = Object.keys(this.remaing_credits);
+
     let i = 0;
     let j: number;
     let compliant = true;
+    let learning_areas: string[];
 
-    while (compliant && i < Object.keys(this.remaing_credits).length) {
-      if (typeof this.remaing_credits[i] == "number") {
-        compliant = this.remaing_credits[i] == 0;
+    while (compliant && i < learning_contexts.length) {
+      if (typeof this.remaing_credits[learning_contexts[i]] == "number") {
+        compliant = this.remaing_credits[learning_contexts[i]] == 0;
       } else {
         j = 0;
+        learning_areas = Object.keys(
+          this.remaing_credits[learning_contexts[i]]
+        );
         while (
           compliant &&
-          typeof this.remaing_credits[i] == "object" &&
-          j < Object.keys(this.remaing_credits[i]).length
+          typeof this.remaing_credits[learning_contexts[i]] == "object" &&
+          j < learning_areas.length
         ) {
-          compliant = (this.remaing_credits[i] as TmpList<number>)[j] == 0;
+          compliant =
+            (this.remaing_credits[learning_contexts[i]] as TmpList<number>)[
+              learning_areas[j]
+            ] == 0;
           j++;
         }
       }
