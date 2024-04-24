@@ -418,7 +418,13 @@ const yes_handler = async () => {
           }
           students_trigger.value++;
           store.state.event.event = "student_mover";
-          setTimeout(() => setupModalAndOpen("success", outcome.message), 500);
+          setTimeout(() => {
+            store.state.event.event = "success";
+            store.state.event.data = {
+              message: outcome.message,
+            };
+            setupModalAndOpen();
+          }, 500);
           break;
         case ErrorCodes.GENERIC:
         case ErrorCodes.BAD_REQUEST:
