@@ -689,6 +689,8 @@ export const store = createStore({
             "Seleziona una sessione di apprendimento per vedere i corsi disponibili",
           learning_contexts: "Contesti di apprendimento",
           consultable_courses: "corsi consultabili",
+          student_already_subscribed: "Studente già iscritto a questo corso in questa sessione",
+          student_course_already_attended: "Corso già frequentato dallo studente in una sessione precedente",
         },
         english: {
           credits_constraints: "Credits constraints",
@@ -1015,6 +1017,8 @@ export const store = createStore({
             "Select a learning session to see the available courses",
           learning_contexts: "Learning contexts",
           consultable_courses: "consultable courses",
+          student_already_subscribed: "Student already subscribed to this course in this session",
+          student_course_already_attended: "Student already attended this course in a previous session",
         },
       },
       logged_user: false,

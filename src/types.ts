@@ -5077,6 +5077,7 @@ enum ErrorCodes {
   GENERIC = "E_0",
   BAD_REQUEST = "E_1",
   UNAUTHORIZED = "E_2",
+  ALREADY_EXISTS = "E_3",
 }
 
 type Outcome = {

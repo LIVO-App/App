@@ -428,6 +428,7 @@ const yes_handler = async () => {
           break;
         case ErrorCodes.GENERIC:
         case ErrorCodes.BAD_REQUEST:
+        case ErrorCodes.ALREADY_EXISTS:
           setTimeout(() => setupModalAndOpen("error", outcome.message), 300);
           break;
       }
@@ -499,9 +500,19 @@ const subscribeStudent = async (): Promise<Outcome> => {
               outcome.message = getCurrentElement("pending_student");
             }
           },
-          () => {
-            outcome.code = ErrorCodes.GENERIC;
-            outcome.subcode = 2;
+          (error) => {
+            if (error.response.status == 409) {
+              outcome.code = ErrorCodes.ALREADY_EXISTS;
+              outcome.subcode = 0;
+              if (error.response.data.specified_session) {
+                outcome.message = getCurrentElement("student_already_subscribed");
+              } else {
+                outcome.message = getCurrentElement("student_course_already_attended");
+              }
+            } else {
+              outcome.code = ErrorCodes.GENERIC;
+              outcome.subcode = 2;
+            }
           },
           "post"
         );
