@@ -406,6 +406,14 @@ const getBarColor = computed(() => {
     return "danger";
   }
 });
+const updateLearningAreaPlaceholder = (context_id: string) => {
+  placeholder =
+    learning_areas_structures.distribution[context_id].length > 0
+      ? getCurrentElement("select") +
+        (language == "italian" ? " l'" : " the ") +
+        learning_area_sentence
+      : getCurrentElement("no_learning_areas");
+};
 
 const store: Store<any> = useStore();
 const $route = useRoute();
@@ -418,10 +426,6 @@ alert_information.buttons = [getCurrentElement("ok")];
 
 const trigger = ref(0);
 const learning_area_sentence = getCurrentElement("learning_area");
-const placeholder =
-  getCurrentElement("select") +
-  (language == "italian" ? " l'" : " the ") +
-  learning_area_sentence; //<!-- TODO (4): sistemare quando verrà messa la lista parametri a getCurrentElement
 const openAlert = ref(false);
 const selected_context = ref("");
 const selected_area = ref("");
@@ -447,7 +451,9 @@ const ordinary_class: OrdinaryClassSummary =
           "&school_year=" +
           learning_session?.school_year,
         (response) =>
-          response.data.data.map((a: any) => new OrdinaryClass(a).toOrdinaryClassSummary())[0]
+          response.data.data.map((a: any) =>
+            new OrdinaryClass(a).toOrdinaryClassSummary()
+          )[0]
       )
     : undefined;
 
@@ -543,6 +549,7 @@ let learning_areas_structures: {
 let learning_contexts: LearningContext[] = [];
 let tmp_courses: EnrollmentCourse[];
 let timer: number;
+let placeholder = getCurrentElement("no_learning_areas");
 
 if (learning_session != undefined && ordinary_class != undefined) {
   learning_contexts = await getLearningContexts(user, learning_session_id);
@@ -566,7 +573,9 @@ if (learning_session != undefined && ordinary_class != undefined) {
         "&session_id=" +
         learning_session_id,
       (response) =>
-        response.data.data.map((a: EnrollmentCourseProps) => new EnrollmentCourse(a)),
+        response.data.data.map(
+          (a: EnrollmentCourseProps) => new EnrollmentCourse(a)
+        ),
       () => []
     );
 
@@ -585,6 +594,7 @@ if (learning_session != undefined && ordinary_class != undefined) {
         selected_area.value
       );
 
+      updateLearningAreaPlaceholder(selected_context.value);
       watch(selected_area, (new_area) => {
         subscriptions_manager.showCourses(selected_context.value, new_area);
         trigger.value++;
@@ -592,8 +602,11 @@ if (learning_session != undefined && ordinary_class != undefined) {
     }
   }
   watch(selected_context, (new_context) => {
+    updateLearningAreaPlaceholder(new_context);
     selected_area.value =
-      learning_areas_structures.distribution[new_context][0].id;
+      learning_areas_structures.distribution[new_context].length > 0
+        ? learning_areas_structures.distribution[new_context][0].id
+        : "";
     if (tmp_courses.length > 0) {
       subscriptions_manager.showCourses(new_context, selected_area.value);
     }

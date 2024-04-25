@@ -396,6 +396,14 @@ const getGroupsList = () => {
 
   return list;
 };
+const updateLearningAreaPlaceholder = (context_id: string) => {
+  placeholder =
+    learning_areas_structures.distribution[context_id].length > 0
+      ? getCurrentElement("select") +
+        (language == "italian" ? " l'" : " the ") +
+        learning_area_sentence
+      : getCurrentElement("no_learning_areas"); //<!-- TODO (4): sistemare (qui e nelle altre funzioni updateLearningAreaPlaceholder) quando verrà messa la lista parametri a getCurrentElement
+};
 
 const store = useStore();
 const language = getCurrentLanguage();
@@ -495,10 +503,6 @@ const student = new UserSummary({
   user: "student",
 });
 const learning_area_sentence = getCurrentElement("learning_area");
-const placeholder =
-  getCurrentElement("select") +
-  (language == "italian" ? " l'" : " the ") +
-  learning_area_sentence; //<!-- TODO (4): sistemare quando verrà messa la lista parametri a getCurrentElement
 const trigger = ref(0);
 const tmp_courses: EnrollmentCourse[] = [];
 
@@ -511,6 +515,7 @@ let table_data: CustomElement[][] = [];
 let credits_list = "";
 let groups_list = "";
 let confirmed_courses = false;
+let placeholder = getCurrentElement("no_learning_areas");
 
 if (props.project_class != undefined || props.learning_session != undefined) {
   actual_learning_session =
@@ -564,7 +569,8 @@ if (props.project_class != undefined || props.learning_session != undefined) {
         actual_learning_session.id,
       (response) => {
         let tmp_course: EnrollmentCourse;
-        for (const course_props of response.data.data as EnrollmentCourseProps[]) {
+        for (const course_props of response.data
+          .data as EnrollmentCourseProps[]) {
           course_props.section = "A"; //<!-- TODO (4): gestire sezioni
           tmp_course = new EnrollmentCourse(course_props);
           if (tmp_course.final_confirmation == null) {
@@ -614,6 +620,7 @@ if (props.project_class != undefined || props.learning_session != undefined) {
       credits_list = getCreditsList();
       groups_list = getGroupsList();
 
+      updateLearningAreaPlaceholder(selected_context.value);
       watch(selected_area, async (new_area) => {
         props.subscriptions_manager.showCourses(
           selected_context.value,
@@ -638,8 +645,11 @@ if (props.project_class != undefined || props.learning_session != undefined) {
     }
   }
   watch(selected_context, async (new_context) => {
+    updateLearningAreaPlaceholder(new_context);
     selected_area.value =
-      learning_areas_structures.distribution[new_context][0].id;
+      learning_areas_structures.distribution[new_context].length > 0
+        ? learning_areas_structures.distribution[new_context][0].id
+        : "";
     if (tmp_courses.length > 0) {
       props.subscriptions_manager.showCourses(
         new_context,
