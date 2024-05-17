@@ -34,7 +34,7 @@
                   :router-link="{ name: p.url_names[castToUser(user).type][0] }"
                   lines="none"
                   :detail="false"
-                  class="hydrated hoverable_item"
+                  class="hydrated"
                   :class="{ selected: menu.index === i }"
                 >
                   <ion-icon
@@ -99,8 +99,6 @@ const executeAdditionalControl = (user: User, item: MenuItem) => {
 };
 const getMenu = (user: User) => {
   const complete_menu: MenuItem[] = [];
-
-  let tmp_item: MenuItem | undefined;
 
   for (const item_title of order.value) {
     complete_menu.push(menu.items[item_title]);
@@ -284,9 +282,8 @@ ion-item.selected {
   --color: var(--ion-color-primary);
 }
 
-/** change cursor and background of menu item on hover */
-.hoverable_item:hover {
+ion-item:hover {
   cursor: pointer;
-  --background: rgba(var(--ion-color-light-rgb), 0.14);
+  --background: rgba(var(--ion-color-primary-rgb), 0.14);
 }
 </style>

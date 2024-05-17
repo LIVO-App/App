@@ -603,10 +603,61 @@ function getContextAcronym(option: LearningContext) {
   return option[`${language}_title`];
 }
 
+function hexToRGB(hex: string) {
+  // TODO (5): rendere più generale
+
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+
+  return r + "," + g + "," + b;
+}
+
 function getCssColor(text_color: ColorObject) {
-  return text_color.type == "var"
-    ? getCssVariable("--ion-color-" + text_color.name)
-    : text_color.name;
+  let css_variable: string, color: string;
+
+  if (text_color.type == "var") {
+    css_variable = getCssVariable("--ion-color-" + text_color.name); // Hex or RGB
+
+    if (text_color.alpha != undefined) {
+      if (css_variable[0] == "#") {
+        css_variable = hexToRGB(css_variable);
+      }
+      color = "rgba(" + css_variable + " , " + text_color.alpha + ")"; // RGBA
+    } else {
+      color =
+        css_variable.indexOf(",") > 0
+          ? "rgb(" + css_variable + ")" // RGB
+          : css_variable; // Hex
+    }
+
+    color =
+      css_variable.indexOf(",") > 0 // RGB color variable
+        ? text_color.alpha != undefined
+          ? "rgba(" + css_variable + " , " + text_color.alpha + ")" // RGBA
+          : "rgb(" + css_variable + ")" // RGB
+        : css_variable; // Hex
+  } else {
+    // Hex or text
+    if (text_color.alpha != undefined && text_color.name[0] == "#") {
+      color =
+        "rgba(" + hexToRGB(text_color.name) + " , " + text_color.alpha + ")"; // RGBA
+    } else {
+      // TODO (5): cercare un modo per tradurre text in rgb per fare versione con alpha
+      color = text_color.name;
+    }
+  }
+
+  return color;
+}
+
+function getIonicColor(color: ColorObject | undefined) {
+  return color != undefined &&
+    color.type == "var" &&
+    color.name.indexOf("-") == -1 &&
+    color?.alpha == undefined
+    ? color.name
+    : undefined;
 }
 
 function setupError(message?: string) {
@@ -645,6 +696,10 @@ function insertTableIndexedElement(
   for (let i = index + 1; i < table.length; i++) {
     table[i][0] = getCustomMessage(table[i][0].id + "_index", i + 1);
   }
+}
+
+function hoverItem(card: CardElements, value: boolean) {
+  card.hovered = value;
 }
 
 export {
@@ -694,7 +749,9 @@ export {
   getLearningAreasStructures,
   getContextAcronym,
   getCssColor,
+  getIonicColor,
   setupError,
   removeTableIndexedElement,
   insertTableIndexedElement,
+  hoverItem,
 };

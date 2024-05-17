@@ -302,7 +302,7 @@ import {
   StringIcon,
   SubElements,
 } from "@/types";
-import { getCssVariable } from "@/utils";
+import { getCssColor } from "@/utils";
 import { IonButton, IonLabel, IonIcon, IonItem } from "@ionic/vue";
 import { PropType } from "vue";
 import { useStore } from "vuex";
@@ -326,54 +326,49 @@ const props = defineProps({
 });
 defineEmits(["execute_link", "signal_event"]);
 
-const text_color =
+const css_text_color =
   props.element.colors?.text != undefined
-    ? props.element.colors.text.type == "var"
-      ? getCssVariable("--ion-color-" + props.element.colors.text.name)
-      : props.element.colors.text.name
+    ? getCssColor(props.element.colors.text)
     : undefined;
-const background_color =
+const css_background_color =
   props.element.colors?.background != undefined
-    ? props.element.colors.background.type == "var"
-      ? getCssVariable("--ion-color-" + props.element.colors.background.name)
-      : props.element.colors.background.name
+    ? getCssColor(props.element.colors.background)
     : undefined;
-const borders_color =
+const css_borders_color =
   props.element.colors?.borders != undefined
-    ? props.element.colors.borders.type == "var"
-      ? getCssVariable("--ion-color-" + props.element.colors.borders.name)
-      : props.element.colors.borders.name
+    ? getCssColor(props.element.colors.borders)
     : undefined;
 
 const actual_classes: Classes<SubElements> = {
   label: {
     ...props.element.classes?.label,
     textColor: props.element.colors?.text != undefined,
-    backgroundColor: background_color != undefined,
-    borders: borders_color != undefined,
+    backgroundColor: css_background_color != undefined,
+    borders: css_borders_color != undefined,
   },
   html: {
     ...props.element.classes?.html,
     textColor: props.element.colors?.text != undefined,
-    backgroundColor: background_color != undefined,
-    borders: borders_color != undefined,
+    backgroundColor: css_background_color != undefined,
+    borders: css_borders_color != undefined,
   },
   icon: {
     ...props.element.classes?.icon,
     textColor: props.element.colors?.text != undefined,
-    backgroundColor: background_color != undefined,
-    borders: borders_color != undefined && props.element.linkType == undefined,
+    backgroundColor: css_background_color != undefined,
+    borders:
+      css_borders_color != undefined && props.element.linkType == undefined,
   },
   button: {
     ...props.element.classes?.button,
     textButton: props.element.colors?.text != undefined,
-    backgroundButton: background_color != undefined,
-    bordersButton: borders_color != undefined,
+    backgroundButton: css_background_color != undefined,
+    bordersButton: css_borders_color != undefined,
   },
   item: {
     ...props.element.classes?.item,
-    backgroundColor: background_color != undefined,
-    borders: borders_color != undefined,
+    backgroundColor: css_background_color != undefined,
+    borders: css_borders_color != undefined,
   },
 };
 
@@ -382,23 +377,23 @@ const border_radius = props.element.params?.border_radius ?? "0px";
 
 <style scoped>
 .textColor {
-  color: v-bind("text_color");
+  color: v-bind("css_text_color");
 }
 .backgroundColor {
-  background-color: v-bind("background_color");
+  background-color: v-bind("css_background_color");
 }
 .borders {
-  border: 1px solid v-bind("borders_color");
+  border: 1px solid v-bind("css_borders_color");
 }
 .backgroundButton {
-  --background: v-bind("background_color");
+  --background: v-bind("css_background_color");
 }
 .textButton {
-  --color: v-bind("text_color");
+  --color: v-bind("css_text_color");
 }
 .bordersButton {
   --border-radius: v-bind("border_radius");
-  --border-color: v-bind("borders_color");
+  --border-color: v-bind("css_borders_color");
   --border-style: solid;
   --border-width: 1px;
 }

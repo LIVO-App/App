@@ -220,7 +220,7 @@ class OrdinaryClass extends OrdinaryClassSummary {
             radius: true,
           },
         }
-      ),
+      ), // TODO (3): mettere in content e adattare
       selected: selected,
       link:
         path != undefined
@@ -347,6 +347,7 @@ type CardElements = {
   group: any;
   colors?: Colors<GeneralSubElements>;
   classes?: Classes<CardSubElements>;
+  hovered?: boolean;
 };
 
 type GeneralCardElements = CardElements & {
@@ -1711,10 +1712,11 @@ type ColorType = "var" | "text" | "hex";
 
 type ColorObject = {
   name: string;
+  alpha?: number;
   type: ColorType;
 };
 
-type GeneralSubElements = "text" | "background" | "borders";
+type GeneralSubElements = "text" | "background" | "borders" | "hover";
 
 type GeneralCardSubElements =
   | "background"
@@ -1723,6 +1725,7 @@ type GeneralCardSubElements =
   | "external_borders"
   | "cards_borders"
   | "list_borders"
+  | "hover" // TODO (6): Mettere dove necessario
   | "dividers";
 
 type SubElements = "label" | "html" | "icon" | "button" | "item";
@@ -1765,6 +1768,7 @@ type CustomElement = {
   classes?: Classes<SubElements>;
   params?: TmpList;
   content: ContentType;
+  hovered?: boolean;
 };
 
 enum EditableState {

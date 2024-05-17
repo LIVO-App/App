@@ -1,15 +1,12 @@
 <template>
   <ion-card
-    :color="
-      colors?.background != undefined && colors?.background?.type == 'var'
-        ? colors?.background.name
-        : undefined
-    "
+    :color="getIonicColor(colors?.background)"
     :class="{
       ...classes?.card,
       '--ion-no-border': colors?.external_borders == undefined,
       background:
-        colors?.background != undefined && colors?.background?.type != 'var',
+        colors?.background != undefined &&
+        getIonicColor(colors?.background) == undefined,
     }"
   >
     <ion-card-header
@@ -31,15 +28,11 @@
         "
       >
         <ion-item
-          :color="
-            colors?.background?.type == 'var'
-              ? colors?.background.name
-              : undefined
-          "
+          :color="getIonicColor(colors?.background)"
           :class="{
             background:
               colors?.background != undefined &&
-              colors?.background?.type != 'var',
+              getIonicColor(colors?.background) == undefined,
           }"
           class="ion-no-padding"
         >
@@ -115,31 +108,23 @@
             </ion-list>
             <template v-else>
               <ion-item-divider
-                :color="
-                  (colors?.dividers?.type == 'var'
-                    ? colors?.dividers.name
-                    : undefined) ?? 'light'
-                "
+                :color="getIonicColor(colors?.dividers) ?? 'light'"
                 :class="{
                   ...classes?.divider,
-                  background:
+                  dividers_background:
                     colors?.dividers != undefined &&
-                    colors.dividers.type != 'var',
+                    getIonicColor(colors?.dividers) == undefined,
                 }"
               >
                 <ionic-element :element="ordered_cards.title" />
               </ion-item-divider>
               <ion-item
                 v-if="actual_cards_list.cards[ordered_cards.key].length === 0"
-                :color="
-                  colors?.background?.type == 'var'
-                    ? colors?.background.name
-                    : undefined
-                "
+                :color="getIonicColor(colors?.background)"
                 :class="{
                   background:
                     colors?.background != undefined &&
-                    colors?.background?.type != 'var',
+                    getIonicColor(colors?.background) == undefined,
                 }"
                 class="ion-no-padding"
               >
@@ -195,7 +180,8 @@ import {
   TmpList,
   CardsGridElements,
 } from "../types";
-import { isGeneral, isCourse, nullOperator } from "../utils";
+import { getIonicColor, isGeneral, isCourse, nullOperator } from "../utils";
+import { getCssColor } from "../utils";
 
 const adjustColor = (
   color_type: ColorType | undefined,
@@ -271,9 +257,14 @@ const actual_cards_list = computed(() => {
     JSON.stringify(props.cards_list)
   ) as OrderedCardsList<CardElements>;
 });
-const background_color =
-  props.colors?.background != undefined && props.colors.background != undefined
-    ? "" + props.colors.background.name
+const css_background_color =
+  props.colors?.background != undefined
+    ? getCssColor(props.colors.background)
+    : undefined;
+console.log(css_background_color, getIonicColor(props.colors?.background));
+const css_dividers_color =
+  props.colors?.dividers != undefined
+    ? getCssColor(props.colors.dividers)
     : undefined;
 const groups = Object.keys(actual_cards_list.value.cards);
 const general_card_colors:
@@ -465,6 +456,9 @@ ion-card-content {
   overflow-y: auto;
 }
 .background {
-  background-color: v-bind("background_color");
+  background-color: v-bind("css_background_color");
+}
+.dividers_background {
+  background-color: v-bind("css_dividers_color");
 }
 </style>

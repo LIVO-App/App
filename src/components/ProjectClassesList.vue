@@ -55,6 +55,13 @@
               ? school_year_cards
               : learning_sessions
           "
+          :colors="{
+            hover: {
+              name: 'light',
+              alpha: 0.14,
+              type: 'var',
+            },
+          }"
           @signal_event="changeSelection()"
         />
       </ion-col>
@@ -88,6 +95,17 @@
           :columns="$route.name == 'ordinary_classes' ? 5 : undefined"
           :cards_list="
             $route.name == 'ordinary_classes' ? ordinary_classes : courses
+          "
+          :colors="
+            $route.name != 'ordinary_classes'
+              ? {
+                  hover: {
+                    name: 'light',
+                    alpha: 0.14,
+                    type: 'var',
+                  },
+                }
+              : undefined
           "
         />
         <!-- TODO (5): capire perchè con 5 si crea uno spazio inutilizzabile in fondo -->

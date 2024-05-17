@@ -14,6 +14,13 @@
             )
           "
           :cards_list="learning_sessions"
+          :colors="{
+            hover: {
+              name: 'light',
+              alpha: 0.14,
+              type: 'var',
+            },
+          }"
           @signal_event="changeSelection()"
         />
       </ion-col>
@@ -32,6 +39,13 @@
             )
           "
           :cards_list="is_nothing_selected() ? empty_courses : courses"
+          :colors="{
+            hover: {
+              name: 'light',
+              alpha: 0.14,
+              type: 'var',
+            },
+          }"
         />
       </ion-col>
     </ion-row>

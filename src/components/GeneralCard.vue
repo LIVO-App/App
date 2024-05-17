@@ -1,17 +1,21 @@
 <template>
-  <!-- ? convertire tutti i colori -->
+  <!-- TODO (6): dare un'colori a fissi -->
   <ion-card
     :color="
       selected
         ? 'light'
-        : colors?.background?.type == 'var'
-        ? colors?.background.name
+        : !local_hovered
+        ? getIonicColor(colors?.background)
         : undefined
     "
     :class="{
       ...classes?.card,
       no_card_border: colors?.borders == undefined,
-      background: colors != undefined && colors.background?.type != 'var',
+      background:
+        !local_hovered &&
+        colors?.background != undefined &&
+        getIonicColor(colors?.background) == undefined,
+      hovered: local_hovered,
     }"
     class="ion-no-padding ion-no-margin"
     style="width: 100%"
@@ -120,6 +124,7 @@ import {
   Colors,
   GeneralSubElements,
 } from "@/types";
+import { getCssColor, getIonicColor } from "@/utils";
 import { isRequest, isEvent } from "@/utils";
 import {
   IonCard,
@@ -131,11 +136,10 @@ import {
   IonRow,
   IonCol,
 } from "@ionic/vue";
-import { PropType } from "vue";
+import { PropType, toRef } from "vue";
 import { useStore } from "vuex";
 
 const store = useStore();
-
 const props = defineProps({
   id: {
     type: String || Number,
@@ -146,23 +150,35 @@ const props = defineProps({
   content: Array<CustomElement>,
   side_element: Object as PropType<CustomElement>,
   selected: Boolean,
+  hovered: Boolean,
   link: Object as PropType<LinkParameters>,
   colors: Object as PropType<Colors<GeneralSubElements>>,
   classes: Object as PropType<Classes<CardSubElements>>,
 });
 defineEmits(["execute_link", "signal_event"]);
+
 const isGet =
   props.link != undefined &&
   isRequest(props.link) &&
   props.link.method == "get";
-const background_color =
-  props.colors != undefined && props.colors.background != undefined
-    ? "" + props.colors.background.name
+const css_background_color =
+  props.colors?.background != undefined
+    ? getCssColor(props.colors.background)
     : undefined;
+const css_hover_color =
+  props.colors?.hover != undefined
+    ? getCssColor(props.colors?.hover)
+    : undefined;
+
+const local_hovered = toRef(props, "hovered");
 </script>
 
 <style scoped>
 .background {
-  background-color: v-bind("background_color");
+  background-color: v-bind("css_background_color");
+}
+.hovered {
+  cursor: "pointer";
+  --background: rgba(v-bind("css_hover_color"), 0.14);
 }
 </style>

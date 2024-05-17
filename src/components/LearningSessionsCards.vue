@@ -23,6 +23,11 @@
               name: 'current',
               type: 'var',
             },
+            hover: {
+              name: 'current',
+              alpha: 0.54,
+              type: 'var',
+            },
             text: {
               name: 'white',
               type: 'var',
@@ -47,6 +52,11 @@
           :colors="{
             background: {
               name: 'warning',
+              type: 'var',
+            },
+            hover: {
+              name: 'warning',
+              alpha: 0.54,
               type: 'var',
             },
             dividers_text: {
@@ -83,6 +93,11 @@
               name: 'danger',
               type: 'var',
             },
+            hover: {
+              name: 'danger',
+              alpha: 0.54,
+              type: 'var',
+            },
             text: {
               name: 'white',
               type: 'var',
@@ -116,6 +131,11 @@
             },
             background: {
               name: 'completed',
+              type: 'var',
+            },
+            hover: {
+              name: 'completed',
+              alpha: 0.54,
               type: 'var',
             },
             text: {

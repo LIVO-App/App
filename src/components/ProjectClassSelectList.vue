@@ -57,6 +57,13 @@
             )
           "
           :cards_list="learning_sessions_cards"
+          :colors="{
+            hover: {
+              name: 'light',
+              alpha: 0.14,
+              type: 'var',
+            },
+          }"
           @signal_event="changeSelection()"
         />
       </ion-col>
@@ -110,6 +117,13 @@
           :cards_list="
             $route.name == 'open_day_courses' ? courses : propositions
           "
+          :colors="{
+            hover: {
+              name: 'light',
+              alpha: 0.14,
+              type: 'var',
+            },
+          }"
           @signal_event="setupModalAndOpen()"
         />
       </ion-col>
