@@ -34,6 +34,7 @@ import {
   OrderedCardsList,
   EnrollmentTable,
   AlertInformation,
+  MenuItem,
 } from "./types";
 import { $axios } from "./plugins/axios";
 import { store } from "./store";
@@ -701,6 +702,38 @@ function hoverItem(card: CardElements, value: boolean) {
   card.hovered = value;
 }
 
+function executeAdditionalControl(user: User, item: MenuItem) {
+  let additional_control: boolean | undefined = undefined;
+
+  if (item != undefined) {
+    if (item.additional_controls != undefined) {
+      additional_control =
+        item.additional_controls[user.type] != undefined
+          ? item.additional_controls[user.type]()
+          : undefined;
+    } else {
+      additional_control = undefined;
+    }
+  }
+
+  return additional_control;
+}
+
+function getMenuOrder(menu: Menu, user: User) {
+  return menu.order[user.type].filter((a) =>
+    user != undefined
+      ? executeAdditionalControl(user, menu.items[a]) != false
+      : false
+  );
+}
+
+function getPageTitle(user: User) {
+  const menu: Menu = store.state.menu;
+  const order: string[] = getMenuOrder(menu, user);
+
+  return getCurrentElement(order[menu.index]);
+}
+
 export {
   getCompleteSchoolYear,
   getCurrentSchoolYear,
@@ -753,4 +786,7 @@ export {
   removeTableIndexedElement,
   insertTableIndexedElement,
   hoverItem,
+  executeAdditionalControl,
+  getMenuOrder,
+  getPageTitle,
 };

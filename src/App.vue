@@ -31,7 +31,7 @@
                   :key="i"
                   @click="selectTitle(i)"
                   router-direction="root"
-                  :router-link="{ name: p.url_names[castToUser(user).type][0] }"
+                  :router-link="{ name: p.url_names[user.type][0] }"
                   lines="none"
                   :detail="false"
                   class="hydrated"
@@ -77,26 +77,13 @@ import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
 import { Menu, MenuItem, User } from "./types";
-import { getCurrentElement, getDefautlLink, getIcon } from "./utils";
+import {
+  executeAdditionalControl,
+  getCurrentElement,
+  getDefautlLink,
+  getIcon,
+} from "./utils";
 
-const image = computed(() => require("./assets/Logo_LIVO_Path.png"));
-const castToUser = (user: User | undefined) => user as User;
-const executeAdditionalControl = (user: User, item: MenuItem) => {
-  let additional_control: boolean | undefined = undefined;
-
-  if (item != undefined) {
-    if (item.additional_controls != undefined) {
-      additional_control =
-        item.additional_controls[user.type] != undefined
-          ? item.additional_controls[user.type]()
-          : undefined;
-    } else {
-      additional_control = undefined;
-    }
-  }
-
-  return additional_control;
-};
 const getMenu = () => {
   const complete_menu: MenuItem[] = [];
 
@@ -158,19 +145,20 @@ const store = useStore();
 const $route = useRoute();
 const menu: Menu = store.state.menu;
 
+const image = computed(() => require("./assets/Logo_LIVO_Path.png"));
 const trigger = ref(0);
 const user: ComputedRef<User | undefined> = computed(
   () => store.state.user ?? User.getLoggedUser()
 );
 const order = computed(() =>
   user.value != undefined
-    ? menu.order[castToUser(user.value).type].filter((a) =>
+    ? menu.order[user.value.type].filter((a) =>
         user.value != undefined
           ? executeAdditionalControl(user.value, menu.items[a]) != false
           : false
       )
     : []
-);
+); // getMenuOrder function. Not used the proper function to avoid the loss of reactivity
 
 changeTitle();
 watch($route, changeTitle);

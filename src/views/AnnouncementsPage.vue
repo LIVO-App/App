@@ -18,15 +18,13 @@
 </template>
 
 <script setup lang="ts">
-import { Menu, User } from "@/types";
-import { getCurrentElement } from "@/utils";
+import { User } from "@/types";
+import { getPageTitle } from "@/utils";
 import { IonContent, IonPage } from "@ionic/vue";
-import { useStore } from "vuex";
 
-const store = useStore();
 const user = User.getLoggedUser() as User;
-const menu: Menu = store.state.menu;
-const title = getCurrentElement(menu.order[user.type][menu.index]);
+
+const title = getPageTitle(user);
 //<!-- TODO (8): vedere se si può caricare diversi componenti con uno solo per rimuovere tutte le view con componente singolo
 </script>
 
