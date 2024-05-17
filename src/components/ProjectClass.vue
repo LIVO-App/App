@@ -23,6 +23,7 @@
             @signal_event="manageEvent()"
           />
         </template>
+        <!-- ! (3): creare finestra per inserimento multiplo di voti -->
         <template #fallback>
           <loading-component />
         </template>

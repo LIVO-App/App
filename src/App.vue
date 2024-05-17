@@ -25,7 +25,6 @@
 
             <ion-menu-toggle :auto-hide="false" :key="trigger">
               <template v-if="user != undefined">
-                <!-- ! (3): mettere hover su tutte le liste -->
                 <ion-item
                   v-for="(p, i) in getMenu()"
                   :key="i"
