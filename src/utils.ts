@@ -11,7 +11,6 @@ import {
   LearningContextSummary,
   Gender,
   GenderKeys,
-  LinkParameters,
   EventString,
   EventParameters,
   RequestParameters,

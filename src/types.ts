@@ -19,7 +19,6 @@ import {
   getSubscribedCredits,
   isCourse,
   isEnrollmentTableList,
-  isEventString,
   isLinkedToAreas,
   isOrderedCardList,
   numberToSection,

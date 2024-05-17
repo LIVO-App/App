@@ -27,9 +27,9 @@
               <template v-if="user != undefined">
                 <!-- ! (3): mettere hover su tutte le liste -->
                 <ion-item
-                  v-for="(p, i) in getMenu(castToUser(user))"
+                  v-for="(p, i) in getMenu()"
                   :key="i"
-                  @click="selectTitle(castToUser(user).type, i)"
+                  @click="selectTitle(i)"
                   router-direction="root"
                   :router-link="{ name: p.url_names[castToUser(user).type][0] }"
                   lines="none"
@@ -76,7 +76,7 @@ import { computed, ComputedRef, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
-import { Menu, MenuItem, User, UserType } from "./types";
+import { Menu, MenuItem, User } from "./types";
 import { getCurrentElement, getDefautlLink, getIcon } from "./utils";
 
 const image = computed(() => require("./assets/Logo_LIVO_Path.png"));
@@ -97,7 +97,7 @@ const executeAdditionalControl = (user: User, item: MenuItem) => {
 
   return additional_control;
 };
-const getMenu = (user: User) => {
+const getMenu = () => {
   const complete_menu: MenuItem[] = [];
 
   for (const item_title of order.value) {
@@ -106,7 +106,7 @@ const getMenu = (user: User) => {
 
   return complete_menu;
 };
-const selectTitle = (user_type: UserType, index: number) => {
+const selectTitle = (index: number) => {
   store.state.menu.index = index;
   sessionStorage.setItem("selected_item", order.value[index]);
 };

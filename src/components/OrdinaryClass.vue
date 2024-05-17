@@ -306,8 +306,6 @@ const updateStudents = async (
         ); // Temporary storage of ids to make the search faster later, since students >= non_compliant_students
       }
     }
-  } else {
-    setupModalAndOpen("error");
   }
   if (new_search || do_non_compliants) {
     non_compliant_table = [];
