@@ -178,6 +178,7 @@ export const store = createStore({
             },
           },
           settings: {
+            // TODO (4): Fare pagina settings e profilo
             url_names: {
               student: ["settings"],
               teacher: ["settings"],
@@ -224,6 +225,7 @@ export const store = createStore({
             "info",
           ],
           admin: [
+            // TODO (4): fare funzionalità admin
             "project_courses",
             "ordinary_classes",
             "course_proposals",
@@ -380,7 +382,8 @@ export const store = createStore({
           open_enrollment: "Iscrizioni aperte",
           planned: "Pianificate",
           error: "Errore",
-          maximum_credits_error: "Crediti massimi raggiunti",
+          maximum_credits_error:
+            "Il corso supera il limite dei crediti massimi",
           ok: "Ok",
           school_year: "Anno scolastico",
           school_year_choice: "Scegli un anno scolastico",
@@ -694,6 +697,14 @@ export const store = createStore({
           student_course_already_attended:
             "Corso già frequentato dallo studente in una sessione precedente",
           no_learning_areas: "Nessuna area di apprendimento",
+          no_subscriptions: "Nessuna iscrizione disponibile",
+          register_grades_series: "Registra serie di valutazioni",
+          grade_series_insertion: "Inserimento serie di valutazioni",
+          no_grades_to_insert: "Nessun voto da inserire",
+          warning: "Attenzione",
+          final_grades_hide: "Alcuni studenti a cui è stato segnato un voto ne possiedono già uno finale. Per questo quei voti verranno temporaneamente nascosti",
+          grades_with_errors: "Alcuni voti non sono stati inseriti correttamente",
+          already_existing_grades: "Alcuni voti sono già stati inseriti in questa data",
         },
         english: {
           credits_constraints: "Credits constraints",
@@ -715,7 +726,7 @@ export const store = createStore({
           open_enrollment: "Open enrollment",
           planned: "Planned",
           error: "Error",
-          maximum_credits_error: "Maximum credits reached",
+          maximum_credits_error: "The course exceeds the maximum credits limit",
           ok: "Ok",
           school_year: "School year",
           school_year_choice: "Choose a school year",
@@ -873,7 +884,7 @@ export const store = createStore({
           max: "Max",
           course_for_noone: "Course open to no class",
           open_to: "Open to",
-          no_teachers: "Nessun insegnante",
+          no_teachers: "No teachers",
           or: "Or",
           login_with_account: "Login with your account",
           google: "Google",
@@ -1025,6 +1036,14 @@ export const store = createStore({
           student_course_already_attended:
             "Student already attended this course in a previous session",
           no_learning_areas: "No learning area",
+          no_subscriptions: "No subscription available",
+          register_grades_series: "Register grades series",
+          grade_series_insertion: "Grade series insertion",
+          no_grades_to_insert: "No grades to insert",
+          warning: "Warning",
+          final_grades_hide: "Some students with a typed grade already have a final grade. For this reason those grades will be temporarily hidden",
+          grades_with_errors: "Some grades were not inserted correctly",
+          already_existing_grades: "Some grades were already inserted in this date",
         },
       },
       logged_user: false,

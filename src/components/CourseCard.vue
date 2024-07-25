@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { CustomElement, Colors, GeneralSubElements } from "@/types";
+import { CustomElement, Colors, GeneralCardSubElements } from "@/types";
 import { Enrollment } from "@/types";
 import { IonCard, IonCardContent, IonGrid, IonRow, IonCol } from "@ionic/vue";
 import { computed, ComputedRef, PropType } from "vue";
@@ -52,7 +52,7 @@ const props = defineProps({
     type: Object as PropType<Enrollment>,
     required: true,
   },
-  colors: Object as PropType<Colors<GeneralSubElements>>,
+  colors: Object as PropType<Colors<GeneralCardSubElements>>,
 });
 defineEmits(["execute_link", "signal_event"]);
 const button = props.enrollment.editable && props.content.length > 3;

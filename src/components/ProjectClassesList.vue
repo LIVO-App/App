@@ -209,11 +209,11 @@ const changeSelection = async () => {
   } else {
     selected_element_indexes = tmp_selected;
     if ($route.name == "ordinary_classes") {
-      selectedChange(school_year_cards);
       ordinary_classes = getClasses();
+      selectedChange(school_year_cards);
     } else {
-      selectedChange(learning_sessions);
       courses.cards[""] = await getCourses();
+      selectedChange(learning_sessions);
     }
   }
 };
@@ -370,6 +370,7 @@ const closeModal = (window: AvailableModal) => {
   }
 };
 const exportSubscriptions = () => {
+  //<!-- ! (3): update export downloading the file
   executeLink(
     undefined,
     () =>

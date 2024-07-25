@@ -354,7 +354,7 @@ const course = await Course.newCourse(
 course.images.push({
   url: "Logo_LIVO_Campus_POS_RGB.png",
   caption: "Old logo",
-});
+}); //<!-- ! (3): aggiungere visualizzazione immagini
 const access_cards = course.getAccessCardsList();
 const growth_cards = course.getGrowthCardsList();
 const teachings_cards = course.getTeachingCardsList();

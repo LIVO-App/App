@@ -68,31 +68,26 @@
       <suspense>
         <template #default>
           <ionic-table
-            v-if="non_compliant_students_index.length > 0"
             :key="students_trigger"
             :data="non_compliant_table"
             :first_row="non_compliant_first_row"
-            :column_sizes="non_compliant_column_sizes"
+            :sizes="non_compliant_column_sizes"
+            :emptiness_message="
+              getCustomMessage(
+                'emptiness_message',
+                getCurrentElement('all_compliant_students'),
+                'string',
+                undefined,
+                {
+                  label: {
+                    'ion-padding': true,
+                  },
+                }
+              )
+            "
             @signal_event="setupModalAndOpen()"
             @execute_link="$router.push(store.state.request.url)"
           />
-          <div class="ion-padding" v-else>
-            <ionic-element
-              :element="
-                getCustomMessage(
-                  'emptiness_message',
-                  getCurrentElement('all_compliant_students'),
-                  'string',
-                  undefined,
-                  {
-                    label: {
-                      'ion-padding': true,
-                    },
-                  }
-                )
-              "
-            />
-          </div>
         </template>
         <template #fallback>
           <loading-component />
@@ -120,17 +115,11 @@
       <template #default>
         <div class="ion-padding-top">
           <ionic-table
-            v-if="students_table.length > 0"
             :key="students_trigger"
             :data="students_table"
             :first_row="students_first_row"
-            :column_sizes="students_column_sizes"
-            @signal_event="setupModalAndOpen()"
-            @execute_link="$router.push(store.state.request.url)"
-          />
-          <ionic-element
-            v-else
-            :element="
+            :sizes="students_column_sizes"
+            :emptiness_message="
               getCustomMessage(
                 'emptiness_message',
                 getCurrentElement('no_compliant_students'),
@@ -143,6 +132,8 @@
                 }
               )
             "
+            @signal_event="setupModalAndOpen()"
+            @execute_link="$router.push(store.state.request.url)"
           />
         </div>
       </template>
@@ -168,11 +159,12 @@ import {
   StudentSummaryProps,
   SubscriptionsManager,
   SubscriptionsManagerMode,
-  SubscriptionsManagerVisualizzationType,
   SuccessCodes,
   TmpList,
   User,
   EnrollmentAvailability,
+  GeneralTableCardElements,
+  OrderedCardsList,
 } from "@/types";
 import {
   executeLink,
@@ -255,6 +247,8 @@ const updateStudents = async (
    * @returns void
    * @async
    */
+  let tmp_student: GeneralTableCardElements;
+
   if (
     learning_session?.getStatus() == LearningSessionStatus.FUTURE ||
     learning_session?.getStatus() == LearningSessionStatus.UPCOMING
@@ -308,33 +302,31 @@ const updateStudents = async (
     }
   }
   if (new_search || do_non_compliants) {
-    non_compliant_table = [];
+    non_compliant_table.cards[""] = [];
     for (const index in non_compliant_students_index) {
-      non_compliant_table.push(
-        [
-          getCustomMessage(
-            students[non_compliant_students_index[index]].id + "_index",
-            parseInt(index) + 1
-          ),
-        ].concat(
-          students[non_compliant_students_index[index]].toTableRow(
-            learning_session?.getStatus() == LearningSessionStatus.FUTURE ||
-              learning_session?.getStatus() == LearningSessionStatus.UPCOMING
-          )
-        )
+      tmp_student = students[non_compliant_students_index[index]].toTableRow(
+        learning_session?.getStatus() == LearningSessionStatus.FUTURE ||
+          learning_session?.getStatus() == LearningSessionStatus.UPCOMING
       );
+      tmp_student.content = [
+        getCustomMessage(
+          students[non_compliant_students_index[index]].id + "_index",
+          parseInt(index) + 1
+        ),
+      ].concat(tmp_student.content);
+      non_compliant_table.cards[""].push(tmp_student);
     }
   }
   if (new_search || do_students) {
-    students_table = [];
+    students_table.cards[""] = [];
     count = 1;
     for (const i in students) {
       if (non_compliant_students_index.find((a) => "" + a == i) == undefined) {
-        students_table.push(
-          [getCustomMessage(students[i].id + "_index", count++)].concat(
-            students[i].toTableRow()
-          )
-        );
+        tmp_student = students[i].toTableRow();
+        tmp_student.content = [
+          getCustomMessage(students[i].id + "_index", count++),
+        ].concat(tmp_student.content);
+        students_table.cards[""].push(tmp_student);
       }
     }
   }
@@ -351,7 +343,10 @@ const manageEvent = () => {
   }
 };
 const yes_handler = async () => {
-  let outcome: Outcome, tmp_index: number, tmp_target_index: number;
+  let outcome: Outcome,
+    tmp_index: number,
+    tmp_target_index: number,
+    tmp_student: GeneralTableCardElements;
 
   switch (store.state.event.event) {
     case "move_student":
@@ -374,7 +369,7 @@ const yes_handler = async () => {
                     non_compliant_students_index[count] - 1
                   ) {
                     tmp_target_index =
-                      students_table.findIndex(
+                      students_table.cards[""].findIndex(
                         (a: any) =>
                           a == students[non_compliant_students_index[count] - 1]
                       ) + 1;
@@ -385,7 +380,7 @@ const yes_handler = async () => {
                 if (tmp_target_index == -1) {
                   if (non_compliant_students_index[0] != 0) {
                     tmp_target_index =
-                      students_table.findIndex(
+                      students_table.cards[""].findIndex(
                         (a: any) =>
                           a == students[non_compliant_students_index[0] - 1]
                       ) + 1;
@@ -393,20 +388,21 @@ const yes_handler = async () => {
                     tmp_target_index = 0;
                   }
                 }
-                students_table.splice(
+                tmp_student =
+                  students[
+                    non_compliant_students_index[tmp_index]
+                  ].toTableRow();
+                tmp_student.content = [
+                  getCustomMessage(
+                    students[non_compliant_students_index[tmp_index]] +
+                      "_index",
+                    tmp_target_index + 1
+                  ),
+                ].concat(tmp_student.content);
+                students_table.cards[""].splice(
                   tmp_target_index,
                   0,
-                  [
-                    getCustomMessage(
-                      students[non_compliant_students_index[tmp_index]] +
-                        "_index",
-                      tmp_target_index + 1
-                    ),
-                  ].concat(
-                    students[
-                      non_compliant_students_index[tmp_index]
-                    ].toTableRow()
-                  )
+                  tmp_student
                 );
                 non_compliant_students_index.splice(tmp_index, 1);
               } else {
@@ -503,9 +499,13 @@ const subscribeStudent = async (): Promise<Outcome> => {
               outcome.code = ErrorCodes.ALREADY_EXISTS;
               outcome.subcode = 0;
               if (error.response.data.specified_session) {
-                outcome.message = getCurrentElement("student_already_subscribed");
+                outcome.message = getCurrentElement(
+                  "student_already_subscribed"
+                );
               } else {
-                outcome.message = getCurrentElement("student_course_already_attended");
+                outcome.message = getCurrentElement(
+                  "student_course_already_attended"
+                );
               }
             } else {
               outcome.code = ErrorCodes.GENERIC;
@@ -575,8 +575,7 @@ const handled_buttons: AlertButton[] = [
   },
 ];
 const subscriptions_manager = new SubscriptionsManager(
-  SubscriptionsManagerMode.SUBSCRIPTION,
-  SubscriptionsManagerVisualizzationType.TABLE
+  SubscriptionsManagerMode.SUBSCRIPTION
 ); // Not ready, loadParameters will be run with project-class-selector
 const ordinary_class = new OrdinaryClassSummary({
   school_year:
@@ -592,8 +591,18 @@ const ordinary_class = new OrdinaryClassSummary({
   section: selected_section.value,
 });
 
-let students_table: CustomElement[][] = [];
-let non_compliant_table: CustomElement[][] = [];
+const students_table: OrderedCardsList<GeneralTableCardElements> = {
+  order: [],
+  cards: {
+    "": [],
+  },
+};
+const non_compliant_table: OrderedCardsList<GeneralTableCardElements> = {
+  order: [],
+  cards: {
+    "": [],
+  },
+};
 let project_class: AdminProjectClass | undefined;
 let students: OrdinaryClassStudent[] = [];
 let non_compliant_students_index: number[] = [];

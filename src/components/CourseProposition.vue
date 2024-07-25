@@ -26,6 +26,7 @@
       </suspense>
     </ion-modal>-->
     <!-- ! (3): spostare pulsanti in alto -->
+    <!-- ! (3): aggiungere aggiunta immagini -->
     <ionic-element
       :element="buttons[3]"
       @execute_link="$router.push(store.state.request.url)"

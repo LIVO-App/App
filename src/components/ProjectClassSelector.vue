@@ -86,11 +86,7 @@
                   getCustomMessage(
                     'credits',
                     ': ' +
-                      (origin.course != undefined
-                        ? isCourse(origin.course)
-                          ? origin.course.credits
-                          : origin.course[1].content
-                        : ''),
+                      (origin.course != undefined ? origin.course.credits : ''),
                     'string',
                     colors
                   )
@@ -116,6 +112,7 @@
         </ion-col>
       </ion-row>
       <ion-row>
+        <!-- TODO (4): remove visualization of PERSONAL context and similar -->
         <ion-col>
           <ionic-element
             :element="
@@ -189,12 +186,25 @@
       <ion-row>
         <ion-col :key="trigger">
           <div>
+            <!-- TODO (4): add only visualization to tutor -->
             <ionic-table
-              v-if="table_data.length > 0"
               :key="trigger"
-              :data="table_data"
+              :emptiness_message="
+                getCustomMessage(
+                  'emptiness_message',
+                  getCurrentElement('no_courses'),
+                  'string',
+                  colors,
+                  {
+                    label: {
+                      align_text_middle: true,
+                    },
+                  }
+                )
+              "
+              :data="props.subscriptions_manager.courses"
               :first_row="first_row"
-              :column_sizes="column_sizes"
+              :sizes="column_sizes"
               @signal_event="
                 if (
                   subscriptions_manager.mode == SubscriptionsManagerMode.MOVE &&
@@ -208,18 +218,6 @@
                 $emit('signal_event');
               "
             />
-            <div v-else class="ion-text-center">
-              <ionic-element
-                :element="
-                  getCustomMessage(
-                    'emptiness_message',
-                    getCurrentElement('no_courses'),
-                    'string',
-                    colors
-                  )
-                "
-              />
-            </div>
           </div>
         </ion-col>
       </ion-row>
@@ -236,7 +234,6 @@ import {
   EnrollmentCourse,
   EnrollmentCourseProps,
   CustomElement,
-  GeneralSubElements,
   SubscriptionsManager,
   LearningContext,
   LearningSession,
@@ -246,6 +243,8 @@ import {
   TmpList,
   UserSummary,
   SubscriptionsManagerMode,
+  CustomSubElements,
+  GeneralSubElements,
 } from "@/types";
 import {
   executeLink,
@@ -257,7 +256,6 @@ import {
   getIcon,
   getLearningAreasStructures,
   getLearningContexts,
-  isCourse,
 } from "@/utils";
 import {
   IonCol,
@@ -489,7 +487,7 @@ const learning_sessions: LearningSession[] =
     : []);
 const origin: {
   references: CourseReferences | undefined;
-  course: CustomElement[] | EnrollmentCardElements | undefined;
+  course: EnrollmentCardElements | undefined;
   learning_context: LearningContext | undefined;
   learning_area: LearningArea | undefined;
 } = {
@@ -511,7 +509,6 @@ let actual_learning_session: LearningSession,
   learning_areas_structures: LearningAreasStructures,
   selected_context: Ref<string>,
   selected_area: Ref<string>;
-let table_data: CustomElement[][] = [];
 let credits_list = "";
 let groups_list = "";
 let confirmed_courses = false;
@@ -540,9 +537,9 @@ if (props.project_class != undefined || props.learning_session != undefined) {
   );
 
   if (project_class_card != undefined) {
-    project_class_card.colors = colors;
+    project_class_card.colors = colors as Colors<CustomSubElements>;
     for (const element of project_class_card.content as CustomElement[]) {
-      element.colors = colors;
+      element.colors = colors as Colors<CustomSubElements>;
     }
   }
   if (
@@ -593,13 +590,25 @@ if (props.project_class != undefined || props.learning_session != undefined) {
         tmp_courses,
         "" + actual_learning_session.id
       );
+      props.subscriptions_manager.showCourses(
+        selected_context.value,
+        selected_area.value,
+        props.project_class != undefined
+          ? ["" + props.project_class.course_id]
+          : undefined
+      );
       if (props.project_class != undefined) {
         origin.references = props.subscriptions_manager.getCourseReferences(
           "" + props.project_class.course_id
         );
         origin.course =
-          origin.references != undefined
-            ? props.subscriptions_manager.getCourse(origin.references)
+          origin.references != undefined &&
+          typeof origin.references.indexes.index == "number"
+            ? props.subscriptions_manager.all_courses[
+                origin.references.learning_context_id
+              ][origin.references.learning_area_id][
+                origin.references.indexes.index
+              ]
             : undefined;
         origin.learning_context = learning_contexts.find(
           (a) => a.id == origin.references?.learning_context_id
@@ -608,14 +617,6 @@ if (props.project_class != undefined || props.learning_session != undefined) {
           (a) => a.id == origin.references?.learning_area_id
         );
       }
-      props.subscriptions_manager.showCourses(
-        selected_context.value,
-        selected_area.value,
-        props.project_class != undefined
-          ? ["" + props.project_class.course_id]
-          : undefined
-      );
-      table_data = props.subscriptions_manager.courses as CustomElement[][];
 
       credits_list = getCreditsList();
       groups_list = getGroupsList();
@@ -629,7 +630,6 @@ if (props.project_class != undefined || props.learning_session != undefined) {
             ? ["" + props.project_class.course_id]
             : undefined
         );
-        table_data = props.subscriptions_manager.courses as CustomElement[][];
         trigger.value++;
       });
     } else {
@@ -658,7 +658,6 @@ if (props.project_class != undefined || props.learning_session != undefined) {
           ? ["" + props.project_class.course_id]
           : undefined
       );
-      table_data = props.subscriptions_manager.courses as CustomElement[][];
     }
     trigger.value++;
   });

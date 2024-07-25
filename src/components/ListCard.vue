@@ -9,24 +9,16 @@
         getIonicColor(colors?.background) == undefined,
     }"
   >
-    <ion-card-header
-      v-if="title != undefined && title.content != ''"
-      :class="classes?.header"
-    >
+    <ion-card-header v-if="title != undefined" :class="classes?.header">
       <ion-card-title v-if="title != undefined"
-        ><ionic-element :element="actual_title"
+        ><ionic-element v-model:element="title_ref"
       /></ion-card-title>
       <ion-card-subtitle v-if="subtitle != undefined"
-        ><ionic-element :element="actual_subtitle"
+        ><ionic-element v-model:element="subtitle_ref"
       /></ion-card-subtitle>
     </ion-card-header>
     <ion-card-content style="overflow-y: auto" :class="classes?.content">
-      <template
-        v-if="
-          Object.keys(actual_cards_list.cards).length === 0 ||
-          actual_cards_list.cards['']?.length === 0
-        "
-      >
+      <template v-if="hasNoData(cards_list_ref)">
         <ion-item
           :color="getIonicColor(colors?.background)"
           :class="{
@@ -36,7 +28,7 @@
           }"
           class="ion-no-padding"
         >
-          <ionic-element :element="actual_emptiness_message" />
+          <ionic-element v-model:element="emptiness_message_ref" />
         </ion-item>
       </template>
       <ion-list
@@ -44,11 +36,11 @@
         class="ion-no-padding"
         :class="classes?.list"
       >
-        <template v-if="actual_cards_list.cards[''] != undefined">
+        <template v-if="cards_list_ref.cards[''] != undefined">
           <card-item
-            v-for="card in actual_cards_list.cards['']"
+            v-for="(card, i) in cards_list_ref.cards['']"
             :key="card.id"
-            :card="card"
+            v-model:card="cards_list_ref.cards[''][i]"
             :colors="colors"
             :classes="classes"
             @execute_link="$emit('execute_link')"
@@ -57,13 +49,13 @@
         </template>
         <template v-else>
           <ion-item-group
-            v-for="ordered_cards in actual_cards_list.order"
+            v-for="(ordered_cards, i) in cards_list_ref.order"
             :key="'group-' + ordered_cards.key"
           >
             <group-list
-              :emptiness_message="actual_emptiness_message"
-              :divider="ordered_cards.title"
-              :cards_list="actual_cards_list.cards[ordered_cards.key]"
+              v-model:emptiness_message="emptiness_message_ref"
+              v-model:divider="cards_list_ref.order[i].title"
+              v-model:cards_list="cards_list_ref.cards[ordered_cards.key]"
               :colors="colors"
               :classes="classes"
               @execute_link="$emit('execute_link')"
@@ -74,8 +66,8 @@
       </ion-list>
       <template v-else>
         <cards-grid
-          v-if="actual_cards_list.cards[''] != undefined"
-          :cards_list="actual_cards_list.cards['']"
+          v-if="cards_list_ref.cards[''] != undefined"
+          v-model:cards_list="cards_list_ref.cards['']"
           :columns="typeof columns == 'number' ? columns : columns['']"
           :colors="colors"
           :classes="classes"
@@ -84,7 +76,7 @@
         />
         <template v-else>
           <template
-            v-for="ordered_cards in actual_cards_list.order"
+            v-for="(ordered_cards, i) in cards_list_ref.order"
             :key="'group-' + ordered_cards.key"
           >
             <ion-list
@@ -96,9 +88,9 @@
             >
               <ion-item-group>
                 <group-list
-                  :emptiness_message="actual_emptiness_message"
-                  :divider="ordered_cards.title"
-                  :cards_list="actual_cards_list.cards[ordered_cards.key]"
+                  v-model:emptiness_message="emptiness_message_ref"
+                  v-model:divider="cards_list_ref.order[i].title"
+                  v-model:cards_list="cards_list_ref.cards[ordered_cards.key]"
                   :colors="colors"
                   :classes="classes"
                   @execute_link="$emit('execute_link')"
@@ -116,10 +108,12 @@
                     getIonicColor(colors?.dividers) == undefined,
                 }"
               >
-                <ionic-element :element="ordered_cards.title" />
+                <ionic-element
+                  v-model:element="cards_list_ref.order[i].title"
+                />
               </ion-item-divider>
               <ion-item
-                v-if="actual_cards_list.cards[ordered_cards.key].length === 0"
+                v-if="cards_list_ref.cards[ordered_cards.key].length === 0"
                 :color="getIonicColor(colors?.background)"
                 :class="{
                   background:
@@ -128,11 +122,12 @@
                 }"
                 class="ion-no-padding"
               >
-                <ionic-element :element="actual_emptiness_message" />
+                <ionic-element v-model:element="emptiness_message_ref" />
+                <!-- TODO (4): aggiungere eventi -->
               </ion-item>
               <template v-else>
                 <cards-grid
-                  :cards_list="actual_cards_list.cards[ordered_cards.key]"
+                  v-model:cards_list="cards_list_ref.cards[ordered_cards.key]"
                   :columns="
                     typeof columns == 'number'
                       ? columns
@@ -164,42 +159,36 @@ import {
   IonItemDivider,
   IonItem,
 } from "@ionic/vue";
-import { computed, ComputedRef, PropType } from "vue";
+import { PropType, ref, watch } from "vue";
 import {
-  CardElements,
   ColorObject,
-  ColorType,
   EnrollmentCardElements,
   CustomElement,
   OrderedCardsList,
   Classes,
   CardsListElements,
-  GeneralSubElements,
   Colors,
   GeneralCardSubElements,
   TmpList,
   CardsGridElements,
+  CustomSubElements,
 } from "../types";
-import { getIonicColor, isGeneral, isCourse, nullOperator } from "../utils";
+import {
+  getIonicColor,
+  isGeneral,
+  isCourse,
+  canVModel,
+  canCardListVModel,
+  adjustColor,
+  hasNoData,
+} from "../utils";
 import { getCssColor } from "../utils";
+import { WatchStopHandle } from "vue";
 
-const adjustColor = (
-  color_type: ColorType | undefined,
-  ...colors: (string | undefined)[]
-): ColorObject | undefined => {
-  const color = nullOperator(...colors);
-
-  return color != undefined && color_type != undefined
-    ? {
-        name: color,
-        type: color_type,
-      }
-    : undefined;
-};
 const setSpecificColors = (
-  specific_colors: Colors<GeneralSubElements> | undefined
+  specific_colors: Colors<CustomSubElements> | undefined
 ) => {
-  const colors: Colors<GeneralSubElements> = general_card_colors ?? {};
+  const colors: Colors<CustomSubElements> = general_card_colors ?? {};
 
   Object.assign(colors, specific_colors);
 
@@ -214,7 +203,7 @@ const onlyLists = () => {
   if (
     !(is_list =
       props.columns === 1 ||
-      (actual_cards_list.value.cards[""] != undefined &&
+      (cards_list_ref.value.cards[""] != undefined &&
         typeof props.columns != "number" &&
         props.columns[""] == 1))
   ) {
@@ -225,6 +214,24 @@ const onlyLists = () => {
   }
 
   return is_list;
+};
+const checkVModel = () =>
+  props.cards_list.order.find((order_element) =>
+    canVModel(order_element.title)
+  ) != undefined || canCardListVModel(props.cards_list.cards);
+const addListeners = () => {
+  watch(
+    () => props.cards_list,
+    (value) => {
+      cards_list_ref.value = value;
+    }
+  );
+  watch(
+    () => cards_list_ref.value,
+    (value) => {
+      emit("update:cards_list", value);
+    }
+  );
 };
 
 const props = defineProps({
@@ -247,29 +254,32 @@ const props = defineProps({
   colors: Object as PropType<Colors<GeneralCardSubElements>>,
   classes: Object as PropType<Classes<CardsListElements | CardsGridElements>>,
 });
-defineEmits(["execute_link", "signal_event"]);
+const emit = defineEmits([
+  "execute_link",
+  "signal_event",
+  "update:title",
+  "update:subtitle",
+  "update:emptiness_message",
+  "update:cards_list",
+]);
 
-const actual_emptiness_message: ComputedRef<CustomElement> = computed(() =>
-  JSON.parse(JSON.stringify(props.emptiness_message))
-);
-const actual_cards_list = computed(() => {
-  return JSON.parse(
-    JSON.stringify(props.cards_list)
-  ) as OrderedCardsList<CardElements>;
-});
+const title_ref = ref(props.title);
+const subtitle_ref = ref(props.subtitle);
+const emptiness_message_ref = ref(props.emptiness_message);
+const cards_list_ref = ref(props.cards_list);
+
 const css_background_color =
   props.colors?.background != undefined
     ? getCssColor(props.colors.background)
     : undefined;
-console.log(css_background_color, getIonicColor(props.colors?.background));
 const css_dividers_color =
   props.colors?.dividers != undefined
     ? getCssColor(props.colors.dividers)
     : undefined;
-const groups = Object.keys(actual_cards_list.value.cards);
+const groups = Object.keys(cards_list_ref.value.cards);
 const general_card_colors:
   | {
-      [key in keyof string as GeneralSubElements]?: ColorObject;
+      [key in keyof string as CustomSubElements]?: ColorObject;
     }
   | undefined =
   props.colors?.background != undefined ||
@@ -280,15 +290,15 @@ const general_card_colors:
       }
     : undefined;
 
-let actual_title: CustomElement, actual_subtitle: CustomElement, tmp_card;
+let tmp_card;
 let tmp_color: ColorObject | undefined = undefined;
+let stopWatch: WatchStopHandle;
 
-if (props.title != undefined) {
-  actual_title = JSON.parse(JSON.stringify(props.title));
-  if (actual_title.colors == undefined) {
-    actual_title.colors = {};
+if (props.title != undefined && title_ref.value != undefined) {
+  if (title_ref.value.colors == undefined) {
+    title_ref.value.colors = {};
   }
-  actual_title.colors.text = adjustColor(
+  title_ref.value.colors.text = adjustColor(
     props.title?.colors?.text != undefined
       ? props.title.colors.text.type
       : props.colors?.text?.type,
@@ -296,12 +306,11 @@ if (props.title != undefined) {
     props.colors?.text?.name
   );
 }
-if (props.subtitle != undefined) {
-  actual_subtitle = JSON.parse(JSON.stringify(props.subtitle));
-  if (actual_subtitle.colors == undefined) {
-    actual_subtitle.colors = {};
+if (props.subtitle != undefined && subtitle_ref.value != undefined) {
+  if (subtitle_ref.value.colors == undefined) {
+    subtitle_ref.value.colors = {};
   }
-  actual_subtitle.colors.text = adjustColor(
+  subtitle_ref.value.colors.text = adjustColor(
     props.subtitle?.colors?.text != undefined
       ? props.subtitle.colors.text.type
       : props.colors?.text?.type,
@@ -309,24 +318,24 @@ if (props.subtitle != undefined) {
     props.colors?.text?.name
   );
 }
-if (actual_emptiness_message.value.colors == undefined) {
-  actual_emptiness_message.value.colors = {};
+if (emptiness_message_ref.value.colors == undefined) {
+  emptiness_message_ref.value.colors = {};
 }
-actual_emptiness_message.value.colors.text = adjustColor(
+emptiness_message_ref.value.colors.text = adjustColor(
   props.emptiness_message?.colors?.text != undefined
     ? props.emptiness_message.colors.text.type
     : props.colors?.text?.type,
   props.emptiness_message?.colors?.text?.name,
   props.colors?.text?.name
 );
-if (actual_emptiness_message.value.classes == undefined) {
-  actual_emptiness_message.value.classes = {};
+if (emptiness_message_ref.value.classes == undefined) {
+  emptiness_message_ref.value.classes = {};
 }
-actual_emptiness_message.value.classes.label = {
+emptiness_message_ref.value.classes.label = {
   "ion-text-wrap": true,
   "ion-text-center": true,
 };
-for (const card_group of actual_cards_list.value.order) {
+for (const card_group of cards_list_ref.value.order) {
   if (card_group.title.classes == undefined) {
     card_group.title.classes = {};
   }
@@ -337,8 +346,8 @@ for (const card_group of actual_cards_list.value.order) {
 }
 
 for (const group in groups) {
-  for (const card in actual_cards_list.value.cards[groups[group]]) {
-    tmp_card = actual_cards_list.value.cards[groups[group]][card];
+  for (const card in cards_list_ref.value.cards[groups[group]]) {
+    tmp_card = cards_list_ref.value.cards[groups[group]][card];
     if (isGeneral(tmp_card)) {
       if (tmp_card.title != undefined) {
         tmp_color = adjustColor(
@@ -423,7 +432,7 @@ for (const group in groups) {
     }
   }
 }
-for (const ordered_cards of actual_cards_list.value.order) {
+for (const ordered_cards of cards_list_ref.value.order) {
   tmp_color = adjustColor(
     ordered_cards.title.colors?.text != undefined
       ? ordered_cards.title.colors.text.type
@@ -440,6 +449,63 @@ for (const ordered_cards of actual_cards_list.value.order) {
     }
     ordered_cards.title.colors.text = tmp_color;
   }
+}
+
+if (canVModel(props.emptiness_message)) {
+  watch(
+    () => props.emptiness_message,
+    (value) => {
+      emptiness_message_ref.value = value;
+    }
+  );
+  watch(
+    () => emptiness_message_ref.value,
+    (value) => {
+      emit("update:title", value);
+    }
+  );
+}
+if (props.title != undefined && canVModel(props.title)) {
+  watch(
+    () => props.title,
+    (value) => {
+      title_ref.value = value;
+    }
+  );
+  watch(
+    () => title_ref.value,
+    (value) => {
+      emit("update:title", value);
+    }
+  );
+}
+if (props.subtitle != undefined && canVModel(props.subtitle)) {
+  watch(
+    () => props.subtitle,
+    (value) => {
+      subtitle_ref.value = value;
+    }
+  );
+  watch(
+    () => subtitle_ref.value,
+    (value) => {
+      emit("update:subtitle", value);
+    }
+  );
+}
+if (hasNoData(props.cards_list)) {
+  stopWatch = watch(
+    () => props.cards_list,
+    (value) => {
+      cards_list_ref.value = value;
+      if (!hasNoData(value) && checkVModel()) {
+        addListeners();
+        stopWatch();
+      }
+    }
+  );
+} else if (checkVModel()) {
+  addListeners();
 }
 </script>
 

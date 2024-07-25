@@ -8,10 +8,9 @@
       @didDismiss="closeModal(store.state.event.event)"
     />
     <ion-modal
-      id="grades_manages"
+      id="grades_manager"
       :is-open="grades_open"
       @didDismiss="closeModal('grades')"
-      class="grades_modal"
     >
       <suspense>
         <template #default>
@@ -24,6 +23,25 @@
           />
         </template>
         <!-- ! (3): creare finestra per inserimento multiplo di voti -->
+        <template #fallback>
+          <loading-component />
+        </template>
+      </suspense>
+    </ion-modal>
+    <ion-modal
+      id="multiple_grades_manager"
+      :is-open="multiple_grades_open"
+      @didDismiss="closeModal('multiple_grades')"
+    >
+      <suspense>
+        <template #default>
+          <multiple-grades-manager
+            :parameters="multiple_grades_parameters"
+            :final_grades_indexes="final_grades_indexes"
+            @close="closeModal('multiple_grades')"
+            @signal_event="manageEvent()"
+          />
+        </template>
         <template #fallback>
           <loading-component />
         </template>
@@ -74,13 +92,24 @@
     </ion-modal>
     <div>
       <ionic-element
-        v-for="button in buttons"
+        v-for="button in buttons.slice(0, 2)"
         :key="button.id"
         :element="button"
         @signal_event="setupModalAndOpen()"
         @execute_link="$router.push(store.state.request.url)"
       />
     </div>
+    <ionic-element
+      v-if="
+        user.type == 'teacher' &&
+        !associated_teacher &&
+        (learning_session_status == LearningSessionStatus.CURRENT ||
+          learning_session_status == LearningSessionStatus.COMPLETED) &&
+        !areAllFinals()
+      "
+      :element="buttons[2]"
+      @signal_event="manageEvent()"
+    />
     <template
       v-if="
         user.type == 'admin' &&
@@ -147,22 +176,18 @@
       <template #default>
         <div class="ion-padding-top">
           <ionic-table
-            v-if="table_data.length > 0"
             :key="students_trigger"
-            :data="table_data"
-            :first_row="first_row"
-            :column_sizes="column_sizes"
-            @signal_event="setupModalAndOpen()"
-            @execute_link="$router.push(store.state.request.url)"
-          />
-          <ionic-element
-            v-else
-            :element="
+            :emptiness_message="
               getCustomMessage(
                 'emptiness_message',
                 getCurrentElement('no_students')
               )
             "
+            :data="table_data"
+            :first_row="first_row"
+            :sizes="column_sizes"
+            @signal_event="setupModalAndOpen()"
+            @execute_link="$router.push(store.state.request.url)"
           />
         </div>
       </template>
@@ -181,7 +206,6 @@ import {
   EditableState,
   Grade,
   GradeProps,
-  GradesParameters,
   ProjectClassStudent,
   User,
   LearningSession,
@@ -195,7 +219,11 @@ import {
   SuccessCodes,
   ErrorCodes,
   EnrollmentAvailability,
-  SubscriptionsManagerVisualizzationType,
+  GeneralTableCardElements,
+  OrderedCardsList,
+  SingleGradesParameters,
+  MultipleGradesParameters,
+  StudentGrade,
 } from "@/types";
 import {
   executeLink,
@@ -214,6 +242,7 @@ import { useStore } from "vuex";
 
 type AvailableModal =
   | "grades"
+  | "multiple_grades"
   | "course_details"
   | "empty_descriptions"
   | "edit_grade"
@@ -226,6 +255,7 @@ type AvailableModal =
   | "error";
 
 const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
+  //<!-- ! (3): una volta che si sposta qualcuno il bottone check per spostare qualcun'altro non funziona
   const actual_window: AvailableModal = window ?? store.state.event.event;
   const actual_message: string = message ?? store.state.event.data?.message;
 
@@ -347,6 +377,10 @@ const setupModalAndOpen = (window?: AvailableModal, message?: string) => {
       alert_information.buttons = [handled_buttons[0], getCurrentElement("no")];
       alert_open.value = true;
       break;
+    case "multiple_grades":
+      multiple_grades_parameters.section = selected_section.value;
+      multiple_grades_open.value = true;
+      break;
     case "success":
       alert_information.title = "";
       alert_information.message =
@@ -364,6 +398,9 @@ const closeModal = (window: AvailableModal) => {
   switch (window) {
     case "grades":
       grades_open.value = false;
+      break;
+    case "multiple_grades":
+      multiple_grades_open.value = false;
       break;
     case "course_details":
       description_open.value = false;
@@ -406,7 +443,7 @@ const add_grade = async () => {
       grades[data.student_id].push(tmp_grade);
       updateFinalRefs(data.student_id, tmp_grade);
     },
-    (err) => console.error(err),
+    () => setupModalAndOpen("error"),
     "post",
     {
       ita_description: data.italian_description,
@@ -418,7 +455,54 @@ const add_grade = async () => {
   );
 };
 
+const add_grades = () => {
+  const data = store.state.event.data;
+
+  executeLink(
+    "/v1/grades?course_id=" +
+      data.course_id +
+      "&session_id=" +
+      data.session_id,
+    (response) => {
+      let tmp_grade: Grade;
+      
+      for (const grade_ref of response.data.grades_id) {
+        tmp_grade = new Grade({
+          id: grade_ref.id,
+          publication: response.data.publication,
+          italian_description: data.italian_description,
+          english_description: data.english_description,
+          grade: data.grades_list.find((a: StudentGrade<number>) => a.student_id == grade_ref.student_id).grade_value,
+          final: data.final ? 1 : 0,
+        });
+
+        grades[grade_ref.student_id].push(tmp_grade);
+        updateFinalRefs(grade_ref.student_id, tmp_grade);
+      }
+
+      if (response.data.students_with_errors != undefined && response.data.students_with_errors.length > 0) {
+        setupModalAndOpen("error", getCurrentElement("grades_with_errors"));
+      } else if (response.data.duplicate_entry == true) {
+        setupModalAndOpen("error", getCurrentElement("already_existing_grades"));
+      } else if (response.data.wrong_entry == true) {
+        setupModalAndOpen("error");
+      }
+    },
+    () => setupModalAndOpen("error"),
+    "post",
+    {
+      ita_description: data.italian_description,
+      eng_description: data.english_description,
+      publication_date: data.publication_date,
+      grades_list: data.grades_list,
+      final: data.final,
+    }
+  );
+};
+
 const updateStudents = async () => {
+  let tmp_row: GeneralTableCardElements;
+
   students =
     selected_section.value != ""
       ? await executeLink(
@@ -433,10 +517,11 @@ const updateStudents = async () => {
             const tmp_students: ProjectClassStudent[] = [];
 
             associated_teacher = response.data.data.associated_teacher;
+            multiple_grades_parameters.associated_teacher = associated_teacher;
             column_sizes =
-              (user.type == "teacher" && associated_teacher == true) ||
-              (user.type == "admin" &&
-                project_class?.final_confirmation != undefined)
+              //(user.type == "teacher" && associated_teacher == true) ||
+              user.type == "admin" &&
+              project_class?.final_confirmation != undefined
                 ? [1, 6, 3, 2]
                 : [1, 4, 2, 1, 2, 2];
             if (first_row.length != column_sizes.length) {
@@ -470,7 +555,7 @@ const updateStudents = async () => {
         )
       : [];
 
-  table_data = [];
+  table_data.cards[""] = [];
   for (const student_index in students) {
     //<!-- TODO (5): controllare se ci sono più professori e fare richieste voti solamente sul pulsante (evitare problema di professore che aggiunge mentre altro è nella pagina)
     tmp_student = students[student_index];
@@ -495,29 +580,27 @@ const updateStudents = async () => {
         () => []
       );
     }
-    table_data.push(
-      [
-        getCustomMessage(
-          tmp_student.id + "_index",
-          parseInt(student_index) + 1
-        ),
-      ].concat(
-        tmp_student.toTableRow(
-          user.type == "teacher" ? user.id : undefined,
-          user.type == "teacher",
-          user.type == "teacher"
-            ? grades[tmp_student.id][final_grades_indexes[tmp_student.id]]
-            : undefined,
-          project_class?.final_confirmation
-        )
-      )
+    tmp_row = tmp_student.toTableRow(
+      user.type == "teacher" ? user.id : undefined,
+      user.type == "teacher",
+      user.type == "teacher"
+        ? grades[tmp_student.id][final_grades_indexes[tmp_student.id]]
+        : undefined,
+      project_class?.final_confirmation
     );
+    tmp_row.content = [
+      getCustomMessage(tmp_student.id + "_index", parseInt(student_index) + 1),
+    ].concat(tmp_row.content);
+    table_data.cards[""].push(tmp_row);
   }
 };
 const manageEvent = () => {
   switch (store.state.event.event) {
     case "add_grade":
       add_grade();
+      break;
+    case "add_grades":
+      add_grades();
       break;
     default:
       setupModalAndOpen();
@@ -540,8 +623,8 @@ const yes_handler = async () => {
     case "confirmation":
       if (course != undefined && project_class != undefined) {
         if (
-          table_data.length < course.min_students ||
-          table_data.length > course.max_students
+          table_data.cards[""].length < course.min_students ||
+          table_data.cards[""].length > course.max_students
         ) {
           setTimeout(
             () =>
@@ -766,8 +849,9 @@ const yes_handler = async () => {
               "&session_id=" +
               project_class.learning_session.id,
             () => {
-              table_data.splice(student_index.table, 1);
+              table_data.cards[""].splice(student_index.table, 1);
               students.splice(student_index.student_list, 1);
+              fix_indexes();
               setTimeout(
                 () =>
                   setupModalAndOpen(
@@ -837,8 +921,8 @@ const findGrade = () => {
 const findStudent = () => {
   const tmp_student_id = store.state.event.data.parameters.student_id;
 
-  student_index.table = table_data.findIndex(
-    (a) => a[0].id.split("_")[0] == tmp_student_id
+  student_index.table = table_data.cards[""].findIndex(
+    (a) => a.id == tmp_student_id
   );
   student_index.student_list = students.findIndex(
     (a) => a.id == tmp_student_id
@@ -850,22 +934,21 @@ const updateFinalRefs = (
   deleted_grade = false,
   update_indexes = true
 ) => {
-  let student_pos: number;
+  let student_pos: number, final_grade_pos: number;
 
   if (grade.final == true) {
-    student_pos = table_data.findIndex(
-      (a: CustomElement[]) => a[0].id.split("_")[0] == student_id
-    );
+    student_pos = table_data.cards[""].findIndex((a) => a.id == student_id);
     if (update_indexes) {
       final_grades_indexes[student_id] = grades[student_id].length - 1;
     }
+    final_grade_pos = table_data.cards[""][student_pos].content.length - 1;
     if (deleted_grade) {
-      table_data[student_pos][table_data[student_pos].length - 1].content = "-";
+      table_data.cards[""][student_pos].content[final_grade_pos].content = "-";
       grades_parameters.final_grade_index = undefined;
       delete final_grades_indexes[student_id];
       store.state.triggers.grades++;
     } else {
-      table_data[student_pos][table_data[student_pos].length - 1].content =
+      table_data.cards[""][student_pos].content[final_grade_pos].content =
         grade.grade;
     }
     students_trigger.value++;
@@ -938,6 +1021,15 @@ const moveStudent = async (
 
   return outcome;
 };
+const fix_indexes = () => {
+  for (let i = 0; i < table_data.cards[""].length; i++) {
+    table_data.cards[""][i].content[0].content = i + 1;
+  }
+};
+
+const areAllFinals = () => {
+  return Object.keys(final_grades_indexes).length == Object.keys(grades).length;
+};
 
 const store = useStore();
 const user = User.getLoggedUser() as User;
@@ -969,6 +1061,7 @@ const first_row: CustomElement[] = [
   },
 ];
 const grades_open = ref(false);
+const multiple_grades_open = ref(false);
 const description_open = ref(false);
 const student_mover_open = ref(false);
 const course_id = $route.params.course as string;
@@ -1008,6 +1101,33 @@ const buttons: CustomElement[] = [
       icon: getIcon("information_circle"),
     },
   },
+  {
+    id: "register_grades_series",
+    type: "string_icon",
+    linkType: "event",
+    content: {
+      text: getCurrentElement("register_grades_series"),
+      icon: getIcon("add"),
+      event: "multiple_grades",
+      whole_link: true,
+    },
+    colors: {
+      text: {
+        name: "white",
+        type: "var",
+      },
+      background: {
+        name: "primary",
+        type: "var",
+      },
+    },
+    classes: {
+      button: {
+        radius: true,
+        "ion-padding-horizontal": true,
+      },
+    },
+  },
 ];
 const selected_section = ref("");
 const handled_buttons: AlertButton[] = [
@@ -1036,19 +1156,30 @@ const learning_session =
   learning_session_position != -1
     ? learning_sessions[learning_session_position]
     : undefined;
+const learning_session_status =
+  learning_session != undefined ? learning_session.getStatus() : undefined;
 const subscriptions_manager = new SubscriptionsManager(
-  SubscriptionsManagerMode.MOVE,
-  SubscriptionsManagerVisualizzationType.TABLE
+  SubscriptionsManagerMode.MOVE
 ); // Not ready, loadParameters will be run with project-class-selector
+const table_data: OrderedCardsList<GeneralTableCardElements> = {
+  order: [],
+  cards: {
+    "": [],
+  },
+};
+const multiple_grades_parameters: MultipleGradesParameters = {
+  course_id: parseInt(course_id),
+  session_id: parseInt(session_id),
+  teacher_id: user.id,
+  section: selected_section.value,
+};
 
-let table_data: CustomElement[][] = [];
 let grades_title: string;
-let grades_parameters: GradesParameters;
+let grades_parameters: SingleGradesParameters;
 let student_grades: Grade[] | undefined;
 let description_title: string;
 let description_course_id: number;
 let associated_teacher: boolean | undefined;
-let learning_session_status: LearningSessionStatus | undefined;
 let course: Course | undefined;
 let project_class: AdminProjectClass | undefined;
 let students: ProjectClassStudent[] = [];
@@ -1112,8 +1243,6 @@ if (user.type == "teacher") {
     (response) => new Course(response.data.data),
     () => undefined
   );
-  learning_session_status =
-    learning_session != undefined ? learning_session.getStatus() : undefined;
   project_class = await executeLink(
     "/v1/project_classes/" + course_id + "/" + session_id,
     (response) => new AdminProjectClass(response.data.data),
@@ -1139,9 +1268,14 @@ watch(students_update, async () => {
 </script>
 
 <style>
-ion-modal#grades_manages {
+ion-modal#grades_manager {
   --width: 90%;
   --height: fit-content;
+}
+
+ion-modal#multiple_grades_manager {
+  --width: 90%;
+  --height: 80%;
 }
 
 ion-modal#student_mover {

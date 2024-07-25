@@ -50,27 +50,34 @@
     "
   >
     <ion-card-header
-      v-if="title != undefined || subtitle != undefined"
+      v-if="title_ref != undefined || subtitle_ref != undefined"
       class="ion-no-padding"
       :class="classes?.header"
     >
       <ion-grid class="ion-no-margin">
         <ion-row class="ion-align-items-center">
           <ion-col size="auto">
-            <ion-card-title v-if="title != undefined"
-              ><b><ionic-element :element="title" /></b
+            <ion-card-title v-if="title_ref != undefined"
+              ><b
+                ><ionic-element
+                  v-model:element="title_ref"
+                  @execute_link="$emit('execute_link')"
+                  @signal_event="$emit('signal_event')" /></b
             ></ion-card-title>
           </ion-col>
           <ion-col size="5">
-            <ion-card-subtitle v-if="subtitle != undefined"
-              ><ionic-element :element="subtitle"
+            <ion-card-subtitle v-if="subtitle_ref != undefined"
+              ><ionic-element
+                v-model:element="subtitle_ref"
+                @execute_link="$emit('execute_link')"
+                @signal_event="$emit('signal_event')"
             /></ion-card-subtitle>
           </ion-col>
           <ion-col size="1"></ion-col>
           <ion-col size="2">
             <ionic-element
-              v-if="content == undefined && side_element != undefined"
-              :element="side_element"
+              v-if="content_ref == undefined && side_element_ref != undefined"
+              v-model:element="side_element_ref"
               @execute_link="$emit('execute_link')"
               @signal_event="$emit('signal_event')"
             />
@@ -78,14 +85,14 @@
         </ion-row>
       </ion-grid>
     </ion-card-header>
-    <ion-card-content v-if="content != undefined" :class="classes?.content">
-      <ion-grid v-if="side_element != undefined">
+    <ion-card-content v-if="content_ref != undefined" :class="classes?.content">
+      <ion-grid v-if="side_element_ref != undefined">
         <ion-row>
           <ion-col>
             <ionic-element
-              v-for="element in content"
+              v-for="(element, i) in content_ref"
               :key="element.id"
-              :element="element"
+              v-model:element="content_ref[i]"
               @execute_link="$emit('execute_link')"
               @signal_event="$emit('signal_event')"
             />
@@ -95,7 +102,7 @@
             style="border-left: 1px solid var(--ion-color-dark)"
           >
             <ionic-element
-              :element="side_element"
+              v-model:element="side_element_ref"
               @execute_link="$emit('execute_link')"
               @signal_event="$emit('signal_event')"
             />
@@ -104,9 +111,9 @@
       </ion-grid>
       <template v-else>
         <ionic-element
-          v-for="element in content"
+          v-for="(element, i) in content_ref"
           :key="element.id"
-          :element="element"
+          v-model:element="content_ref[i]"
           @execute_link="$emit('execute_link')"
           @signal_event="$emit('signal_event')"
         />
@@ -122,9 +129,9 @@ import {
   CustomElement,
   LinkParameters,
   Colors,
-  GeneralSubElements,
+  GeneralCardSubElements,
 } from "@/types";
-import { getCssColor, getIonicColor } from "@/utils";
+import { canVModel, getCssColor, getIonicColor } from "@/utils";
 import { isRequest, isEvent } from "@/utils";
 import {
   IonCard,
@@ -136,7 +143,7 @@ import {
   IonRow,
   IonCol,
 } from "@ionic/vue";
-import { PropType, toRef } from "vue";
+import { PropType, ref, toRef, watch } from "vue";
 import { useStore } from "vuex";
 
 const store = useStore();
@@ -152,10 +159,17 @@ const props = defineProps({
   selected: Boolean,
   hovered: Boolean,
   link: Object as PropType<LinkParameters>,
-  colors: Object as PropType<Colors<GeneralSubElements>>,
+  colors: Object as PropType<Colors<GeneralCardSubElements>>,
   classes: Object as PropType<Classes<CardSubElements>>,
 });
-defineEmits(["execute_link", "signal_event"]);
+const emit = defineEmits([
+  "execute_link",
+  "signal_event",
+  "update:title",
+  "update:subtitle",
+  "update:content",
+  "update:side_element",
+]);
 
 const isGet =
   props.link != undefined &&
@@ -167,10 +181,75 @@ const css_background_color =
     : undefined;
 const css_hover_color =
   props.colors?.hover != undefined
-    ? getCssColor(props.colors?.hover)
+    ? getCssColor(props.colors.hover)
     : undefined;
 
 const local_hovered = toRef(props, "hovered");
+
+const title_ref = ref(props.title);
+const subtitle_ref = ref(props.subtitle);
+const content_ref = ref(props.content);
+const side_element_ref = ref(props.side_element);
+
+if (props.title != undefined && canVModel(props.title)) {
+  watch(
+    () => props.title,
+    (value) => {
+      title_ref.value = value;
+    }
+  );
+  watch(
+    () => title_ref.value,
+    (value) => {
+      emit("update:title", value);
+    }
+  );
+}
+if (props.subtitle != undefined && canVModel(props.subtitle)) {
+  watch(
+    () => props.subtitle,
+    (value) => {
+      subtitle_ref.value = value;
+    }
+  );
+  watch(
+    () => subtitle_ref.value,
+    (value) => {
+      emit("update:subtitle", value);
+    }
+  );
+}
+if (
+  props.content != undefined &&
+  props.content.find((e) => canVModel(e)) != undefined
+) {
+  watch(
+    () => props.content,
+    (value) => {
+      content_ref.value = value;
+    }
+  );
+  watch(
+    () => content_ref.value,
+    (value) => {
+      emit("update:content", value);
+    }
+  );
+}
+if (props.side_element != undefined && canVModel(props.side_element)) {
+  watch(
+    () => props.side_element,
+    (value) => {
+      side_element_ref.value = value;
+    }
+  );
+  watch(
+    () => side_element_ref.value,
+    (value) => {
+      emit("update:side_element", value);
+    }
+  );
+}
 </script>
 
 <style scoped>

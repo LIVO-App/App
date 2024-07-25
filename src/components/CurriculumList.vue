@@ -1,4 +1,5 @@
 <template>
+  <!-- TODO (5): vedere discorso bocciature e discorso collegamento albero tra corsi con Pietro -->
   <div class="ion-padding-horizontal">
     <ion-modal
       id="grades_manages"
@@ -103,11 +104,24 @@
       <template #default>
         <ionic-table
           :key="trigger"
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement('no_subscriptions'),
+              'string',
+              undefined,
+              {
+                label: {
+                  align_text_middle: true,
+                },
+              }
+            )
+          "
           :data="table_data"
           :first_row="first_row"
-          :column_sizes="column_sizes"
+          :sizes="column_sizes"
           @signal_event="SetupModalAndOpen()"
-        ></ionic-table>
+        />
       </template>
       <template #fallback>
         <loading-component />
@@ -127,11 +141,14 @@ import {
   AlternateList,
   TmpList,
   User,
+  OrderedCardsList,
+  GeneralTableCardElements,
 } from "@/types";
 import {
   executeLink,
   getCurrentElement,
   getCurrentLanguage,
+  getCustomMessage,
   getLearningContexts,
 } from "@/utils";
 import {
@@ -155,6 +172,7 @@ const SetupModalAndOpen = () => {
     case "grades":
       grades_title = store.state.event.data.title;
       grades_parameters = store.state.event.data.parameters;
+      grades_parameters.show_editable = false;
       grades_open.value = true;
       break;
     case "course_details":
@@ -208,7 +226,7 @@ const updateTable = (
 ) => {
   for (const course of courses) {
     if (year_correspondences[selected_year.value][course.id].length > 0) {
-      table_data.push(
+      table_data.cards[""].push(
         course.toTableRow(
           year_correspondences[selected_year.value][course.id][
             year_correspondences[selected_year.value][course.id].length - 1
@@ -279,6 +297,12 @@ const reference_id: string =
 const credits_progression: AlternateList<string[]> = {};
 const selected_year = ref(0);
 const selected_context = ref("");
+const table_data: OrderedCardsList<GeneralTableCardElements> = {
+  order: [],
+  cards: {
+    "": [],
+  },
+};
 
 let school_years: any[] = [];
 let year_courses: {
@@ -294,7 +318,6 @@ let description_section: string;
 let learning_contexts: LearningContext[] = [];
 let learning_areas: LearningArea[] = [];
 let courses_list: CurriculumCourse[] = [];
-let table_data: CustomElement[][] = [];
 
 if (sections_use) {
   first_row.splice(1, 0, {
@@ -341,13 +364,13 @@ await getYearCourses();
 
 watch(selected_year, () => {
   getYearCourses();
-  table_data = [];
+  table_data.cards[""] = [];
   updateTable(year_correspondences, courses);
   trigger.value++;
 });
 watch(selected_context, (n) => {
   courses = year_courses[n] ?? [];
-  table_data = [];
+  table_data.cards[""] = [];
   updateTable(year_correspondences, courses);
   trigger.value++;
 });

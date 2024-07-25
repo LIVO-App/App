@@ -32,9 +32,12 @@ import {
   UserSummary,
   CardsList,
   OrderedCardsList,
-  EnrollmentTable,
   AlertInformation,
   MenuItem,
+  CustomSubElements,
+  ColorType,
+  GeneralTableCardElements,
+  StudentGrade,
 } from "./types";
 import { $axios } from "./plugins/axios";
 import { store } from "./store";
@@ -70,7 +73,7 @@ function isOrderedCardList(element: any): element is OrderedCardsList {
 }
 
 function isCardLists(element: any): element is TmpList<CardsList> {
-  const first_key = Object.keys(element)[0]; // TODO (6): non è detto che la prima lista abbia una carta. Successivamente sostituire a !isEnrollmentTableList
+  const first_key = Object.keys(element)[0]; // TODO (6): non è detto che la prima lista abbia una carta.
   const second_key =
     first_key != undefined ? Object.keys(element[first_key])[0] : undefined;
 
@@ -78,20 +81,6 @@ function isCardLists(element: any): element is TmpList<CardsList> {
     first_key != undefined &&
     second_key != undefined &&
     isCard(element[first_key][second_key][0])
-  );
-}
-
-function isEnrollmentTableList(
-  element: any
-): element is TmpList<TmpList<EnrollmentTable>> {
-  const first_key = Object.keys(element)[0];
-  const second_key =
-    first_key != undefined ? Object.keys(element[first_key])[0] : undefined;
-
-  return (
-    first_key != undefined &&
-    second_key != undefined &&
-    "table_data" in element[first_key][second_key]
   );
 }
 
@@ -271,7 +260,7 @@ function getCustomMessage(
     id: id,
     type: type,
     content: content,
-    colors: colors,
+    colors: colors as Colors<CustomSubElements>,
     classes: classes,
   };
 }
@@ -485,11 +474,10 @@ function limitGrade(grade: string) {
   }
 }
 
-function checkGradesParameters(
+function checkCommonParameters(
   descriptions: {
     [key in keyof Language as `${Language}_description`]: string;
   },
-  grade: string,
   date: Date | undefined
 ) {
   const languages = getAviableLanguages();
@@ -499,7 +487,7 @@ function checkGradesParameters(
 
   let full = true;
   let count = 0;
-  let actual_grade: number | undefined;
+  let outcome = true;
 
   while (
     count < languages.length &&
@@ -510,7 +498,7 @@ function checkGradesParameters(
       event: "empty_descriptions",
       data: {},
     };
-    actual_grade = undefined;
+    outcome = false;
   } else if (date != undefined && date > end_of_day) {
     store.state.event = {
       event: "error",
@@ -518,8 +506,25 @@ function checkGradesParameters(
         message: getCurrentElement("no_future_date"),
       },
     };
-    actual_grade = undefined;
-  } else if (isNaN((actual_grade = limitGrade(grade)))) {
+    outcome = false;
+  }
+
+  return outcome;
+}
+
+function checkGradeParameters(
+  descriptions: {
+    [key in keyof Language as `${Language}_description`]: string;
+  },
+  date: Date | undefined,
+  grades: string
+) {
+  let actual_grade: number | undefined = undefined;
+
+  if (
+    checkCommonParameters(descriptions, date) &&
+    isNaN((actual_grade = limitGrade(grades)))
+  ) {
     store.state.event = {
       event: "error",
       data: {
@@ -530,6 +535,76 @@ function checkGradesParameters(
   }
 
   return actual_grade;
+}
+
+function checkMultiGradesParameters(
+  descriptions: {
+    [key in keyof Language as `${Language}_description`]: string;
+  },
+  date: Date | undefined,
+  grades: StudentGrade<string>[]
+) {
+  let actual_grades: StudentGrade<number | undefined>[] | undefined = undefined;
+  let tmp_grade: number;
+  let something_wrong = false;
+
+  if (checkCommonParameters(descriptions, date)) {
+    if (grades.length == 0) {
+      store.state.event = {
+        event: "error",
+        data: {
+          message: getCurrentElement("no_grades_to_insert"),
+        },
+      };
+    } else {
+      actual_grades = [];
+      for (const element of grades) {
+        tmp_grade = limitGrade(element.grade_value);
+        actual_grades.push({
+          student_id: element.student_id,
+          grade_value: isNaN(tmp_grade) ? undefined : tmp_grade,
+        });
+        if (isNaN(tmp_grade)) {
+          something_wrong = true;
+        }
+      }
+    }
+  }
+
+  if (something_wrong) {
+    store.state.event = {
+      event: "error",
+      data: {
+        message: getCurrentElement("grade_value_error"),
+      },
+    };
+  }
+
+  return actual_grades;
+}
+
+function hasGradeTypingErrors(
+  event_name: string,
+  whole_grade: string,
+  last_input?: string
+) {
+  const simple_forbidden = ["e", "+", "/", "\\", "*", "^", "%", "-"];
+
+  let right = false;
+
+  if (event_name == "ion-input") {
+    right = isNaN(getGradeNumber(whole_grade as string));
+  } else if (event_name == "keydown") {
+    right =
+      simple_forbidden.includes(last_input as string) ||
+      (store.state.grades_scale.min > 0 && last_input == "-") ||
+      ((last_input == "," || last_input == ".") &&
+        (store.state.grades_scale.only_integer ||
+          whole_grade == "" ||
+          whole_grade == undefined));
+  }
+
+  return right;
 }
 
 function getSubscribedCredits(
@@ -613,17 +688,17 @@ function hexToRGB(hex: string) {
   return r + "," + g + "," + b;
 }
 
-function getCssColor(text_color: ColorObject) {
+function getCssColor(color_object: ColorObject, use_alpha = true) {
   let css_variable: string, color: string;
 
-  if (text_color.type == "var") {
-    css_variable = getCssVariable("--ion-color-" + text_color.name); // Hex or RGB
+  if (color_object.type == "var") {
+    css_variable = getCssVariable("--ion-color-" + color_object.name); // Hex or RGB
 
-    if (text_color.alpha != undefined) {
+    if (use_alpha && color_object.alpha != undefined) {
       if (css_variable[0] == "#") {
         css_variable = hexToRGB(css_variable);
       }
-      color = "rgba(" + css_variable + " , " + text_color.alpha + ")"; // RGBA
+      color = "rgba(" + css_variable + " , " + color_object.alpha + ")"; // RGBA
     } else {
       color =
         css_variable.indexOf(",") > 0
@@ -633,18 +708,26 @@ function getCssColor(text_color: ColorObject) {
 
     color =
       css_variable.indexOf(",") > 0 // RGB color variable
-        ? text_color.alpha != undefined
-          ? "rgba(" + css_variable + " , " + text_color.alpha + ")" // RGBA
+        ? use_alpha && color_object.alpha != undefined
+          ? "rgba(" + css_variable + " , " + color_object.alpha + ")" // RGBA
           : "rgb(" + css_variable + ")" // RGB
         : css_variable; // Hex
   } else {
     // Hex or text
-    if (text_color.alpha != undefined && text_color.name[0] == "#") {
+    if (
+      use_alpha &&
+      color_object.alpha != undefined &&
+      color_object.name[0] == "#"
+    ) {
       color =
-        "rgba(" + hexToRGB(text_color.name) + " , " + text_color.alpha + ")"; // RGBA
+        "rgba(" +
+        hexToRGB(color_object.name) +
+        " , " +
+        color_object.alpha +
+        ")"; // RGBA
     } else {
       // TODO (5): cercare un modo per tradurre text in rgb per fare versione con alpha
-      color = text_color.name;
+      color = color_object.name;
     }
   }
 
@@ -670,17 +753,18 @@ function setupError(message?: string) {
 }
 
 function removeTableIndexedElement(
-  table: CustomElement[][],
-  id: string | number
+  table: OrderedCardsList<GeneralTableCardElements>,
+  id: string | number,
+  group = ""
 ) {
   let index = -1;
 
-  for (let i = 0; i < table.length; i++) {
-    if (index == -1 && table[i][0].id.split("_")[0] == id) {
-      table.splice(i, 1);
+  for (let i = 0; i < table.cards[group].length; i++) {
+    if (index == -1 && table.cards[group][i].id == id) {
+      table.cards[group].splice(i, 1);
       index = i--;
     } else if (index != -1) {
-      table[i][0] = getCustomMessage(table[i][0].id + "_index", i + 1);
+      table.cards[group][i].content[0] = getCustomMessage("index", i + 1);
     }
   }
 
@@ -734,6 +818,81 @@ function getPageTitle(user: User) {
   return getCurrentElement(order[menu.index]);
 }
 
+function canVModel(e: CustomElement | undefined) {
+  return e?.type == "input" || e?.type == "checkbox";
+}
+
+function canArrayVModel(a: CustomElement[]) {
+  return a.find((e) => canVModel(e)) != undefined;
+}
+
+function canListVModel(cards_list: TmpList<CustomElement[]>) {
+  let count = 0,
+    found = false;
+  const keys = Object.keys(cards_list);
+
+  if (keys.length > 0) {
+    while (
+      !(found = canArrayVModel(cards_list[keys[count]])) &&
+      ++count < keys.length
+    );
+  }
+
+  return found;
+}
+
+function canCardVModel(card: GeneralCardElements) {
+  return (
+    canVModel(card.title) ||
+    canVModel(card.subtitle) ||
+    (card.content != undefined && card.content.find((e) => canVModel(e))) ||
+    canVModel(card.side_element)
+  );
+}
+
+function canCardArrayVModel(cards: CardElements[]) {
+  return (
+    cards.find((card) => isGeneral(card) && canCardVModel(card)) != undefined
+  );
+}
+
+function canCardListVModel(cards_list: CardsList) {
+  let count = 0,
+    found = false;
+  const keys = Object.keys(cards_list);
+
+  if (keys.length > 0) {
+    while (
+      !(found = canCardArrayVModel(cards_list[keys[count]])) &&
+      ++count < keys.length
+    );
+  }
+
+  return found;
+}
+
+function adjustColor(
+  color_type: ColorType | undefined,
+  ...colors: (string | undefined)[]
+): ColorObject | undefined {
+  const color = nullOperator(...colors);
+
+  return color != undefined && color_type != undefined
+    ? {
+        name: color,
+        type: color_type,
+      }
+    : undefined;
+}
+
+function hasNoData(list: OrderedCardsList | undefined) {
+  return (
+    list == undefined ||
+    Object.keys(list.cards).length === 0 ||
+    list.cards[""]?.length === 0
+  );
+}
+
 export {
   getCompleteSchoolYear,
   getCurrentSchoolYear,
@@ -743,7 +902,6 @@ export {
   isCourse,
   isOrderedCardList,
   isCardLists,
-  isEnrollmentTableList,
   executeLink,
   getCurrentElement,
   getIcon,
@@ -775,7 +933,9 @@ export {
   isTokenExpired,
   getLocale,
   getGradeNumber,
-  checkGradesParameters,
+  checkGradeParameters,
+  checkMultiGradesParameters,
+  hasGradeTypingErrors,
   getSubscribedCredits,
   isLinkedToAreas,
   getLearningAreasStructures,
@@ -789,4 +949,12 @@ export {
   executeAdditionalControl,
   getMenuOrder,
   getPageTitle,
+  canVModel,
+  canArrayVModel,
+  canListVModel,
+  canCardVModel,
+  canCardArrayVModel,
+  canCardListVModel,
+  adjustColor,
+  hasNoData,
 };

@@ -40,6 +40,7 @@ import CardsGrid from "./components/CardsGrid.vue";
 import EditorWrapper from "./components/EditorWrapper.vue";
 import ProjectClassSelector from "./components/ProjectClassSelector.vue";
 import OrdinaryClass from "./components/OrdinaryClass.vue";
+import MultipleGradesManager from "./components/MultipleGradesManager.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/vue/css/core.css";
@@ -104,7 +105,8 @@ const app = createApp(App)
   .component("CardsGrid", CardsGrid)
   .component("EditorWrapper", EditorWrapper)
   .component("ProjectClassSelector", ProjectClassSelector)
-  .component("OrdinaryClass", OrdinaryClass);
+  .component("OrdinaryClass", OrdinaryClass)
+  .component("MultipleGradesManager", MultipleGradesManager);
 
 router.isReady().then(() => {
   app.mount("#app");

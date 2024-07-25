@@ -34,19 +34,19 @@
       :colors="card.colors"
     />
     <general-card
-      v-else-if="isGeneral(card)"
+      v-else-if="isGeneral(card_ref)"
       @execute_link="$emit('execute_link')"
       @signal_event="$emit('signal_event')"
-      :id="card.id"
-      :title="card.title != undefined ? card.title : undefined"
-      :subtitle="card.subtitle != undefined ? card.subtitle : undefined"
-      :content="card.content"
-      :side_element="card.side_element"
-      :selected="card.selected"
+      :id="card_ref.id"
+      v-model:title="card_ref.title"
+      v-model:subtitle="card_ref.subtitle"
+      v-model:content="card_ref.content"
+      v-model:side_element="card_ref.side_element"
+      :selected="card_ref.selected"
       :hovered="local_hovered"
-      :link="card.link"
-      :colors="card.colors"
-      :classes="card.classes"
+      :link="card_ref.link"
+      :colors="card_ref.colors"
+      :classes="card_ref.classes"
     />
   </ion-item>
 </template>
@@ -59,10 +59,10 @@ import {
   Colors,
   GeneralCardSubElements,
 } from "@/types";
-import { hoverItem } from "@/utils";
+import { canCardVModel, hoverItem } from "@/utils";
 import { getCssColor, getIonicColor, isCourse, isGeneral } from "@/utils";
 import { IonItem } from "@ionic/vue";
-import { PropType, ref } from "vue";
+import { PropType, ref, watch } from "vue";
 
 const props = defineProps({
   card: {
@@ -72,7 +72,7 @@ const props = defineProps({
   colors: Object as PropType<Colors<GeneralCardSubElements>>,
   classes: Object as PropType<Classes<CardsCommonElements>>,
 });
-defineEmits(["execute_link", "signal_event"]);
+const emit = defineEmits(["execute_link", "signal_event", "update:card"]);
 
 const local_hovered = ref(false); // Dummy variable to keep track of reactivity, since it seems not possible to catch props.class.hovered changes
 const css_hover_color =
@@ -83,6 +83,23 @@ const css_background_color =
   props.colors?.background != undefined
     ? getCssColor(props.colors.background)
     : undefined; //<!-- TODO (6): valutare colore separato per ion-item
+
+const card_ref = ref(props.card);
+
+if (isGeneral(props.card) && canCardVModel(props.card)) {
+  watch(
+    () => props.card,
+    (value) => {
+      card_ref.value = value;
+    }
+  );
+  watch(
+    () => card_ref.value,
+    (value) => {
+      emit("update:card", value);
+    }
+  );
+}
 </script>
 
 <style scoped>

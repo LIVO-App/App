@@ -1,4 +1,5 @@
 <template>
+  <!-- TODO (4): In teoria da cancellare -->
   <ion-grid
     ><!-- v-if="learning_sessions.loaded">-->
     <ion-row>
@@ -76,7 +77,6 @@ const changeSelection = async () => {
     };
   } else {
     selected_year_index.value = tmp_selected;
-    selectedChange();
 
     for (const proposition of propositions) {
       if (
@@ -86,6 +86,7 @@ const changeSelection = async () => {
         year_propositions.cards[""].push(proposition.toCard(user, true)); //<!-- ? chiedere se vogliono preferences anche in project class
       }
     }
+    selectedChange();
   }
 };
 const selectedChange = (

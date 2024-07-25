@@ -264,10 +264,10 @@ const changeSelection = async () => {
         }
       );
       selected_option.value = options.length > 0 ? options[0].id : "";
-      selectedChange(learning_sessions_cards);
       tmp_card_list = await getCourses();
       courses.cards = tmp_card_list.cards;
       courses.order = tmp_card_list.order;
+      selectedChange(learning_sessions_cards);
     } else {
       if (selected_option.value != "courses" || group_changed) {
         propositions.order = [
@@ -288,8 +288,8 @@ const changeSelection = async () => {
             ),
           },
         ];
-        selectedChange(learning_sessions_cards);
         propositions.cards = await getPropositions();
+        selectedChange(learning_sessions_cards);
       }
     }
   }

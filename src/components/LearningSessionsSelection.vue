@@ -139,7 +139,6 @@ const changeSelection = async () => {
     };
   } else {
     selected_session_indexes = tmp_selected;
-    selectedChange();
     await executeLink(
       "/v1/teachers/" +
         user.id +
@@ -209,6 +208,7 @@ const changeSelection = async () => {
           ].id
         )
     );
+    selectedChange();
   }
 };
 const selectedChange = (

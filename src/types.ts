@@ -17,10 +17,7 @@ import {
   getStatusString,
   getStudyAddressVisualization,
   getSubscribedCredits,
-  isCourse,
-  isEnrollmentTableList,
   isLinkedToAreas,
-  isOrderedCardList,
   numberToSection,
   toDateString,
 } from "./utils";
@@ -287,7 +284,7 @@ class Enrollment {
       icon: this.enrollment === false ? getIcon("add") : getIcon("close"),
     };
   }
-  getStatusColors(): Colors<GeneralSubElements> {
+  getStatusColors(): Colors<CustomSubElements> {
     return {
       text: {
         name: this.isPending()
@@ -305,7 +302,7 @@ class Enrollment {
         : undefined,
     };
   }
-  getChangeButtonColors(): Colors<GeneralSubElements> {
+  getChangeButtonColors(): Colors<CustomSubElements> {
     return {
       text:
         this.enrollment === false
@@ -344,35 +341,36 @@ class Enrollment {
 type CardElements = {
   id: string;
   group: any;
-  colors?: Colors<GeneralSubElements>;
+  colors?: Colors<CustomSubElements>;
   classes?: Classes<CardSubElements>;
   hovered?: boolean;
 };
 
-type GeneralCardElements = CardElements & {
+type OptionalCardElements = {
   title?: CustomElement;
   subtitle?: CustomElement;
-  content?: CustomElement[];
   side_element?: CustomElement;
   selected?: boolean;
   link?: LinkParameters;
 };
 
-type EnrollmentCardElements = CardElements & {
-  credits: number;
-  content: CustomElement[];
-  enrollment: Enrollment;
+type OptionalContentCard = {
+  content?: CustomElement[];
 };
 
-type EnrollmentTableRow = {
-  row: CustomElement[];
-  enrollment: Enrollment;
-};
+type GeneralCardElements = CardElements &
+  OptionalCardElements &
+  OptionalContentCard;
 
-type EnrollmentTable = {
-  table_data: CustomElement[][];
-  enrollments: Enrollment[];
-};
+type GeneralTableCardElements = CardElements &
+  OptionalCardElements &
+  Required<OptionalContentCard>;
+
+type EnrollmentCardElements = CardElements &
+  Required<OptionalContentCard> & {
+    credits: number;
+    enrollment: Enrollment;
+  };
 
 enum LearningSessionStatus {
   FUTURE,
@@ -580,6 +578,7 @@ class EnrollmentCourse extends CourseSummary {
     learning_session: LearningSession,
     path?: string,
     method?: Method,
+    data?: TmpList,
     open_enrollment = false,
     reference = new Date()
   ) {
@@ -595,7 +594,56 @@ class EnrollmentCourse extends CourseSummary {
       group: this.group,
       credits: this.credits,
       enrollment: tmp_enrollment,
-      content: [
+      content: [],
+    };
+
+    if (data != undefined) {
+      card.content = [
+        {
+          id: this.id + "_group",
+          type: "string",
+          content: this.group,
+        },
+        {
+          id: this.id + "_credits",
+          type: "string",
+          content: this.credits,
+        },
+        {
+          id: this.id + "_title",
+          type: "string",
+          linkType: "event",
+          content: {
+            event: "course_details",
+            data: {
+              title: this[`${language}_title`],
+              course_id: this.id,
+              section: this.section,
+            },
+            text: this[`${language}_title`],
+          },
+        },
+      ];
+
+      if (store.state.sections_use) {
+        card.content.push({
+          id: this.id + "_section",
+          type: "string",
+          content: this.section ?? "",
+        });
+      }
+      card.content.push({
+        id: this.id + "_move_student",
+        type: "icon",
+        linkType: "event",
+        content: {
+          event: "move_student",
+          data: data,
+          icon: getIcon("checkmark"),
+        },
+      });
+    } else {
+      card.content = [
         {
           id: this.id + "_credits",
           type: "string",
@@ -635,8 +683,8 @@ class EnrollmentCourse extends CourseSummary {
           content: tmp_enrollment.toString(),
           colors: tmp_enrollment.getStatusColors(),
         },
-      ],
-    };
+      ];
+    }
 
     if (
       (!store.state.static_subscription ||
@@ -650,76 +698,12 @@ class EnrollmentCourse extends CourseSummary {
         content: tmp_enrollment.getEnrollmentIcon(path, method),
         colors: tmp_enrollment.getChangeButtonColors(),
         params: {
-          border_radius: "10px", // (10): capire cos'è params
+          border_radius: "10px",
         },
       });
     }
 
     return card;
-  }
-
-  toEnrollmentTableRow(
-    learning_session: LearningSession,
-    data: TmpList,
-    open_enrollment = false,
-    reference = new Date()
-  ): EnrollmentTableRow {
-    const language = getCurrentLanguage();
-    const tmp_enrollment = new Enrollment(
-      this.pending,
-      learning_session,
-      reference,
-      open_enrollment
-    );
-    const tmp_row: CustomElement[] = [
-      {
-        id: this.id + "_group",
-        type: "string",
-        content: this.group,
-      },
-      {
-        id: this.id + "_credits",
-        type: "string",
-        content: this.credits,
-      },
-      {
-        id: this.id + "_title",
-        type: "string",
-        linkType: "event",
-        content: {
-          event: "course_details",
-          data: {
-            title: this[`${language}_title`],
-            course_id: this.id,
-            section: this.section,
-          },
-          text: this[`${language}_title`],
-        },
-      },
-    ];
-
-    if (store.state.sections_use) {
-      tmp_row.push({
-        id: this.id + "_section",
-        type: "string",
-        content: this.section ?? "",
-      });
-    }
-    tmp_row.push({
-      id: this.id + "_move_student",
-      type: "icon",
-      linkType: "event",
-      content: {
-        event: "move_student",
-        data: data,
-        icon: getIcon("checkmark"),
-      },
-    });
-
-    return {
-      row: tmp_row,
-      enrollment: tmp_enrollment,
-    };
   }
 }
 
@@ -779,61 +763,66 @@ class CurriculumCourse extends CourseBase {
     session_id: number,
     student_id: number,
     teacher_id?: number
-  ): CustomElement[] {
+  ): GeneralTableCardElements {
+    // TODO (7): valutare se unire a toCard, visto che il tipo di dato è diventato lo stesso
     const language = getCurrentLanguage();
-    const row: CustomElement[] = [
-      {
-        id: this.id + "_title",
-        type: "string",
-        linkType: "event",
-        content: {
-          event: "course_details",
-          data: {
-            title: this[`${language}_title`],
-            course_id: this.id,
-            learning_session_id: session_id,
-            section: this.section,
-          },
-          text: this[`${language}_title`],
-        },
-      },
-      {
-        id: this.id + "_credits",
-        type: "string",
-        content: "" + this.credits,
-      },
-      {
-        id: this.id + "_learning_area",
-        type: "string",
-        content: this.learning_area_id,
-      },
-      {
-        id: this.id + "_gardes", // TODO (4): mettere il controllo con future_course al passaggio a curriculum_v2
-        type: "icon",
-        linkType: "event",
-        content: {
-          event: "grades",
-          data: {
-            title: this[`${language}_title`],
-            parameters: {
+    const row: GeneralTableCardElements = {
+      id: "" + this.id,
+      group: "",
+      content: [
+        {
+          id: "title",
+          type: "string",
+          linkType: "event",
+          content: {
+            event: "course_details",
+            data: {
+              title: this[`${language}_title`],
               course_id: this.id,
-              session_id: session_id,
-              student_id: student_id,
-              teacher_id: teacher_id,
+              learning_session_id: session_id,
+              section: this.section,
             },
+            text: this[`${language}_title`],
           },
-          icon: getIcon("document_text"),
         },
-      },
-      {
-        id: this.id + "_final_grade",
-        type: "string",
-        content: this.final_grade != null ? "" + this.final_grade : "-",
-      },
-    ];
+        {
+          id: "credits",
+          type: "string",
+          content: "" + this.credits,
+        },
+        {
+          id: "learning_area",
+          type: "string",
+          content: this.learning_area_id,
+        },
+        {
+          id: "gardes", // TODO (4): mettere il controllo con future_course al passaggio a curriculum_v2
+          type: "icon",
+          linkType: "event",
+          content: {
+            event: "grades",
+            data: {
+              title: this[`${language}_title`],
+              parameters: {
+                course_id: this.id,
+                session_id: session_id,
+                student_id: student_id,
+                teacher_id: teacher_id,
+              },
+            },
+            icon: getIcon("document_text"),
+          },
+        },
+        {
+          id: "final_grade",
+          type: "string",
+          content: this.final_grade != null ? "" + this.final_grade : "-",
+        },
+      ],
+    };
     if (store.state.sections_use) {
-      row.splice(1, 0, {
-        id: this.id + "_section", // TODO (8): Mettere differenza tra visualizzazione con corso frequentato una volta e più
+      row.content.splice(1, 0, {
+        id: "section", // TODO (8): Mettere differenza tra visualizzazione con corso frequentato una volta e più
         type: "string",
         content: this.section,
       });
@@ -1669,11 +1658,14 @@ type EventStringIcon = {
 } & EventParameters &
   StringIcon;
 
+type CardsList<T extends CardElements = CardElements> = TmpList<T[]>;
+/**
 type CardsList<T = CardElements> = {
   [key: string | number]: T[];
 };
+ */
 
-type OrderedCardsList<T = CardElements> = {
+type OrderedCardsList<T extends CardElements = CardElements> = {
   order: {
     key: string | number;
     title: CustomElement;
@@ -1681,23 +1673,21 @@ type OrderedCardsList<T = CardElements> = {
   cards: CardsList<T>; // TODO (6): mettere classes e colors per dividers e forse per tutta la lista
 };
 
-type OrderedCardsGrid<T = CardElements> = {
-  order: {
-    key: string | number;
-    title: CustomElement;
-  }[];
-  cards: {
-    [key: string | number]: T[][] | undefined;
-  };
-};
-
-type ElementType = "string" | "html" | "icon" | "title" | "string_icon";
+type ElementType =
+  | "string"
+  | "html"
+  | "icon"
+  | "title"
+  | "string_icon"
+  | "input"
+  | "checkbox";
 
 type LinkType = "request" | "event";
 
 type ContentType =
   | string
   | number
+  | boolean
   | IconAlternatives
   | StringIcon
   | RequestIcon
@@ -1715,19 +1705,36 @@ type ColorObject = {
   type: ColorType;
 };
 
-type GeneralSubElements = "text" | "background" | "borders" | "hover";
+type GeneralSubElements = "text" | "background" | "borders" | "hover"; // TODO (6): Valutare se generalizzare con string qui e su classi
+
+type IonInputSubElements = "placeholder";
+
+type IonCheckboxSubElements =
+  | "checkmark"
+  | "background_checked"
+  | "borders_checked";
+
+type CustomSubElements =
+  | GeneralSubElements
+  | IonInputSubElements
+  | IonCheckboxSubElements;
 
 type GeneralCardSubElements =
-  | "background"
-  | "text"
+  | GeneralSubElements
   | "dividers_text"
   | "external_borders"
   | "cards_borders"
   | "list_borders"
-  | "hover" // TODO (6): Mettere dove necessario
-  | "dividers";
+  | "dividers"; // TODO (6): Mettere hover dove necessario
 
-type SubElements = "label" | "html" | "icon" | "button" | "item";
+type SubElements =
+  | "label"
+  | "html"
+  | "icon"
+  | "button"
+  | "item"
+  | "input"
+  | "checkbox";
 
 type CardSubElements = "card" | "header" | "content";
 
@@ -1741,7 +1748,7 @@ type CardsListElements = CardsCommonElements | "list";
 
 type CardsGridElements = CardsCommonElements | "grid" | "row" | "col";
 
-type Colors<T extends GeneralSubElements | GeneralCardSubElements> = {
+type Colors<T extends CustomSubElements | GeneralCardSubElements> = {
   [key in keyof string as T]?: ColorObject;
 };
 
@@ -1763,11 +1770,15 @@ type CustomElement = {
   id: string;
   type: ElementType;
   linkType?: LinkType;
-  colors?: Colors<GeneralSubElements>;
+  colors?: Colors<CustomSubElements>;
   classes?: Classes<SubElements>;
   params?: TmpList;
   content: ContentType;
   hovered?: boolean;
+};
+
+type TableElement = CustomElement & {
+  size?: number;
 };
 
 enum EditableState {
@@ -1844,31 +1855,38 @@ class Grade {
     associated_teacher?: boolean,
     teacher_id?: number,
     student_id?: number,
-    final_grade_pubblication?: Date
-  ): CustomElement[] {
+    final_grade_pubblication?: Date,
+    show_editable = true
+  ): GeneralTableCardElements {
     const language = getCurrentLanguage();
 
-    const row: CustomElement[] = [
-      {
-        id: this.id + "_description",
-        type: "html",
-        content: this[`${language}_description`],
-      },
-      {
-        id: this.id + "_pubblication",
-        type: "string",
-        content: toDateString(this.publication),
-      },
-      {
-        id: this.id + "_value",
-        type: "html",
-        content:
-          (this.final
-            ? "<b>" + getCurrentElement("final") + "</b><br />"
-            : "") + this.grade,
-      },
-    ];
-    const editable = this.getEditableStatus(final_grade_pubblication);
+    const row: GeneralTableCardElements = {
+      id: "" + this.id,
+      group: "",
+      content: [
+        {
+          id: "description",
+          type: "html",
+          content: this[`${language}_description`],
+        },
+        {
+          id: "pubblication",
+          type: "string",
+          content: toDateString(this.publication),
+        },
+        {
+          id: "value",
+          type: "html",
+          content:
+            (this.final
+              ? "<b>" + getCurrentElement("final") + "</b><br />"
+              : "") + this.grade,
+        },
+      ],
+    };
+    const editable = show_editable
+      ? this.getEditableStatus(final_grade_pubblication)
+      : EditableState.AFTER_7_DAYS;
 
     if (
       student_id != undefined &&
@@ -1877,9 +1895,9 @@ class Grade {
     ) {
       if (editable == EditableState.EDITABLE && !associated_teacher) {
         // Teacher that can edit and editable grade
-        row.push(
+        row.content.push(
           {
-            id: this.id + "_edit",
+            id: "edit",
             type: "icon",
             linkType: "event",
             content: {
@@ -1893,7 +1911,7 @@ class Grade {
             },
           },
           {
-            id: this.id + "_remove",
+            id: "remove",
             type: "icon",
             linkType: "event",
             content: {
@@ -1908,14 +1926,14 @@ class Grade {
         );
       } else if (editable == EditableState.NOT_EDITABLE) {
         // Teacher that can edit but not editable grade
-        row.push(
+        row.content.push(
           {
-            id: this.id + "_edit",
+            id: "edit",
             type: "string",
             content: "",
           },
           {
-            id: this.id + "_remove",
+            id: "remove",
             type: "string",
             content: "",
           }
@@ -1941,10 +1959,18 @@ class Grade {
 type GradesParameters = {
   course_id: number;
   session_id: number;
-  student_id: number;
   teacher_id?: number;
   associated_teacher?: boolean;
+};
+
+type SingleGradesParameters = GradesParameters & {
+  student_id: number;
   final_grade_index?: number;
+  show_editable?: boolean;
+};
+
+type MultipleGradesParameters = GradesParameters & {
+  section: string;
 };
 
 type ProjectClassTeachingsResponse = {
@@ -2076,19 +2102,23 @@ class StudentSummary implements StudentSummaryProps {
     };
   }
 
-  toTableRow(): CustomElement[] {
-    return [
-      {
-        id: this.id + "_name_surname",
-        type: "string",
-        linkType: "request",
-        content: {
-          text: this.name + " " + this.surname,
-          url: "/students/" + this.id,
-          method: "get",
+  toTableRow(): GeneralTableCardElements {
+    return {
+      id: "" + this.id,
+      group: "",
+      content: [
+        {
+          id: "name_surname",
+          type: "string",
+          linkType: "request",
+          content: {
+            text: this.name + " " + this.surname,
+            url: "/students/" + this.id,
+            method: "get",
+          },
         },
-      },
-    ];
+      ],
+    };
   }
 }
 
@@ -2107,25 +2137,25 @@ class OrdinaryClassStudent extends StudentSummary {
     this.clil_credits = props.clil_credits;
   }
 
-  toTableRow(movable = false): CustomElement[] {
-    const row_to_return: CustomElement[] = super.toTableRow();
+  toTableRow(movable = false): GeneralTableCardElements {
+    const row_to_return = super.toTableRow();
     if (User.getLoggedUser()?.type == "admin") {
-      row_to_return.push(
+      row_to_return.content.push(
         {
-          id: this.id + "_orientation_credits",
+          id: "orientation_credits",
           type: "string",
           content: this.orientation_credits,
         },
         {
-          id: this.id + "_clil_credits",
+          id: "clil_credits",
           type: "string",
           content: this.clil_credits,
         }
       );
     }
     if (movable) {
-      row_to_return.push({
-        id: this.id + "_student_mover",
+      row_to_return.content.push({
+        id: "student_mover",
         type: "icon",
         linkType: "event",
         content: {
@@ -2194,29 +2224,34 @@ class ProjectClassStudent extends StudentSummary {
     teacher_id?: number,
     grades?: boolean,
     final_grade?: Grade,
-    final_confirmation?: Date
-  ): CustomElement[] {
+    final_confirmation?: Date,
+    linked_input = false
+  ): GeneralTableCardElements {
     // TODO (7): usare AdminProjectClassProps quando verrà cambiato nome e sistemato in giro
-    const row_to_return: CustomElement[] = super.toTableRow();
-    const tmp_row: CustomElement[] = [
-      {
-        id: this.id + "_class",
-        type: "string",
-        content: this.ordinary_class.toString(),
-      },
-    ];
+    const row_to_return = super.toTableRow();
+    const tmp_row: GeneralTableCardElements = {
+      id: "" + this.id,
+      group: "",
+      content: [
+        {
+          id: "class",
+          type: "string",
+          content: this.ordinary_class.toString(),
+        },
+      ],
+    };
 
     if (this.learning_context_id != undefined) {
-      row_to_return.push({
-        id: this.id + "_learning_context",
+      row_to_return.content.push({
+        id: "learning_context",
         type: "string",
         content: this.learning_context_id,
       });
     }
     if (grades) {
-      tmp_row.push(
+      tmp_row.content.push(
         {
-          id: this.id + "_gardes", // TODO (4): Mettere il controllo con future_course al passaggio a curriculum_v2
+          id: "gardes", // TODO (4): Mettere il controllo con future_course al passaggio a curriculum_v2
           type: "icon",
           linkType: "event",
           content: {
@@ -2234,50 +2269,60 @@ class ProjectClassStudent extends StudentSummary {
           },
         },
         {
-          id: this.id + "_final_grade",
+          id: "final_grade",
           type: "string",
           content: final_grade != undefined ? "" + final_grade.grade : "-",
         }
       );
-    } else {
-      if (final_confirmation == undefined) {
-        tmp_row.push(
-          {
-            id: this.id + "_student_mover",
-            type: "icon",
-            linkType: "event",
-            content: {
-              event: "student_mover",
-              data: {
-                title: this.name + " " + this.surname,
-                parameters: {
-                  student_id: this.id,
-                  ordinary_class: this.ordinary_class,
-                },
+    } else if (linked_input) {
+      tmp_row.content.push({
+        id: "grade",
+        type: "input",
+        content: "",
+        params: {
+          ref: this.id,
+          type: "number",
+        },
+      });
+    } else if (final_confirmation == undefined) {
+      tmp_row.content.push(
+        {
+          id: "student_mover",
+          type: "icon",
+          linkType: "event",
+          content: {
+            event: "student_mover",
+            data: {
+              title: this.name + " " + this.surname,
+              parameters: {
+                student_id: this.id,
+                ordinary_class: this.ordinary_class,
               },
-              icon: getIcon("pencil"),
             },
+            icon: getIcon("pencil"),
           },
-          {
-            id: this.id + "_remove_student",
-            type: "icon",
-            linkType: "event",
-            content: {
-              event: "remove_student",
-              data: {
-                title: this.name + " " + this.surname,
-                parameters: {
-                  student_id: this.id,
-                },
+        },
+        {
+          id: "remove_student",
+          type: "icon",
+          linkType: "event",
+          content: {
+            event: "remove_student",
+            data: {
+              title: this.name + " " + this.surname,
+              parameters: {
+                student_id: this.id,
               },
-              icon: getIcon("close"),
             },
-          }
-        );
-      }
+            icon: getIcon("close"),
+          },
+        }
+      );
     }
 
-    return row_to_return.concat(tmp_row);
+    row_to_return.content = row_to_return.content.concat(tmp_row.content);
+
+    return row_to_return;
   }
 }
 
@@ -2912,6 +2957,7 @@ type PropositionSpecificInformation = {
   class_group: number;
   num_section: number;
   teacher_list: PropositionTeacher[];
+  // TODO (4): add project_class_code: string (simple text field, min-max 8)
 };
 
 type PropositionObj = {
@@ -3460,13 +3506,13 @@ class ModelProposition {
             } else if (
               typeof proposition[key] == "number" ||
               (typeof proposition[key] == "string" &&
-                (!isNaN(proposition[key]) ||
+                (!isNaN(Number(proposition[key])) ||
                   !isNaN(parseFloat(proposition[key]))))
             ) {
               actual_number =
                 typeof proposition[key] == "number"
                   ? proposition[key]
-                  : !isNaN(proposition[key])
+                  : !isNaN(Number(proposition[key]))
                   ? parseInt(proposition[key])
                   : parseFloat(proposition[key]);
               if (actual_number < (rule.rule as number[])[0]) {
@@ -4124,6 +4170,7 @@ type AlertInformation = {
 };
 
 enum SubscriptionsManagerMode {
+  SELF_SUBSCRIPTION,
   SUBSCRIPTION,
   MOVE,
 }
@@ -4134,7 +4181,7 @@ enum SubscriptionsManagerVisualizzationType {
 }
 
 type EnrollmentAvailability = {
-  course: CustomElement[] | EnrollmentCardElements | undefined;
+  course: EnrollmentCardElements | undefined;
   available_courses: boolean;
   available_credits: boolean;
 };
@@ -4149,13 +4196,8 @@ class SubscriptionsManager {
   // TODO (4): fare tutte combinazioni tra mode e visualization_type e tenere conto anche dell'utente per risultato carta/riga
   // TODO (4): rifare tutto questo sistema andando a cambiare il funzionamento della tabella in modo tale che sia un array di oggetti o simile ([{row_id,row,enrollment}]) e diventi simile alle card
   private _mode: SubscriptionsManagerMode;
-  private _visualizzation_type: SubscriptionsManagerVisualizzationType;
-  private _all_courses:
-    | TmpList<CardsList<EnrollmentCardElements>>
-    | TmpList<TmpList<EnrollmentTable>>; // TODO (7*): aggiungere gruppo (gruppi come group e controlli in nuova variabile)
-  private _courses:
-    | OrderedCardsList<EnrollmentCardElements>
-    | CustomElement[][];
+  private _all_courses: TmpList<CardsList<EnrollmentCardElements>>;
+  private _courses: OrderedCardsList<EnrollmentCardElements>;
   private _remaining_credits: AlternateList<number>;
   private _remaining_courses: AlternateList<TmpList<number>>;
   private course_correspondences: {
@@ -4177,20 +4219,13 @@ class SubscriptionsManager {
   private learning_contexts: LearningContext[];
   private learning_context_index: number;
 
-  constructor(
-    mode = SubscriptionsManagerMode.SUBSCRIPTION,
-    visualizzation_type = SubscriptionsManagerVisualizzationType.CARDS
-  ) {
+  constructor(mode = SubscriptionsManagerMode.SELF_SUBSCRIPTION) {
     this._mode = mode;
-    this._visualizzation_type = visualizzation_type;
     this._all_courses = {};
-    this._courses =
-      visualizzation_type == SubscriptionsManagerVisualizzationType.CARDS
-        ? {
-            order: [],
-            cards: {},
-          }
-        : [];
+    this._courses = {
+      order: [],
+      cards: {},
+    };
     this._remaining_credits = {};
     this._remaining_courses = {};
     this.course_correspondences = [];
@@ -4215,26 +4250,16 @@ class SubscriptionsManager {
 
   reset() {
     this._all_courses = {};
-    this.resetCourses();
+    this._courses = {
+      order: [],
+      cards: {},
+    };
     this._remaining_credits = {};
     this._remaining_courses = {};
     this.course_correspondences = [];
     this.resetLastMentionedCourse();
     this.learning_context_index = -1;
     this.learning_contexts = [];
-  }
-
-  resetCourses() {
-    if (
-      this.visualizzation_type == SubscriptionsManagerVisualizzationType.CARDS
-    ) {
-      this._courses = {
-        order: [],
-        cards: {},
-      };
-    } else {
-      this._courses = [];
-    }
   }
 
   async loadParameters(
@@ -4246,6 +4271,7 @@ class SubscriptionsManager {
     courses_to_divide: EnrollmentCourse[],
     learning_session_id: string
   ) {
+    // TODO (5): mettere parametro data_loaded per bloccare azioni senza aver caricato dati
     // TODO (5): mettere facoltativi parametri per il move
     const learning_session_position = learning_sessions.findIndex(
       (a) => a.id == parseInt(learning_session_id)
@@ -4324,8 +4350,7 @@ class SubscriptionsManager {
             open_enrollment,
             tmp_learning_context,
             context_linked: boolean,
-            to_add: EnrollmentCardElements | EnrollmentTableRow,
-            tmp_enrollment_table: EnrollmentTable;
+            to_add: EnrollmentCardElements;
 
           this.course_correspondences = response.data.data;
           for (const correspondence of this.course_correspondences) {
@@ -4355,34 +4380,26 @@ class SubscriptionsManager {
                     previous_session.getStatus() ==
                       LearningSessionStatus.COMPLETED) &&
                   learning_session.open_day <= new Date();
-                if (this.mode == SubscriptionsManagerMode.SUBSCRIPTION) {
-                  if (
-                    this._visualizzation_type ==
-                    SubscriptionsManagerVisualizzationType.CARDS
-                  ) {
-                    to_add = actual_course.toEnrollmentCard(
-                      learning_session,
-                      open_enrollment
-                        ? "/v1/students/" +
-                            student.id +
-                            "/" +
-                            (actual_course.pending !== false
-                              ? "unsubscribe"
-                              : "subscribe") +
-                            "?course_id=" +
-                            actual_course.id +
-                            "&session_id=" +
-                            learning_session_id +
-                            "&context_id=" +
-                            tmp_learning_context.id
-                        : undefined,
-                      undefined,
-                      open_enrollment
-                    );
-                  } else {
-                    to_add = actual_course.toEnrollmentTableRow(
-                      learning_session,
-                      {
+                to_add = actual_course.toEnrollmentCard(
+                  learning_session,
+                  this.mode == SubscriptionsManagerMode.SELF_SUBSCRIPTION &&
+                    open_enrollment
+                    ? "/v1/students/" +
+                        student.id +
+                        "/" +
+                        (actual_course.pending !== false
+                          ? "unsubscribe"
+                          : "subscribe") +
+                        "?course_id=" +
+                        actual_course.id +
+                        "&session_id=" +
+                        learning_session_id +
+                        "&context_id=" +
+                        tmp_learning_context.id
+                    : undefined,
+                  undefined,
+                  this.mode != SubscriptionsManagerMode.SELF_SUBSCRIPTION
+                    ? {
                         student_id: student.id,
                         ordinary_class: ordinary_class,
                         to: {
@@ -4393,36 +4410,15 @@ class SubscriptionsManager {
                           final_confirmation: actual_course.final_confirmation,
                         },
                       }
-                    );
-                  }
-                } else {
-                  to_add = actual_course.toEnrollmentTableRow(
-                    learning_session,
-                    {
-                      student_id: student.id,
-                      to: {
-                        learning_context_id: tmp_learning_context.id,
-                        learning_area_id: tmp_learning_area.id,
-                        course_id: actual_course.id,
-                        session_id: parseInt(learning_session_id),
-                        section:
-                          actual_course.section ?? store.state.default_section,
-                        final_confirmation: actual_course.final_confirmation,
-                      },
-                    }
-                  );
-                }
+                    : undefined,
+                  open_enrollment
+                );
                 if (this._all_courses[tmp_learning_context.id] == undefined) {
                   this._all_courses[tmp_learning_context.id] = {};
                   for (const learning_area of all_learning_areas) {
                     this._all_courses[tmp_learning_context.id][
                       learning_area.id
-                    ] = isCourse(to_add)
-                      ? []
-                      : {
-                          table_data: [],
-                          enrollments: [],
-                        };
+                    ] = [];
                   }
                 }
                 (context_linked
@@ -4435,19 +4431,9 @@ class SubscriptionsManager {
                       tmp_learning_context.id
                     ] as TmpList<number>))[actual_course.group] -=
                   to_add.enrollment.enrollment === true ? 1 : 0;
-                if (isCourse(to_add)) {
-                  (
-                    this._all_courses[tmp_learning_context.id][
-                      tmp_learning_area.id
-                    ] as EnrollmentCardElements[]
-                  ).push(to_add);
-                } else {
-                  tmp_enrollment_table = this._all_courses[
-                    tmp_learning_context.id
-                  ][tmp_learning_area.id] as EnrollmentTable;
-                  tmp_enrollment_table.table_data.push(to_add.row);
-                  tmp_enrollment_table.enrollments.push(to_add.enrollment);
-                }
+                this._all_courses[tmp_learning_context.id][
+                  tmp_learning_area.id
+                ].push(to_add);
                 if (actual_course.pending === true) {
                   if (tmp_learning_context.credits != null) {
                     (this._remaining_credits[
@@ -4480,50 +4466,18 @@ class SubscriptionsManager {
     return this._mode;
   }
 
-  public get visualizzation_type(): SubscriptionsManagerVisualizzationType {
-    return this._visualizzation_type;
-  }
-
-  public get courses():
-    | OrderedCardsList<EnrollmentCardElements>
-    | CustomElement[][] {
+  public get courses() {
     return this._courses;
   }
 
-  public get all_courses():
-    | TmpList<CardsList<EnrollmentCardElements>>
-    | TmpList<TmpList<EnrollmentTable>> {
+  public get all_courses() {
     return this._all_courses;
   }
 
-  public get course(): EnrollmentCardElements | CustomElement[] {
-    if (
-      this.visualizzation_type == SubscriptionsManagerVisualizzationType.CARDS
-    ) {
-      if (isOrderedCardList(this._courses)) {
-        return this._courses.cards[
-          this.last_mentioned_course.courses_indexes.group
-        ][this.last_mentioned_course.courses_indexes.index as number];
-      } else {
-        return (
-          this.all_courses[
-            this.last_mentioned_course.references.learning_context_id
-          ][
-            this.last_mentioned_course.references.learning_area_id
-          ] as EnrollmentTable
-        ).table_data[
-          this.last_mentioned_course.courses_indexes.index as number
-        ];
-      }
-    } else {
-      return (
-        this.all_courses[
-          this.last_mentioned_course.references.learning_context_id
-        ][
-          this.last_mentioned_course.references.learning_area_id
-        ] as EnrollmentTable
-      ).table_data[this.last_mentioned_course.courses_indexes.index as number];
-    }
+  public get course() {
+    return this._courses.cards[
+      this.last_mentioned_course.courses_indexes.group
+    ][this.last_mentioned_course.courses_indexes.index as number];
   }
 
   public get remaing_credits(): AlternateList<number> {
@@ -4532,30 +4486,6 @@ class SubscriptionsManager {
 
   public get remaining_courses(): AlternateList<TmpList<number>> {
     return this._remaining_courses;
-  }
-
-  getCourse(references: CourseReferences) {
-    if (
-      this.visualizzation_type == SubscriptionsManagerVisualizzationType.CARDS
-    ) {
-      if (isOrderedCardList(this._courses)) {
-        return this._courses.cards[references.indexes.group][
-          references.indexes.index as number
-        ];
-      } else {
-        return (
-          this.all_courses[references.learning_context_id][
-            references.learning_area_id
-          ] as EnrollmentTable
-        ).table_data[references.indexes.index as number];
-      }
-    } else {
-      return (
-        this.all_courses[references.learning_context_id][
-          references.learning_area_id
-        ] as EnrollmentTable
-      ).table_data[references.indexes.index as number];
-    }
   }
 
   getCourseReferences(course_id: string): CourseReferences | undefined {
@@ -4571,21 +4501,11 @@ class SubscriptionsManager {
     if (learning_context_id != undefined) {
       learning_areas = Object.keys(this.all_courses[learning_context_id]);
       while (learning_area_id == undefined && count < learning_areas.length) {
-        if (
-          isCourse(
-            this._all_courses[learning_context_id][learning_areas[count]]
-          )
-        ) {
-          // TODO (6): da fare
-        } else {
-          index = (
-            this._all_courses[learning_context_id][
-              learning_areas[count]
-            ] as EnrollmentTable
-          ).table_data.findIndex((a) => a[0].id.split("_")[0] == course_id);
-          if (index != -1) {
-            learning_area_id = learning_areas[count];
-          }
+        index = this._all_courses[learning_context_id][
+          learning_areas[count]
+        ].findIndex((a) => a.id == course_id);
+        if (index != -1) {
+          learning_area_id = learning_areas[count];
         }
         count++;
       }
@@ -4607,58 +4527,36 @@ class SubscriptionsManager {
     learning_area_id: string,
     not_to_show?: string[]
   ) {
-    let all_courses_tables: TmpList<TmpList<EnrollmentTable>>;
+    this._courses.cards = {};
+    this._courses.order = [];
 
-    if (
-      !isEnrollmentTableList(this._all_courses) &&
-      isOrderedCardList(this._courses)
-    ) {
-      // this.mode == SubscriptionsManagerMode.SUBSCRIPTION
-      this._courses.cards = {};
-      this._courses.order = [];
-
-      for (const course of this._all_courses[learning_context_id] != undefined
-        ? this._all_courses[learning_context_id][learning_area_id]
-        : []) {
+    for (const course of this._all_courses[learning_context_id] != undefined
+      ? this._all_courses[learning_context_id][learning_area_id]
+      : []) {
+      if (
+        this.mode == SubscriptionsManagerMode.SELF_SUBSCRIPTION ||
+        (not_to_show?.find((b) => b == course.id) == undefined &&
+          course.enrollment.enrollment == false)
+      ) {
         if (this._courses.cards[course.group] == undefined) {
           this._courses.order.push({
             key: course.group,
             title: getCustomMessage(
               "title",
-              getCurrentElement("group") + " " + course.group
+              getCurrentElement("group") + " " + course.group,
+              "title"
             ),
           });
           this._courses.cards[course.group] = [];
         }
         this._courses.cards[course.group].push(course);
       }
-      this._courses.order.sort((a, b) =>
-        a.key == b.key ? 0 : a.key < b.key ? -1 : 1
-      );
-      if (Object.keys(this._courses.cards).length == 0) {
-        this._courses.cards[""] = [];
-      }
-    } else {
-      // this.mode == SubscriptionsManagerMode.MOVE && this._visualizzation_type == SubscriptionsManagerVisualizzationType.TABLE
-      all_courses_tables = this._all_courses as TmpList<
-        TmpList<EnrollmentTable>
-      >;
-      this._courses =
-        all_courses_tables[learning_context_id] != undefined &&
-        all_courses_tables[learning_context_id][learning_area_id] != undefined
-          ? all_courses_tables[learning_context_id][
-              learning_area_id
-            ].table_data.filter(
-              (a, i) =>
-                not_to_show?.find((b) => b == a[0].id.split("_")[0]) ==
-                  undefined &&
-                all_courses_tables[learning_context_id][learning_area_id]
-                  .enrollments[i].enrollment == false
-            )
-          : [];
-      this._courses.sort((a, b) =>
-        a[0].content == b[0].content ? 0 : a[0].content < b[0].content ? -1 : 1
-      );
+    }
+    this._courses.order.sort((a, b) =>
+      a.key == b.key ? 0 : a.key < b.key ? -1 : 1
+    );
+    if (Object.keys(this._courses.cards).length == 0) {
+      this._courses.cards[""] = [];
     }
   }
 
@@ -4685,71 +4583,25 @@ class SubscriptionsManager {
     learning_area_id: string,
     course_id: string
   ) {
-    let all_courses_tables: TmpList<TmpList<EnrollmentTable>>,
-      course_index: number,
-      deleted_element: EnrollmentCardElements | EnrollmentTableRow;
+    const course_index = this._all_courses[context_id][
+      learning_area_id
+    ].findIndex((a) => a.id == course_id);
 
-    if (!isEnrollmentTableList(this._all_courses)) {
-      course_index = this._all_courses[context_id][learning_area_id].findIndex(
-        (a) => a.id != course_id
-      );
-      deleted_element = this._all_courses[context_id][learning_area_id].splice(
-        course_index,
-        1
-      )[0];
-    } else {
-      all_courses_tables = this._all_courses as TmpList<
-        TmpList<EnrollmentTable>
-      >;
-      course_index = all_courses_tables[context_id][
-        learning_area_id
-      ].table_data.findIndex((a) => a[0].id.split("_")[0] == course_id);
-      deleted_element = {
-        row: all_courses_tables[context_id][learning_area_id].table_data.splice(
-          course_index,
-          1
-        )[0],
-        enrollment: all_courses_tables[context_id][
-          learning_area_id
-        ].enrollments.splice(course_index, 1)[0],
-      };
-    }
-
-    return deleted_element;
+    return this._all_courses[context_id][learning_area_id].splice(
+      course_index,
+      1
+    )[0];
   }
 
   private updateCourse(
     context_id: string,
     learning_area_id: string,
-    to_update: EnrollmentCardElements | CustomElement[],
-    enrollment?: Date | boolean
+    to_update: EnrollmentCardElements
   ) {
-    let all_courses_tables: TmpList<TmpList<EnrollmentTable>>,
-      deleted_element: EnrollmentCardElements | EnrollmentTableRow;
-
-    if (!isEnrollmentTableList(this._all_courses) && isCourse(to_update)) {
-      this.removeCourse(context_id, learning_area_id, to_update.id);
-      this._all_courses[context_id][learning_area_id].push(
-        to_update as EnrollmentCardElements
-      );
-    } else {
-      deleted_element = this.removeCourse(
-        context_id,
-        learning_area_id,
-        (to_update as CustomElement[])[0].id.split("_")[0]
-      );
-      all_courses_tables = this._all_courses as TmpList<
-        TmpList<EnrollmentTable>
-      >;
-      all_courses_tables[context_id][learning_area_id].table_data.push(
-        to_update as CustomElement[]
-      );
-
-      deleted_element.enrollment.enrollment = enrollment as Date | boolean;
-      all_courses_tables[context_id][learning_area_id].enrollments.push(
-        deleted_element.enrollment
-      );
-    }
+    this.removeCourse(context_id, learning_area_id, to_update.id);
+    this._all_courses[context_id][learning_area_id].push(
+      to_update as EnrollmentCardElements
+    );
   }
 
   private resetLastMentionedCourse() {
@@ -4771,6 +4623,7 @@ class SubscriptionsManager {
   }
 
   isStudentCompliant() {
+    this._remaining_credits["PER"] = 0;
     const learning_contexts = Object.keys(this.remaing_credits);
 
     let i = 0;
@@ -4820,65 +4673,38 @@ class SubscriptionsManager {
         ? this.getCourseReferences(origin_course_id)
         : undefined;
 
-    let mentioned_course: EnrollmentCardElements | CustomElement[] | undefined,
-      tmp_index: number,
-      enrollment_table: EnrollmentTable;
+    let mentioned_course: EnrollmentCardElements | undefined;
+    let tmp_index = -1;
     let count = 0;
 
     this.resetLastMentionedCourse();
-    if (isOrderedCardList(this._courses)) {
-      while (mentioned_course == undefined && count < groups.length) {
-        if (this._courses.cards[groups[count]] != undefined) {
-          tmp_index = this._courses.cards[groups[count]].findIndex(
-            (c) => c.id == "" + course_id
-          );
-          if (tmp_index != -1) {
-            this.last_mentioned_course.id = course_id;
-            this.last_mentioned_course.references.learning_area_id =
-              learning_area_id;
-            this.last_mentioned_course.references.learning_context_id =
-              learning_context_id;
-            this.last_mentioned_course.courses_indexes.group = groups[count];
-            this.last_mentioned_course.courses_indexes.index = tmp_index;
-            mentioned_course = this.course as EnrollmentCardElements;
-          }
-        }
-        count++;
+    while (tmp_index == -1 && count < groups.length) {
+      if (this._courses.cards[groups[count]] != undefined) {
+        tmp_index = this._courses.cards[groups[count]].findIndex(
+          (c) => c.id == "" + course_id
+        );
       }
-    } else {
-      enrollment_table = this.all_courses[learning_context_id][
-        learning_area_id
-      ] as EnrollmentTable;
-      tmp_index = enrollment_table.table_data.findIndex(
-        (a) => a[0].id.split("_")[0] == "" + course_id
-      );
-      if (tmp_index != -1) {
-        this.last_mentioned_course.id = course_id;
-        this.last_mentioned_course.references.learning_area_id =
-          learning_area_id;
-        this.last_mentioned_course.references.learning_context_id =
-          learning_context_id;
-        this.last_mentioned_course.courses_indexes.group =
-          "" + enrollment_table.table_data[tmp_index][0].content;
-        this.last_mentioned_course.courses_indexes.index = tmp_index;
-        mentioned_course = this.course as CustomElement[];
-      }
+      count++;
+    }
+    if (tmp_index != -1) {
+      this.last_mentioned_course.id = course_id;
+      this.last_mentioned_course.references.learning_area_id = learning_area_id;
+      this.last_mentioned_course.references.learning_context_id =
+        learning_context_id;
+      this.last_mentioned_course.courses_indexes.group = groups[count - 1];
+      this.last_mentioned_course.courses_indexes.index = tmp_index;
+      mentioned_course = this.course;
     }
 
-    const tmp_credits = isCourse(this.course)
-      ? this.course.credits
-      : parseInt(this.course[1].content as string);
     const origin_course =
       this.mode == SubscriptionsManagerMode.MOVE && moving_from != undefined
-        ? (
-            this.all_courses[moving_from.learning_context_id][
-              moving_from.learning_area_id
-            ] as EnrollmentTable
-          ).table_data[moving_from.indexes.index as number]
+        ? this.all_courses[moving_from.learning_context_id][
+            moving_from.learning_area_id
+          ][moving_from.indexes.index as number]
         : undefined;
     const origin_course_credits =
       origin_course != undefined && moving_from != undefined
-        ? parseInt(origin_course[1].content as string)
+        ? origin_course.credits
         : 0;
 
     this.last_mentioned_course.availabilities = {
@@ -4892,7 +4718,7 @@ class SubscriptionsManager {
               moving_from.learning_area_id == learning_area_id &&
               this.mode == SubscriptionsManagerMode.MOVE &&
               origin_course != undefined &&
-              origin_course[0].content ==
+              origin_course.group ==
                 this.last_mentioned_course.courses_indexes.group
                 ? 1
                 : 0) -
@@ -4918,7 +4744,7 @@ class SubscriptionsManager {
                 moving_from?.learning_area_id
                 ? origin_course_credits
                 : 0) >=
-            tmp_credits
+            this.course.credits
           : false,
     };
 
@@ -4931,11 +4757,7 @@ class SubscriptionsManager {
 
   updateCourseAndLinked(value: Date | boolean) {
     const contexts_to_edit = this.course_correspondences.filter(
-      (a) =>
-        "" + a.course_id ==
-        (isCourse(this.course)
-          ? this.course.id
-          : this.course[0].id.split("_")[0])
+      (a) => "" + a.course_id == this.course.id
     );
 
     let requestArray: string[],
@@ -4945,49 +4767,8 @@ class SubscriptionsManager {
 
     if (this.last_mentioned_course.id != undefined) {
       //, edited_course : EnrollmentCardElements;  // TODO (7): forse problema per non aver usato copia profonda di course
-      if (
-        this.mode == SubscriptionsManagerMode.MOVE ||
-        this.visualizzation_type == SubscriptionsManagerVisualizzationType.TABLE
-      ) {
-        for (const context_reference of contexts_to_edit) {
-          /*if (context_reference.context_id == this.last_mentioned_course.references.learning_context_id) {
-              (this.all_courses[this.last_mentioned_course.references.learning_context_id][this.last_mentioned_course.references.learning_area_id] as EnrollmentTable).enrollments[this.last_mentioned_course.courses_indexes.index].enrollment = value;
-              if (value !== false) {
-                  this._courses = (this.courses as CustomElement[][]).splice(this.last_mentioned_course.courses_indexes.index, 1);
-              } else {
-                  this._courses
-              }
-          } else {
-              this.course.enrollment.editable = false;
-          }*/
-
-          if (this.mode == SubscriptionsManagerMode.MOVE) {
-            this.updateCourse(
-              context_reference.context_id,
-              this.last_mentioned_course.references.learning_area_id,
-              this.course,
-              value
-            );
-          } else {
-            /*this.removeCourse(
-              context_reference.context_id,
-              this.last_mentioned_course.references.learning_area_id,
-              (this.course as CustomElement[])[0].id.split("_")[0]
-            );*/ // TODO (4): rimettere quando sarà tutto sistemato
-            this.updateCourse(
-              context_reference.context_id,
-              this.last_mentioned_course.references.learning_area_id,
-              this.course,
-              value
-            );
-          }
-        }
-        this.showCourses(
-          this.last_mentioned_course.references.learning_context_id,
-          this.last_mentioned_course.references.learning_area_id
-        );
-      } else if (this.mode == SubscriptionsManagerMode.SUBSCRIPTION) {
-        card = this.course as EnrollmentCardElements;
+      card = this.course;
+      if (this.mode == SubscriptionsManagerMode.SELF_SUBSCRIPTION) {
         requestArray = (card.content[3].content as RequestIcon).url.split(
           "?"
         ) ?? ["", ""];
@@ -5024,6 +4805,19 @@ class SubscriptionsManager {
             this.course
           );
         }
+      } else {
+        for (const context_reference of contexts_to_edit) {
+          this.course.enrollment.enrollment = value;
+          this.updateCourse(
+            context_reference.context_id,
+            this.last_mentioned_course.references.learning_area_id,
+            this.course
+          );
+        }
+        this.showCourses(
+          this.last_mentioned_course.references.learning_context_id,
+          this.last_mentioned_course.references.learning_area_id
+        );
       }
       outcome = true;
     }
@@ -5038,17 +4832,11 @@ class SubscriptionsManager {
     );
 
     let outcome = false;
-    let tmp_group: string, tmp_credits: number;
+    let tmp_credits: number;
 
     if (this.last_mentioned_course.id != undefined) {
-      if (isCourse(this.course)) {
-        tmp_group = this.course.group;
-        tmp_credits = this.course.credits;
-      } else {
-        tmp_group = this.course[0].content as string;
-        tmp_credits = parseInt(this.course[1].content as string);
-      }
-      group_remaining_courses[tmp_group] += unsubscribe ? 1 : -1;
+      tmp_credits = this.course.credits;
+      group_remaining_courses[this.course.group] += unsubscribe ? 1 : -1;
       if (
         typeof this._remaining_credits[
           this.last_mentioned_course.references.learning_context_id
@@ -5116,6 +4904,11 @@ type ConstraintProps = {
   credits: number;
 };
 
+type StudentGrade<T = number> = {
+  student_id: number;
+  grade_value: T;
+};
+
 export {
   Language,
   Menu,
@@ -5135,8 +4928,8 @@ export {
   CourseProps,
   CardElements,
   GeneralCardElements,
+  GeneralTableCardElements,
   EnrollmentCardElements,
-  EnrollmentTable,
   LearningSessionStatus,
   LearningArea,
   CourseBase,
@@ -5155,7 +4948,6 @@ export {
   EventStringIcon,
   CardsList,
   OrderedCardsList,
-  OrderedCardsGrid,
   RequestParameters,
   EventParameters,
   LinkParameters,
@@ -5165,6 +4957,9 @@ export {
   ColorType,
   ColorObject,
   GeneralSubElements,
+  IonInputSubElements,
+  IonCheckboxSubElements,
+  CustomSubElements,
   GeneralCardSubElements,
   SubElements,
   CardSubElements,
@@ -5176,10 +4971,13 @@ export {
   Colors,
   Classes,
   CustomElement,
+  TableElement,
   EditableState,
   GradeProps,
   Grade,
   GradesParameters,
+  SingleGradesParameters,
+  MultipleGradesParameters,
   ProjectClassTeachingsResponse,
   CourseSectionsTeachings,
   StudentSummaryProps,
@@ -5248,7 +5046,6 @@ export {
   DefaultLink,
   AlertInformation,
   SubscriptionsManagerMode,
-  SubscriptionsManagerVisualizzationType,
   EnrollmentAvailability,
   CourseReferences,
   SubscriptionsManager,
@@ -5256,4 +5053,5 @@ export {
   ErrorCodes,
   Outcome,
   LearningAreasStructures,
+  StudentGrade,
 };

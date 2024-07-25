@@ -7,6 +7,10 @@
   font-size: 32px !important;
 }
 
+.custom_label_position {
+  display: inline-block;
+}
+
 /** Modal **/
 
 .no_card_border {
@@ -59,6 +63,13 @@ ion-modal ion-header ion-toolbar {
 
 ion-split-pane {
   --side-max-width: 250px;
+}
+
+/** Various **/
+
+.align_text_middle {
+  display: flex;
+  justify-content: center;
 }
 
 /* TODO (5): sistemare colori. Non funzionano i colori dei giorni */

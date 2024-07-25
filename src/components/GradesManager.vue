@@ -18,7 +18,7 @@
       <ion-grid>
         <ion-row class="ion-text-center ion-align-items-center">
           <ion-col>
-            <ionic-element :element="elements.title"></ionic-element>
+            <ionic-element :element="elements.title" />
           </ion-col>
           <ion-col size="auto">
             <ionic-element
@@ -30,6 +30,8 @@
       </ion-grid>
     </ion-toolbar>
   </ion-header>
+  <!--<ion-content fullscreen>-->
+  <!-- ! (3): valutare scroll per mobile, stando attenti a --height: fit-content in ion-modal#grades_manager in ProjectClass.vue -->
   <ion-grid>
     <ion-row>
       <ion-col
@@ -38,60 +40,56 @@
         "
         :size="
           (parameters.teacher_id != undefined &&
-            table_data.length != 0 &&
+            table_data.cards[''].length != 0 &&
             actual_final_grade_index === -1) ||
           edit_mode
             ? '7'
             : '12'
         "
       >
-        <template v-if="table_data.length > 0">
-          <ionic-table
-            :key="store.state.triggers.grades"
-            :data="table_data"
-            :first_row="first_row"
-            :column_sizes="column_sizes"
-            @signal_event="
-              () => {
-                if (store.state.event.event == 'edit_grade') {
-                  setupEditMode();
-                } else {
-                  $emit('signal_event');
-                }
+        <ionic-table
+          :key="store.state.triggers.grades"
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement('no_grades'),
+              'string',
+              colors,
+              {
+                label: {
+                  align_text_middle: true,
+                  'ion-padding-bottom': true,
+                },
               }
-            "
-          />
-          <div class="ion-text-center ion-padding-bottom">
-            <ion-text color="primary"
-              >{{ getCurrentElement("intermediate_arithmetic_mean")
-              }}{{
-                actual_final_grade_index != -1
-                  ? " (" +
-                    getCurrentElement("no_final_grade").toLowerCase() +
-                    ")"
-                  : ""
-              }}: {{ mean }}</ion-text
-            >
-          </div>
-        </template>
-        <template v-else>
-          <div class="ion-text-center ion-padding">
-            <ionic-element
-              :element="
-                getCustomMessage(
-                  'emptiness_message',
-                  getCurrentElement('no_grades'),
-                  'string',
-                  colors
-                )
-              "
-            />
-          </div>
-        </template>
+            )
+          "
+          :data="table_data"
+          :first_row="first_row"
+          :sizes="column_sizes"
+          @signal_event="
+            () => {
+              if (store.state.event.event == 'edit_grade') {
+                setupEditMode();
+              } else {
+                $emit('signal_event');
+              }
+            }
+          "
+        />
+        <div class="ion-text-center ion-padding-bottom">
+          <ion-text color="primary"
+            >{{ getCurrentElement("intermediate_arithmetic_mean")
+            }}{{
+              actual_final_grade_index != -1
+                ? " (" + getCurrentElement("no_final_grade").toLowerCase() + ")"
+                : ""
+            }}: {{ mean }}</ion-text
+          >
+        </div>
       </ion-col>
       <ion-col
         :key="edit_trigger + '_parameters'"
-        :size="table_data.length == 0 ? '12' : '5'"
+        :size="table_data.cards[''].length == 0 ? '12' : '5'"
         v-if="
           (parameters.teacher_id != undefined &&
             parameters.associated_teacher === false &&
@@ -166,8 +164,15 @@
               class="ion-margin-vertical"
               @ion-input="
                 () => {
-                  if (isNaN(getGradeNumber(grade))) {
+                  if (hasGradeTypingErrors('ion-input', grade)) {
                     grade = grade.substring(0, grade.length - 1);
+                  }
+                }
+              "
+              @keydown="
+                ($event) => {
+                  if (hasGradeTypingErrors('keydown', grade, $event.key)) {
+                    $event.preventDefault();
                   }
                 }
               "
@@ -194,23 +199,23 @@
           <template v-if="edit_mode">
             <ion-button
               @click="() => {
-              let actual_grade = checkGradesParameters(descriptions, grade, date);
-              let grade_props: GradeProps;
-
-              if (actual_grade != undefined) {
-                grade_props = {
-                  id: store.state.event.data.id,
-                  publication: date != undefined ? date.toISOString() : (date_value ?? to_edit.publication.toISOString()),
-                  italian_description: '',
-                  english_description: '',
-                  grade: actual_grade,
-                  final: final ? 1 : 0,
-                };
-                languages.forEach(a => grade_props[`${a}_description`] = descriptions[`${a}_description`]);
-                store.state.event.data.new_grade = new Grade(grade_props);
-              }
-              $emit('signal_event');
-            }"
+                let actual_grade = checkGradeParameters(descriptions, date, grade);
+                let grade_props: GradeProps;
+  
+                if (actual_grade != undefined) {
+                  grade_props = {
+                    id: store.state.event.data.id,
+                    publication: date != undefined ? date.toISOString() : (date_value ?? to_edit.publication.toISOString()),
+                    italian_description: '',
+                    english_description: '',
+                    grade: actual_grade,
+                    final: final ? 1 : 0,
+                  };
+                  languages.forEach(a => grade_props[`${a}_description`] = descriptions[`${a}_description`]);
+                  store.state.event.data.new_grade = new Grade(grade_props);
+                }
+                $emit('signal_event');
+              }"
             >
               {{ getCurrentElement("edit") }}
             </ion-button>
@@ -222,10 +227,10 @@
             v-else
             @click="
               () => {
-                let actual_grade = checkGradesParameters(
+                let actual_grade = checkGradeParameters(
                   descriptions,
-                  grade,
-                  date
+                  date,
+                  grade
                 );
 
                 if (actual_grade != undefined) {
@@ -255,6 +260,7 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+  <!--</ion-content>-->
 </template>
 
 <script setup lang="ts">
@@ -263,11 +269,13 @@ import {
   EditableState,
   Grade,
   GradeProps,
-  GradesParameters,
+  SingleGradesParameters,
   Language,
   Colors,
   GeneralSubElements,
   User,
+  GeneralTableCardElements,
+  OrderedCardsList,
 } from "@/types";
 import {
   executeLink,
@@ -276,8 +284,8 @@ import {
   getCustomMessage,
   getIcon,
   getLocale,
-  getGradeNumber,
-  checkGradesParameters,
+  checkGradeParameters,
+  hasGradeTypingErrors,
 } from "@/utils";
 import {
   IonHeader,
@@ -323,7 +331,7 @@ const setGradesTable = async (empty = true) => {
   if (empty) {
     setupEditMode(true);
   }
-  table_data = [];
+  table_data.cards[""] = [];
   if (props.grades != undefined) {
     actual_grades = props.grades;
   } else {
@@ -351,13 +359,14 @@ const setGradesTable = async (empty = true) => {
         ? actual_grades[grade_index].publication
         : undefined;
 
-    table_data.push(
+    table_data.cards[""].push(
       user.type == "teacher"
         ? actual_grades[grade_index].toTableRow(
             props.parameters.associated_teacher ?? false,
             user.id,
             props.parameters.student_id,
-            final_grade_pubblication
+            final_grade_pubblication,
+            props.parameters.show_editable
           )
         : actual_grades[grade_index].toTableRow()
     );
@@ -433,7 +442,7 @@ const props = defineProps({
     required: true,
   },
   parameters: {
-    type: Object as PropType<GradesParameters>,
+    type: Object as PropType<SingleGradesParameters>,
     required: true,
   },
   grades: Array<Grade>,
@@ -490,11 +499,16 @@ const colors: Colors<GeneralSubElements> = {
   },
 };
 const edit_trigger = ref(0);
+const table_data: OrderedCardsList<GeneralTableCardElements> = {
+  order: [],
+  cards: {
+    "": [],
+  },
+};
 const end_of_day = new Date();
 end_of_day.setHours(23, 59, 59, 999);
 
 let first_row: CustomElement[] = base_row;
-let table_data: CustomElement[][] = [];
 let mean = "";
 let date: Date | undefined = undefined;
 let actual_grades: Grade[] = [];
