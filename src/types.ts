@@ -416,7 +416,7 @@ class MinimizedCourse implements MinimumCourseProps {
       content: [
         {
           id: "title",
-          type: "html",
+          type: "string",
           content: this[`${language}_title`],
         },
       ],
@@ -745,7 +745,7 @@ class CurriculumCourse extends CourseBase {
       content: [
         {
           id: this.id + "_title",
-          type: "html",
+          type: "string",
           content: this[`${language}_title`],
         },
       ],

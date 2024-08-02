@@ -64,10 +64,19 @@
   />
   <template v-else-if="element.linkType == undefined">
     <ion-label
-      v-if="element.type == 'string'"
+      v-if="element.type == 'string' || element.type == 'title'"
       :color="getIonicColor(element.colors?.text)"
       :class="actual_classes.label"
-      >{{ element.content }}</ion-label
+    >
+      <template v-if="element.type == 'string'">
+        {{ element.content }}
+      </template>
+      <template v-else>
+        <!--<h2>-->
+        <!-- TODO (5): ingrandire titolo (magari mettendo un parametro per i gradi) -->
+        <b>{{ element.content }}</b>
+        <!--</h2>-->
+      </template></ion-label
     >
     <ion-icon
       v-else-if="element.type == 'icon'"
@@ -77,16 +86,6 @@
       :class="actual_classes.icon"
     />
     <!-- TODO (6): mettere il colore alle icone -->
-    <ion-label
-      v-else-if="element.type == 'title'"
-      :color="getIonicColor(element.colors?.text)"
-      :class="actual_classes.label"
-      ><!--<h2>-->
-      <!-- TODO (5): ingrandire titolo (magari mettendo un parametro per i gradi) -->
-      <b>{{ element.content }}</b>
-      <!--</h2>--></ion-label
-    >
-    <!-- ! (3): add htmlentites converter -->
     <ion-item
       v-else-if="element.type == 'string_icon'"
       :lines="element.colors?.borders != undefined ? 'inset' : 'none'"
@@ -128,7 +127,7 @@
   </template>
   <template v-else>
     <ion-label
-      v-if="element.type == 'string'"
+      v-if="element.type == 'string' || element.type == 'title'"
       :color="getIonicColor(element.colors?.text)"
       @click="
         () => {
@@ -150,7 +149,12 @@
       class="clickable"
       :class="actual_classes.label"
     >
-      {{ castEventString(element.content).text }}
+      <template v-if="element.type == 'string'">
+        {{ castEventString(element.content).text }}
+      </template>
+      <template v-else>
+        <b>{{ castEventString(element.content).text }}</b>
+      </template>
     </ion-label>
     <ion-button
       v-else-if="

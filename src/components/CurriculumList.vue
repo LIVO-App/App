@@ -134,7 +134,7 @@
 import {
   CurriculumCourse,
   CustomElement,
-  GradesParameters,
+  SingleGradesParameters,
   LearningArea,
   LearningContext,
   Progression,
@@ -310,7 +310,7 @@ let year_courses: {
 } = {};
 let courses: CurriculumCourse[] = [];
 let grades_title: string;
-let grades_parameters: GradesParameters;
+let grades_parameters: SingleGradesParameters;
 let description_title: string;
 let description_course_id: number;
 let description_learning_session_id: number;

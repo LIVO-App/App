@@ -42,6 +42,7 @@ import {
 import { $axios } from "./plugins/axios";
 import { store } from "./store";
 import router from "./router";
+import { decode } from "html-entities";
 
 function getCompleteSchoolYear(year: number) {
   return year + " - " + (year + 1);
@@ -84,20 +85,44 @@ function isCardLists(element: any): element is TmpList<CardsList> {
   );
 }
 
+function removeScript(text: string) {
+  return text.replace(
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    ""
+  );
+}
+
+function decodeHtmlEntities(element: any) {
+  for (const key in element) {
+    if (key in element) {
+      if (typeof element[key] === "string") {
+        element[key] = decode(element[key]);
+      } else if (typeof element[key] === "object") {
+        decodeHtmlEntities(element[key]);
+      }
+    }
+  }
+}
+
 async function executeLink(
   url?: string | undefined,
   success = (response: any) => response,
   fail: (err: any) => any = (err: string) => err,
   method?: Method,
-  body?: { [key: string]: any }
+  body?: { [key: string]: any },
+  decode_entities = true
 ) {
-  const toExecute = url ?? store.state.request.url;
+  const toExecute = removeScript(url ?? store.state.request.url);
   const howExecute = method ?? store.state.request.method ?? "get";
   const options = {
     headers: {
       "x-access-token": sessionStorage.getItem("token") ?? "",
     },
   };
+  const actual_body =
+    body != undefined
+      ? JSON.parse(removeScript(JSON.stringify(body)))
+      : undefined;
 
   let request;
 
@@ -108,10 +133,10 @@ async function executeLink(
           request = $axios.get(toExecute, options);
           break;
         case "post":
-          request = $axios.post(toExecute, body, options);
+          request = $axios.post(toExecute, actual_body, options);
           break;
         case "put":
-          request = $axios.put(toExecute, body, options);
+          request = $axios.put(toExecute, actual_body, options);
           break;
         case "delete":
           request = $axios.delete(toExecute, options);
@@ -123,7 +148,17 @@ async function executeLink(
           return new Promise(() => "Method not defined");
       }
       store.state.request = {};
-      return await request.then(success).catch(fail); // TODO (6): mettere finally che cancella store.state.request e store.state.event e gestire success e fail come promise
+      return await request
+        .then((response) => {
+          if (decode_entities && response.data.data != undefined) {
+            decodeHtmlEntities(response.data.data);
+          }
+          return success(response);
+        })
+        .catch((e) => {
+          console.log(e);
+          return fail(e);
+        }); // TODO (6): mettere finally che cancella store.state.request e store.state.event e gestire success e fail come promise
     } else {
       logout();
       router.push({ name: "auth" });

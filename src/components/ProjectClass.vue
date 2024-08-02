@@ -22,7 +22,6 @@
             @signal_event="manageEvent()"
           />
         </template>
-        <!-- ! (3): creare finestra per inserimento multiplo di voti -->
         <template #fallback>
           <loading-component />
         </template>
@@ -459,20 +458,19 @@ const add_grades = () => {
   const data = store.state.event.data;
 
   executeLink(
-    "/v1/grades?course_id=" +
-      data.course_id +
-      "&session_id=" +
-      data.session_id,
+    "/v1/grades?course_id=" + data.course_id + "&session_id=" + data.session_id,
     (response) => {
       let tmp_grade: Grade;
-      
+
       for (const grade_ref of response.data.grades_id) {
         tmp_grade = new Grade({
           id: grade_ref.id,
           publication: response.data.publication,
           italian_description: data.italian_description,
           english_description: data.english_description,
-          grade: data.grades_list.find((a: StudentGrade<number>) => a.student_id == grade_ref.student_id).grade_value,
+          grade: data.grades_list.find(
+            (a: StudentGrade<number>) => a.student_id == grade_ref.student_id
+          ).grade_value,
           final: data.final ? 1 : 0,
         });
 
@@ -480,10 +478,16 @@ const add_grades = () => {
         updateFinalRefs(grade_ref.student_id, tmp_grade);
       }
 
-      if (response.data.students_with_errors != undefined && response.data.students_with_errors.length > 0) {
+      if (
+        response.data.students_with_errors != undefined &&
+        response.data.students_with_errors.length > 0
+      ) {
         setupModalAndOpen("error", getCurrentElement("grades_with_errors"));
       } else if (response.data.duplicate_entry == true) {
-        setupModalAndOpen("error", getCurrentElement("already_existing_grades"));
+        setupModalAndOpen(
+          "error",
+          getCurrentElement("already_existing_grades")
+        );
       } else if (response.data.wrong_entry == true) {
         setupModalAndOpen("error");
       }
