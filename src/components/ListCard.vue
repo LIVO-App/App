@@ -2,14 +2,17 @@
   <ion-card
     :color="getIonicColor(colors?.background)"
     :class="{
-      ...classes?.card,
+      ...getBreakpointClasses(classes?.card, breakpoint),
       '--ion-no-border': colors?.external_borders == undefined,
       background:
         colors?.background != undefined &&
         getIonicColor(colors?.background) == undefined,
     }"
   >
-    <ion-card-header v-if="title != undefined" :class="classes?.header">
+    <ion-card-header
+      v-if="title != undefined"
+      :class="getBreakpointClasses(classes?.header, breakpoint)"
+    >
       <ion-card-title v-if="title != undefined"
         ><ionic-element v-model:element="title_ref"
       /></ion-card-title>
@@ -17,7 +20,10 @@
         ><ionic-element v-model:element="subtitle_ref"
       /></ion-card-subtitle>
     </ion-card-header>
-    <ion-card-content style="overflow-y: auto" :class="classes?.content">
+    <ion-card-content
+      style="overflow-y: auto"
+      :class="getBreakpointClasses(classes?.content, breakpoint)"
+    >
       <template v-if="hasNoData(cards_list_ref)">
         <ion-item
           :color="getIonicColor(colors?.background)"
@@ -34,7 +40,7 @@
       <ion-list
         v-else-if="onlyLists()"
         class="ion-no-padding"
-        :class="classes?.list"
+        :class="getBreakpointClasses(classes?.list, breakpoint)"
       >
         <template v-if="cards_list_ref.cards[''] != undefined">
           <card-item
@@ -159,7 +165,14 @@ import {
   IonItemDivider,
   IonItem,
 } from "@ionic/vue";
-import { PropType, ref, watch } from "vue";
+import {
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  PropType,
+  ref,
+  watch,
+} from "vue";
 import {
   ColorObject,
   EnrollmentCardElements,
@@ -181,6 +194,8 @@ import {
   canCardListVModel,
   adjustColor,
   hasNoData,
+  getBreakpoint,
+  getBreakpointClasses,
 } from "../utils";
 import { getCssColor } from "../utils";
 import { WatchStopHandle } from "vue";
@@ -233,6 +248,9 @@ const addListeners = () => {
     }
   );
 };
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+};
 
 const props = defineProps({
   title: Object as PropType<CustomElement>,
@@ -267,6 +285,7 @@ const title_ref = ref(props.title);
 const subtitle_ref = ref(props.subtitle);
 const emptiness_message_ref = ref(props.emptiness_message);
 const cards_list_ref = ref(props.cards_list);
+const breakpoint = ref(getBreakpoint(window.innerWidth));
 
 const css_background_color =
   props.colors?.background != undefined
@@ -506,6 +525,31 @@ if (hasNoData(props.cards_list)) {
   );
 } else if (checkVModel()) {
   addListeners();
+}
+
+if (
+  props.classes?.card != undefined ||
+  props.classes?.header != undefined ||
+  props.classes?.content != undefined ||
+  props.classes?.list != undefined ||
+  props.classes?.divider != undefined
+) {
+  onMounted(() =>
+    nextTick(() => {
+      window.addEventListener("resize", updateBreakpoint);
+    })
+  );
+
+  onBeforeUnmount(() => {
+    window.removeEventListener("resize", updateBreakpoint);
+  });
+
+  watch(
+    () => window.innerWidth,
+    (newWidth) => {
+      breakpoint.value = getBreakpoint(newWidth);
+    }
+  );
 }
 </script>
 

@@ -702,9 +702,12 @@ export const store = createStore({
           grade_series_insertion: "Inserimento serie di valutazioni",
           no_grades_to_insert: "Nessun voto da inserire",
           warning: "Attenzione",
-          final_grades_hide: "Alcuni studenti a cui è stato segnato un voto ne possiedono già uno finale. Per questo quei voti verranno temporaneamente nascosti",
-          grades_with_errors: "Alcuni voti non sono stati inseriti correttamente",
-          already_existing_grades: "Alcuni voti sono già stati inseriti in questa data",
+          final_grades_hide:
+            "Alcuni studenti a cui è stato segnato un voto ne possiedono già uno finale. Per questo quei voti verranno temporaneamente nascosti",
+          grades_with_errors:
+            "Alcuni voti non sono stati inseriti correttamente",
+          already_existing_grades:
+            "Alcuni voti sono già stati inseriti in questa data",
         },
         english: {
           credits_constraints: "Credits constraints",
@@ -1041,9 +1044,11 @@ export const store = createStore({
           grade_series_insertion: "Grade series insertion",
           no_grades_to_insert: "No grades to insert",
           warning: "Warning",
-          final_grades_hide: "Some students with a typed grade already have a final grade. For this reason those grades will be temporarily hidden",
+          final_grades_hide:
+            "Some students with a typed grade already have a final grade. For this reason those grades will be temporarily hidden",
           grades_with_errors: "Some grades were not inserted correctly",
-          already_existing_grades: "Some grades were already inserted in this date",
+          already_existing_grades:
+            "Some grades were already inserted in this date",
         },
       },
       logged_user: false,
@@ -1070,6 +1075,13 @@ export const store = createStore({
         message: "",
         buttons: [],
         inputs: [],
+      },
+      breakpoints: {
+        xs: 0,
+        sm: 576,
+        md: 768,
+        lg: 992,
+        xl: 1200,
       },
     };
   },

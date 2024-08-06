@@ -5,7 +5,7 @@
       'light'
     "
     :class="{
-      ...classes?.divider,
+      ...getBreakpointClasses(classes?.divider, breakpoint),
       background:
         colors?.dividers != undefined && colors.dividers.type != 'var',
     }"
@@ -47,9 +47,22 @@ import {
   CustomElement,
   GeneralCardSubElements,
 } from "@/types";
-import { canCardArrayVModel, canVModel } from "@/utils";
+import {
+  canCardArrayVModel,
+  canVModel,
+  getBreakpoint,
+  getBreakpointClasses,
+} from "@/utils";
 import { IonItemDivider, IonItem } from "@ionic/vue";
-import { PropType, WatchStopHandle, ref, watch } from "vue";
+import {
+  PropType,
+  WatchStopHandle,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 
 const addListeners = () => {
   watch(
@@ -64,6 +77,9 @@ const addListeners = () => {
       emit("update:cards_list", value);
     }
   );
+};
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
 };
 
 const props = defineProps({
@@ -93,6 +109,7 @@ const emit = defineEmits([
 const emptiness_message_ref = ref(props.emptiness_message);
 const divider_ref = ref(props.divider);
 const cards_list_ref = ref(props.cards_list);
+const breakpoint = ref(getBreakpoint(window.innerWidth));
 
 let stopWatch: WatchStopHandle;
 
@@ -140,6 +157,25 @@ if (props.cards_list.length == 0) {
   );
 } else if (canCardArrayVModel(props.cards_list)) {
   addListeners();
+}
+
+if (props.classes?.divider != undefined) {
+  onMounted(() =>
+    nextTick(() => {
+      window.addEventListener("resize", updateBreakpoint);
+    })
+  );
+
+  onBeforeUnmount(() => {
+    window.removeEventListener("resize", updateBreakpoint);
+  });
+
+  watch(
+    () => window.innerWidth,
+    (newWidth) => {
+      breakpoint.value = getBreakpoint(newWidth);
+    }
+  );
 }
 </script>
 

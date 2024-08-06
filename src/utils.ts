@@ -38,6 +38,8 @@ import {
   ColorType,
   GeneralTableCardElements,
   StudentGrade,
+  Breakpoint,
+  BreakpointVisibility,
 } from "./types";
 import { $axios } from "./plugins/axios";
 import { store } from "./store";
@@ -155,10 +157,7 @@ async function executeLink(
           }
           return success(response);
         })
-        .catch((e) => {
-          console.log(e);
-          return fail(e);
-        }); // TODO (6): mettere finally che cancella store.state.request e store.state.event e gestire success e fail come promise
+        .catch(fail); // TODO (6): mettere finally che cancella store.state.request e store.state.event e gestire success e fail come promise
     } else {
       logout();
       router.push({ name: "auth" });
@@ -928,6 +927,76 @@ function hasNoData(list: OrderedCardsList | undefined) {
   );
 }
 
+function getBreakpoint(width: number): Breakpoint {
+  const breakpoints = store.state.breakpoints;
+
+  if (width < breakpoints["sm"]) return "xs";
+  else if (width < breakpoints["md"]) return "sm";
+  else if (width < breakpoints["lg"]) return "md";
+  else if (width < breakpoints["xl"]) return "lg";
+  else return "xl";
+}
+function isSmaller(refer: Breakpoint, actual: Breakpoint, equal = true) {
+  const breakpoints = Object.keys(store.state.breakpoints) as Breakpoint[];
+
+  breakpoints.sort((a, b) =>
+    store.state.breakpoints[a] > store.state.breakpoints[b]
+      ? 1
+      : store.state.breakpoints[a] == store.state.breakpoints[b]
+      ? 0
+      : -1
+  );
+
+  const refer_index = breakpoints.indexOf(refer);
+  const actual_index = breakpoints.indexOf(actual);
+
+  return equal ? actual_index <= refer_index : actual_index < refer_index;
+}
+
+function updateBreakpointClasses(
+  refer_classes:
+    | {
+        [key: string]: boolean | BreakpointVisibility;
+      }
+    | undefined,
+  filtered_classes: { [key: string]: boolean },
+  breakpoint: Breakpoint
+) {
+  if (refer_classes != undefined) {
+    for (const key in refer_classes) {
+      filtered_classes[key] =
+        typeof refer_classes[key] === "boolean"
+          ? (refer_classes[key] as boolean)
+          : (refer_classes[key] as BreakpointVisibility | undefined)?.[
+              "general"
+            ] !== undefined
+          ? ((refer_classes[key] as BreakpointVisibility)["general"] as boolean)
+          : (refer_classes[key] as BreakpointVisibility | undefined)?.[
+              breakpoint
+            ] !== undefined
+          ? ((refer_classes[key] as BreakpointVisibility)[
+              breakpoint
+            ] as boolean)
+          : false;
+    }
+  }
+}
+
+function getBreakpointClasses(
+  classes:
+    | {
+        [key: string]: boolean | BreakpointVisibility;
+      }
+    | undefined,
+  breakpoint: Breakpoint
+) {
+  const filtered_classes: { [key: string]: boolean } = {};
+
+  updateBreakpointClasses(classes, filtered_classes, breakpoint);
+
+  return filtered_classes;
+}
+
 export {
   getCompleteSchoolYear,
   getCurrentSchoolYear,
@@ -992,4 +1061,8 @@ export {
   canCardListVModel,
   adjustColor,
   hasNoData,
+  getBreakpoint,
+  isSmaller,
+  updateBreakpointClasses,
+  getBreakpointClasses,
 };

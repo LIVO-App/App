@@ -1748,6 +1748,14 @@ type CardsListElements = CardsCommonElements | "list";
 
 type CardsGridElements = CardsCommonElements | "grid" | "row" | "col";
 
+type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl";
+
+type BreakpointScope = Breakpoint | "general";
+
+type BreakpointVisibility = {
+  [key in keyof string as BreakpointScope]?: boolean;
+};
+
 type Colors<T extends CustomSubElements | GeneralCardSubElements> = {
   [key in keyof string as T]?: ColorObject;
 };
@@ -1758,10 +1766,11 @@ type Classes<
     | CardsListElements
     | CardsGridElements
     | SelectSubElements
-    | EditorSubElements
+    | EditorSubElements,
+  U extends boolean | BreakpointVisibility = boolean | BreakpointVisibility
 > = {
   [key in keyof string as T]?: {
-    [key: string]: boolean;
+    [key: string]: U;
   };
 };
 
@@ -4968,6 +4977,9 @@ export {
   CardsCommonElements,
   CardsListElements,
   CardsGridElements,
+  Breakpoint,
+  BreakpointScope,
+  BreakpointVisibility,
   Colors,
   Classes,
   CustomElement,

@@ -1,11 +1,11 @@
 <template>
-  <ion-grid :class="classes?.grid">
-    <ion-row :class="classes?.row">
+  <ion-grid :class="getBreakpointClasses(classes?.grid, breakpoint)">
+    <ion-row :class="getBreakpointClasses(classes?.row, breakpoint)">
       <ion-col
         v-for="(card, i) in cards_list_ref"
         :key="card.id"
         :size="'' + Math.trunc(12 / columns)"
-        :class="classes?.col"
+        :class="getBreakpointClasses(classes?.col, breakpoint)"
       >
         <card-item
           :card="cards_list_ref[i]"
@@ -27,9 +27,21 @@ import {
   Colors,
   GeneralCardSubElements,
 } from "@/types";
-import { canCardArrayVModel } from "@/utils";
+import {
+  canCardArrayVModel,
+  getBreakpoint,
+  getBreakpointClasses,
+} from "@/utils";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { PropType, WatchStopHandle, ref, watch } from "vue";
+import {
+  PropType,
+  WatchStopHandle,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 
 const addListeners = () => {
   watch(
@@ -45,6 +57,9 @@ const addListeners = () => {
     }
   );
 };
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+};
 
 const props = defineProps({
   cards_list: {
@@ -59,6 +74,8 @@ const props = defineProps({
   classes: Object as PropType<Classes<CardsGridElements>>,
 });
 const emit = defineEmits(["execute_link", "signal_event", "update:cards_list"]);
+
+const breakpoint = ref(getBreakpoint(window.innerWidth));
 
 const cards_list_ref = ref(props.cards_list);
 
@@ -77,6 +94,29 @@ if (props.cards_list.length == 0) {
   );
 } else if (canCardArrayVModel(props.cards_list)) {
   addListeners();
+}
+
+if (
+  props.classes?.grid != undefined ||
+  props.classes?.row != undefined ||
+  props.classes?.col != undefined
+) {
+  onMounted(() =>
+    nextTick(() => {
+      window.addEventListener("resize", updateBreakpoint);
+    })
+  );
+
+  onBeforeUnmount(() => {
+    window.removeEventListener("resize", updateBreakpoint);
+  });
+
+  watch(
+    () => window.innerWidth,
+    (newWidth) => {
+      breakpoint.value = getBreakpoint(newWidth);
+    }
+  );
 }
 </script>
 

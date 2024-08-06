@@ -3,7 +3,7 @@
     :lines="colors?.list_borders != undefined ? 'inset' : 'none'"
     :color="!local_hovered ? getIonicColor(colors?.background) : undefined"
     :class="{
-      ...classes?.item,
+      ...getBreakpointClasses(classes?.item, breakpoint),
       background:
         !local_hovered &&
         colors?.background != undefined &&
@@ -59,10 +59,26 @@ import {
   Colors,
   GeneralCardSubElements,
 } from "@/types";
-import { canCardVModel, hoverItem } from "@/utils";
+import {
+  canCardVModel,
+  getBreakpointClasses,
+  getBreakpoint,
+  hoverItem,
+} from "@/utils";
 import { getCssColor, getIonicColor, isCourse, isGeneral } from "@/utils";
 import { IonItem } from "@ionic/vue";
-import { PropType, ref, watch } from "vue";
+import {
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  PropType,
+  ref,
+  watch,
+} from "vue";
+
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+};
 
 const props = defineProps({
   card: {
@@ -84,6 +100,7 @@ const css_background_color =
     ? getCssColor(props.colors.background)
     : undefined; //<!-- TODO (6): valutare colore separato per ion-item
 
+const breakpoint = ref(getBreakpoint(window.innerWidth));
 const card_ref = ref(props.card);
 
 if (isGeneral(props.card) && canCardVModel(props.card)) {
@@ -97,6 +114,25 @@ if (isGeneral(props.card) && canCardVModel(props.card)) {
     () => card_ref.value,
     (value) => {
       emit("update:card", value);
+    }
+  );
+}
+
+if (props.classes?.item != undefined) {
+  onMounted(() =>
+    nextTick(() => {
+      window.addEventListener("resize", updateBreakpoint);
+    })
+  );
+
+  onBeforeUnmount(() => {
+    window.removeEventListener("resize", updateBreakpoint);
+  });
+
+  watch(
+    () => window.innerWidth,
+    (newWidth) => {
+      breakpoint.value = getBreakpoint(newWidth);
     }
   );
 }

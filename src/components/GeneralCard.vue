@@ -9,7 +9,7 @@
         : undefined
     "
     :class="{
-      ...classes?.card,
+      ...getBreakpointClasses(classes?.card, breakpoint),
       no_card_border: colors?.borders == undefined,
       background:
         !local_hovered &&
@@ -52,7 +52,7 @@
     <ion-card-header
       v-if="title_ref != undefined || subtitle_ref != undefined"
       class="ion-no-padding"
-      :class="classes?.header"
+      :class="getBreakpointClasses(classes?.header, breakpoint)"
     >
       <ion-grid class="ion-no-margin">
         <ion-row class="ion-align-items-center">
@@ -85,7 +85,10 @@
         </ion-row>
       </ion-grid>
     </ion-card-header>
-    <ion-card-content v-if="content_ref != undefined" :class="classes?.content">
+    <ion-card-content
+      v-if="content_ref != undefined"
+      :class="getBreakpointClasses(classes?.content, breakpoint)"
+    >
       <ion-grid v-if="side_element_ref != undefined">
         <ion-row>
           <ion-col>
@@ -131,7 +134,13 @@ import {
   Colors,
   GeneralCardSubElements,
 } from "@/types";
-import { canVModel, getCssColor, getIonicColor } from "@/utils";
+import {
+  canVModel,
+  getBreakpoint,
+  getBreakpointClasses,
+  getCssColor,
+  getIonicColor,
+} from "@/utils";
 import { isRequest, isEvent } from "@/utils";
 import {
   IonCard,
@@ -143,8 +152,13 @@ import {
   IonRow,
   IonCol,
 } from "@ionic/vue";
+import { nextTick, onBeforeUnmount, onMounted } from "vue";
 import { PropType, ref, toRef, watch } from "vue";
 import { useStore } from "vuex";
+
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+};
 
 const store = useStore();
 const props = defineProps({
@@ -190,6 +204,7 @@ const title_ref = ref(props.title);
 const subtitle_ref = ref(props.subtitle);
 const content_ref = ref(props.content);
 const side_element_ref = ref(props.side_element);
+const breakpoint = ref(getBreakpoint(window.innerWidth));
 
 if (props.title != undefined && canVModel(props.title)) {
   watch(
@@ -247,6 +262,29 @@ if (props.side_element != undefined && canVModel(props.side_element)) {
     () => side_element_ref.value,
     (value) => {
       emit("update:side_element", value);
+    }
+  );
+}
+
+if (
+  props.classes?.card != undefined ||
+  props.classes?.header != undefined ||
+  props.classes?.content != undefined
+) {
+  onMounted(() =>
+    nextTick(() => {
+      window.addEventListener("resize", updateBreakpoint);
+    })
+  );
+
+  onBeforeUnmount(() => {
+    window.removeEventListener("resize", updateBreakpoint);
+  });
+
+  watch(
+    () => window.innerWidth,
+    (newWidth) => {
+      breakpoint.value = getBreakpoint(newWidth);
     }
   );
 }

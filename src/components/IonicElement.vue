@@ -307,7 +307,12 @@ import {
   StringIcon,
   SubElements,
 } from "@/types";
-import { getCssColor, getIonicColor } from "@/utils";
+import {
+  getBreakpoint,
+  updateBreakpointClasses,
+  getCssColor,
+  getIonicColor,
+} from "@/utils";
 import {
   IonCheckbox,
   IonButton,
@@ -316,7 +321,16 @@ import {
   IonItem,
   IonInput,
 } from "@ionic/vue";
-import { PropType, ref, watch } from "vue";
+import {
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  PropType,
+  reactive,
+  Ref,
+  ref,
+  watch,
+} from "vue";
 import { useStore } from "vuex";
 
 const castInputValue = (a: any) => a as string | number;
@@ -329,6 +343,23 @@ const castRequestString = (a: any) => a as RequestString;
 const castEventString = (a: any) => a as EventString;
 const castRequestStringIcon = (a: any) => a as RequestStringIcon;
 const castEventStringIcon = (a: any) => a as EventStringIcon;
+
+const updateElementClasses = () => {
+  for (const sub_element in actual_classes) {
+    updateBreakpointClasses(
+      props.element.classes?.[sub_element as SubElements],
+      actual_classes[sub_element as SubElements] as {
+        [key: string]: boolean;
+      },
+      breakpoint.value
+    );
+  }
+};
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+
+  updateElementClasses();
+};
 
 const store = useStore();
 const props = defineProps({
@@ -374,39 +405,36 @@ const css_borders_checked_color =
 
 const border_radius = props.element.params?.border_radius ?? "0px";
 
-const actual_classes: Classes<SubElements> = {
+const breakpoint = ref(getBreakpoint(window.innerWidth));
+
+const actual_classes: Classes<SubElements, boolean> = reactive({
   label: {
-    ...props.element.classes?.label,
     textColor: props.element.colors?.text != undefined,
     backgroundColor: css_background_color != undefined,
     borders: css_borders_color != undefined,
   },
   html: {
-    ...props.element.classes?.html,
     textColor: props.element.colors?.text != undefined,
     backgroundColor: css_background_color != undefined,
     borders: css_borders_color != undefined,
   },
   icon: {
-    ...props.element.classes?.icon,
     textColor: props.element.colors?.text != undefined,
     backgroundColor: css_background_color != undefined,
     borders:
       css_borders_color != undefined && props.element.linkType == undefined,
   },
   button: {
-    ...props.element.classes?.button,
     customText: props.element.colors?.text != undefined,
     customBackground: css_background_color != undefined,
     customBorders: css_borders_color != undefined || border_radius != "0px",
   },
   item: {
-    ...props.element.classes?.item,
     backgroundColor: css_background_color != undefined,
     borders: css_borders_color != undefined,
   },
   input: {
-    ...props.element.classes?.input, // <!-- TODO (5): mette le classi in props.element.classes?.input, ma non funzionano (anche checkbox)
+    // <!-- TODO (5): mette le classi in props.element.classes?.input, ma non funzionano (anche checkbox)
     customText: props.element.colors?.text != undefined,
     customBackground: css_background_color != undefined,
     customBorders: css_borders_color != undefined || border_radius != "0px",
@@ -415,10 +443,9 @@ const actual_classes: Classes<SubElements> = {
       css_placeholder_opacity != default_low_opacity,
   },
   checkbox: {
-    ...props.element.classes?.checkbox,
     customBorders: css_borders_color != undefined || border_radius != "0px",
   },
-};
+});
 
 const acutal_input_label =
   typeof props.element.params?.label == "string"
@@ -426,6 +453,34 @@ const acutal_input_label =
     : "";
 
 const element_ref = ref(props.element);
+
+updateElementClasses();
+if (
+  actual_classes.label != undefined ||
+  actual_classes.html != undefined ||
+  actual_classes.icon != undefined ||
+  actual_classes.button != undefined ||
+  actual_classes.item != undefined ||
+  actual_classes.input != undefined ||
+  actual_classes.checkbox != undefined
+) {
+  onMounted(() =>
+    nextTick(() => {
+      window.addEventListener("resize", updateBreakpoint);
+    })
+  );
+
+  onBeforeUnmount(() => {
+    window.removeEventListener("resize", updateBreakpoint);
+  });
+
+  watch(
+    () => window.innerWidth,
+    (newWidth) => {
+      breakpoint.value = getBreakpoint(newWidth);
+    }
+  );
+}
 
 watch(
   () => props.element,

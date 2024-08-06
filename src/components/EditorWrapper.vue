@@ -3,16 +3,28 @@
     :disabled="disabled"
     :options="options"
     :value="value"
-    :class="classes?.editor"
+    :class="getBreakpointClasses(classes?.editor, breakpoint)"
     @change="($event: any) => $emit('update:value', $event.html)"
   />
 </template>
 
 <script setup lang="ts">
 import { Classes, EditorSubElements } from "@/types";
-import { PropType } from "vue";
+import { getBreakpoint, getBreakpointClasses } from "@/utils";
+import {
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  PropType,
+  ref,
+  watch,
+} from "vue";
 
-defineProps({
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+};
+
+const props = defineProps({
   value: {
     type: String,
     required: true,
@@ -48,6 +60,27 @@ defineProps({
   classes: Object as PropType<Classes<EditorSubElements>>,
 });
 defineEmits(["update:value"]);
+
+const breakpoint = ref(getBreakpoint(window.innerWidth));
+
+if (props.classes?.editor != undefined) {
+  onMounted(() =>
+    nextTick(() => {
+      window.addEventListener("resize", updateBreakpoint);
+    })
+  );
+
+  onBeforeUnmount(() => {
+    window.removeEventListener("resize", updateBreakpoint);
+  });
+
+  watch(
+    () => window.innerWidth,
+    (newWidth) => {
+      breakpoint.value = getBreakpoint(newWidth);
+    }
+  );
+}
 </script>
 
 <style></style>

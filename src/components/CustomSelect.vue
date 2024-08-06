@@ -10,7 +10,7 @@
     :disabled="disabled"
     interface="popover"
     :class="{
-      ...classes?.select,
+      ...getBreakpointClasses(classes?.select, breakpoint),
       'ion-padding': !no_padding,
     }"
   >
@@ -20,7 +20,7 @@
       :value="option.id"
       :key="option.id"
       :aria-label="getCompleteName(option)"
-      :class="classes?.option"
+      :class="getBreakpointClasses(classes?.option, breakpoint)"
     >
       {{ getCompleteName(option) }}
     </ion-select-option>
@@ -32,8 +32,20 @@ import {
   Classes,
   /*Colors, GeneralSubElements,*/ SelectSubElements,
 } from "@/types";
+import { getBreakpoint, getBreakpointClasses } from "@/utils";
 import { IonSelect, IonSelectOption } from "@ionic/vue";
-import { PropType } from "vue";
+import {
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  PropType,
+  ref,
+  watch,
+} from "vue";
+
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+};
 
 const props = defineProps({
   selected_option: {
@@ -60,6 +72,27 @@ const props = defineProps({
   classes: Object as PropType<Classes<SelectSubElements>>,
 });
 defineEmits(["update:selected_option"]);
+
+const breakpoint = ref(getBreakpoint(window.innerWidth));
+
+if (props.classes?.select != undefined || props.classes?.option != undefined) {
+  onMounted(() =>
+    nextTick(() => {
+      window.addEventListener("resize", updateBreakpoint);
+    })
+  );
+
+  onBeforeUnmount(() => {
+    window.removeEventListener("resize", updateBreakpoint);
+  });
+
+  watch(
+    () => window.innerWidth,
+    (newWidth) => {
+      breakpoint.value = getBreakpoint(newWidth);
+    }
+  );
+}
 </script>
 
 <style>
