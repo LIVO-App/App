@@ -318,11 +318,8 @@ if (props.title != undefined && title_ref.value != undefined) {
     title_ref.value.colors = {};
   }
   title_ref.value.colors.text = adjustColor(
-    props.title?.colors?.text != undefined
-      ? props.title.colors.text.type
-      : props.colors?.text?.type,
-    props.title?.colors?.text?.name,
-    props.colors?.text?.name
+    props.title?.colors?.text,
+    props.colors?.text
   );
 }
 if (props.subtitle != undefined && subtitle_ref.value != undefined) {
@@ -330,22 +327,16 @@ if (props.subtitle != undefined && subtitle_ref.value != undefined) {
     subtitle_ref.value.colors = {};
   }
   subtitle_ref.value.colors.text = adjustColor(
-    props.subtitle?.colors?.text != undefined
-      ? props.subtitle.colors.text.type
-      : props.colors?.text?.type,
-    props.subtitle?.colors?.text?.name,
-    props.colors?.text?.name
+    props.subtitle?.colors?.text,
+    props.colors?.text
   );
 }
 if (emptiness_message_ref.value.colors == undefined) {
   emptiness_message_ref.value.colors = {};
 }
 emptiness_message_ref.value.colors.text = adjustColor(
-  props.emptiness_message?.colors?.text != undefined
-    ? props.emptiness_message.colors.text.type
-    : props.colors?.text?.type,
-  props.emptiness_message?.colors?.text?.name,
-  props.colors?.text?.name
+  props.emptiness_message?.colors?.text,
+  props.colors?.text
 );
 if (emptiness_message_ref.value.classes == undefined) {
   emptiness_message_ref.value.classes = {};
@@ -370,11 +361,8 @@ for (const group in groups) {
     if (isGeneral(tmp_card)) {
       if (tmp_card.title != undefined) {
         tmp_color = adjustColor(
-          tmp_card.title.colors?.text != undefined
-            ? tmp_card.title.colors.text.type
-            : props.colors?.text?.type,
-          tmp_card.title.colors?.text?.name,
-          props.colors?.text?.name
+          tmp_card.title.colors?.text,
+          props.colors?.text
         );
         if (tmp_color != undefined) {
           if (tmp_card.title.colors == undefined) {
@@ -385,11 +373,8 @@ for (const group in groups) {
       }
       if (tmp_card.subtitle != undefined) {
         tmp_color = adjustColor(
-          tmp_card.subtitle.colors?.text != undefined
-            ? tmp_card.subtitle.colors.text.type
-            : props.colors?.text?.type,
-          tmp_card.subtitle.colors?.text?.name,
-          props.colors?.text?.name
+          tmp_card.subtitle.colors?.text,
+          props.colors?.text
         );
         if (tmp_color != undefined) {
           if (tmp_card.subtitle.colors == undefined) {
@@ -400,13 +385,7 @@ for (const group in groups) {
       }
       if (tmp_card.content != undefined) {
         for (const element of tmp_card.content) {
-          tmp_color = adjustColor(
-            element.colors?.text != undefined
-              ? element.colors.text.type
-              : props.colors?.text?.type,
-            element.colors?.text?.name,
-            props.colors?.text?.name
-          );
+          tmp_color = adjustColor(element.colors?.text, props.colors?.text);
           if (tmp_color != undefined) {
             if (element.colors == undefined) {
               element.colors = {};
@@ -422,11 +401,8 @@ for (const group in groups) {
       ).enrollment;
 
       tmp_color = adjustColor(
-        tmp_card.content[0].colors?.text != undefined
-          ? tmp_card.content[0].colors.text.type
-          : props.colors?.background?.type,
-        tmp_card.content[0].colors?.text?.name,
-        props.colors?.background?.name
+        tmp_card.content[0].colors?.text,
+        props.colors?.background
       );
       if (tmp_color != undefined) {
         if (tmp_card.content[0].colors == undefined) {
@@ -436,11 +412,8 @@ for (const group in groups) {
       }
 
       tmp_color = adjustColor(
-        tmp_card.content[1].colors?.text != undefined
-          ? tmp_card.content[1].colors.text.type
-          : props.colors?.text?.type,
-        tmp_card.content[1].colors?.text?.name,
-        props.colors?.text?.name
+        tmp_card.content[1].colors?.text,
+        props.colors?.text
       );
       if (tmp_color != undefined) {
         if (tmp_card.content[1].colors == undefined) {
@@ -453,14 +426,9 @@ for (const group in groups) {
 }
 for (const ordered_cards of cards_list_ref.value.order) {
   tmp_color = adjustColor(
-    ordered_cards.title.colors?.text != undefined
-      ? ordered_cards.title.colors.text.type
-      : props.colors?.dividers_text != undefined
-      ? props.colors?.dividers_text.type
-      : props.colors?.background?.type,
-    ordered_cards.title.colors?.text?.name,
-    props.colors?.dividers_text?.name,
-    props.colors?.background?.name
+    ordered_cards.title.colors?.text,
+    props.colors?.dividers_text,
+    props.colors?.background
   );
   if (tmp_color != undefined) {
     if (ordered_cards.title.colors == undefined) {

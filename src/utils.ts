@@ -299,13 +299,8 @@ function getCustomMessage(
   };
 }
 
-function nullOperator(...args: any[]) {
-  let count = 0;
-  let color;
-
-  while (count < args.length && (color = args[count++]) == undefined);
-
-  return color;
+function nullOperator(...args: any[]): any {
+  return args.find((arg) => arg !== undefined && arg !== null);
 }
 
 function getCssVariable(variable: string) {
@@ -906,17 +901,9 @@ function canCardListVModel(cards_list: CardsList) {
 }
 
 function adjustColor(
-  color_type: ColorType | undefined,
-  ...colors: (string | undefined)[]
+  ...colors: (ColorObject | undefined)[]
 ): ColorObject | undefined {
-  const color = nullOperator(...colors);
-
-  return color != undefined && color_type != undefined
-    ? {
-        name: color,
-        type: color_type,
-      }
-    : undefined;
+  return nullOperator(...colors);
 }
 
 function hasNoData(list: OrderedCardsList | undefined) {

@@ -231,11 +231,8 @@ if (emptiness_message_ref.value.colors == undefined) {
   emptiness_message_ref.value.colors = {};
 }
 emptiness_message_ref.value.colors.text = adjustColor(
-  props.emptiness_message?.colors?.text != undefined
-    ? props.emptiness_message.colors.text.type
-    : props.colors?.text?.type,
-  props.emptiness_message?.colors?.text?.name,
-  props.colors?.text?.name
+  props.emptiness_message?.colors?.text,
+  props.colors?.text
 );
 
 if (canVModel(props.emptiness_message)) {
