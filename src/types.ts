@@ -4191,31 +4191,19 @@ class TeacherProposition {
             },
           },
       content: [
-        /*{
-                    id: "name",
-                    type: "string_icon",
-                    linkType: "event",
-                    content: {
-                        event: "teacher_info",
-                        data: {
-                            teacher_id: this.teacher.id,
-                        },
-                        icon: getIcon("information_circle"),
-                        text: this.teacher.name + " " + this.teacher.surname// + (this.main ? " [" + getCurrentElement("main_teacher") + "]" : "")
-                    },
-                },*/ // TODO (6): creare info teacher
         {
           id: "name",
           type: "string",
-          linkType: "event",
+          /*linkType: "event",
           content: {
             event: "teacher_info",
             data: {
               teacher_id: this.teacher.id,
             },
             text: this.teacher.name + " " + this.teacher.surname, // + (this.main ? " [" + getCurrentElement("main_teacher") + "]" : "")
-          },
-        },
+          },*/
+          content: this.teacher.name + " " + this.teacher.surname,
+        }, // TODO (6): creare info teacher
       ],
     };
     if (store.state.sections_use) {

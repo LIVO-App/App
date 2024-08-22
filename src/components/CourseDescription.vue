@@ -44,7 +44,7 @@
               )
             "
             :cards_list="access_cards"
-            :columns="3"
+            :columns="isSmaller(breakpoint, 'sm') ? 2 : 3"
             :colors="{
               background: {
                 name: 'white',
@@ -134,7 +134,7 @@
               )
             "
             :cards_list="teachings_cards"
-            :columns="2"
+            :columns="isSmaller(breakpoint, 'sm') ? 1 : 2"
             :colors="{
               background: {
                 name: 'white',
@@ -154,7 +154,14 @@
                 'ion-no-padding': true,
               },
               item: {
-                'ion-no-padding': true,
+                'ion-no-padding': {
+                  general: true,
+                  sm: false,
+                  xs: false,
+                },
+                'ion-padding-bottom': {
+                  sm: true,
+                },
               },
               row: {
                 'ion-wrap': true,
@@ -178,7 +185,7 @@
               )
             "
             :cards_list="growth_cards"
-            :columns="2"
+            :columns="isSmaller(breakpoint, 'sm') ? 1 : 2"
             :colors="{
               background: {
                 name: 'white',
@@ -198,7 +205,14 @@
                 'ion-no-padding': true,
               },
               item: {
-                'ion-no-padding': true,
+                'ion-no-padding': {
+                  general: true,
+                  sm: false,
+                  xs: false,
+                },
+                'ion-padding-bottom': {
+                  sm: true,
+                },
               },
               row: {
                 'ion-wrap': true,
@@ -231,7 +245,7 @@
               )
             "
             :cards_list="teachers_list"
-            :columns="2"
+            :columns="isSmaller(breakpoint, 'sm') ? 1 : 2"
             :colors="{
               background: {
                 name: 'white',
@@ -251,7 +265,14 @@
                 'ion-no-padding': true,
               },
               item: {
-                'ion-no-padding': true,
+                'ion-no-padding': {
+                  general: true,
+                  sm: false,
+                  xs: false,
+                },
+                'ion-padding-bottom': {
+                  sm: true,
+                },
               },
               row: {
                 'ion-wrap': true,
@@ -280,9 +301,11 @@ import {
 } from "@/types";
 import {
   executeLink,
+  getBreakpoint,
   getCurrentElement,
   getCustomMessage,
   getIcon,
+  isSmaller,
 } from "@/utils";
 import {
   IonContent,
@@ -298,10 +321,14 @@ import {
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
 import { Navigation, Autoplay } from "swiper/modules";
-import { ref } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 
 const changeMode = (event: CustomEvent) => {
   mode.value = event.detail.value;
+};
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+  console.log(breakpoint.value);
 };
 
 const modules = [Navigation, Autoplay];
@@ -343,7 +370,7 @@ const elements: {
     content: getCurrentElement("course_information_not_found"),
   },
 };
-
+const breakpoint = ref(getBreakpoint(window.innerWidth));
 const course = await Course.newCourse(
   await executeLink(
     "/v1/courses/" + props.course_id,
@@ -351,6 +378,7 @@ const course = await Course.newCourse(
     () => null
   )
 );
+
 course.images.push({
   url: "Logo_LIVO_Campus_POS_RGB.png",
   caption: "Old logo",
@@ -474,16 +502,9 @@ if (props.learning_session_id != undefined) {
         (tmp_card.content as CustomElement[])[0].classes = {
           label: {
             "ion-text-wrap": true,
-            "ion-padding-start": true,
-            "ion-padding-top": true,
-            top_radius: true,
-          },
-        };
-        (tmp_card.content as CustomElement[])[1].classes = {
-          label: {
-            "ion-padding-start": true,
-            "ion-padding-bottom": true,
-            bottom_radius: true,
+            "ion-padding": true,
+            "ion-text-center": true,
+            radius: true,
           },
         };
         tmp_card.classes = {
@@ -496,9 +517,20 @@ if (props.learning_session_id != undefined) {
 
       return teachers;
     },
-    () => undefined
+    () => []
   );
 }
+
+onMounted(() =>
+  nextTick(() => {
+    window.addEventListener("resize", updateBreakpoint);
+  })
+);
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateBreakpoint);
+});
+console.log(breakpoint.value);
 </script>
 
 <style scoped>

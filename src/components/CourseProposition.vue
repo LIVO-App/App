@@ -1461,7 +1461,7 @@ const edit_course_proposition = async (course_id?: number) => {
       project_class = await executeLink(
         "/v1/project_classes/" + course_id + "/" + tmp_session_id,
         (response) => new AdminProjectClass(response.data.data)
-      ); //<!-- ! (3): dire a Pietro di mettere num_section sia lì che in quella generale
+      ); //<!-- TODO (4): dire a Pietro di mettere num_section sia lì che in quella generale
       approved.project_class = project_class.admin_id != undefined;
       tmp_teachers = await executeLink(
         "/v1/project_classes/" + course_id + "/" + tmp_session_id + "/teachers",

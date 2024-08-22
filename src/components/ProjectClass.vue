@@ -1099,7 +1099,7 @@ const buttons: CustomElement[] = [
       event: "course_details",
       data: {
         title: "", //<!-- TODO (4): mettere titolo quando ce l'avrà anche la pagina
-        course_id: course_id,
+        course_id: parseInt(course_id),
       },
       icon: getIcon("information_circle"),
     },
