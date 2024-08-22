@@ -92,13 +92,44 @@
       <ion-grid v-if="side_element_ref != undefined">
         <ion-row>
           <ion-col>
-            <ionic-element
-              v-for="(element, i) in content_ref"
-              :key="element.id"
-              v-model:element="content_ref[i]"
-              @execute_link="$emit('execute_link')"
-              @signal_event="$emit('signal_event')"
-            />
+            <template
+              v-if="actual_layout == undefined || !isMatrix(actual_layout)"
+            >
+              <ionic-element
+                v-for="element in actual_layout == undefined
+                  ? content_ref.map((e) => e.id)
+                  : actual_layout"
+                :key="
+                  content_ref[content_ref.findIndex((e) => e.id == element)].id
+                "
+                v-model:element="
+                  content_ref[content_ref.findIndex((e) => e.id == element)]
+                "
+                @execute_link="$emit('execute_link')"
+                @signal_event="$emit('signal_event')"
+              />
+            </template>
+            <ion-grid v-else>
+              <ion-row v-for="(row, r) in actual_layout" :key="r">
+                <ion-col
+                  v-for="element in castLayoutRow(row)"
+                  :key="element.id"
+                  :size="
+                    element.size != undefined ? '' + element.size : undefined
+                  "
+                >
+                  <ionic-element
+                    v-model:element="
+                      content_ref[
+                        content_ref.findIndex((e) => e.id == element.id)
+                      ]
+                    "
+                    @execute_link="$emit('execute_link')"
+                    @signal_event="$emit('signal_event')"
+                  />
+                </ion-col>
+              </ion-row>
+            </ion-grid>
           </ion-col>
           <ion-col
             size="auto"
@@ -113,13 +144,36 @@
         </ion-row>
       </ion-grid>
       <template v-else>
-        <ionic-element
-          v-for="(element, i) in content_ref"
-          :key="element.id"
-          v-model:element="content_ref[i]"
-          @execute_link="$emit('execute_link')"
-          @signal_event="$emit('signal_event')"
-        />
+        <template v-if="actual_layout == undefined || !isMatrix(actual_layout)">
+          <ionic-element
+            v-for="element in actual_layout == undefined
+              ? content_ref.map((e) => e.id)
+              : actual_layout"
+            :key="content_ref[content_ref.findIndex((e) => e.id == element)].id"
+            v-model:element="
+              content_ref[content_ref.findIndex((e) => e.id == element)]
+            "
+            @execute_link="$emit('execute_link')"
+            @signal_event="$emit('signal_event')"
+          />
+        </template>
+        <ion-grid v-else>
+          <ion-row v-for="(row, r) in actual_layout" :key="r">
+            <ion-col
+              v-for="element in castLayoutRow(row)"
+              :key="element.id"
+              :size="element.size != undefined ? '' + element.size : undefined"
+            >
+              <ionic-element
+                v-model:element="
+                  content_ref[content_ref.findIndex((e) => e.id == element.id)]
+                "
+                @execute_link="$emit('execute_link')"
+                @signal_event="$emit('signal_event')"
+              />
+            </ion-col>
+          </ion-row>
+        </ion-grid>
       </template>
     </ion-card-content>
   </ion-card>
@@ -130,16 +184,20 @@ import {
   CardSubElements,
   Classes,
   CustomElement,
+  Layout,
   LinkParameters,
   Colors,
   GeneralCardSubElements,
 } from "@/types";
 import {
   canVModel,
+  castLayoutRow,
   getBreakpoint,
   getBreakpointClasses,
   getCssColor,
   getIonicColor,
+  getLayout,
+  isMatrix,
 } from "@/utils";
 import { isRequest, isEvent } from "@/utils";
 import {
@@ -151,13 +209,16 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonLabel,
 } from "@ionic/vue";
 import { nextTick, onBeforeUnmount, onMounted } from "vue";
 import { PropType, ref, toRef, watch } from "vue";
 import { useStore } from "vuex";
+IonLabel;
 
 const updateBreakpoint = () => {
   breakpoint.value = getBreakpoint(window.innerWidth);
+  actual_layout.value = getLayout(props.layout, breakpoint.value);
 };
 
 const store = useStore();
@@ -169,6 +230,7 @@ const props = defineProps({
   title: Object as PropType<CustomElement>,
   subtitle: Object as PropType<CustomElement>,
   content: Array<CustomElement>,
+  layout: Object as PropType<Layout>,
   side_element: Object as PropType<CustomElement>,
   selected: Boolean,
   hovered: Boolean,
@@ -205,6 +267,7 @@ const subtitle_ref = ref(props.subtitle);
 const content_ref = ref(props.content);
 const side_element_ref = ref(props.side_element);
 const breakpoint = ref(getBreakpoint(window.innerWidth));
+const actual_layout = ref(getLayout(props.layout, breakpoint.value));
 
 if (props.title != undefined && canVModel(props.title)) {
   watch(
@@ -266,11 +329,7 @@ if (props.side_element != undefined && canVModel(props.side_element)) {
   );
 }
 
-if (
-  props.classes?.card != undefined ||
-  props.classes?.header != undefined ||
-  props.classes?.content != undefined
-) {
+if (Object.keys(props.classes ?? {}).length > 0) {
   onMounted(() =>
     nextTick(() => {
       window.addEventListener("resize", updateBreakpoint);

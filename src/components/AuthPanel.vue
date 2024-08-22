@@ -150,6 +150,7 @@ import {
   IonCol,
 } from "@ionic/vue";
 import { reactive, Ref, ref } from "vue";
+import { useStore } from "vuex";
 
 const changeType = (type: UserType) => {
   /*for (const key in user_information[login_type.value]) {
@@ -170,6 +171,7 @@ const takeParameters = () => {
 };
 
 defineEmits(["login", "execute_link"]);
+const store = useStore();
 
 const login_type: Ref<UserType> = ref("student");
 const user_information: {
@@ -198,21 +200,7 @@ const alternatives_login: CustomElement[] = [
       url: "/auth/google",
       method: "get",
     },
-    colors: {
-      text: {
-        name: "white",
-        type: "var",
-      },
-      background: {
-        name: "primary",
-        type: "var",
-      },
-    },
-    classes: {
-      button: {
-        radius: true,
-      },
-    },
+    ...store.state.button_css,
   },
 ];
 const or = getCustomMessage("or", getCurrentElement("or"), "title");

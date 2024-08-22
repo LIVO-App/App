@@ -35,11 +35,13 @@ import {
   AlertInformation,
   MenuItem,
   CustomSubElements,
-  ColorType,
   GeneralTableCardElements,
   StudentGrade,
   Breakpoint,
   BreakpointVisibility,
+  LayoutElement,
+  Layout,
+  GeneralCardSubElements,
 } from "./types";
 import { $axios } from "./plugins/axios";
 import { store } from "./store";
@@ -722,6 +724,9 @@ function getCssColor(color_object: ColorObject, use_alpha = true) {
 
   if (color_object.type == "var") {
     css_variable = getCssVariable("--ion-color-" + color_object.name); // Hex or RGB
+    if (css_variable == "") {
+      css_variable = getCssVariable("--ion-" + color_object.name); // Hex or RGB
+    }
 
     if (use_alpha && color_object.alpha != undefined) {
       if (css_variable[0] == "#") {
@@ -798,17 +803,6 @@ function removeTableIndexedElement(
   }
 
   return index;
-}
-
-function insertTableIndexedElement(
-  table: CustomElement[][],
-  element: CustomElement[],
-  index: number
-) {
-  table.splice(index, 0, element);
-  for (let i = index + 1; i < table.length; i++) {
-    table[i][0] = getCustomMessage(table[i][0].id + "_index", i + 1);
-  }
 }
 
 function hoverItem(card: CardElements, value: boolean) {
@@ -906,6 +900,43 @@ function adjustColor(
   return nullOperator(...colors);
 }
 
+function adjustGeneralCardColors(
+  card: GeneralCardElements,
+  colors: Colors<GeneralCardSubElements> | undefined
+) {
+  let tmp_color: ColorObject | undefined;
+
+  if (card.title != undefined) {
+    tmp_color = adjustColor(card.title.colors?.text, colors?.text);
+    if (tmp_color != undefined) {
+      if (card.title.colors == undefined) {
+        card.title.colors = {};
+      }
+      card.title.colors.text = tmp_color;
+    }
+  }
+  if (card.subtitle != undefined) {
+    tmp_color = adjustColor(card.subtitle.colors?.text, colors?.text);
+    if (tmp_color != undefined) {
+      if (card.subtitle.colors == undefined) {
+        card.subtitle.colors = {};
+      }
+      card.subtitle.colors.text = tmp_color;
+    }
+  }
+  if (card.content != undefined) {
+    for (const element of card.content) {
+      tmp_color = adjustColor(element.colors?.text, colors?.text);
+      if (tmp_color != undefined) {
+        if (element.colors == undefined) {
+          element.colors = {};
+        }
+        element.colors.text = tmp_color;
+      }
+    }
+  }
+}
+
 function hasNoData(list: OrderedCardsList | undefined) {
   return (
     list == undefined ||
@@ -923,21 +954,25 @@ function getBreakpoint(width: number): Breakpoint {
   else if (width < breakpoints["xl"]) return "lg";
   else return "xl";
 }
-function isSmaller(refer: Breakpoint, actual: Breakpoint, equal = true) {
-  const breakpoints = Object.keys(store.state.breakpoints) as Breakpoint[];
 
-  breakpoints.sort((a, b) =>
-    store.state.breakpoints[a] > store.state.breakpoints[b]
-      ? 1
-      : store.state.breakpoints[a] == store.state.breakpoints[b]
-      ? 0
-      : -1
-  );
+function getOrderedBreakpoints(gt_than?: Breakpoint) {
+  return (Object.keys(store.state.breakpoints) as Breakpoint[])
+    .sort((a, b) =>
+      store.state.breakpoints[a] > store.state.breakpoints[b] ? 1 : -1
+    )
+    .splice(
+      gt_than != undefined
+        ? 1 + Object.keys(store.state.breakpoints).indexOf(gt_than)
+        : 0
+    );
+}
 
-  const refer_index = breakpoints.indexOf(refer);
-  const actual_index = breakpoints.indexOf(actual);
+function isSmaller(actual: Breakpoint, refer: Breakpoint, equal = true) {
+  if (!equal && refer == actual) {
+    return false;
+  }
 
-  return equal ? actual_index <= refer_index : actual_index < refer_index;
+  return getOrderedBreakpoints(refer).indexOf(actual) == -1;
 }
 
 function updateBreakpointClasses(
@@ -949,22 +984,31 @@ function updateBreakpointClasses(
   filtered_classes: { [key: string]: boolean },
   breakpoint: Breakpoint
 ) {
+  const ordered_breakpoints = getOrderedBreakpoints(breakpoint);
+  let tmp_breakpoint: Breakpoint | undefined;
+
   if (refer_classes != undefined) {
     for (const key in refer_classes) {
-      filtered_classes[key] =
-        typeof refer_classes[key] === "boolean"
-          ? (refer_classes[key] as boolean)
-          : (refer_classes[key] as BreakpointVisibility | undefined)?.[
-              "general"
-            ] !== undefined
-          ? ((refer_classes[key] as BreakpointVisibility)["general"] as boolean)
-          : (refer_classes[key] as BreakpointVisibility | undefined)?.[
-              breakpoint
-            ] !== undefined
-          ? ((refer_classes[key] as BreakpointVisibility)[
-              breakpoint
-            ] as boolean)
-          : false;
+      filtered_classes[key] = false;
+      if (typeof refer_classes[key] === "boolean") {
+        filtered_classes[key] = refer_classes[key] as boolean;
+      } else {
+        tmp_breakpoint = ordered_breakpoints.find(
+          (b) =>
+            ((refer_classes[key] as BreakpointVisibility | undefined) ?? {})[
+              b
+            ] != undefined
+        );
+        if (tmp_breakpoint != undefined) {
+          filtered_classes[key] = (refer_classes[key] as BreakpointVisibility)[
+            tmp_breakpoint
+          ] as boolean;
+        } else {
+          filtered_classes[key] = (refer_classes[key] as BreakpointVisibility)[
+            "general"
+          ] as boolean;
+        }
+      }
     }
   }
 }
@@ -982,6 +1026,55 @@ function getBreakpointClasses(
   updateBreakpointClasses(classes, filtered_classes, breakpoint);
 
   return filtered_classes;
+}
+
+function isMatrix(element: any) {
+  if (!Array.isArray(element)) {
+    return false; // Non è un array
+  }
+
+  // Verifica se ogni elemento dell'array è a sua volta un array
+  return element.every((value) => Array.isArray(value));
+}
+
+function isLayoutElementMatrix(element: any): element is LayoutElement[][] {
+  return (
+    isMatrix(element) &&
+    element.every((row: LayoutElement[]) => row.every((e) => "id" in e))
+  );
+}
+
+function getLayout(layout: Layout | undefined, breakpoint: Breakpoint) {
+  let ordered_breakpoints;
+  let to_ret: (string | number)[] | LayoutElement[][] | undefined = undefined;
+  let tmp_breakpoint: Breakpoint | undefined = breakpoint;
+
+  if (layout != undefined) {
+    if (layout[tmp_breakpoint] != undefined) {
+      to_ret = layout[tmp_breakpoint];
+    } else {
+      ordered_breakpoints = getOrderedBreakpoints(breakpoint);
+
+      tmp_breakpoint = ordered_breakpoints.find(
+        (b) => (layout ?? {})[b] != undefined
+      );
+
+      if (tmp_breakpoint != undefined) {
+        to_ret = layout[tmp_breakpoint];
+      } else {
+        to_ret = layout["general"];
+      }
+    }
+  }
+
+  return to_ret;
+}
+
+function castLayoutRow(e: any) {
+  return e as {
+    id: string | number;
+    size?: number;
+  }[];
 }
 
 export {
@@ -1035,7 +1128,6 @@ export {
   getIonicColor,
   setupError,
   removeTableIndexedElement,
-  insertTableIndexedElement,
   hoverItem,
   executeAdditionalControl,
   getMenuOrder,
@@ -1047,9 +1139,15 @@ export {
   canCardArrayVModel,
   canCardListVModel,
   adjustColor,
+  adjustGeneralCardColors,
   hasNoData,
   getBreakpoint,
   isSmaller,
+  getOrderedBreakpoints,
   updateBreakpointClasses,
   getBreakpointClasses,
+  isMatrix,
+  isLayoutElementMatrix,
+  getLayout,
+  castLayoutRow,
 };

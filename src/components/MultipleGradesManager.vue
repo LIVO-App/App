@@ -14,12 +14,12 @@
     />
   </ion-modal>
   <ion-alert
-      :is-open="alert_open"
-      :header="alert_information.title"
-      :message="alert_information.message"
-      :buttons="alert_information.buttons"
-      @didDismiss="closeModal(store.state.event.event)"
-    />
+    :is-open="alert_open"
+    :header="alert_information.title"
+    :message="alert_information.message"
+    :buttons="alert_information.buttons"
+    @didDismiss="closeModal(store.state.event.event)"
+  />
   <ion-header>
     <ion-toolbar>
       <ion-grid>
@@ -297,19 +297,16 @@ const updateStudents = async () => {
   );
 
   for (const student_index in students) {
-    const tmp_student = students[student_index];
-
-    const tmp_row = tmp_student.toTableRow(
-      user.id,
-      false,
-      undefined,
-      undefined,
-      true
+    table_data.cards[""].push(
+      students[student_index].toTableRow(
+        user.id,
+        false,
+        undefined,
+        undefined,
+        true,
+        parseInt(student_index) + 1
+      )
     );
-    tmp_row.content = [
-      getCustomMessage(tmp_student.id + "_index", parseInt(student_index) + 1),
-    ].concat(tmp_row.content);
-    table_data.cards[""].push(tmp_row);
   }
   trigger.value++;
 };
@@ -404,14 +401,14 @@ const first_row: CustomElement[] = [
     content: getCurrentElement("student"),
   },
   {
-    id: "learning_context",
-    type: "string",
-    content: getCurrentElement("learning_context"),
-  },
-  {
     id: "class",
     type: "string",
     content: getCurrentElement("class"),
+  },
+  {
+    id: "learning_context",
+    type: "string",
+    content: getCurrentElement("learning_context"),
   },
   {
     id: "",
@@ -457,8 +454,7 @@ watch(final, (value) => {
       for (const student of table_data_ref.value.cards[""]) {
         tmp_input_grade = student.content[student.content.length - 1];
         if (student.id == id) {
-          tmp_input_grade.content =
-            disabled_grades[id];
+          tmp_input_grade.content = disabled_grades[id];
           delete disabled_grades[id];
           if (tmp_input_grade.params != undefined) {
             tmp_input_grade.params.disabled = false;

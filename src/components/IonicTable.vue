@@ -13,110 +13,132 @@
       @signal_event="$emit('signal_event')"
     />
   </div>
-  <ion-grid v-else class="ion-margin">
-    <ion-row
-      v-if="first_row_ref != undefined"
-      class="row header ion-text-center"
-    >
-      <ion-col
-        v-for="(cell, i) in first_row_ref"
-        :key="cell.id"
-        :size="
-          has_fr_custom_sizes
-            ? cell.size != undefined
-              ? '' + cell.size
-              : undefined
-            : Array.isArray(sizes)
-            ? '' + sizes[i]
-            : undefined
-        "
-        class="col"
-      >
-        <ionic-element
-          :key="cell.id"
-          :element="first_row_ref[i]"
-          @execute_link="$emit('execute_link')"
-          @signal_event="$emit('signal_event')"
-        />
-      </ion-col>
-    </ion-row>
-    <template
-      v-for="row_order in data_ref.cards[''] != undefined
-        ? [
-            {
-              key: '',
-              title: getCustomMessage('', ''),
-            },
-          ]
-        : data_ref.order"
-    >
+  <template v-else>
+    <ion-grid class="ion-margin ion-hide-md-down">
       <ion-row
-        :key="row_order.key + '_divider'"
-        v-if="data_ref.cards[''] == undefined && show_table_dividers"
-      >
-        <ion-col class="col">
-          <ionic-element
-            :key="row_order.key"
-            :element="row_order.title"
-            @execute_link="$emit('execute_link')"
-            @signal_event="$emit('signal_event')"
-          />
-        </ion-col>
-      </ion-row>
-      <ion-row
-        v-for="(row, i) in data_ref.cards[row_order.key]"
-        :key="row_order.key + '_' + row.id"
-        class="row ion-text-center cell_primary"
+        v-if="first_row_ref != undefined"
+        class="row header ion-text-center"
       >
         <ion-col
-          v-if="first_col_ref != undefined"
+          v-for="(cell, i) in first_row_ref"
+          :key="cell.id"
           :size="
-            has_fc_custom_sizes
-              ? first_col_ref[row_order.key][i].size != undefined
-                ? '' + first_col_ref[row_order.key][i].size
+            has_fr_custom_sizes
+              ? cell.size != undefined
+                ? '' + cell.size
                 : undefined
               : Array.isArray(sizes)
-              ? '' + sizes[0]
-              : undefined
-          "
-          class="col header"
-        >
-          <ionic-element
-            :key="first_col_ref[row_order.key][i].id"
-            :element="first_col_ref[row_order.key][i]"
-            @execute_link="$emit('execute_link')"
-            @signal_event="$emit('signal_event')"
-          />
-        </ion-col>
-        <ion-col
-          v-for="(cell, j) in data_ref.cards[row_order.key][i].content"
-          :key="cell.id"
-          :size="
-            Array.isArray(sizes)
-              ? '' + sizes[j + (first_col_ref != undefined ? 1 : 0)]
-              : sizes[row_order.key] != undefined &&
-                sizes[row_order.key][row.id] != undefined &&
-                sizes[row_order.key][row.id][j] != undefined
-              ? '' + sizes[row_order.key][row.id][j]
+              ? '' + sizes[i]
               : undefined
           "
           class="col"
         >
           <ionic-element
-            v-model:element="
-              castTableElementArray(data_ref.cards[row_order.key][i].content)[j]
-            "
+            :key="cell.id"
+            :element="first_row_ref[i]"
             @execute_link="$emit('execute_link')"
             @signal_event="$emit('signal_event')"
           />
         </ion-col>
       </ion-row>
-    </template>
-  </ion-grid>
+      <template
+        v-for="row_order in data_ref.cards[''] != undefined
+          ? [
+              {
+                key: '',
+                title: getCustomMessage('', ''),
+              },
+            ]
+          : data_ref.order"
+      >
+        <ion-row
+          :key="row_order.key + '_divider'"
+          v-if="data_ref.cards[''] == undefined && show_table_dividers"
+        >
+          <ion-col class="col">
+            <ionic-element
+              :key="row_order.key"
+              :element="row_order.title"
+              @execute_link="$emit('execute_link')"
+              @signal_event="$emit('signal_event')"
+            />
+          </ion-col>
+        </ion-row>
+        <ion-row
+          v-for="(row, i) in data_ref.cards[row_order.key]"
+          :key="row_order.key + '_' + row.id"
+          class="row ion-text-center"
+        >
+          <ion-col
+            v-if="first_col_ref != undefined"
+            :size="
+              has_fc_custom_sizes
+                ? first_col_ref[row_order.key][i].size != undefined
+                  ? '' + first_col_ref[row_order.key][i].size
+                  : undefined
+                : Array.isArray(sizes)
+                ? '' + sizes[0]
+                : undefined
+            "
+            class="col header"
+          >
+            <ionic-element
+              :key="first_col_ref[row_order.key][i].id"
+              :element="first_col_ref[row_order.key][i]"
+              @execute_link="$emit('execute_link')"
+              @signal_event="$emit('signal_event')"
+            />
+          </ion-col>
+          <ion-col
+            v-for="(index, j) in getFlatLayoutIndexes(
+              data_ref.cards[row_order.key][i],
+              breakpoint
+            )"
+            :key="
+              castTableElementArray(data_ref.cards[row_order.key][i].content)[
+                index
+              ].id
+            "
+            :size="
+              Array.isArray(sizes)
+                ? '' + sizes[j + (first_col_ref != undefined ? 1 : 0)]
+                : sizes[row_order.key] != undefined &&
+                  sizes[row_order.key][row.id] != undefined &&
+                  sizes[row_order.key][row.id][j] != undefined
+                ? '' + sizes[row_order.key][row.id][j]
+                : undefined
+            "
+            class="col"
+          >
+            <ionic-element
+              v-model:element="
+                castTableElementArray(data_ref.cards[row_order.key][i].content)[
+                  index
+                ]
+              "
+              @execute_link="$emit('execute_link')"
+              @signal_event="$emit('signal_event')"
+            />
+          </ion-col>
+        </ion-row>
+      </template>
+    </ion-grid>
+    <list-card
+      :key="trigger"
+      @execute_link="$emit('execute_link')"
+      @signal_event="$emit('signal_event')"
+      v-model:emptiness_message="emptiness_message_ref"
+      v-model:cards_list="data_ref"
+      :colors="colors"
+      :classes="classes"
+      class="ion-hide-lg-up"
+    />
+  </template>
 </template>
 
 <script setup lang="ts">
 import {
+  Breakpoint,
   CardsGridElements,
   CardsListElements,
   Classes,
@@ -134,12 +156,24 @@ import {
   canCardListVModel,
   canListVModel,
   canVModel,
+  castLayoutRow,
+  getBreakpoint,
   getCustomMessage,
   getIonicColor,
+  getLayout,
   hasNoData,
+  isMatrix,
 } from "@/utils";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { PropType, WatchStopHandle, ref, watch } from "vue";
+import {
+  PropType,
+  WatchStopHandle,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 
 const castTableElementArray = (e: any) => e as TableElement[];
 const hasFirstColSizes = () => {
@@ -175,6 +209,35 @@ const addListeners = () => {
       emit("update:data", value);
     }
   );
+};
+const getFlatLayoutIndexes = (
+  element: GeneralTableCardElements,
+  breakpoint: Breakpoint
+) => {
+  const actual_layout = getLayout(element.layout, breakpoint);
+
+  let to_ret: number[];
+
+  if (actual_layout == undefined) {
+    to_ret = element.content.map((_, i) => i);
+  } else if (!isMatrix(actual_layout)) {
+    to_ret = (actual_layout as (string | number)[]).map((id) =>
+      element.content.findIndex((c) => c.id == id)
+    );
+  } else {
+    to_ret = [];
+    actual_layout.forEach((row) => {
+      castLayoutRow(row).forEach((e) =>
+        element.content.findIndex((c) => c.id == e.id)
+      );
+    });
+  }
+
+  return to_ret;
+};
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+  trigger.value++; // TODO (5): da vedere se si trova metodo migliore (es. breackpoint aggiornato in store)
 };
 
 const props = defineProps({
@@ -224,6 +287,8 @@ const has_fr_custom_sizes =
   props.first_row != undefined &&
   props.first_row.find((e) => e.size != undefined) != undefined;
 const has_fc_custom_sizes = hasFirstColSizes();
+const breakpoint = ref(getBreakpoint(window.innerWidth));
+const trigger = ref(0);
 
 let stopWatch: WatchStopHandle;
 
@@ -234,6 +299,18 @@ emptiness_message_ref.value.colors.text = adjustColor(
   props.emptiness_message?.colors?.text,
   props.colors?.text
 );
+
+if (first_row_ref.value != undefined) {
+  first_row_ref.value.forEach((cell) => {
+    if (cell.colors == undefined) {
+      cell.colors = {};
+    }
+    cell.colors.text = adjustColor(cell.colors.text, props.colors?.background, {
+      name: "background-color",
+      type: "var",
+    });
+  });
+}
 
 if (canVModel(props.emptiness_message)) {
   watch(
@@ -291,16 +368,20 @@ if (props.first_col != undefined && canListVModel(props.first_col)) {
     }
   );
 }
+onMounted(() =>
+  nextTick(() => {
+    window.addEventListener("resize", updateBreakpoint);
+  })
+);
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateBreakpoint);
+});
 </script>
 
 <style>
-.cell_primary {
-  color: var(--ion-color-primary);
-}
-
 .header .col {
   background-color: var(--ion-color-primary);
-  color: white;
 }
 
 .col {

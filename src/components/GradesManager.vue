@@ -39,10 +39,11 @@
           actual_final_grade_index !== -1 ? edit_trigger + '_grades' : undefined
         "
         :size="
-          (parameters.teacher_id != undefined &&
+          ((parameters.teacher_id != undefined &&
             table_data.cards[''].length != 0 &&
             actual_final_grade_index === -1) ||
-          edit_mode
+            edit_mode) &&
+          !isSmaller(breakpoint, 'sm')
             ? '7'
             : '12'
         "
@@ -89,7 +90,11 @@
       </ion-col>
       <ion-col
         :key="edit_trigger + '_parameters'"
-        :size="table_data.cards[''].length == 0 ? '12' : '5'"
+        :size="
+          table_data.cards[''].length == 0 || isSmaller(breakpoint, 'sm')
+            ? '12'
+            : '5'
+        "
         v-if="
           (parameters.teacher_id != undefined &&
             parameters.associated_teacher === false &&
@@ -286,6 +291,8 @@ import {
   getLocale,
   checkGradeParameters,
   hasGradeTypingErrors,
+  getBreakpoint,
+  isSmaller,
 } from "@/utils";
 import {
   IonHeader,
@@ -305,7 +312,16 @@ import {
   DatetimeCustomEvent,
   IonItem,
 } from "@ionic/vue";
-import { PropType, reactive, Ref, ref, watch } from "vue";
+import {
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  PropType,
+  reactive,
+  Ref,
+  ref,
+  watch,
+} from "vue";
 import { useStore } from "vuex";
 
 const changeData = (event: DatetimeCustomEvent) => {
@@ -431,6 +447,9 @@ const setupEditMode = (empty = false) => {
   edit_trigger.value++;
   edit_mode = empty ? false : true;
 };
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+};
 
 const store = useStore();
 const languages = getAviableLanguages();
@@ -505,6 +524,7 @@ const table_data: OrderedCardsList<GeneralTableCardElements> = {
     "": [],
   },
 };
+const breakpoint = ref(getBreakpoint(window.innerWidth));
 const end_of_day = new Date();
 end_of_day.setHours(23, 59, 59, 999);
 
@@ -532,6 +552,15 @@ watch(
     setGradesTable(true);
   }
 );
+onMounted(() =>
+  nextTick(() => {
+    window.addEventListener("resize", updateBreakpoint);
+  })
+);
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateBreakpoint);
+});
 </script>
 
 <style scoped>

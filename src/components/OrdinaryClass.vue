@@ -247,7 +247,6 @@ const updateStudents = async (
    * @returns void
    * @async
    */
-  let tmp_student: GeneralTableCardElements;
 
   if (
     learning_session?.getStatus() == LearningSessionStatus.FUTURE ||
@@ -304,17 +303,13 @@ const updateStudents = async (
   if (new_search || do_non_compliants) {
     non_compliant_table.cards[""] = [];
     for (const index in non_compliant_students_index) {
-      tmp_student = students[non_compliant_students_index[index]].toTableRow(
-        learning_session?.getStatus() == LearningSessionStatus.FUTURE ||
-          learning_session?.getStatus() == LearningSessionStatus.UPCOMING
+      non_compliant_table.cards[""].push(
+        students[non_compliant_students_index[index]].toTableRow(
+          parseInt(index) + 1,
+          learning_session?.getStatus() == LearningSessionStatus.FUTURE ||
+            learning_session?.getStatus() == LearningSessionStatus.UPCOMING
+        )
       );
-      tmp_student.content = [
-        getCustomMessage(
-          students[non_compliant_students_index[index]].id + "_index",
-          parseInt(index) + 1
-        ),
-      ].concat(tmp_student.content);
-      non_compliant_table.cards[""].push(tmp_student);
     }
   }
   if (new_search || do_students) {
@@ -322,11 +317,7 @@ const updateStudents = async (
     count = 1;
     for (const i in students) {
       if (non_compliant_students_index.find((a) => "" + a == i) == undefined) {
-        tmp_student = students[i].toTableRow();
-        tmp_student.content = [
-          getCustomMessage(students[i].id + "_index", count++),
-        ].concat(tmp_student.content);
-        students_table.cards[""].push(tmp_student);
+        students_table.cards[""].push(students[i].toTableRow(count++));
       }
     }
   }
@@ -343,10 +334,7 @@ const manageEvent = () => {
   }
 };
 const yes_handler = async () => {
-  let outcome: Outcome,
-    tmp_index: number,
-    tmp_target_index: number,
-    tmp_student: GeneralTableCardElements;
+  let outcome: Outcome, tmp_index: number, tmp_target_index: number;
 
   switch (store.state.event.event) {
     case "move_student":
@@ -388,21 +376,12 @@ const yes_handler = async () => {
                     tmp_target_index = 0;
                   }
                 }
-                tmp_student =
-                  students[
-                    non_compliant_students_index[tmp_index]
-                  ].toTableRow();
-                tmp_student.content = [
-                  getCustomMessage(
-                    students[non_compliant_students_index[tmp_index]] +
-                      "_index",
-                    tmp_target_index + 1
-                  ),
-                ].concat(tmp_student.content);
                 students_table.cards[""].splice(
                   tmp_target_index,
                   0,
-                  tmp_student
+                  students[non_compliant_students_index[tmp_index]].toTableRow(
+                    tmp_target_index + 1
+                  )
                 );
                 non_compliant_students_index.splice(tmp_index, 1);
               } else {

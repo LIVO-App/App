@@ -522,21 +522,7 @@ const buttons = [
       method: "get",
       whole_link: true,
     },
-    colors: {
-      text: {
-        name: "white",
-        type: "var",
-      },
-      background: {
-        name: "primary",
-        type: "var",
-      },
-    },
-    classes: {
-      button: {
-        radius: true,
-      },
-    },
+    ...store.state.button_css,
   },
 ];
 

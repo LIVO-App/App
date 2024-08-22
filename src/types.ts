@@ -17,6 +17,7 @@ import {
   getStatusString,
   getStudyAddressVisualization,
   getSubscribedCredits,
+  isLayoutElementMatrix,
   isLinkedToAreas,
   numberToSection,
   toDateString,
@@ -354,20 +355,36 @@ type OptionalCardElements = {
   link?: LinkParameters;
 };
 
+type LayoutElement = {
+  id: string | number;
+  size?: number;
+};
+
+type Layout = {
+  [key in keyof string as BreakpointScope]?:
+    | (string | number)[]
+    | LayoutElement[][];
+};
+
 type OptionalContentCard = {
   content?: CustomElement[];
 };
 
 type GeneralCardElements = CardElements &
   OptionalCardElements &
-  OptionalContentCard;
+  OptionalContentCard & {
+    layout?: Layout;
+  };
 
 type GeneralTableCardElements = CardElements &
   OptionalCardElements &
-  Required<OptionalContentCard>;
+  Required<OptionalContentCard> & {
+    layout?: Layout;
+  };
 
 type EnrollmentCardElements = CardElements &
   Required<OptionalContentCard> & {
+    layout?: Layout;
     credits: number;
     enrollment: Enrollment;
   };
@@ -736,29 +753,6 @@ class CurriculumCourse extends CourseBase {
         this.intermediate_grades = this.intermediate_grades.concat(grades);
     }*/
 
-  toCard(path?: string, method?: Method): GeneralCardElements {
-    // ! (3): per visualizzazione tabella a telefono
-    const language = getCurrentLanguage();
-    return {
-      id: "" + this.id,
-      group: "",
-      content: [
-        {
-          id: this.id + "_title",
-          type: "string",
-          content: this[`${language}_title`],
-        },
-      ],
-      link:
-        path != undefined
-          ? {
-              url: path,
-              method: method ?? "get",
-            }
-          : undefined,
-    };
-  }
-
   toTableRow(
     session_id: number,
     student_id: number,
@@ -766,6 +760,16 @@ class CurriculumCourse extends CourseBase {
   ): GeneralTableCardElements {
     // TODO (7): valutare se unire a toCard, visto che il tipo di dato è diventato lo stesso
     const language = getCurrentLanguage();
+    const grade_data_event = {
+      title: this[`${language}_title`],
+      parameters: {
+        course_id: this.id,
+        session_id: session_id,
+        student_id: student_id,
+        teacher_id: teacher_id,
+      },
+    };
+    const final_grade = this.final_grade != null ? "" + this.final_grade : "-";
     const row: GeneralTableCardElements = {
       id: "" + this.id,
       group: "",
@@ -784,6 +788,11 @@ class CurriculumCourse extends CourseBase {
             },
             text: this[`${language}_title`],
           },
+          classes: {
+            label: {
+              "ion-text-wrap": true,
+            },
+          },
         },
         {
           id: "credits",
@@ -791,9 +800,20 @@ class CurriculumCourse extends CourseBase {
           content: "" + this.credits,
         },
         {
+          id: "credits_sm",
+          type: "string",
+          content: getCurrentElement("credits") + ": " + this.credits,
+        },
+        {
           id: "learning_area",
           type: "string",
           content: this.learning_area_id,
+        },
+        {
+          id: "learning_area_sm",
+          type: "string",
+          content:
+            getCurrentElement("learning_area") + ": " + this.learning_area_id,
         },
         {
           id: "gardes", // TODO (4): mettere il controllo con future_course al passaggio a curriculum_v2
@@ -801,24 +821,63 @@ class CurriculumCourse extends CourseBase {
           linkType: "event",
           content: {
             event: "grades",
-            data: {
-              title: this[`${language}_title`],
-              parameters: {
-                course_id: this.id,
-                session_id: session_id,
-                student_id: student_id,
-                teacher_id: teacher_id,
-              },
-            },
+            data: grade_data_event,
             icon: getIcon("document_text"),
+          },
+        },
+        {
+          id: "gardes_sm",
+          type: "string_icon",
+          linkType: "event",
+          content: {
+            text:
+              getCurrentElement("grades") +
+              " (" +
+              getCurrentElement("final") +
+              ": " +
+              final_grade +
+              " ):",
+            event: "grades",
+            data: grade_data_event,
+            icon: getIcon("document_text"),
+          },
+          classes: {
+            item: {
+              "ion-no-padding": true,
+            },
           },
         },
         {
           id: "final_grade",
           type: "string",
-          content: this.final_grade != null ? "" + this.final_grade : "-",
+          content: final_grade,
         },
       ],
+      layout: {
+        general: ["title", "credits", "learning_area", "gardes", "final_grade"],
+        sm: [
+          [
+            {
+              id: "title",
+            },
+          ],
+          [
+            {
+              id: "credits_sm",
+            },
+          ],
+          [
+            {
+              id: "learning_area_sm",
+            },
+          ],
+          [
+            {
+              id: "gardes_sm",
+            },
+          ],
+        ],
+      },
     };
     if (store.state.sections_use) {
       row.content.splice(1, 0, {
@@ -1844,22 +1903,6 @@ class Grade {
       : EditableState.NOT_EDITABLE;
   }
 
-  toCard(): GeneralCardElements {
-    // ! (3): per visualizzazione tabella a telefono
-    const language = getCurrentLanguage();
-    return {
-      id: "" + this.id,
-      group: "",
-      content: [
-        {
-          id: this.id + "_description",
-          type: "html",
-          content: this[`${language}_description`],
-        },
-      ],
-    };
-  }
-
   toTableRow(
     associated_teacher?: boolean,
     teacher_id?: number,
@@ -1891,7 +1934,34 @@ class Grade {
               ? "<b>" + getCurrentElement("final") + "</b><br />"
               : "") + this.grade,
         },
+        {
+          id: "value_sm",
+          type: "html",
+          content:
+            getCurrentElement("grade") +
+            (this.final ? " (<b>" + getCurrentElement("final") + "</b>)" : "") +
+            ": " +
+            this.grade,
+        },
       ],
+      layout: {
+        general: ["description", "pubblication", "value"],
+        sm: [
+          [
+            {
+              id: "description",
+            },
+          ],
+          [
+            {
+              id: "pubblication",
+            },
+            {
+              id: "value_sm",
+            },
+          ],
+        ],
+      },
     };
     const editable = show_editable
       ? this.getEditableStatus(final_grade_pubblication)
@@ -1931,8 +2001,18 @@ class Grade {
               },
               icon: getIcon("close"),
             },
-          }
+          },
+          getCustomMessage("empty", "")
         );
+        if (row.layout != undefined) {
+          (row.layout["general"] as (string | number)[]).push("edit", "remove");
+          (row.layout["sm"] as LayoutElement[][]).push([
+            { id: "empty", size: 3 },
+            { id: "edit", size: 2 },
+            { id: "empty", size: 1 },
+            { id: "remove", size: 2 },
+          ]);
+        }
       } else if (editable == EditableState.NOT_EDITABLE) {
         // Teacher that can edit but not editable grade
         row.content.push(
@@ -1947,6 +2027,9 @@ class Grade {
             content: "",
           }
         );
+        if (row.layout != undefined) {
+          (row.layout["general"] as (string | number)[]).push("edit", "remove");
+        }
       }
     }
 
@@ -2015,7 +2098,6 @@ class CourseSectionsTeachings {
   }
 
   toCard(group: string, learning_session: string): GeneralCardElements {
-    // ! (3): per visualizzazione tabella a telefono
     const language = getCurrentLanguage();
     const card: GeneralCardElements = {
       id: "" + this.id,
@@ -2025,6 +2107,11 @@ class CourseSectionsTeachings {
           id: this.id + "_title",
           type: "title",
           content: this[`${language}_title`],
+          classes: {
+            label: {
+              "ion-text-wrap": true,
+            },
+          },
         },
       ],
       link: {
@@ -2111,23 +2198,46 @@ class StudentSummary implements StudentSummaryProps {
     };
   }
 
-  toTableRow(): GeneralTableCardElements {
-    return {
-      id: "" + this.id,
-      group: "",
-      content: [
-        {
-          id: "name_surname",
-          type: "string",
-          linkType: "request",
-          content: {
-            text: this.name + " " + this.surname,
-            url: "/students/" + this.id,
-            method: "get",
-          },
-        },
-      ],
+  toTableRow(index?: number): GeneralTableCardElements {
+    const name_surname: CustomElement = {
+      id: "name_surname",
+      type: "string",
+      linkType: "request",
+      content: {
+        text: this.name + " " + this.surname,
+        url: "/students/" + this.id,
+        method: "get",
+      },
     };
+
+    let to_ret: GeneralTableCardElements;
+
+    if (index != undefined) {
+      to_ret = {
+        id: "" + this.id,
+        group: "",
+        content: [
+          getCustomMessage("index", index),
+          getCustomMessage("index_sm", index + ")"),
+        ].concat(name_surname),
+        layout: {
+          general: ["index", "name_surname"],
+          sm: [[{ id: "index_sm", size: 1 }, { id: "name_surname" }]],
+        },
+      };
+    } else {
+      to_ret = {
+        id: "" + this.id,
+        group: "",
+        content: [name_surname],
+        layout: {
+          general: ["name_surname"],
+          sm: [[{ id: "name_surname" }]],
+        },
+      };
+    }
+
+    return to_ret;
   }
 }
 
@@ -2146,8 +2256,11 @@ class OrdinaryClassStudent extends StudentSummary {
     this.clil_credits = props.clil_credits;
   }
 
-  toTableRow(movable = false): GeneralTableCardElements {
-    const row_to_return = super.toTableRow();
+  toTableRow(index?: number, movable = false): GeneralTableCardElements {
+    const row_to_return = super.toTableRow(index);
+
+    let tmp_content: ContentType;
+
     if (User.getLoggedUser()?.type == "admin") {
       row_to_return.content.push(
         {
@@ -2159,25 +2272,83 @@ class OrdinaryClassStudent extends StudentSummary {
           id: "clil_credits",
           type: "string",
           content: this.clil_credits,
+        },
+        {
+          id: "orientation_credits_sm",
+          type: "string",
+          content:
+            getCurrentElement("orientation_credits") +
+            ": " +
+            this.orientation_credits,
+        },
+        {
+          id: "clil_credits_sm",
+          type: "string",
+          content: getCurrentElement("clil_credits") + ": " + this.clil_credits,
         }
       );
+
+      if (row_to_return.layout != undefined) {
+        (row_to_return.layout["general"] as (string | number)[]).push(
+          "orientation_credits",
+          "clil_credits"
+        );
+        row_to_return.layout["sm"] = (
+          row_to_return.layout["sm"] as LayoutElement[][]
+        ).concat([
+          [
+            {
+              id: "orientation_credits_sm",
+            },
+          ],
+          [
+            {
+              id: "clil_credits_sm",
+            },
+          ],
+        ]);
+      }
     }
     if (movable) {
+      tmp_content = {
+        event: "student_mover",
+        data: {
+          title: this.name + " " + this.surname,
+          parameters: {
+            student_id: this.id,
+          },
+        },
+        icon: getIcon("pencil"),
+      };
       row_to_return.content.push({
         id: "student_mover",
         type: "icon",
         linkType: "event",
-        content: {
-          event: "student_mover",
-          data: {
-            title: this.name + " " + this.surname,
-            parameters: {
-              student_id: this.id,
-            },
-          },
-          icon: getIcon("pencil"),
-        },
+        content: tmp_content,
       });
+      Object.assign(tmp_content as EventStringIcon, {
+        text: getCurrentElement("subscribe_to"),
+        whole_link: true,
+      });
+      row_to_return.content.push({
+        id: "student_mover_sm",
+        type: "string_icon",
+        linkType: "event",
+        content: tmp_content,
+        ...store.state.button_css,
+      });
+
+      if (row_to_return.layout != undefined) {
+        (row_to_return.layout["general"] as (string | number)[]).push(
+          "student_mover"
+        );
+        (row_to_return.layout["sm"] as LayoutElement[][]).push([
+          {
+            id: "student_mover_sm",
+            size: 5,
+          },
+        ]);
+      }
     }
 
     return row_to_return;
@@ -2209,24 +2380,33 @@ class ProjectClassStudent extends StudentSummary {
     };
   }
 
-  toCard(): GeneralCardElements {
-    // ! (3): per visualizzazione tabella a telefono
-    return {
-      id: "" + this.id,
-      group: "",
-      content: [
-        {
-          id: this.id + "_name",
-          type: "string",
-          content: this.name,
-        },
-        {
-          id: this.id + "_surname",
-          type: "string",
-          content: this.surname,
-        },
-      ],
-    };
+  private concatLayout(first: Layout, second: Layout) {
+    const to_ret: Layout = {};
+
+    let tmp_breakpoint: BreakpointScope;
+
+    Object.assign(to_ret, first);
+
+    for (const breakpoint in second) {
+      tmp_breakpoint = breakpoint as BreakpointScope;
+
+      if (to_ret[tmp_breakpoint] == undefined) {
+        to_ret[tmp_breakpoint] = second[tmp_breakpoint];
+      } else if (
+        isLayoutElementMatrix(second[tmp_breakpoint]) &&
+        isLayoutElementMatrix(to_ret[tmp_breakpoint])
+      ) {
+        to_ret[tmp_breakpoint] = (
+          to_ret[tmp_breakpoint] as LayoutElement[][]
+        ).concat(second[tmp_breakpoint] as LayoutElement[][]);
+      } else {
+        to_ret[tmp_breakpoint] = (
+          to_ret[tmp_breakpoint] as (string | number)[]
+        ).concat(second[tmp_breakpoint] as (string | number)[]);
+      }
+    }
+
+    return to_ret;
   }
 
   toTableRow(
@@ -2234,34 +2414,104 @@ class ProjectClassStudent extends StudentSummary {
     grades?: boolean,
     final_grade?: Grade,
     final_confirmation?: Date,
-    linked_input = false
+    linked_input = false,
+    index?: number
   ): GeneralTableCardElements {
     // TODO (7): usare AdminProjectClassProps quando verrà cambiato nome e sistemato in giro
-    const row_to_return = super.toTableRow();
+    const row_to_return = super.toTableRow(index);
     const tmp_row: GeneralTableCardElements = {
       id: "" + this.id,
       group: "",
-      content: [
-        {
-          id: "class",
-          type: "string",
-          content: this.ordinary_class.toString(),
-        },
-      ],
+      content: [],
+      layout: {
+        general: [],
+        sm: [],
+      },
     };
 
+    let tmp_sub_elements: {
+      [key: string]: {
+        [key: string]: string;
+      }[];
+    };
+    let tmp_index: number;
+    let tmp_content: ContentType;
+
+    if (tmp_row.layout == undefined) {
+      tmp_row.layout = {};
+    }
+    if (tmp_row.layout["general"] == undefined) {
+      tmp_row.layout["general"] = [];
+    }
+    if (tmp_row.layout["sm"] == undefined) {
+      tmp_row.layout["sm"] = [];
+    }
+
+    if (row_to_return.layout == undefined) {
+      row_to_return.layout = {};
+    }
+    if (row_to_return.layout["general"] == undefined) {
+      row_to_return.layout["general"] = [];
+    }
+    if (row_to_return.layout["sm"] == undefined) {
+      row_to_return.layout["sm"] = [];
+    }
+
+    row_to_return.content.push({
+      id: "class",
+      type: "string",
+      content: this.ordinary_class.toString(),
+    });
+    (row_to_return.layout["general"] as (string | number)[]).push("class");
+    (row_to_return.layout["sm"] as LayoutElement[][])[0].push({
+      id: "class",
+    });
+
     if (this.learning_context_id != undefined) {
-      row_to_return.content.push({
-        id: "learning_context",
-        type: "string",
-        content: this.learning_context_id,
-      });
+      row_to_return.content.push(
+        {
+          id: "learning_context",
+          type: "string",
+          content: this.learning_context_id,
+        },
+        {
+          id: "learning_context_sm",
+          type: "string",
+          content:
+            getCurrentElement("learning_context") +
+            ": " +
+            this.learning_context_id,
+        }
+      );
+
+      (row_to_return.layout["general"] as (string | number)[]).push(
+        "learning_context"
+      );
+      (row_to_return.layout["sm"] as LayoutElement[][]).push([
+        {
+          id: "learning_context_sm",
+        },
+      ]);
     }
     if (grades) {
-      tmp_row.content.push(
-        {
-          id: "gardes", // TODO (4): Mettere il controllo con future_course al passaggio a curriculum_v2
-          type: "icon",
+      tmp_sub_elements = {
+        general: [
+          {
+            id: "grades",
+            type: "icon",
+          },
+        ],
+        sm: [
+          {
+            id: "grades_sm",
+            type: "string_icon",
+          },
+        ],
+      };
+      for (const breakpoint in tmp_sub_elements) {
+        tmp_row.content.push({
+          id: tmp_sub_elements[breakpoint][0].id, // TODO (4): Mettere il controllo con future_course al passaggio a curriculum_v2
+          type: tmp_sub_elements[breakpoint][0].type as ElementType,
           linkType: "event",
           content: {
             event: "grades",
@@ -2276,60 +2526,170 @@ class ProjectClassStudent extends StudentSummary {
             },
             icon: getIcon("document_text"),
           },
-        },
-        {
-          id: "final_grade",
-          type: "string",
-          content: final_grade != undefined ? "" + final_grade.grade : "-",
-        }
-      );
-    } else if (linked_input) {
+        });
+      }
       tmp_row.content.push({
-        id: "grade",
-        type: "input",
-        content: "",
-        params: {
-          ref: this.id,
-          type: "number",
-        },
+        id: "final_grade",
+        type: "string",
+        content: final_grade != undefined ? "" + final_grade.grade : "-",
       });
-    } else if (final_confirmation == undefined) {
+      tmp_index = tmp_row.content.findIndex((x) => x.id == "grades_sm");
+      (tmp_row.content[tmp_index].content as StringIcon).text =
+        getCurrentElement("grades") +
+        " (" +
+        getCurrentElement("final") +
+        ": " +
+        (final_grade != undefined ? "" + final_grade.grade : "-") +
+        " ):";
+      tmp_row.content[tmp_index].classes = {
+        item: {
+          "ion-no-padding": {
+            sm: true,
+          },
+        },
+        label: {
+          "ion-no-margin": {
+            sm: true,
+          },
+          "ion-no-padding": {
+            sm: true,
+          },
+        },
+        button: {
+          "ion-no-margin": {
+            sm: true,
+          },
+        },
+      };
+
+      (tmp_row.layout["general"] as (string | number)[]).push(
+        "grades",
+        "final_grade"
+      );
+      (tmp_row.layout["sm"] as LayoutElement[][]).push([
+        {
+          id: "grades_sm",
+        },
+      ]);
+    } else if (linked_input) {
       tmp_row.content.push(
         {
-          id: "student_mover",
-          type: "icon",
-          linkType: "event",
-          content: {
-            event: "student_mover",
-            data: {
-              title: this.name + " " + this.surname,
-              parameters: {
-                student_id: this.id,
-                ordinary_class: this.ordinary_class,
-              },
-            },
-            icon: getIcon("pencil"),
+          id: "grade",
+          type: "input",
+          content: "",
+          params: {
+            ref: this.id,
+            type: "number",
           },
         },
         {
-          id: "remove_student",
-          type: "icon",
-          linkType: "event",
-          content: {
-            event: "remove_student",
-            data: {
-              title: this.name + " " + this.surname,
-              parameters: {
-                student_id: this.id,
-              },
-            },
-            icon: getIcon("close"),
+          id: "grade_sm",
+          type: "input",
+          content: "",
+          params: {
+            ref: this.id,
+            type: "number",
+            label: getCurrentElement("grade"),
           },
         }
+      );
+
+      (tmp_row.layout["general"] as (string | number)[]).push("grade");
+      (tmp_row.layout["sm"] as LayoutElement[][]).push([
+        {
+          id: "grade_sm",
+        },
+      ]);
+    } else if (final_confirmation == undefined) {
+      tmp_content = {
+        event: "student_mover",
+        data: {
+          title: this.name + " " + this.surname,
+          parameters: {
+            student_id: this.id,
+            ordinary_class: this.ordinary_class,
+          },
+        },
+        icon: getIcon("pencil"),
+      };
+      tmp_row.content.push({
+        id: "student_mover",
+        type: "icon",
+        linkType: "event",
+        content: tmp_content,
+      });
+      Object.assign(tmp_content, {
+        text: getCurrentElement("move"),
+        whole_link: true,
+      });
+      tmp_row.content.push({
+        id: "student_mover_sm",
+        type: "string_icon",
+        linkType: "event",
+        content: tmp_content,
+        ...store.state.button_css,
+      });
+
+      tmp_content = {
+        event: "remove_student",
+        data: {
+          title: this.name + " " + this.surname,
+          parameters: {
+            student_id: this.id,
+          },
+        },
+        icon: getIcon("close"),
+      };
+      tmp_row.content.push({
+        id: "remove_student",
+        type: "icon",
+        linkType: "event",
+        content: tmp_content,
+      });
+      Object.assign(tmp_content, {
+        text: getCurrentElement("remove"),
+        whole_link: true,
+      });
+      tmp_row.content.push(
+        {
+          id: "remove_student_sm",
+          type: "string_icon",
+          linkType: "event",
+          content: tmp_content,
+          ...store.state.button_css,
+        },
+        getCustomMessage("empty", "")
+      );
+
+      (tmp_row.layout["general"] as (string | number)[]).push(
+        "student_mover",
+        "remove_student"
+      );
+      tmp_row.layout["sm"] = (tmp_row.layout["sm"] as LayoutElement[][]).concat(
+        [
+          [
+            {
+              id: "student_mover_sm",
+              size: 5,
+            },
+            {
+              id: "empty",
+              size: 2,
+            },
+            {
+              id: "remove_student_sm",
+              size: 5,
+            },
+          ],
+        ]
       );
     }
 
     row_to_return.content = row_to_return.content.concat(tmp_row.content);
+    row_to_return.layout = this.concatLayout(
+      row_to_return.layout,
+      tmp_row.layout
+    );
 
     return row_to_return;
   }
@@ -4184,11 +4544,6 @@ enum SubscriptionsManagerMode {
   MOVE,
 }
 
-enum SubscriptionsManagerVisualizzationType {
-  CARDS, // _all_courses: TmpList<CardsList<EnrollmentCardElements>>, _courses: OrderedCardsList
-  TABLE, // CustomElement[][]
-}
-
 type EnrollmentAvailability = {
   course: EnrollmentCardElements | undefined;
   available_courses: boolean;
@@ -4936,6 +5291,8 @@ export {
   EnrollmentCourseProps,
   CourseProps,
   CardElements,
+  LayoutElement,
+  Layout,
   GeneralCardElements,
   GeneralTableCardElements,
   EnrollmentCardElements,

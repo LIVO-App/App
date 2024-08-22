@@ -505,8 +505,6 @@ const add_grades = () => {
 };
 
 const updateStudents = async () => {
-  let tmp_row: GeneralTableCardElements;
-
   students =
     selected_section.value != ""
       ? await executeLink(
@@ -584,18 +582,19 @@ const updateStudents = async () => {
         () => []
       );
     }
-    tmp_row = tmp_student.toTableRow(
-      user.type == "teacher" ? user.id : undefined,
-      user.type == "teacher",
-      user.type == "teacher"
-        ? grades[tmp_student.id][final_grades_indexes[tmp_student.id]]
-        : undefined,
-      project_class?.final_confirmation
+
+    table_data.cards[""].push(
+      tmp_student.toTableRow(
+        user.type == "teacher" ? user.id : undefined,
+        user.type == "teacher",
+        user.type == "teacher"
+          ? grades[tmp_student.id][final_grades_indexes[tmp_student.id]]
+          : undefined,
+        project_class?.final_confirmation,
+        undefined,
+        parseInt(student_index) + 1
+      )
     );
-    tmp_row.content = [
-      getCustomMessage(tmp_student.id + "_index", parseInt(student_index) + 1),
-    ].concat(tmp_row.content);
-    table_data.cards[""].push(tmp_row);
   }
 };
 const manageEvent = () => {
@@ -1054,14 +1053,14 @@ const first_row: CustomElement[] = [
     content: getCurrentElement("student"),
   },
   {
-    id: "learning_context",
-    type: "string",
-    content: getCurrentElement("learning_context"),
-  },
-  {
     id: "class",
     type: "string",
     content: getCurrentElement("class"),
+  },
+  {
+    id: "learning_context",
+    type: "string",
+    content: getCurrentElement("learning_context"),
   },
 ];
 const grades_open = ref(false);
@@ -1115,22 +1114,7 @@ const buttons: CustomElement[] = [
       event: "multiple_grades",
       whole_link: true,
     },
-    colors: {
-      text: {
-        name: "white",
-        type: "var",
-      },
-      background: {
-        name: "primary",
-        type: "var",
-      },
-    },
-    classes: {
-      button: {
-        radius: true,
-        "ion-padding-horizontal": true,
-      },
-    },
+    ...store.state.button_css,
   },
 ];
 const selected_section = ref("");

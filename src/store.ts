@@ -1083,6 +1083,23 @@ export const store = createStore({
         lg: 992,
         xl: 1200,
       },
+      button_css: {
+        colors: {
+          text: {
+            name: "white",
+            type: "var",
+          },
+          background: {
+            name: "primary",
+            type: "var",
+          },
+        },
+        classes: {
+          button: {
+            radius: true,
+          },
+        },
+      },
     };
   },
 });

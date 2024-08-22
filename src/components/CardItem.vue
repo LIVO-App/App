@@ -42,6 +42,7 @@
       v-model:subtitle="card_ref.subtitle"
       v-model:content="card_ref.content"
       v-model:side_element="card_ref.side_element"
+      :layout="card_ref.layout"
       :selected="card_ref.selected"
       :hovered="local_hovered"
       :link="card_ref.link"
