@@ -34,14 +34,7 @@ import {
 } from "@/types";
 import { getBreakpoint, getBreakpointClasses } from "@/utils";
 import { IonSelect, IonSelectOption } from "@ionic/vue";
-import {
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  PropType,
-  ref,
-  watch,
-} from "vue";
+import { nextTick, onBeforeUnmount, onMounted, PropType, ref } from "vue";
 
 const updateBreakpoint = () => {
   breakpoint.value = getBreakpoint(window.innerWidth);
@@ -85,13 +78,6 @@ if (props.classes?.select != undefined || props.classes?.option != undefined) {
   onBeforeUnmount(() => {
     window.removeEventListener("resize", updateBreakpoint);
   });
-
-  watch(
-    () => window.innerWidth,
-    (newWidth) => {
-      breakpoint.value = getBreakpoint(newWidth);
-    }
-  );
 }
 </script>
 

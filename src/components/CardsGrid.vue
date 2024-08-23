@@ -110,13 +110,6 @@ if (
   onBeforeUnmount(() => {
     window.removeEventListener("resize", updateBreakpoint);
   });
-
-  watch(
-    () => window.innerWidth,
-    (newWidth) => {
-      breakpoint.value = getBreakpoint(newWidth);
-    }
-  );
 }
 </script>
 

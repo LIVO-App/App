@@ -339,13 +339,6 @@ if (Object.keys(props.classes ?? {}).length > 0) {
   onBeforeUnmount(() => {
     window.removeEventListener("resize", updateBreakpoint);
   });
-
-  watch(
-    () => window.innerWidth,
-    (newWidth) => {
-      breakpoint.value = getBreakpoint(newWidth);
-    }
-  );
 }
 </script>
 
