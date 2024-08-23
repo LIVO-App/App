@@ -708,6 +708,10 @@ export const store = createStore({
             "Alcuni voti non sono stati inseriti correttamente",
           already_existing_grades:
             "Alcuni voti sono già stati inseriti in questa data",
+          learning_session_error: "Problemi con la sessione di apprendimento",
+          last_session_error: "L'attuale sessione di apprendimento è l'ultima dell'anno scolastico",
+          all_courses_confirmed: "Tutti i corsi sono stati approvati e associati ad una classe",
+          no_file_exported: "Nessun file esportato",
         },
         english: {
           credits_constraints: "Credits constraints",
@@ -1049,6 +1053,10 @@ export const store = createStore({
           grades_with_errors: "Some grades were not inserted correctly",
           already_existing_grades:
             "Some grades were already inserted in this date",
+          learning_session_error: "Error with the learning session",
+          last_session_error: "The current learning session is the last one of the school year",
+          all_courses_confirmed: "All courses have been approved and associated to a class",
+          no_file_exported: "No file exported",
         },
       },
       logged_user: false,

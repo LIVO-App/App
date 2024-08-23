@@ -47,6 +47,8 @@ import { $axios } from "./plugins/axios";
 import { store } from "./store";
 import router from "./router";
 import { decode } from "html-entities";
+import { Capacitor } from "@capacitor/core";
+import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 
 function getCompleteSchoolYear(year: number) {
   return year + " - " + (year + 1);
@@ -114,39 +116,37 @@ async function executeLink(
   fail: (err: any) => any = (err: string) => err,
   method?: Method,
   body?: { [key: string]: any },
+  options?: { [key: string]: any },
   decode_entities = true
 ) {
   const toExecute = removeScript(url ?? store.state.request.url);
   const howExecute = method ?? store.state.request.method ?? "get";
-  const options = {
-    headers: {
-      "x-access-token": sessionStorage.getItem("token") ?? "",
-    },
-  };
   const actual_body =
     body != undefined
       ? JSON.parse(removeScript(JSON.stringify(body)))
       : undefined;
+  const actual_options = options ?? {};
 
   let request;
 
+  actual_options["x-access-token"] = sessionStorage.getItem("token") ?? "";
   if ($axios != undefined && toExecute != undefined) {
     if (!isTokenExpired()) {
       switch (howExecute) {
         case "get":
-          request = $axios.get(toExecute, options);
+          request = $axios.get(toExecute, actual_options);
           break;
         case "post":
-          request = $axios.post(toExecute, actual_body, options);
+          request = $axios.post(toExecute, actual_body, actual_options);
           break;
         case "put":
-          request = $axios.put(toExecute, actual_body, options);
+          request = $axios.put(toExecute, actual_body, actual_options);
           break;
         case "delete":
-          request = $axios.delete(toExecute, options);
+          request = $axios.delete(toExecute, actual_options);
           break;
         case "patch":
-          request = $axios.patch(toExecute, options);
+          request = $axios.patch(toExecute, actual_options);
           break;
         default:
           return new Promise(() => "Method not defined");
@@ -1077,6 +1077,47 @@ function castLayoutRow(e: any) {
   }[];
 }
 
+async function downloadCsv(data: Blob, filename: string) {
+  
+  let url: string,
+    link: HTMLAnchorElement,
+    reader: FileReader;
+
+  try {
+    // Check for empty data
+    if (data.size == 0 || data.size == undefined) {
+      return 0;
+    }
+
+    if (Capacitor.getPlatform() == "web") {
+      url = window.URL.createObjectURL(data);
+      link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      return 1;
+    } else {
+      reader = new FileReader();
+
+      reader.onload = async () =>
+        await Filesystem.writeFile({
+          path: filename,
+          data: reader.result as string,
+          directory: Directory.Documents,
+          encoding: Encoding.UTF8,
+        });
+
+      reader.readAsText(data);
+      return 1;
+    }
+  } catch {
+    return -1;
+  }
+}
+
 export {
   getCompleteSchoolYear,
   getCurrentSchoolYear,
@@ -1150,4 +1191,5 @@ export {
   isLayoutElementMatrix,
   getLayout,
   castLayoutRow,
+  downloadCsv,
 };

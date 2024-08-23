@@ -155,6 +155,7 @@ import {
   getLearningContexts,
   getIcon,
   setupError,
+  downloadCsv,
 } from "@/utils";
 import { useRoute } from "vue-router";
 
@@ -438,16 +439,18 @@ const closeModal = (window: AvailableModal) => {
 const exportPropositions = () => {
   executeLink(
     undefined,
-    () =>
-      setTimeout(
-        () =>
-          setupModalAndOpen(
-            "success",
-            getCurrentElement("propositions_exported")
-          ),
-        300
+    (response) =>
+      downloadCsv(response.data, "propositions.csv").then(outcom_code => {
+        if (outcom_code == 1) {
+          setupModalAndOpen("success", getCurrentElement("propositions_exported"));
+        } else if (outcom_code == 0) {
+          setupModalAndOpen("success", getCurrentElement("all_courses_confirmed") + ". " + getCurrentElement("no_file_exported"));
+        } else {
+          setupModalAndOpen("error");
+        }
+      }
       ),
-    () => setTimeout(() => setupModalAndOpen("error"), 300)
+    () => setupModalAndOpen("error")
   );
 };
 

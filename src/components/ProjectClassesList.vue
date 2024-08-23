@@ -134,6 +134,7 @@ import { IonGrid, IonRow, IonCol, IonAlert } from "@ionic/vue";
 import { reactive, ref } from "vue";
 import { useStore } from "vuex";
 import {
+  downloadCsv,
   executeLink,
   getCurrentElement,
   getCustomMessage,
@@ -369,20 +370,38 @@ const closeModal = (window: AvailableModal) => {
       break;
   }
 };
-const exportSubscriptions = () => {
-  //<!-- ! (3): update export downloading the file
+const exportSubscriptions = async () => {
   executeLink(
     undefined,
-    () =>
-      setTimeout(
-        () =>
-          setupModalAndOpen(
+    (response) =>
+      downloadCsv(response.data, "subscriptions.csv").then(
+        outcome_code => {
+          if (outcome_code == 1) {
+            setupModalAndOpen(
             "success",
             getCurrentElement("subscriptions_exported")
-          ),
-        300
+          )
+          } else if (outcome_code == 0) {
+            setupModalAndOpen("error", getCurrentElement("no_students") + ". " + getCurrentElement("no_file_exported"))
+          } else {
+            setupModalAndOpen("error", getCurrentElement("error"))
+          }
+        },
+        () => setupModalAndOpen("error")
       ),
-    () => setTimeout(() => setupModalAndOpen("error"), 300)
+    (error) => setupModalAndOpen(
+            "error",
+            error.response.status == 404
+              ? getCurrentElement("learning_session_error")
+              : error.response.status == 400
+              ? getCurrentElement("last_session_error")
+              : undefined
+          ),
+    undefined,
+    undefined,
+    {
+      responseType: "blob",
+    }
   );
 };
 
