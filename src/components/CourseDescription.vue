@@ -157,7 +157,6 @@
                 'ion-no-padding': {
                   general: true,
                   sm: false,
-                  xs: false,
                 },
                 'ion-padding-bottom': {
                   sm: true,
@@ -208,7 +207,6 @@
                 'ion-no-padding': {
                   general: true,
                   sm: false,
-                  xs: false,
                 },
                 'ion-padding-bottom': {
                   sm: true,
@@ -268,7 +266,6 @@
                 'ion-no-padding': {
                   general: true,
                   sm: false,
-                  xs: false,
                 },
                 'ion-padding-bottom': {
                   sm: true,
@@ -328,7 +325,6 @@ const changeMode = (event: CustomEvent) => {
 };
 const updateBreakpoint = () => {
   breakpoint.value = getBreakpoint(window.innerWidth);
-  console.log(breakpoint.value);
 };
 
 const modules = [Navigation, Autoplay];
@@ -530,7 +526,6 @@ onMounted(() =>
 onBeforeUnmount(() => {
   window.removeEventListener("resize", updateBreakpoint);
 });
-console.log(breakpoint.value);
 </script>
 
 <style scoped>
