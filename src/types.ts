@@ -361,7 +361,7 @@ type LayoutElement = {
 };
 
 type Layout = {
-  [key in keyof string as BreakpointScope]?:
+  [key in keyof string as Breakpoint]?:
     | (string | number)[]
     | LayoutElement[][];
 };
@@ -854,7 +854,7 @@ class CurriculumCourse extends CourseBase {
         },
       ],
       layout: {
-        general: ["title", "credits", "learning_area", "gardes", "final_grade"],
+        xl: ["title", "credits", "learning_area", "gardes", "final_grade"],
         sm: [
           [
             {
@@ -1945,7 +1945,7 @@ class Grade {
         },
       ],
       layout: {
-        general: ["description", "pubblication", "value"],
+        xl: ["description", "pubblication", "value"],
         sm: [
           [
             {
@@ -2005,7 +2005,7 @@ class Grade {
           getCustomMessage("empty", "")
         );
         if (row.layout != undefined) {
-          (row.layout["general"] as (string | number)[]).push("edit", "remove");
+          (row.layout["xl"] as (string | number)[]).push("edit", "remove");
           (row.layout["sm"] as LayoutElement[][]).push([
             { id: "empty", size: 3 },
             { id: "edit", size: 2 },
@@ -2028,7 +2028,7 @@ class Grade {
           }
         );
         if (row.layout != undefined) {
-          (row.layout["general"] as (string | number)[]).push("edit", "remove");
+          (row.layout["xl"] as (string | number)[]).push("edit", "remove");
         }
       }
     }
@@ -2221,7 +2221,7 @@ class StudentSummary implements StudentSummaryProps {
           getCustomMessage("index_sm", index + ")"),
         ].concat(name_surname),
         layout: {
-          general: ["index", "name_surname"],
+          xl: ["index", "name_surname"],
           sm: [[{ id: "index_sm", size: 1 }, { id: "name_surname" }]],
         },
       };
@@ -2231,7 +2231,7 @@ class StudentSummary implements StudentSummaryProps {
         group: "",
         content: [name_surname],
         layout: {
-          general: ["name_surname"],
+          xl: ["name_surname"],
           sm: [[{ id: "name_surname" }]],
         },
       };
@@ -2289,7 +2289,7 @@ class OrdinaryClassStudent extends StudentSummary {
       );
 
       if (row_to_return.layout != undefined) {
-        (row_to_return.layout["general"] as (string | number)[]).push(
+        (row_to_return.layout["xl"] as (string | number)[]).push(
           "orientation_credits",
           "clil_credits"
         );
@@ -2339,7 +2339,7 @@ class OrdinaryClassStudent extends StudentSummary {
       });
 
       if (row_to_return.layout != undefined) {
-        (row_to_return.layout["general"] as (string | number)[]).push(
+        (row_to_return.layout["xl"] as (string | number)[]).push(
           "student_mover"
         );
         (row_to_return.layout["sm"] as LayoutElement[][]).push([
@@ -2383,12 +2383,12 @@ class ProjectClassStudent extends StudentSummary {
   private concatLayout(first: Layout, second: Layout) {
     const to_ret: Layout = {};
 
-    let tmp_breakpoint: BreakpointScope;
+    let tmp_breakpoint: Breakpoint;
 
     Object.assign(to_ret, first);
 
     for (const breakpoint in second) {
-      tmp_breakpoint = breakpoint as BreakpointScope;
+      tmp_breakpoint = breakpoint as Breakpoint;
 
       if (to_ret[tmp_breakpoint] == undefined) {
         to_ret[tmp_breakpoint] = second[tmp_breakpoint];
@@ -2424,7 +2424,7 @@ class ProjectClassStudent extends StudentSummary {
       group: "",
       content: [],
       layout: {
-        general: [],
+        xl: [],
         sm: [],
       },
     };
@@ -2440,8 +2440,8 @@ class ProjectClassStudent extends StudentSummary {
     if (tmp_row.layout == undefined) {
       tmp_row.layout = {};
     }
-    if (tmp_row.layout["general"] == undefined) {
-      tmp_row.layout["general"] = [];
+    if (tmp_row.layout["xl"] == undefined) {
+      tmp_row.layout["xl"] = [];
     }
     if (tmp_row.layout["sm"] == undefined) {
       tmp_row.layout["sm"] = [];
@@ -2450,8 +2450,8 @@ class ProjectClassStudent extends StudentSummary {
     if (row_to_return.layout == undefined) {
       row_to_return.layout = {};
     }
-    if (row_to_return.layout["general"] == undefined) {
-      row_to_return.layout["general"] = [];
+    if (row_to_return.layout["xl"] == undefined) {
+      row_to_return.layout["xl"] = [];
     }
     if (row_to_return.layout["sm"] == undefined) {
       row_to_return.layout["sm"] = [];
@@ -2462,7 +2462,7 @@ class ProjectClassStudent extends StudentSummary {
       type: "string",
       content: this.ordinary_class.toString(),
     });
-    (row_to_return.layout["general"] as (string | number)[]).push("class");
+    (row_to_return.layout["xl"] as (string | number)[]).push("class");
     (row_to_return.layout["sm"] as LayoutElement[][])[0].push({
       id: "class",
     });
@@ -2484,7 +2484,7 @@ class ProjectClassStudent extends StudentSummary {
         }
       );
 
-      (row_to_return.layout["general"] as (string | number)[]).push(
+      (row_to_return.layout["xl"] as (string | number)[]).push(
         "learning_context"
       );
       (row_to_return.layout["sm"] as LayoutElement[][]).push([
@@ -2562,7 +2562,7 @@ class ProjectClassStudent extends StudentSummary {
         },
       };
 
-      (tmp_row.layout["general"] as (string | number)[]).push(
+      (tmp_row.layout["xl"] as (string | number)[]).push(
         "grades",
         "final_grade"
       );
@@ -2594,7 +2594,7 @@ class ProjectClassStudent extends StudentSummary {
         }
       );
 
-      (tmp_row.layout["general"] as (string | number)[]).push("grade");
+      (tmp_row.layout["xl"] as (string | number)[]).push("grade");
       (tmp_row.layout["sm"] as LayoutElement[][]).push([
         {
           id: "grade_sm",
@@ -2661,7 +2661,7 @@ class ProjectClassStudent extends StudentSummary {
         getCustomMessage("empty", "")
       );
 
-      (tmp_row.layout["general"] as (string | number)[]).push(
+      (tmp_row.layout["xl"] as (string | number)[]).push(
         "student_mover",
         "remove_student"
       );

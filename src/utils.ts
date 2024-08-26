@@ -1061,8 +1061,6 @@ function getLayout(layout: Layout | undefined, breakpoint: Breakpoint) {
 
       if (tmp_breakpoint != undefined) {
         to_ret = layout[tmp_breakpoint];
-      } else {
-        to_ret = layout["general"];
       }
     }
   }
