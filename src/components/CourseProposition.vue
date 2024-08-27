@@ -59,8 +59,8 @@
     />
     <!-- ! (3): mettere filtro su modelli -->
     <ion-card :key="trigger">
-      <ion-card-header color="primary">
-        <ion-card-title class="ion-text-center">{{
+      <ion-card-header>
+        <ion-card-title class="ion-text-center" color="white">{{
           getCurrentElement(
             ModelProposition.getTitles()[pages[current_page_index]]
           )
@@ -536,7 +536,6 @@
                     <ion-button
                       @click="addElement('access')"
                       expand="block"
-                      color="primary"
                       fill="solid"
                     >
                       {{ getCurrentElement("add") }}
@@ -673,7 +672,6 @@
                     v-if="sections_use && action == 'propose'"
                     @click="addElement('teachers')"
                     expand="block"
-                    color="primary"
                     fill="solid"
                   >
                     {{ getCurrentElement("add") }}
@@ -719,7 +717,6 @@
                 v-if="action == 'propose'"
                 @click="checkAndConfirm"
                 expand="block"
-                color="primary"
                 fill="solid"
               >
                 {{ getCurrentElement("propose") }}
@@ -2089,4 +2086,11 @@ if (!sections_use) {
 }
 </script>
 
-<style></style>
+<style scoped>
+  ion-card-header {
+    --background: rgba(var(--ion-color-black-rgb),0.25);
+  }
+  ion-button {
+    --background: rgba(var(--ion-color-black-rgb),0.25);
+  }
+</style>
