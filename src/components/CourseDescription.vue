@@ -114,12 +114,6 @@
           <b
             ><ionic-element
               :element="
-                getCustomMessage('open_to', getCurrentElement('open_to') + ':')
-              "
-          /></b>
-          <b
-            ><ionic-element
-              :element="
                 getCustomMessage(
                   'teachings',
                   getCurrentElement('teachings') + ':'
