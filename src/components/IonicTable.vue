@@ -381,7 +381,7 @@ onBeforeUnmount(() => {
 
 <style>
 .header .col {
-  background-color: var(--ion-color-primary);
+  background-color: rgba(var(--ion-color-black-rgb), 0.25);
 }
 
 .col {

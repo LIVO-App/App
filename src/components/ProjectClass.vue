@@ -236,7 +236,7 @@ import {
 } from "@/utils";
 import { IonModal, IonAlert, AlertButton, IonButton } from "@ionic/vue";
 import { ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 
 type AvailableModal =
@@ -525,7 +525,7 @@ const updateStudents = async () => {
               user.type == "admin" &&
               project_class?.final_confirmation != undefined
                 ? [1, 6, 3, 2]
-                : [1, 4, 2, 1, 2, 2];
+                : [1, 4, 2, 1.5, 1.5, 2];
             if (first_row.length != column_sizes.length) {
               if (project_class?.final_confirmation == undefined) {
                 first_row.push(
@@ -1035,6 +1035,7 @@ const areAllFinals = () => {
 };
 
 const store = useStore();
+const $router = useRouter();
 const user = User.getLoggedUser() as User;
 const sections_use: boolean = store.state.sections_use;
 const languages = getAviableLanguages();
@@ -1181,7 +1182,7 @@ let student_mover_data: TmpList;
 if (user.type == "teacher") {
   first_row.push(
     {
-      id: "gardes",
+      id: "grades",
       type: "string",
       content: getCurrentElement("grades"),
     },
