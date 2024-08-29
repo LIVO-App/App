@@ -80,7 +80,7 @@
       <ion-row>
         <ion-col size="auto">
           <custom-select
-            v-model="selected_year"
+            v-model:selected_option="selected_year"
             :list="school_years"
             :label="getCurrentElement('school_year') + ':'"
             :aria_label="getCurrentElement('school_year')"
@@ -90,7 +90,7 @@
         </ion-col>
         <ion-col size="auto">
           <custom-select
-            v-model="selected_context"
+            v-model:selected_option="selected_context"
             :list="learning_contexts"
             :label="getCurrentElement('learning_context') + ':'"
             :aria_label="getCurrentElement('learning_context')"

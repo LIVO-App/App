@@ -1,30 +1,41 @@
 <template>
-  <ion-select
-    :value="selected_option"
-    @input="$emit('update:selected_option', $event.target.value)"
-    :label="label"
-    :aria-label="label"
-    justify="start"
-    :placeholder="placeholder"
-    fill="outline"
-    :disabled="disabled"
-    interface="popover"
-    :class="{
-      ...getBreakpointClasses(classes?.select, breakpoint),
-      'ion-padding': !no_padding,
-    }"
-  >
-    <!-- interface="popover" è più carino, ma da warnings-->
-    <ion-select-option
-      v-for="option in props.list"
-      :value="option.id"
-      :key="option.id"
-      :aria-label="getCompleteName(option)"
-      :class="getBreakpointClasses(classes?.option, breakpoint)"
-    >
-      {{ getCompleteName(option) }}
-    </ion-select-option>
-  </ion-select>
+  <ion-grid>
+    <ion-row class="ion-align-items-center">
+      <ion-col size="auto">
+        <ion-label>
+          {{ label }}
+        </ion-label>
+      </ion-col>
+      <ion-col sizr="auto">
+        <ion-select
+          :value="selected_option"
+          :aria-label="label"
+          @ionChange="($event) => (selected_option_ref = $event.target.value)"
+          justify="start"
+          :placeholder="placeholder"
+          :disabled="disabled"
+          interface="popover"
+          :toggle-icon="chevronDownOutline"
+          shape="round"
+          :class="{
+            ...getBreakpointClasses(classes?.select, breakpoint),
+            'ion-padding': !no_padding,
+          }"
+        >
+          <!-- interface="popover" è più carino, ma da warnings-->
+          <ion-select-option
+            v-for="option in props.list"
+            :value="option.id"
+            :key="option.id"
+            :aria-label="getCompleteName(option)"
+            :class="getBreakpointClasses(classes?.option, breakpoint)"
+          >
+            {{ getCompleteName(option) }}
+          </ion-select-option>
+        </ion-select>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </template>
 
 <script setup lang="ts">
@@ -33,8 +44,23 @@ import {
   /*Colors, GeneralSubElements,*/ SelectSubElements,
 } from "@/types";
 import { getBreakpoint, getBreakpointClasses } from "@/utils";
-import { IonSelect, IonSelectOption } from "@ionic/vue";
-import { nextTick, onBeforeUnmount, onMounted, PropType, ref } from "vue";
+import {
+  IonCol,
+  IonGrid,
+  IonLabel,
+  IonRow,
+  IonSelect,
+  IonSelectOption,
+} from "@ionic/vue";
+import {
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  PropType,
+  ref,
+  watch,
+} from "vue";
+import { chevronDownOutline } from "ionicons/icons";
 
 const updateBreakpoint = () => {
   breakpoint.value = getBreakpoint(window.innerWidth);
@@ -64,9 +90,25 @@ const props = defineProps({
   //colors: Object as PropType<Colors<GeneralSubElements>>, //<!-- TODO (7): colori
   classes: Object as PropType<Classes<SelectSubElements>>,
 });
-defineEmits(["update:selected_option"]);
+const emit = defineEmits(["update:selected_option"]);
 
 const breakpoint = ref(getBreakpoint(window.innerWidth));
+const selected_option_ref = ref(props.selected_option);
+
+watch(
+  () => props.selected_option,
+  (value) => {
+    selected_option_ref.value = value;
+  }
+);
+watch(
+  () => selected_option_ref.value,
+  (value) => {
+    console.log("Ciao");
+
+    emit("update:selected_option", value);
+  }
+);
 
 if (props.classes?.select != undefined || props.classes?.option != undefined) {
   onMounted(() =>
@@ -85,6 +127,19 @@ if (props.classes?.select != undefined || props.classes?.option != undefined) {
 .alert-wrapper {
   max-width: unset !important;
   width: 350px !important; /*<!-- TODO (6): trovare un metodo dinamico */
+}
+ion-select {
+  --background: var(--ion-color-white);
+  --border-radius: 5px;
+}
+.item.sc-ion-label-md-h,
+.item .sc-ion-label-md-h {
+  white-space: normal !important;
+}
+
+.item.sc-ion-label-ios-h,
+.item .sc-ion-label-ios-h {
+  white-space: normal !important;
 }
 /*.alert-radio-label.sc-ion-alert-md {
   white-space: pre-line !important;

@@ -48,7 +48,7 @@
     </template>
     <custom-select
       :key="trigger"
-      v-model="selected_model"
+      v-model:selected_option="selected_model"
       :list="models"
       :label="getCurrentElement('reference_model') + ':'"
       :aria_label="getCurrentElement('reference_model')"
@@ -354,7 +354,7 @@
               </ion-col>
               <ion-col>
                 <custom-select
-                  v-model="
+                  v-model:selected_option="
                     castToCharacteristics1(
                       course_proposition[pages[current_page_index]]
                     ).area_id
@@ -373,7 +373,7 @@
           <template v-else-if="pages[current_page_index] == 'characteristics2'">
             <ion-row>
               <!--<custom-select
-                  v-model="
+                  v-model:selected_option="
                     castToCharacteristics2(
                       course_proposition[pages[current_page_index]]
                     ).growth_id
@@ -408,7 +408,7 @@
                   <custom-select
                     v-if="key == 'teaching_list'"
                     :key="trigger + '_teachings_select'"
-                    v-model="selected_teaching"
+                    v-model:selected_option="selected_teaching"
                     :list="teachings.available"
                     :label="getCurrentElement('teaching') + ':'"
                     :aria_label="getCurrentElement('teaching')"
@@ -418,7 +418,7 @@
                   <custom-select
                     v-else
                     :key="trigger + '_growth_areas_select'"
-                    v-model="selected_growth_area"
+                    v-model:selected_option="selected_growth_area"
                     :list="growth_areas.available"
                     :label="getCurrentElement('growth_area') + ':'"
                     :aria_label="getCurrentElement('growth_area')"
@@ -462,7 +462,7 @@
                 <ion-row>
                   <ion-col>
                     <custom-select
-                      v-model="selected_learning_context"
+                      v-model:selected_option="selected_learning_context"
                       :list="learning_contexts.available"
                       :label="getCurrentElement('learning_context') + ':'"
                       :aria_label="getCurrentElement('learning_context')"
@@ -475,7 +475,7 @@
                   <ion-col>
                     <custom-select
                       :key="trigger + '_study_address'"
-                      v-model="selected_study_address"
+                      v-model:selected_option="selected_study_address"
                       :list="
                         study_addresses.available[selected_learning_context] ??
                         []
@@ -502,7 +502,7 @@
                   <ion-col>
                     <custom-select
                       :key="trigger + '_study_year'"
-                      v-model="selected_study_year"
+                      v-model:selected_option="selected_study_year"
                       :list="
                         study_years.available[selected_learning_context] !=
                         undefined
@@ -659,7 +659,7 @@
               <ion-row>
                 <ion-col>
                   <custom-select
-                    v-model="selected_session"
+                    v-model:selected_option="selected_session"
                     :list="learning_sessions"
                     :label="getCurrentElement('learning_sessions') + ':'"
                     :aria_label="getCurrentElement('learning_sessions')"
@@ -669,7 +669,7 @@
                   />
                   <custom-select
                     :key="trigger"
-                    v-model="
+                    v-model:selected_option="
                       castToSpecificInformation(
                         course_proposition[pages[current_page_index]]
                       ).class_group
@@ -710,7 +710,7 @@
                     <div>
                       <custom-select
                         :key="trigger + '_teacher'"
-                        v-model="selected_teacher"
+                        v-model:selected_option="selected_teacher"
                         :list="teachers.available"
                         :label="getCurrentElement('teacher') + ':'"
                         :aria_label="getCurrentElement('teacher')"

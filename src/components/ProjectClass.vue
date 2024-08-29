@@ -165,7 +165,7 @@
     </template>
     <custom-select
       v-if="sections_use"
-      v-model="selected_section"
+      v-model:selected_option="selected_section"
       :list="sections"
       :label="getCurrentElement('section') + ':'"
       :aria_label="getCurrentElement('section')"

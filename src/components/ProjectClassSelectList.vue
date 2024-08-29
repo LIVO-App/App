@@ -69,7 +69,7 @@
       </ion-col>
       <ion-col size="12" size-md="6">
         <custom-select
-          v-model="selected_option"
+          v-model:selected_option="selected_option"
           :list="options"
           :label="
             getCurrentElement(
@@ -440,16 +440,23 @@ const exportPropositions = () => {
   executeLink(
     undefined,
     (response) =>
-      downloadCsv(response.data, "propositions.csv").then(outcom_code => {
+      downloadCsv(response.data, "propositions.csv").then((outcom_code) => {
         if (outcom_code == 1) {
-          setupModalAndOpen("success", getCurrentElement("propositions_exported"));
+          setupModalAndOpen(
+            "success",
+            getCurrentElement("propositions_exported")
+          );
         } else if (outcom_code == 0) {
-          setupModalAndOpen("success", getCurrentElement("all_courses_confirmed") + ". " + getCurrentElement("no_file_exported"));
+          setupModalAndOpen(
+            "success",
+            getCurrentElement("all_courses_confirmed") +
+              ". " +
+              getCurrentElement("no_file_exported")
+          );
         } else {
           setupModalAndOpen("error");
         }
-      }
-      ),
+      }),
     () => setupModalAndOpen("error")
   );
 };

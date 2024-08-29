@@ -34,7 +34,7 @@
     </ion-modal>
     <custom-select
       v-if="sections_use"
-      v-model="selected_section"
+      v-model:selected_option="selected_section"
       :list="sections"
       :label="getCurrentElement('section') + ':'"
       :aria_label="getCurrentElement('section')"
@@ -42,7 +42,7 @@
     />
     <custom-select
       v-if="user.type == 'admin'"
-      v-model="selected_session"
+      v-model:selected_option="selected_session"
       :list="learning_sessions"
       :label="getCurrentElement('learning_sessions') + ':'"
       :aria_label="getCurrentElement('learning_sessions')"
