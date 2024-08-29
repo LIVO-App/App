@@ -3337,7 +3337,7 @@ type PropositionSpecificInformation = {
   class_group: number;
   num_section: number;
   teacher_list: PropositionTeacher[];
-  // TODO (4): add project_class_code: string (simple text field, min-max 8)
+  // ! (3): add project_class_code: string (simple text field, min-max 8)
 };
 
 type PropositionObj = {
