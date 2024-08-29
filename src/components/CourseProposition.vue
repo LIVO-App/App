@@ -26,7 +26,6 @@
       </suspense>
     </ion-modal>-->
     <!-- ! (3): spostare pulsanti in alto -->
-    <!-- ! (3): aggiungere aggiunta immagini -->
     <ionic-element
       :element="buttons[3]"
       @execute_link="$router.push(store.state.request.url)"
@@ -560,6 +559,99 @@
               </ion-row>
             </ion-grid>
           </template>
+          <template v-else-if="pages[current_page_index] == 'images_list'">
+            <!--
+            <ion-col v-if="grande && (no_reorder)" vuoto>
+            <ion-col v-if="view">
+              <carousel v-if="images != 0">
+              <empty v-else>
+            </ion-col>
+            <ion-col v-else upload>
+            <ion-col reorder v-if="images != 0 && view">
+            -->
+            <ion-grid>
+              <ion-row>
+                <ion-col
+                  v-if="
+                    !isSmaller(breakpoint, 'md') &&
+                    !(action != 'view' && images_list.length > 0)
+                  "
+                  size="3"
+                ></ion-col>
+                <ion-col
+                  v-if="
+                    action == 'view' ||
+                    (action == 'edit' && user.type == 'admin')
+                  "
+                  :size="isSmaller(breakpoint, 'md') ? '12' : '6'"
+                  class="ion-text-center"
+                >
+                  <image-carousel
+                    :key="carousel_trigger"
+                    v-if="images_list.length > 0"
+                    :images="images_list"
+                    :show_name="!(action == 'view' && user.type == 'teacher')"
+                  />
+                  <ionic-element
+                    v-else
+                    :element="
+                      getCustomMessage(
+                        'no_uploaded_images',
+                        getCurrentElement('no_uploaded_images'),
+                        'string',
+                        undefined,
+                        {
+                          label: {
+                            'ion-padding-vertical': true,
+                          },
+                        }
+                      )
+                    "
+                  />
+                </ion-col>
+                <ion-col
+                  v-else
+                  :size="isSmaller(breakpoint, 'md') ? '12' : '6'"
+                >
+                  <image-uploader
+                    v-model:images_list="images_list"
+                    v-model:progress_infos="progress_infos"
+                    @signal_event="setupModalAndOpen('error')"
+                  />
+                </ion-col>
+                <ion-col
+                  v-if="action != 'view' && images_list.length > 0"
+                  :size="isSmaller(breakpoint, 'md') ? '12' : '6'"
+                >
+                  <ionic-element
+                    :element="
+                      getCustomMessage(
+                        'image_visualization_order',
+                        getCurrentElement('image_visualization_order') + ':'
+                      )
+                    "
+                  />
+                  <ion-reorder-group
+                    :disabled="approved.project_class || action == 'edit'"
+                    @ionItemReorder="moveImage($event)"
+                  >
+                    <ion-item
+                      v-for="(image, i) in images_list"
+                      :key="'order_item_' + i"
+                    >
+                      <ionic-element
+                        :element="
+                          getReorderLabel(i, image.name, approved.course)
+                        "
+                        @signal_event="removeImage()"
+                      />
+                      <ion-reorder slot="end" class="ion-no-margin" />
+                    </ion-item>
+                  </ion-reorder-group>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </template>
           <template
             v-else-if="pages[current_page_index] == 'specific_information'"
           >
@@ -768,6 +860,7 @@ import {
   AdminProjectClass,
   PropositionListsKeys,
   PropositionActions,
+  ImageDescriptor,
 } from "@/types";
 import {
   executeLink,
@@ -778,6 +871,9 @@ import {
   getIcon,
   getLearningContexts,
   numberToSection,
+  uploadMultipleImages,
+  getBreakpoint,
+  isSmaller,
 } from "@/utils";
 import {
   IonAlert,
@@ -794,13 +890,23 @@ import {
   IonCheckbox,
   IonList,
   IonItem,
+  IonReorderGroup,
+  IonReorder,
 } from "@ionic/vue";
-import { reactive, ref, Ref, watch } from "vue";
+import {
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  Ref,
+  watch,
+} from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 
 type AvailableModal = "error" | "teacher_info" | "confirm" | "success";
-type ListTypes = "access" | "teachers" | SimpleListTypes;
+type CardsListTypes = "access" | "teachers" | SimpleListTypes;
 type SimpleListTypes = "growth_areas" | "teachings";
 type SimpleList<T> = {
   available: T[];
@@ -846,15 +952,17 @@ const checkAndConfirm = () => {
 const propose = () => {
   executeLink(
     "/v1/propositions",
-    () =>
-      setTimeout(
-        () =>
-          setupModalAndOpen(
-            "success",
-            getCurrentElement("successful_proposal")
-          ),
-        300
-      ),
+    (response) =>
+      uploadImagesMessages(
+        response.data.course_id,
+        getCurrentElement("successful_proposal")
+      )
+        .then((message) =>
+          setTimeout(() => setupModalAndOpen("success", message), 300)
+        )
+        .catch((message) =>
+          setTimeout(() => setupModalAndOpen("error", message), 300)
+        ),
     (error) => {
       if (error.response.status == 409) {
         setTimeout(
@@ -921,7 +1029,9 @@ const setupModalAndOpen = async (
       alert_information.buttons = [getCurrentElement("ok")];
       break;
     case "error":
-      setAlertError(message);
+      setAlertError(
+        message ?? store.state.event.data?.message ?? getCurrentElement("error")
+      );
       break;
   }
   alert_open.value = true;
@@ -1252,7 +1362,7 @@ const addTeacher = (
   }
   trigger.value++;
 };
-const addElement = (type: ListTypes) => {
+const addElement = (type: CardsListTypes) => {
   // TODO (9): trovare pezzi in comune negli switch per semplificare la funzione e la successiva
   switch (type) {
     case "teachings":
@@ -1305,7 +1415,7 @@ const removeSimpleElement = (type: SimpleListTypes) => {
   reference.available.sort((a, b) => (a.id == b.id ? 0 : a.id > b.id ? 1 : -1));
   reference.selected.splice(tmp_index, 1);
 };
-const removeElement = (type: ListTypes) => {
+const removeElement = (type: CardsListTypes) => {
   let learning_context_id: string;
   let study_address_id: string;
   let study_year: number;
@@ -1434,10 +1544,7 @@ const edit_course_proposition = async (course_id?: number) => {
   let learning_area: LearningArea;
   if (course_id != undefined && !Number.isNaN(course_id)) {
     course = await Course.newCourse(
-      await executeLink(
-        "/v1/courses/" + course_id + "?admin_info=true",
-        (response) => response.data.data
-      )
+      "/v1/courses/" + course_id + "?admin_info=true"
     );
     approved.course = course.certifying_admin?.id != null;
     learning_area = await executeLink("/v1/learning_areas", (response) => {
@@ -1454,6 +1561,8 @@ const edit_course_proposition = async (course_id?: number) => {
             english_title: "",
           };
     });
+    images_list.value = course.images_list;
+    old_images_names = course.images_list.map((a) => a.name);
     if (tmp_session_id != -1) {
       project_class = await executeLink(
         "/v1/project_classes/" + course_id + "/" + tmp_session_id,
@@ -1510,18 +1619,20 @@ const edit_course_proposition = async (course_id?: number) => {
         italian_act: course.italian_activities,
         english_act: course.english_activities,
         access_object: course.access_object,
+        images_list: images_list.value.filter((a) => a instanceof File),
         teacher_list: tmp_teachers,
       })
     );
     selected_session.value = tmp_session_id;
-    fillLists({});
+    fillCardsLists({});
   } else {
     course_proposition = reactive(new ModelProposition());
   }
   trigger.value++;
 };
-const fillLists = (lists_info: {
+const fillCardsLists = (lists_info: {
   [key in keyof string as PropositionListsKeys]?: {
+    //<!-- TODO (6): guardare se si può mettere CardsListTypes
     clear?: {
       cards?: boolean;
       support_list?: boolean;
@@ -1642,7 +1753,56 @@ const changeModality = (new_action: PropositionActions) => {
     if (checkAndWarn()) {
       executeLink(
         "/v1/courses/" + course_proposition.course_id,
-        undefined,
+        async () => {
+          const remaining_old_images: ImageDescriptor[] =
+            images_list.value.filter(
+              (a) => !(a instanceof File)
+            ) as ImageDescriptor[];
+
+          /*let message = "";
+
+          if (course_proposition.images_list.length > 0) {f
+            message = await uploadImagesMessages(
+              course_proposition.course_id,
+              ""
+            ).then(a => a).catch(a => a);
+            if (message != "") {
+              images_list.value = images_list.value.filter(
+                (a) => !(a instanceof File)
+              );
+            }
+          }*/
+          if (
+            //message == "" &&
+            old_images_names.length > 0 &&
+            remaining_old_images.length != old_images_names.length
+          ) {
+            if (remaining_old_images.length == 0) {
+              executeLink(
+                "/v1/images/course/" + course_proposition.course_id,
+                undefined,
+                () => getCurrentElement("images_upload_error"),
+                "delete"
+              );
+            } else {
+              for (const image_name of old_images_names.filter(
+                (a) => remaining_old_images.findIndex((b) => a == b.name) == -1
+              )) {
+                executeLink(
+                  "/v1/images/course/" +
+                    course_proposition.course_id +
+                    "?name=" +
+                    image_name,
+                  undefined,
+                  () => getCurrentElement("images_upload_error"),
+                  "delete"
+                );
+              }
+            }
+          } /*else if (message != "") {
+            setupModalAndOpen("error", message);
+          }*/
+        },
         () => {
           //changes_error = true; //<!-- TODO (6): fare "esci senza salvare"
           setupModalAndOpen("error", getCurrentElement("changes_not_made"));
@@ -1651,11 +1811,11 @@ const changeModality = (new_action: PropositionActions) => {
         course_proposition.toProposition()
       );
       action.value = new_action;
-      fillLists(lists_info);
+      fillCardsLists(lists_info);
     }
   } else if (action.value == "view" && new_action == "edit") {
     action.value = new_action;
-    fillLists(lists_info);
+    fillCardsLists(lists_info);
   }
   trigger.value++;
 };
@@ -1697,6 +1857,79 @@ const approve = (outcome = true) => {
   }
 };
 const allApproed = () => approved.course && approved.project_class;
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+};
+const moveImage = (event: CustomEvent) => {
+  event.detail.complete(images_list.value);
+};
+const removeImage = () => {
+  const image_index = images_list.value.findIndex(
+    (a) => a.name == store.state.event.data.name
+  );
+
+  if (image_index != -1) {
+    images_list.value.splice(image_index, 1);
+    carousel_trigger.value++;
+  }
+};
+const uploadImagesMessages = async (
+  refer_course_id: number | undefined,
+  successful_message: string
+) => {
+  let status = undefined;
+
+  if (course_proposition.images_list.length > 0) {
+    status = await uploadMultipleImages(
+      "/v1/images/course/" + refer_course_id,
+      course_proposition.images_list
+    )
+      .then((a) => a)
+      .catch((a) => a);
+  }
+
+  return new Promise<string>((resolve, reject) =>
+    status == undefined || status == 201
+      ? resolve(successful_message)
+      : reject(
+          (successful_message != "" ? successful_message + ". " : "") +
+            (status == 400
+              ? getCurrentElement("images_upload_error")
+              : status == 401
+              ? getCurrentElement("unauthorized_image_uploading")
+              : getCurrentElement("error"))
+        )
+  );
+};
+const getReorderLabel = (index: number, name: string, disabled: boolean) => {
+  const to_ret: CustomElement = {
+    id: "image_" + index,
+    type: "string",
+    content: name,
+    classes: {
+      item: {
+        w_100: true,
+      },
+    },
+  };
+
+  if (!disabled) {
+    Object.assign(to_ret, {
+      type: "string_icon",
+      linkType: "event",
+      content: {
+        text: name,
+        icon: getIcon("close"),
+        event: "remove",
+        data: {
+          name: name,
+        },
+      },
+    });
+  }
+
+  return to_ret;
+};
 /*const parameters_remaining = computed(
   () => course_proposition.remaining.length == 0
 );*/
@@ -1710,7 +1943,7 @@ const $router = useRouter();
 const alert_information: AlertInformation = store.state.alert_information;
 
 const trigger = ref(0);
-const selected_model: Ref<number | undefined> = ref(undefined);
+const carousel_trigger = ref(0);
 const alert_open = ref(false);
 const pages = ModelProposition.getProps("pages");
 const current_page_index = ref(0);
@@ -1880,6 +2113,11 @@ const tmp_project_class_id =
   $route.query[action.value] != undefined
     ? ($route.query[action.value] as string).split("_")
     : [];
+const selected_model: Ref<number | undefined> = ref(
+  tmp_project_class_id.length > 0
+    ? parseInt(tmp_project_class_id[0])
+    : undefined
+);
 const tmp_session_id =
   tmp_project_class_id.length > 1 ? parseInt(tmp_project_class_id[1]) : -1;
 const approved: {
@@ -1890,6 +2128,13 @@ const approved: {
   project_class: false,
 };
 const sections_use: boolean = store.state.sections_use;
+const images_list: Ref<(ImageDescriptor | File)[]> = ref([]);
+const progress_infos: Ref<
+  {
+    percentage: number;
+  }[]
+> = ref([]);
+const breakpoint = ref(getBreakpoint(window.innerWidth));
 /*const correspondences: {
   [key in keyof string as ListTypes]: {
     [key: string]: string
@@ -1915,6 +2160,7 @@ let sections: boolean[] = reactive([true]);
 let project_class: AdminProjectClass;
 let tmp_teachers: PropositionTeacher[] = [];
 let approve_project_class = true;
+let old_images_names: string[] = [];
 
 /*switch (pages[current_page_index.value]) { //<!-- TODO (6): caricare una volta i vari contenuti
   case "teaching_list":
@@ -2061,16 +2307,15 @@ watch(num_section, (n, o) => {
     num_section.value = o;
   }
 });
+if (selected_model.value != undefined) {
+  edit_course_proposition(selected_model.value);
+}
 watch(selected_model, () => {
   if (selected_model.value != undefined) {
     edit_course_proposition(selected_model.value);
   }
   trigger.value++;
 });
-selected_model.value =
-  tmp_project_class_id.length > 0
-    ? parseInt(tmp_project_class_id[0])
-    : undefined;
 watch(selected_teaching, () => {
   addElement("teachings");
 });
@@ -2084,13 +2329,29 @@ if (!sections_use) {
     }
   });
 }
+watch(
+  () => images_list.value,
+  (value) => {
+    course_proposition.images_list = value.filter((a) => a instanceof File);
+  }
+);
+
+onMounted(() =>
+  nextTick(() => {
+    window.addEventListener("resize", updateBreakpoint);
+  })
+);
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateBreakpoint);
+});
 </script>
 
 <style scoped>
-  ion-card-header {
-    --background: rgba(var(--ion-color-black-rgb),0.25);
-  }
-  ion-button {
-    --background: rgba(var(--ion-color-black-rgb),0.25);
-  }
+ion-card-header {
+  --background: rgba(var(--ion-color-black-rgb), 0.25);
+}
+ion-button {
+  --background: rgba(var(--ion-color-black-rgb), 0.25);
+}
 </style>

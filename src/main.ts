@@ -41,6 +41,8 @@ import EditorWrapper from "./components/EditorWrapper.vue";
 import ProjectClassSelector from "./components/ProjectClassSelector.vue";
 import OrdinaryClass from "./components/OrdinaryClass.vue";
 import MultipleGradesManager from "./components/MultipleGradesManager.vue";
+import ImageUploader from "./components/ImageUploader.vue";
+import ImageCarousel from "./components/ImageCarousel.vue";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/vue/css/core.css";
@@ -106,7 +108,9 @@ const app = createApp(App)
   .component("EditorWrapper", EditorWrapper)
   .component("ProjectClassSelector", ProjectClassSelector)
   .component("OrdinaryClass", OrdinaryClass)
-  .component("MultipleGradesManager", MultipleGradesManager);
+  .component("MultipleGradesManager", MultipleGradesManager)
+  .component("ImageUploader", ImageUploader)
+  .component("ImageCarousel", ImageCarousel);
 
 router.isReady().then(() => {
   app.mount("#app");

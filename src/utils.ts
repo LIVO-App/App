@@ -122,14 +122,20 @@ async function executeLink(
   const toExecute = removeScript(url ?? store.state.request.url);
   const howExecute = method ?? store.state.request.method ?? "get";
   const actual_body =
-    body != undefined
+    body instanceof FormData
+      ? body
+      : body != undefined
       ? JSON.parse(removeScript(JSON.stringify(body)))
       : undefined;
   const actual_options = options ?? {};
 
   let request;
 
-  actual_options["x-access-token"] = sessionStorage.getItem("token") ?? "";
+  if (actual_options["headers"] == undefined) {
+    actual_options["headers"] = {};
+  }
+  actual_options["headers"]["x-access-token"] =
+    sessionStorage.getItem("token") ?? "";
   if ($axios != undefined && toExecute != undefined) {
     if (!isTokenExpired()) {
       switch (howExecute) {
@@ -1076,10 +1082,7 @@ function castLayoutRow(e: any) {
 }
 
 async function downloadCsv(data: Blob, filename: string) {
-  
-  let url: string,
-    link: HTMLAnchorElement,
-    reader: FileReader;
+  let url: string, link: HTMLAnchorElement, reader: FileReader;
 
   try {
     // Check for empty data
@@ -1114,6 +1117,27 @@ async function downloadCsv(data: Blob, filename: string) {
   } catch {
     return -1;
   }
+}
+
+function uploadMultipleImages(url: string, files: File[]): Promise<number> {
+  const formData = new FormData();
+
+  for (const file of files) {
+    formData.append("images", file);
+  }
+
+  return executeLink(
+    url,
+    (response) => response.status,
+    (error) => error.response.status,
+    "post",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
 }
 
 export {
@@ -1190,4 +1214,5 @@ export {
   getLayout,
   castLayoutRow,
   downloadCsv,
+  uploadMultipleImages,
 };

@@ -73,6 +73,10 @@ ion-split-pane {
   justify-content: center;
 }
 
+.w_100 {
+  width: 100%;
+}
+
 /* TODO (5): sistemare colori. Non funzionano i colori dei giorni */
 /*ion-datetime {
     --background: var(--ion-color-white);

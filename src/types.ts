@@ -361,9 +361,7 @@ type LayoutElement = {
 };
 
 type Layout = {
-  [key in keyof string as Breakpoint]?:
-    | (string | number)[]
-    | LayoutElement[][];
+  [key in keyof string as Breakpoint]?: (string | number)[] | LayoutElement[][];
 };
 
 type OptionalContentCard = {
@@ -913,7 +911,7 @@ class Course extends CourseBase {
   access_object: PropositionAccessObject;
   teaching_list: Teaching[];
   growth_list: GrowthArea[];
-  images: ImageDescriptor[];
+  images_list: ImageDescriptor[];
   private learning_contexts: {
     [key: string]: LearningContext;
   };
@@ -950,7 +948,7 @@ class Course extends CourseBase {
     this.growth_list = [];
     this.teaching_list = [];
     this.access_object = {};
-    this.images = [];
+    this.images_list = [];
     this.learning_contexts = {};
   }
 
@@ -997,10 +995,19 @@ class Course extends CourseBase {
       },
       () => []
     );
+    await executeLink("/v1/images/course/" + this.id, (response) => {
+      this.images_list = response.data.data;
+    });
   }
 
-  static async newCourse(courseObj: CourseProps) {
-    const course = new Course(courseObj);
+  static async newCourse(course_link: string) {
+    const course = new Course(
+      await executeLink(
+        course_link,
+        (response) => response.data.data,
+        () => null
+      )
+    );
     await course.loadParams();
 
     return course;
@@ -3219,7 +3226,7 @@ class CourseModel {
   }
 }
 
-type PagesType = "pages" | "editor" | "no_inner_props";
+type PagesType = "pages" | "editor" | "no_inner_props" | "different_request";
 
 type Pages =
   | "course_id"
@@ -3231,6 +3238,7 @@ type Pages =
   | "criterions"
   | "activities"
   | "access_object"
+  | "images_list"
   | "specific_information";
 
 type PropositionKeysType = "required" | "optional" | "lists";
@@ -3239,6 +3247,7 @@ type PropositionListsKeys =
   | "access_object"
   | "teaching_list"
   | "growth_list"
+  | "images_list"
   | "teacher_list";
 
 type PropositionRequiredKeys =
@@ -3315,6 +3324,8 @@ type PropositionAccessObject = {
   [key: string]: AccessObject[];
 };
 
+type PropositionImage = File;
+
 type PropositionTeacher = {
   teacher_id: number;
   main: boolean;
@@ -3334,6 +3345,7 @@ type PropositionObj = {
 } & {
   course_id: number;
   access_object: PropositionAccessObject;
+  images_list?: PropositionImage[];
 } & PropositionTitles &
   PropositionCharacteristics1 &
   PropositionCharacteristics2 &
@@ -3359,6 +3371,7 @@ class ModelProposition {
   private _criterions: PropositionCriterions;
   private _activities: PropositionActivities;
   private _access_object: PropositionAccessObject;
+  private _images_list: PropositionImage[];
   private _specific_information: PropositionSpecificInformation;
   private _remaining: Pages[];
 
@@ -3400,6 +3413,7 @@ class ModelProposition {
       english_act: actual_proposition.english_act,
     };
     this._access_object = actual_proposition.access_object;
+    this._images_list = actual_proposition.images_list ?? [];
     this._specific_information = {
       session_id: actual_proposition.session_id,
       class_group: actual_proposition.class_group,
@@ -3438,6 +3452,7 @@ class ModelProposition {
       italian_act: "",
       english_act: "",
       access_object: {},
+      images_list: undefined,
       teacher_list: [],
     };
   }
@@ -3518,6 +3533,14 @@ class ModelProposition {
     this._remaining = this._remaining.filter((a) => a != "access_object");
   }
 
+  public get images_list() {
+    return this._images_list;
+  }
+  public set images_list(value: PropositionImage[]) {
+    this._images_list = value;
+    this._remaining = this._remaining.filter((a) => a != "images_list");
+  }
+
   public get specific_information() {
     return this._specific_information;
   }
@@ -3539,12 +3562,18 @@ class ModelProposition {
     );
   }
 
-  toProposition(): PropositionObj {
+  toProposition(remove_different_request = true): PropositionObj {
     const proposition: {
       [key: string]: any;
     } = {};
     const keys = Object.keys(this).filter(
-      (a) => a != "_remaining" && (a != "course_id" || this.course_id != 0)
+      (a) =>
+        a != "_remaining" &&
+        (a != "course_id" || this.course_id != 0) &&
+        (!remove_different_request ||
+          ModelProposition.getProps("different_request").findIndex(
+            (b) => b == a
+          ) == -1)
     );
 
     let inner_keys: string[];
@@ -3588,6 +3617,7 @@ class ModelProposition {
           "criterions",
           "activities",
           "access_object",
+          "images_list",
           "specific_information",
         ];
       case "pages":
@@ -3600,6 +3630,7 @@ class ModelProposition {
           "criterions",
           "activities",
           "access_object",
+          "images_list",
           "specific_information",
         ];
       case "editor":
@@ -3610,7 +3641,9 @@ class ModelProposition {
           "activities",
         ];
       case "no_inner_props":
-        return ["course_id", "access_object"];
+        return ["course_id", "access_object", "images_list"];
+      case "different_request":
+        return ["images_list"];
     }
   }
 
@@ -3625,6 +3658,7 @@ class ModelProposition {
       criterions: "criterions",
       activities: "activities",
       access_object: "access_object",
+      images_list: "course_images",
       specific_information: "specific_information",
     };
   }
@@ -3656,6 +3690,7 @@ class ModelProposition {
       "access_object",
       "teaching_list",
       "growth_list",
+      "images_list",
       "teacher_list",
     ];
 
@@ -3828,6 +3863,13 @@ class ModelProposition {
         {
           rule: [1],
           error_message: getCurrentElement("num_sections_error"),
+          valid: ["propose", "edit"],
+        },
+      ],
+      images_list: [
+        {
+          rule: [0, 5],
+          error_message: getCurrentElement("max_images_error"),
           valid: ["propose", "edit"],
         },
       ],
@@ -4510,7 +4552,7 @@ class AdminSummary {
 
 type ImageDescriptor = {
   url: string;
-  caption: string;
+  name: string;
 };
 
 type DefaultLink = {
@@ -5374,6 +5416,7 @@ export {
   PropositionDescription,
   PropositionExpectedLearningResults,
   PropositionCharacteristics2,
+  PropositionImage,
   PropositionSpecificInformation,
   PropositionTitles,
   PropositionTeacher,
@@ -5400,6 +5443,7 @@ export {
   ProjectClassSummary,
   AdminProjectClass,
   CardListDescription,
+  ImageDescriptor,
   DefaultLink,
   AlertInformation,
   SubscriptionsManagerMode,

@@ -709,9 +709,23 @@ export const store = createStore({
           already_existing_grades:
             "Alcuni voti sono già stati inseriti in questa data",
           learning_session_error: "Problemi con la sessione di apprendimento",
-          last_session_error: "L'attuale sessione di apprendimento è l'ultima dell'anno scolastico",
-          all_courses_confirmed: "Tutti i corsi sono stati approvati e associati ad una classe",
+          last_session_error:
+            "L'attuale sessione di apprendimento è l'ultima dell'anno scolastico",
+          all_courses_confirmed:
+            "Tutti i corsi sono stati approvati e associati ad una classe",
           no_file_exported: "Nessun file esportato",
+          course_images: "Immagini del corso",
+          max_images_error: "Il numero massimo di foto caricabili è 4",
+          release_images: "Rilascia le immagini qui",
+          click_to_upload: "Clicca qui per caricare",
+          image_already_present: "Immagine già presente",
+          images_already_present: "Una o più immagini sono già presenti",
+          image_visualization_order: "Ordine di visualizzazione delle immagini",
+          unauthorized_image_uploading:
+            "Non sei autorizzato a caricare immagini",
+          images_upload_error: "Non è stato possibile caricare le immagini",
+          images_delete_error: "Non è stato possibile eliminare le immagini",
+          no_uploaded_images: "Nessun'imagine caricata",
         },
         english: {
           credits_constraints: "Credits constraints",
@@ -1054,9 +1068,24 @@ export const store = createStore({
           already_existing_grades:
             "Some grades were already inserted in this date",
           learning_session_error: "Error with the learning session",
-          last_session_error: "The current learning session is the last one of the school year",
-          all_courses_confirmed: "All courses have been approved and associated to a class",
+          last_session_error:
+            "The current learning session is the last one of the school year",
+          all_courses_confirmed:
+            "All courses have been approved and associated to a class",
           no_file_exported: "No file exported",
+          course_images: "Course images",
+          max_images_error:
+            "The maximum number of photos that can be uploaded is 4",
+          release_images: "Release to drop images here",
+          click_upload: "Click here to upload",
+          image_already_present: "Image already present",
+          images_already_present: "One or more images are already present",
+          image_visualization_order: "Image visualization order",
+          unauthorized_image_uploading:
+            "You're not authorized to upload images",
+          images_upload_error: "Images could not be uploaded",
+          images_delete_error: "Images could not be deleted",
+          no_uploaded_images: "No uploaded images",
         },
       },
       logged_user: false,

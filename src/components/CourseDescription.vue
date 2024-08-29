@@ -72,31 +72,9 @@
             }"
           />
           <hr style="border-top: 1px solid var(--ion-color-black)" />
-          <swiper
-            v-if="course.images.length > 1"
-            :modules="modules"
-            :slides-per-view="1"
-            navigation
-            :autoplay="{
-              delay: 4000,
-              disableOnInteraction: false,
-            }"
-          >
-            <swiper-slide v-for="(image, index) in course.images" :key="index">
-              <ion-img
-                :src="require('@/assets/' + image.url)"
-                :alt="image.caption"
-                style="height: 150px"
-              />
-              <!-- TODO (4): finire di sistemare -->
-            </swiper-slide>
-          </swiper>
-          <ion-img
-            v-if="course.images.length == 1"
-            :src="require('@/assets/' + course.images[0].url)"
-            :alt="course.images[0].caption"
-            style="height: 150px"
-          />
+          <div class="ion-padding-bottom">
+            <image-carousel :images="course.images_list" />
+          </div>
           <b
             ><ionic-element
               :element="
@@ -305,13 +283,10 @@ import {
   IonGrid,
   IonRow,
   IonCol,
-  IonImg,
   IonSegment,
   IonSegmentButton,
 } from "@ionic/vue";
-import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
-import { Navigation, Autoplay } from "swiper/modules";
 import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 
 const changeMode = (event: CustomEvent) => {
@@ -321,7 +296,6 @@ const updateBreakpoint = () => {
   breakpoint.value = getBreakpoint(window.innerWidth);
 };
 
-const modules = [Navigation, Autoplay];
 const props = defineProps({
   title: {
     type: String,
@@ -361,18 +335,8 @@ const elements: {
   },
 };
 const breakpoint = ref(getBreakpoint(window.innerWidth));
-const course = await Course.newCourse(
-  await executeLink(
-    "/v1/courses/" + props.course_id,
-    (response) => response.data.data,
-    () => null
-  )
-);
+const course = await Course.newCourse("/v1/courses/" + props.course_id);
 
-course.images.push({
-  url: "Logo_LIVO_Campus_POS_RGB.png",
-  caption: "Old logo",
-}); //<!-- ! (3): aggiungere visualizzazione immagini
 const access_cards = course.getAccessCardsList();
 const growth_cards = course.getGrowthCardsList();
 const teachings_cards = course.getTeachingCardsList();
