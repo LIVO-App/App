@@ -572,18 +572,17 @@
             <ion-grid>
               <ion-row>
                 <ion-col
-                  v-if="
-                    !isSmaller(breakpoint, 'md') &&
-                    !(action != 'view' && images_list.length > 0)
-                  "
+                  v-if="!(action != 'view' && images_list.length > 0)"
                   size="3"
+                  class="ion-hide-md-down"
                 ></ion-col>
                 <ion-col
                   v-if="
                     action == 'view' ||
                     (action == 'edit' && user.type == 'admin')
                   "
-                  :size="isSmaller(breakpoint, 'md') ? '12' : '6'"
+                  size="12"
+                  size-lg="6"
                   class="ion-text-center"
                 >
                   <image-carousel
@@ -609,10 +608,7 @@
                     "
                   />
                 </ion-col>
-                <ion-col
-                  v-else
-                  :size="isSmaller(breakpoint, 'md') ? '12' : '6'"
-                >
+                <ion-col v-else size="12" size-lg="6">
                   <image-uploader
                     v-model:images_list="images_list"
                     v-model:progress_infos="progress_infos"
@@ -621,7 +617,8 @@
                 </ion-col>
                 <ion-col
                   v-if="action != 'view' && images_list.length > 0"
-                  :size="isSmaller(breakpoint, 'md') ? '12' : '6'"
+                  size="12"
+                  size-lg="6"
                 >
                   <ionic-element
                     :element="
@@ -1857,9 +1854,6 @@ const approve = (outcome = true) => {
   }
 };
 const allApproed = () => approved.course && approved.project_class;
-const updateBreakpoint = () => {
-  breakpoint.value = getBreakpoint(window.innerWidth);
-};
 const moveImage = (event: CustomEvent) => {
   event.detail.complete(images_list.value);
 };
@@ -2134,7 +2128,6 @@ const progress_infos: Ref<
     percentage: number;
   }[]
 > = ref([]);
-const breakpoint = ref(getBreakpoint(window.innerWidth));
 /*const correspondences: {
   [key in keyof string as ListTypes]: {
     [key: string]: string
@@ -2335,16 +2328,6 @@ watch(
     course_proposition.images_list = value.filter((a) => a instanceof File);
   }
 );
-
-onMounted(() =>
-  nextTick(() => {
-    window.addEventListener("resize", updateBreakpoint);
-  })
-);
-
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", updateBreakpoint);
-});
 </script>
 
 <style scoped>
