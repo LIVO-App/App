@@ -67,9 +67,7 @@ const updateBreakpoint = () => {
 };
 
 const props = defineProps({
-  selected_option: {
-    type: String,
-  },
+  selected_option: [String, Number],
   list: {
     type: Object as PropType<
       {

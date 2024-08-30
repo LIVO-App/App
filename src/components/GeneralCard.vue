@@ -224,7 +224,7 @@ const updateBreakpoint = () => {
 const store = useStore();
 const props = defineProps({
   id: {
-    type: String || Number,
+    type: [String, Number],
     required: true,
   },
   title: Object as PropType<CustomElement>,
