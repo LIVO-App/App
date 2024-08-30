@@ -693,6 +693,26 @@
                       :readonly="action == 'view' || approved.project_class"
                     />
                   </div>
+                  <div class="ion-padding">
+                    <ion-input
+                      type="text"
+                      v-model="
+                        castToSpecificInformation(
+                          course_proposition[pages[current_page_index]]
+                        ).project_class_code
+                      "
+                      :label="getCurrentElement('project_class_code')"
+                      :aria-label="getCurrentElement('project_class_code')"
+                      fill="outline"
+                      :maxlength="
+                        castAsArray(
+                          ModelProposition.getRequiredInformation()
+                            .project_class_code[0].rule
+                        )[0]
+                      "
+                      :readonly="action == 'view' || approved.project_class"
+                    />
+                  </div>
                 </ion-col>
                 <ion-col>
                   <ionic-element
@@ -1592,6 +1612,7 @@ const edit_course_proposition = async (course_id?: number) => {
         area_id: learning_area.id,
         growth_list: course.growth_list.map((a) => a.id),
         session_id: tmp_session_id,
+        project_class_code: project_class?.project_class_code ?? "",
         class_group: project_class?.group ?? -1,
         num_section: 1,
         min_students: course.min_students,
@@ -1914,6 +1935,7 @@ const getReorderLabel = (index: number, name: string, disabled: boolean) => {
 
   return to_ret;
 };
+const castAsArray = (e: any) => e as Array<any>;
 /*const parameters_remaining = computed(
   () => course_proposition.remaining.length == 0
 );*/
@@ -1930,7 +1952,7 @@ const trigger = ref(0);
 const carousel_trigger = ref(0);
 const alert_open = ref(false);
 const pages = ModelProposition.getProps("pages");
-const current_page_index = ref(0);
+const current_page_index = ref(9);
 const buttons: CustomElement[] = [
   {
     id: "back",

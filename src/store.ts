@@ -726,6 +726,9 @@ export const store = createStore({
           images_upload_error: "Non è stato possibile caricare le immagini",
           images_delete_error: "Non è stato possibile eliminare le immagini",
           no_uploaded_images: "Nessun'imagine caricata",
+          project_class_code: "Codice classe progetto",
+          project_class_code_error:
+            "Codice classe progetto non valido. Deve essere lungo 8 caratteri",
         },
         english: {
           credits_constraints: "Credits constraints",
@@ -1086,6 +1089,9 @@ export const store = createStore({
           images_upload_error: "Images could not be uploaded",
           images_delete_error: "Images could not be deleted",
           no_uploaded_images: "No uploaded images",
+          project_class_code: "Project class code",
+          project_class_code_error:
+            "Invalid project class code. Must be 8 characters long",
         },
       },
       logged_user: false,

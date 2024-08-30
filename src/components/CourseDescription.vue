@@ -392,6 +392,7 @@ if (props.learning_session_id != undefined) {
         actual_section,
         true,
         false,
+        user.type != "student",
         user
       );
     },

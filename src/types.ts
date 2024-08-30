@@ -3296,6 +3296,7 @@ type PropositionRequiredKeys =
   | "min_students"
   | "max_students"
   | "session_id"
+  | "project_class_code"
   | "class_group"
   | "num_section";
 
@@ -3367,6 +3368,7 @@ type PropositionTeacher = {
 
 type PropositionSpecificInformation = {
   session_id: number;
+  project_class_code: string;
   class_group: number;
   num_section: number;
   teacher_list: PropositionTeacher[];
@@ -3449,6 +3451,7 @@ class ModelProposition {
     this._images_list = actual_proposition.images_list ?? [];
     this._specific_information = {
       session_id: actual_proposition.session_id,
+      project_class_code: actual_proposition.project_class_code,
       class_group: actual_proposition.class_group,
       num_section: actual_proposition.num_section,
       teacher_list: actual_proposition.teacher_list,
@@ -3471,6 +3474,7 @@ class ModelProposition {
       area_id: "",
       growth_list: [],
       session_id: -1,
+      project_class_code: "",
       class_group: -1,
       num_section: 1,
       min_students: 0,
@@ -3580,6 +3584,7 @@ class ModelProposition {
   public set specific_information(value: PropositionSpecificInformation) {
     this._specific_information = {
       session_id: value.session_id,
+      project_class_code: value.project_class_code,
       class_group: value.class_group,
       num_section: value.num_section,
       teacher_list: value.teacher_list.map((a) => {
@@ -3744,6 +3749,7 @@ class ModelProposition {
           "min_students",
           "max_students",
           "session_id",
+          "project_class_code",
           "class_group",
           "num_section"
         );
@@ -3765,7 +3771,7 @@ class ModelProposition {
     return keys;
   }
 
-  private getRequiredInformation(): {
+  static getRequiredInformation(): {
     [key in keyof string as PropositionRequiredKeys]: {
       rule: boolean | number[] | ((proposition: PropositionObj) => boolean);
       error_message: string;
@@ -3871,6 +3877,13 @@ class ModelProposition {
           valid: ["propose", "edit"],
         },
       ],
+      project_class_code: [
+        {
+          rule: [8, 9],
+          error_message: getCurrentElement("project_class_code_error"),
+          valid: ["propose", "edit"],
+        },
+      ],
       access_object: [
         {
           rule: [1],
@@ -3917,7 +3930,7 @@ class ModelProposition {
   }
 
   check(action: PropositionActions) {
-    const required_information = this.getRequiredInformation(); // TODO (5): trovare un modo per dare un ordine
+    const required_information = ModelProposition.getRequiredInformation(); // TODO (5): trovare un modo per dare un ordine
     const proposition = this.toProposition();
     const missing_information: {
       [key in keyof string as PropositionRequiredKeys]?: string; // TODO (6): mettere messaggi multipli per singolo campo
@@ -3937,7 +3950,10 @@ class ModelProposition {
             }
           } else if (Array.isArray(rule.rule)) {
             len = (rule.rule as number[]).length;
-            if (Array.isArray(proposition[key])) {
+            if (
+              Array.isArray(proposition[key]) ||
+              typeof proposition[key] == "string"
+            ) {
               if (
                 !(
                   proposition[key].length >= (rule.rule as number[])[0] &&
@@ -4315,6 +4331,7 @@ type ProjectClassSummaryProps = {
   course_id: number;
   learning_session: number;
   group: number;
+  project_class_code: string;
 } & {
   [key in keyof string as `${Language}_title`]: string;
 };
@@ -4339,6 +4356,7 @@ class ProjectClassSummary {
   course_id: number;
   learning_session: LearningSession;
   group: number;
+  project_class_code: string;
   italian_title: string;
   english_title: string;
 
@@ -4359,6 +4377,7 @@ class ProjectClassSummary {
         open_day: "invalid",
       });
     this.group = props.group;
+    this.project_class_code = props.project_class_code;
     this.italian_title = props.italian_title;
     this.english_title = props.english_title;
   }
@@ -4376,7 +4395,8 @@ class ProjectClassSummary {
     path?: string,
     section?: string,
     separated_elements = false,
-    title_content = false
+    title_content = false,
+    show_project_class_code = true
   ): GeneralCardElements {
     const language = getCurrentLanguage();
 
@@ -4386,7 +4406,12 @@ class ProjectClassSummary {
       group: "",
       title:
         !title_content && this[`${language}_title`] != undefined
-          ? getCustomMessage("title", this[`${language}_title`], "title")
+          ? getCustomMessage(
+              "title",
+              (show_project_class_code ? this.project_class_code + " - " : "") +
+                this[`${language}_title`],
+              "title"
+            )
           : undefined,
       content: [],
       link:
@@ -4502,6 +4527,7 @@ class AdminProjectClass extends ProjectClassSummary {
         group: this.group,
         italian_title: this.italian_title,
         english_title: this.english_title,
+        project_class_code: this.project_class_code,
       },
       this.learning_session
     );
@@ -4512,6 +4538,7 @@ class AdminProjectClass extends ProjectClassSummary {
     section?: string,
     separated_elements = false,
     title_content = false,
+    show_project_class_code = true,
     user?: User
   ): GeneralCardElements {
     // TODO (5): evidenziare quando project_class_to_be_modified | course_to_be_modified
@@ -4519,7 +4546,8 @@ class AdminProjectClass extends ProjectClassSummary {
       path,
       section,
       separated_elements,
-      title_content
+      title_content,
+      show_project_class_code
     );
 
     tmp_card.content?.push({
