@@ -2,9 +2,16 @@
   <ion-grid>
     <ion-row class="ion-align-items-center">
       <ion-col size="auto">
-        <ion-label>
-          {{ label }}
-        </ion-label>
+        <ionic-element
+          :element="
+            getCustomMessage('select_label', label ?? '', 'string', {
+              text: {
+                name: 'primary',
+                type: 'var',
+              },
+            })
+          "
+        />
       </ion-col>
       <ion-col sizr="auto">
         <ion-select
@@ -43,11 +50,10 @@ import {
   Classes,
   /*Colors, GeneralSubElements,*/ SelectSubElements,
 } from "@/types";
-import { getBreakpoint, getBreakpointClasses } from "@/utils";
+import { getBreakpoint, getBreakpointClasses, getCustomMessage } from "@/utils";
 import {
   IonCol,
   IonGrid,
-  IonLabel,
   IonRow,
   IonSelect,
   IonSelectOption,
@@ -102,8 +108,6 @@ watch(
 watch(
   () => selected_option_ref.value,
   (value) => {
-    console.log("Ciao");
-
     emit("update:selected_option", value);
   }
 );

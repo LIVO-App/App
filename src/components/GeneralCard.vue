@@ -65,7 +65,7 @@
                   @signal_event="$emit('signal_event')" /></b
             ></ion-card-title>
           </ion-col>
-          <ion-col size="5">
+          <ion-col size="auto">
             <ion-card-subtitle v-if="subtitle_ref != undefined"
               ><ionic-element
                 v-model:element="subtitle_ref"
@@ -110,7 +110,11 @@
               />
             </template>
             <ion-grid v-else>
-              <ion-row v-for="(row, r) in actual_layout" :key="r">
+              <ion-row
+                v-for="(row, r) in actual_layout"
+                :key="r"
+                class="ion-align-items-center"
+              >
                 <ion-col
                   v-for="element in castLayoutRow(row)"
                   :key="element.id"
@@ -158,7 +162,11 @@
           />
         </template>
         <ion-grid v-else>
-          <ion-row v-for="(row, r) in actual_layout" :key="r">
+          <ion-row
+            v-for="(row, r) in actual_layout"
+            :key="r"
+            class="ion-align-items-center"
+          >
             <ion-col
               v-for="element in castLayoutRow(row)"
               :key="element.id"

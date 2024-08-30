@@ -357,7 +357,7 @@ type OptionalCardElements = {
 
 type LayoutElement = {
   id: string | number;
-  size?: number;
+  size?: number; // ! (3): inventarsi auto (es. 0)
 };
 
 type Layout = {
@@ -590,6 +590,7 @@ class EnrollmentCourse extends CourseSummary {
   }
 
   toEnrollmentCard(
+    // ! (3): Fare in modo che CardItem prenda EnrollmentCardElements con general-card e poi modificare metodi correlati. Modificare tutti toTableRow e toCard per rendere unico
     learning_session: LearningSession,
     path?: string,
     method?: Method,
@@ -1927,6 +1928,12 @@ class Grade {
           id: "description",
           type: "html",
           content: this[`${language}_description`],
+          colors: {
+            text: {
+              name: "primary",
+              type: "var",
+            },
+          },
         },
         {
           id: "pubblication",
@@ -2215,6 +2222,12 @@ class StudentSummary implements StudentSummaryProps {
         url: "/students/" + this.id,
         method: "get",
       },
+      colors: {
+        text: {
+          name: "primary",
+          type: "var",
+        },
+      },
     };
 
     let to_ret: GeneralTableCardElements;
@@ -2229,7 +2242,7 @@ class StudentSummary implements StudentSummaryProps {
         ].concat(name_surname),
         layout: {
           xl: ["index", "name_surname"],
-          sm: [[{ id: "index_sm", size: 1 }, { id: "name_surname" }]],
+          sm: [[{ id: "index_sm", size: 2 }, { id: "name_surname" }]],
         },
       };
     } else {
@@ -2822,29 +2835,49 @@ class AnnouncementSummary implements AnnouncementSummaryProps {
     return {
       id: "" + this.id,
       group: "",
-      content: [
-        {
-          id: this.id + "_title",
-          type: "string",
-          linkType: "event",
-          content: {
-            event: "announcement",
-            data: {
-              title: this[`${language}_title`],
-              announcement_id: this.id,
-            },
-            text: this[`${language}_title`],
+      title: {
+        id: this.id + "_title",
+        type: "title",
+        linkType: "event",
+        content: {
+          event: "announcement",
+          data: {
+            title: this[`${language}_title`],
+            announcement_id: this.id,
+          },
+          text: this[`${language}_title`],
+        },
+        classes: {
+          label: {
+            "ion-padding-start": true,
+            "ion-padding-bottom": true,
           },
         },
+      },
+      content: [
         {
           id: this.id + "_publishment",
           type: "string",
-          content:
-            getCurrentElement("publishment") +
-            ": " +
-            toDateString(this.publishment),
+          content: toDateString(this.publishment),
+          colors: {
+            background: {
+              name: "white",
+              type: "var",
+            },
+          },
+          classes: {
+            label: {
+              "ion-margin-horizontal": true,
+            },
+          },
         },
       ],
+      colors: {
+        background: {
+          name: "announcements",
+          type: "var",
+        },
+      },
     };
   }
 }

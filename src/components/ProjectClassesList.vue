@@ -61,6 +61,11 @@
               alpha: 0.14,
               type: 'var',
             },
+            list_borders: {
+              name: 'black',
+              type: 'var',
+              alpha: 0.25,
+            },
           }"
           @signal_event="changeSelection()"
         />
@@ -103,6 +108,11 @@
                     name: 'light',
                     alpha: 0.14,
                     type: 'var',
+                  },
+                  list_borders: {
+                    name: 'black',
+                    type: 'var',
+                    alpha: 0.25,
                   },
                 }
               : undefined
@@ -375,28 +385,34 @@ const exportSubscriptions = async () => {
     undefined,
     (response) =>
       downloadCsv(response.data, "subscriptions.csv").then(
-        outcome_code => {
+        (outcome_code) => {
           if (outcome_code == 1) {
             setupModalAndOpen(
-            "success",
-            getCurrentElement("subscriptions_exported")
-          )
+              "success",
+              getCurrentElement("subscriptions_exported")
+            );
           } else if (outcome_code == 0) {
-            setupModalAndOpen("error", getCurrentElement("no_students") + ". " + getCurrentElement("no_file_exported"))
+            setupModalAndOpen(
+              "error",
+              getCurrentElement("no_students") +
+                ". " +
+                getCurrentElement("no_file_exported")
+            );
           } else {
-            setupModalAndOpen("error", getCurrentElement("error"))
+            setupModalAndOpen("error", getCurrentElement("error"));
           }
         },
         () => setupModalAndOpen("error")
       ),
-    (error) => setupModalAndOpen(
-            "error",
-            error.response.status == 404
-              ? getCurrentElement("learning_session_error")
-              : error.response.status == 400
-              ? getCurrentElement("last_session_error")
-              : undefined
-          ),
+    (error) =>
+      setupModalAndOpen(
+        "error",
+        error.response.status == 404
+          ? getCurrentElement("learning_session_error")
+          : error.response.status == 400
+          ? getCurrentElement("last_session_error")
+          : undefined
+      ),
     undefined,
     undefined,
     {

@@ -174,7 +174,7 @@
         </ion-col>
         <ion-col size="auto">
           <custom-select
-            v-model="selected_area"
+            v-model:selected_option="selected_area"
             :list="learning_areas_structures.distribution[selected_context]"
             :label="learning_area_sentence + ':'"
             :aria_label="learning_area_sentence"

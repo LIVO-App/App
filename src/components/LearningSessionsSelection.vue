@@ -20,6 +20,11 @@
               alpha: 0.14,
               type: 'var',
             },
+            list_borders: {
+              name: 'black',
+              type: 'var',
+              alpha: 0.25,
+            },
           }"
           @signal_event="changeSelection()"
         />
@@ -44,6 +49,11 @@
               name: 'light',
               alpha: 0.14,
               type: 'var',
+            },
+            list_borders: {
+              name: 'black',
+              type: 'var',
+              alpha: 0.25,
             },
           }"
         />

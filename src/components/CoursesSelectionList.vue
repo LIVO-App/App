@@ -149,6 +149,7 @@
         list_borders: {
           name: 'black',
           type: 'var',
+          alpha: 0.25,
         },
         text: {
           name: 'primary',

@@ -1,6 +1,9 @@
 <template>
   <ion-grid :class="getBreakpointClasses(classes?.grid, breakpoint)">
-    <ion-row :class="getBreakpointClasses(classes?.row, breakpoint)">
+    <ion-row
+      :class="getBreakpointClasses(classes?.row, breakpoint)"
+      class="ion-align-items-center"
+    >
       <ion-col
         v-for="(card, i) in cards_list_ref"
         :key="card.id"
@@ -9,6 +12,7 @@
       >
         <card-item
           :card="cards_list_ref[i]"
+          :detail="false"
           :colors="colors"
           :classes="classes"
           @execute_link="$emit('execute_link')"

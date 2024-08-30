@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import { CustomElement, Colors, GeneralCardSubElements } from "@/types";
 import { Enrollment } from "@/types";
-import { getBreakpoint, isSmaller } from "@/utils";
+import { getBreakpoint } from "@/utils";
 import { IonCard, IonCardContent, IonGrid, IonRow, IonCol } from "@ionic/vue";
 import {
   computed,

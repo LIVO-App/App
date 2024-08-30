@@ -69,6 +69,7 @@
         <list-card
           :key="trigger"
           :cards_list="messages"
+          :columns="isSmaller(breakpoint, 'md') ? 1 : 3"
           :emptiness_message="
             getCustomMessage(
               'emptiness_message',
@@ -76,6 +77,13 @@
             )
           "
           @signal_event="setupModalAndOpen()"
+          :classes="{
+            item: {
+              'ion-padding-bottom': {
+                md: true,
+              },
+            },
+          }"
         />
       </template>
       <template #fallback>
@@ -96,12 +104,14 @@ import {
 } from "@/types";
 import {
   executeLink,
+  getBreakpoint,
   getCurrentElement,
   getCustomMessage,
   getIcon,
+  isSmaller,
 } from "@/utils";
 import { IonModal, IonAlert } from "@ionic/vue";
-import { ref, Ref, watch } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref, Ref, watch } from "vue";
 import { useStore } from "vuex";
 
 type availableModal =
@@ -192,6 +202,10 @@ const updateMessages = async () => {
   trigger.value++;
 };
 
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+};
+
 const store = useStore();
 const user = User.getLoggedUser() as User;
 const sections_use: boolean = store.state.sections_use;
@@ -225,6 +239,7 @@ const messages: OrderedCardsList = {
     "": [],
   },
 };
+const breakpoint = ref(getBreakpoint(window.innerWidth));
 
 let selected_section: Ref<string>;
 let announcement_title: string;
@@ -264,6 +279,16 @@ if (user.type == "teacher") {
 }
 
 await updateMessages();
+
+onMounted(() =>
+  nextTick(() => {
+    window.addEventListener("resize", updateBreakpoint);
+  })
+);
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateBreakpoint);
+});
 </script>
 
 <style>

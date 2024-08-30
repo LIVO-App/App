@@ -120,7 +120,7 @@
           </ion-row>
           <ion-row>
             <ion-col></ion-col>
-            <ion-col size="3">
+            <ion-col size="auto">
               <ionic-element
                 :element="alternatives_login[0]"
                 @execute_link="$emit('execute_link')"

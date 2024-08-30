@@ -24,7 +24,7 @@
             <ionic-element
               :element="elements.close"
               @signal_event="$emit('close')"
-            ></ionic-element>
+            />
           </ion-col>
         </ion-row>
       </ion-grid>
@@ -78,7 +78,7 @@
           "
         />
         <div class="ion-text-center ion-padding-bottom">
-          <ion-text color="primary"
+          <ion-text
             >{{ getCurrentElement("intermediate_arithmetic_mean")
             }}{{
               actual_final_grade_index != -1
@@ -288,8 +288,6 @@ import {
   getLocale,
   checkGradeParameters,
   hasGradeTypingErrors,
-  getBreakpoint,
-  isSmaller,
 } from "@/utils";
 import {
   IonHeader,
@@ -309,16 +307,7 @@ import {
   DatetimeCustomEvent,
   IonItem,
 } from "@ionic/vue";
-import {
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  PropType,
-  reactive,
-  Ref,
-  ref,
-  watch,
-} from "vue";
+import { PropType, reactive, Ref, ref, watch } from "vue";
 import { useStore } from "vuex";
 
 const changeData = (event: DatetimeCustomEvent) => {
@@ -547,9 +536,4 @@ watch(
 );
 </script>
 
-<style scoped>
-ion-textarea {
-  --color: var(--ion-color-primary);
-  --placeholder-color: var(--ion-color-primary);
-}
-</style>
+<style></style>

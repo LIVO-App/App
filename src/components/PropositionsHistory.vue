@@ -13,6 +13,13 @@
             )
           "
           :cards_list="school_years"
+          :colors="{
+            list_borders: {
+              name: 'black',
+              type: 'var',
+              alpha: 0.25,
+            },
+          }"
           @signal_event="changeSelection()"
         />
       </ion-col>
@@ -30,6 +37,13 @@
               )
             )
           "
+          :colors="{
+            list_borders: {
+              name: 'black',
+              type: 'var',
+              alpha: 0.25,
+            },
+          }"
           :cards_list="
             is_nothing_selected() ? empty_propositions : year_propositions
           "

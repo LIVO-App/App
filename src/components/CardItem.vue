@@ -1,6 +1,7 @@
 <template>
   <ion-item
     :lines="colors?.list_borders != undefined ? 'inset' : 'none'"
+    :detail="detail && isGeneral(card) && card.link != undefined"
     :color="!local_hovered ? getIonicColor(colors?.background) : undefined"
     :class="{
       ...getBreakpointClasses(classes?.item, breakpoint),
@@ -85,6 +86,10 @@ const props = defineProps({
   card: {
     type: Object as PropType<CardElements>,
     required: true,
+  },
+  detail: {
+    type: Boolean,
+    default: true,
   },
   colors: Object as PropType<Colors<GeneralCardSubElements>>,
   classes: Object as PropType<Classes<CardsCommonElements>>,

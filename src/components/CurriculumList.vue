@@ -2,7 +2,7 @@
   <!-- TODO (5): vedere discorso bocciature e discorso collegamento albero tra corsi con Pietro -->
   <div class="ion-padding-horizontal">
     <ion-modal
-      id="grades_manages"
+      id="grades_manager"
       :is-open="grades_open"
       @didDismiss="closeModal('grades')"
     >
@@ -40,41 +40,57 @@
       </suspense>
     </ion-modal>
     <div class="ion-padding-horizontal">
-      <ion-title class="ion-padding-bottom">{{
-        getCurrentElement("progression")
-      }}</ion-title>
-      <template v-if="Array.isArray(credits_progression[selected_context])">
-        <ion-list>
-          <ion-item>
-            <ion-label class="ion-padding-horizontal"
-              >{{ getCurrentElement("context_credits") }}:</ion-label
+      <ionic-element
+        :element="
+          getCustomMessage(
+            'progression',
+            getCurrentElement('progression'),
+            'title'
+          )
+        "
+      />
+      <div class="ion-padding-top">
+        <template v-if="Array.isArray(credits_progression[selected_context])">
+          <ion-list>
+            <ion-item>
+              <ion-label class="ion-padding-horizontal"
+                >{{ getCurrentElement("context_credits") }}:</ion-label
+              >
+              <ion-label>{{
+                castToStringArray(credits_progression[selected_context]).join(
+                  "/"
+                )
+              }}</ion-label>
+            </ion-item>
+          </ion-list>
+        </template>
+        <template v-else>
+          <ionic-element
+            :element="
+              getCustomMessage(
+                'area_credits',
+                getCurrentElement('area_credits'),
+                'title'
+              )
+            "
+          />
+          <ion-list class="ion-margin-top">
+            <ion-item
+              v-for="area_progression in Object.keys(
+                castToTmpList(credits_progression[selected_context])
+              )"
+              :key="area_progression"
             >
-            <ion-label>{{
-              castToStringArray(credits_progression[selected_context]).join("/")
-            }}</ion-label>
-          </ion-item>
-        </ion-list>
-      </template>
-      <template v-else>
-        <ion-title size="small" class="ion-padding-bottom"
-          ><b>{{ getCurrentElement("area_credits") }}</b></ion-title
-        >
-        <ion-list>
-          <ion-item
-            v-for="area_progression in Object.keys(
-              castToTmpList(credits_progression[selected_context])
-            )"
-            :key="area_progression"
-          >
-            <ion-label>{{ getAreaTitle(area_progression) }}:</ion-label>
-            <ion-label>{{
-              castToTmpList(credits_progression[selected_context])[
-                area_progression
-              ].join("/")
-            }}</ion-label>
-          </ion-item>
-        </ion-list>
-      </template>
+              <ion-label>{{ getAreaTitle(area_progression) }}:</ion-label>
+              <ion-label>{{
+                castToTmpList(credits_progression[selected_context])[
+                  area_progression
+                ].join("/")
+              }}</ion-label>
+            </ion-item>
+          </ion-list>
+        </template>
+      </div>
     </div>
     <ion-grid>
       <ion-row>
@@ -156,7 +172,6 @@ import {
   IonGrid,
   IonRow,
   IonCol,
-  IonTitle,
   IonLabel,
   IonList,
   IonItem,
@@ -434,8 +449,8 @@ await executeLink(
 );
 </script>
 
-<style>
-ion-modal#grades_manages {
+<style scoped>
+ion-modal#grades_manager {
   --width: fit-content;
   --height: fit-content;
 }

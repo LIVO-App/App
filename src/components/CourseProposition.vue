@@ -869,8 +869,6 @@ import {
   getLearningContexts,
   numberToSection,
   uploadMultipleImages,
-  getBreakpoint,
-  isSmaller,
 } from "@/utils";
 import {
   IonAlert,
@@ -890,15 +888,7 @@ import {
   IonReorderGroup,
   IonReorder,
 } from "@ionic/vue";
-import {
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  reactive,
-  ref,
-  Ref,
-  watch,
-} from "vue";
+import { reactive, ref, Ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 
