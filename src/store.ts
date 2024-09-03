@@ -133,7 +133,7 @@ export const store = createStore({
                 "announcement",
                 "student",
               ],
-              admin: ["project_courses_hub", "project_course", "student"],
+              admin: ["project_courses_hub", "project_course", "announcement", "student"],
             },
             icon_ref: "brief_case",
           },

@@ -790,8 +790,15 @@ class CurriculumCourse extends CourseBase {
           classes: {
             label: {
               "ion-text-wrap": true,
+              "ion-text-start": true,
             },
           },
+          colors: {
+            text: {
+              name: "primary",
+              type: "var",
+            },
+          }
         },
         {
           id: "credits",
@@ -2951,7 +2958,7 @@ type UserProps = UserSummaryProps & {
   username: string;
   token: string;
   expirationDate: string;
-  // ! (3): mettere first_access
+  // TODO (4): mettere first_access
 };
 
 class UserSummary {
@@ -3372,7 +3379,6 @@ type PropositionSpecificInformation = {
   class_group: number;
   num_section: number;
   teacher_list: PropositionTeacher[];
-  // ! (3): add project_class_code: string (simple text field, min-max 8)
 };
 
 type PropositionObj = {

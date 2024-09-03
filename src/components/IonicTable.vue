@@ -68,7 +68,7 @@
           <ion-row
             v-for="(row, i) in data_ref.cards[row_order.key]"
             :key="row_order.key + '_' + row.id"
-            class="row ion-text-center ion-align-items-center"
+            class="row ion-align-items-center"
           >
             <ion-col
               v-if="first_col_ref != undefined"
@@ -109,6 +109,14 @@
                   ? '' + sizes[row_order.key][row.id][j]
                   : undefined
               "
+              :class="{
+                'ion-text-center': isCellCentered(
+                  row_order.key,
+                  i,
+                  index,
+                  breakpoint
+                ),
+              }"
             >
               <ionic-element
                 v-model:element="
@@ -148,6 +156,7 @@ import {
   GeneralCardSubElements,
   GeneralTableCardElements,
   OrderedCardsList,
+  SubElements,
   TableElement,
   TmpList,
 } from "@/types";
@@ -159,6 +168,7 @@ import {
   canVModel,
   castLayoutRow,
   getBreakpoint,
+  getBreakpointClasses,
   getCssColor,
   getCustomMessage,
   getIonicColor,
@@ -241,6 +251,27 @@ const updateBreakpoint = () => {
   breakpoint.value = getBreakpoint(window.innerWidth);
   trigger.value++; // TODO (5): da vedere se si trova metodo migliore (es. breackpoint aggiornato in store)
 };
+const isCellCentered = (
+  key: string | number,
+  i: number,
+  index: number,
+  actual_breakpoint: Breakpoint
+): boolean => {
+  const classes = data_ref.value.cards[key][i].content[index].classes;
+
+  if (!classes) return true;
+
+  const elements = Object.keys(classes) as SubElements[];
+
+  return elements.every((element) => {
+    const breakpointClasses = getBreakpointClasses(classes[element], actual_breakpoint);
+    return !Object.entries(breakpointClasses).some(
+      ([className, isActive]) =>
+        (className === "ion-text-start" || className === "ion-text-end") && isActive
+    );
+  });
+};
+
 
 const props = defineProps({
   emptiness_message: {

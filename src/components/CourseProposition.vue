@@ -26,6 +26,7 @@
       </suspense>
     </ion-modal>-->
     <!-- ! (3): spostare pulsanti in alto -->
+    <!-- ! (3): aggiungere pulsante aggiunta immagini -->
     <ionic-element
       :element="buttons[3]"
       @execute_link="$router.push(store.state.request.url)"
@@ -56,7 +57,7 @@
       :getCompleteName="modelToString"
       :disabled="action != 'propose'"
     />
-    <!-- ! (3): mettere filtro su modelli -->
+    <!-- TODO (4): mettere filtro su modelli -->
     <ion-card :key="trigger">
       <ion-card-header>
         <ion-card-title class="ion-text-center" color="white">{{
@@ -452,7 +453,7 @@
               </ion-col>
             </ion-row>
           </template>
-          <template v-else-if="pages[current_page_index] == 'access_object'">
+          <template v-else-if="pages[current_page_index] == 'access_object'"> <!-- ! (3): si è cancellato l'oggetto sbagliato e non è stato ripristinato -->
             <ion-grid>
               <template
                 v-if="
@@ -638,7 +639,7 @@
                     >
                       <ionic-element
                         :element="
-                          getReorderLabel(i, image.name, approved.course)
+                          getReorderLabel(i, image.name, false)
                         "
                         @signal_event="removeImage()"
                       />
@@ -1952,7 +1953,7 @@ const trigger = ref(0);
 const carousel_trigger = ref(0);
 const alert_open = ref(false);
 const pages = ModelProposition.getProps("pages");
-const current_page_index = ref(9);
+const current_page_index = ref(0);
 const buttons: CustomElement[] = [
   {
     id: "back",
