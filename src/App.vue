@@ -7,7 +7,7 @@
             <ion-list-header class="ion-padding-bottom">
               <router-link
                 v-if="user != undefined"
-                :to="{ name: getDefautlLink(user.user).name }"
+                :to="{ name: getDefautlLink(user.type).name }"
               >
                 <ion-img
                   :src="image"
@@ -24,13 +24,13 @@
             </ion-list-header>
 
             <ion-menu-toggle :auto-hide="false" :key="trigger">
-              <template v-if="user != undefined"> <!-- ! (3): mettere hover -->
+              <template v-if="user != undefined">
                 <ion-item
-                  v-for="(p, i) in getMenu(castToUser(user))"
+                  v-for="(p, i) in getMenu()"
                   :key="i"
-                  @click="selectTitle(castToUser(user).user, i)" 
+                  @click="selectTitle(i)"
                   router-direction="root"
-                  :router-link="{ name: p.url_names[castToUser(user).user][0] }"
+                  :router-link="{ name: p.url_names[user.type][0] }"
                   lines="none"
                   :detail="false"
                   class="hydrated"
@@ -43,7 +43,7 @@
                     :md="getIcon(p.icon_ref).md"
                   ></ion-icon>
                   <ion-label text-wrap>{{
-                    getCurrentElement(menu.order[castToUser(user).user][i])
+                    getCurrentElement(order[i])
                   }}</ion-label>
                 </ion-item>
               </template>
@@ -75,28 +75,26 @@ import { computed, ComputedRef, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
-import { Menu, MenuItem, User, UserType } from "./types";
-import { getCurrentElement, getDefautlLink, getIcon } from "./utils";
+import { Menu, MenuItem, User } from "./types";
+import {
+  executeAdditionalControl,
+  getCurrentElement,
+  getDefautlLink,
+  getIcon,
+} from "./utils";
 
-const image = computed(() => require("./assets/Logo_LIVO_Path.png"));
-const castToUser = (user: User | undefined) => user as User;
-const getMenu = (user: User) => {
+const getMenu = () => {
   const complete_menu: MenuItem[] = [];
 
-  let tmp_item: MenuItem | undefined;
-
-  for (const item_title of menu.order[user.user]) {
-    tmp_item = menu.items[item_title];
-    if (tmp_item != undefined) {
-      complete_menu.push(tmp_item);
-    }
+  for (const item_title of order.value) {
+    complete_menu.push(menu.items[item_title]);
   }
 
   return complete_menu;
 };
-const selectTitle = (user_type: UserType, index: number) => {
+const selectTitle = (index: number) => {
   store.state.menu.index = index;
-  sessionStorage.setItem("selected_item", menu.order[user_type][index]);
+  sessionStorage.setItem("selected_item", order.value[index]);
 };
 const changeTitle = () => {
   const items_titles = Object.keys(menu.items);
@@ -115,36 +113,29 @@ const changeTitle = () => {
     if (
       selected_item != null &&
       (tmp_index = menu.items[selected_item].url_names[
-        user.value.user
+        user.value.type
       ].findIndex((a) => a == ($route.name as string))) != -1
     ) {
-      tmp_index = menu.order[user.value.user].findIndex(
-        (a) => a == selected_item
-      );
+      tmp_index = order.value.findIndex((a) => a == selected_item);
     } else {
       while (tmp_index == -1 && count < items_titles.length) {
-        urls = menu.items[items_titles[count]].url_names[user.value.user];
+        urls = menu.items[items_titles[count]].url_names[user.value.type];
         if (urls != undefined) {
           tmp_index = urls.findIndex((a) => a == $route.name);
         }
         count++;
       }
       if (tmp_index != -1) {
-        tmp_index = menu.order[user.value.user].findIndex(
-          (a) => a == items_titles[count - 1]
-        );
+        tmp_index = order.value.findIndex((a) => a == items_titles[count - 1]);
       }
     }
     menu.index =
       tmp_index != -1
         ? tmp_index
-        : menu.order[user.value.user].findIndex(
-            (a) => a == menu.default_item[(user.value as User).user]
+        : order.value.findIndex(
+            (a) => a == menu.default_item[(user.value as User).type]
           );
-    sessionStorage.setItem(
-      "selected_item",
-      menu.order[user.value.user][tmp_index]
-    );
+    sessionStorage.setItem("selected_item", order.value[tmp_index]);
     trigger.value++;
   }
 };
@@ -153,10 +144,20 @@ const store = useStore();
 const $route = useRoute();
 const menu: Menu = store.state.menu;
 
+const image = computed(() => require("./assets/Logo_LIVO_Path.png"));
 const trigger = ref(0);
 const user: ComputedRef<User | undefined> = computed(
   () => store.state.user ?? User.getLoggedUser()
 );
+const order = computed(() =>
+  user.value != undefined
+    ? menu.order[user.value.type].filter((a) =>
+        user.value != undefined
+          ? executeAdditionalControl(user.value, menu.items[a]) != false
+          : false
+      )
+    : []
+); // getMenuOrder function. Not used the proper function to avoid the loss of reactivity
 
 changeTitle();
 watch($route, changeTitle);
@@ -266,5 +267,10 @@ ion-note {
 
 ion-item.selected {
   --color: var(--ion-color-primary);
+}
+
+ion-item:hover {
+  cursor: pointer;
+  --background: rgba(var(--ion-color-primary-rgb), 0.14);
 }
 </style>

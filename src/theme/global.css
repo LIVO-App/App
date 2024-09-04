@@ -1,0 +1,83 @@
+/** Text **/
+* {
+  font-size: 18px !important;
+}
+
+.title_font {
+  font-size: 32px !important;
+}
+
+.custom_label_position {
+  display: inline-block;
+}
+
+/** Modal **/
+
+.no_card_border {
+  box-shadow: none !important;
+}
+
+ion-modal > ion-header::after {
+  display: none;
+}
+
+ion-modal {
+  --background: var(--ion-color-white);
+  --border-color: var(--ion-color-primary);
+  --border-radius: 15px;
+  --border-style: solid;
+  --border-width: 1px;
+  color: var(--ion-text-color);
+}
+
+ion-modal ion-content {
+  height: calc(100% - 120px) !important;
+  /* TODO (6: trovare un'alternativa più dinamica */
+  --background: var(--ion-color-white);
+}
+
+ion-modal ion-header ion-toolbar {
+  --background: var(--ion-color-white);
+}
+
+.radius {
+  border-radius: 10px;
+  --border-radius: 10px;
+}
+
+.bottom_radius {
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.top_radius {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.half_radius {
+  border-radius: 5px;
+  --border-radius: 5px;
+}
+
+/** Side menu **/
+
+ion-split-pane {
+  --side-max-width: 250px;
+}
+
+/** Various **/
+
+.align_text_middle {
+  display: flex;
+  justify-content: center;
+}
+
+.w_100 {
+  width: 100%;
+}
+
+/* TODO (5): sistemare colori. Non funzionano i colori dei giorni */
+/*ion-datetime {
+    --background: var(--ion-color-white);
+  }*/

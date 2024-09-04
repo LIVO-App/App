@@ -14,6 +14,18 @@
             )
           "
           :cards_list="learning_sessions"
+          :colors="{
+            hover: {
+              name: 'light',
+              alpha: 0.14,
+              type: 'var',
+            },
+            list_borders: {
+              name: 'black',
+              type: 'var',
+              alpha: 0.25,
+            },
+          }"
           @signal_event="changeSelection()"
         />
       </ion-col>
@@ -32,6 +44,18 @@
             )
           "
           :cards_list="is_nothing_selected() ? empty_courses : courses"
+          :colors="{
+            hover: {
+              name: 'light',
+              alpha: 0.14,
+              type: 'var',
+            },
+            list_borders: {
+              name: 'black',
+              type: 'var',
+              alpha: 0.25,
+            },
+          }"
         />
       </ion-col>
     </ion-row>
@@ -125,7 +149,6 @@ const changeSelection = async () => {
     };
   } else {
     selected_session_indexes = tmp_selected;
-    selectedChange();
     await executeLink(
       "/v1/teachers/" +
         user.id +
@@ -195,6 +218,7 @@ const changeSelection = async () => {
           ].id
         )
     );
+    selectedChange();
   }
 };
 const selectedChange = (
@@ -271,5 +295,4 @@ for (const year of teaching_years) {
 await Promise.all(promises);
 </script>
 
-<style>
-</style>
+<style></style>

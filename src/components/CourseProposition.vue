@@ -1,7 +1,13 @@
 <template>
   <div class="ion-padding-horizontal">
-    <ion-alert :is-open="alert_open" :header="alert_information.title" :message="alert_information.message"
-      :buttons="alert_information.buttons" @didDismiss="closeModal(true)" :inputs="alert_information.inputs" />
+    <ion-alert
+      :is-open="alert_open"
+      :header="alert_information.title"
+      :message="alert_information.message"
+      :buttons="alert_information.buttons"
+      @didDismiss="closeModal(true)"
+      :inputs="alert_information.inputs"
+    />
     <!--<ion-modal
       id="addition"
       :is-open="addition"
@@ -20,22 +26,41 @@
       </suspense>
     </ion-modal>-->
     <!-- ! (3): spostare pulsanti in alto -->
-    <ionic-element :element="buttons[3]" @execute_link="$router.push(store.state.request.url)" />
-    <template v-if="user.user == 'admin' && !allApproed()">
-      <ionic-element v-if="action == 'view'" :element="buttons[4]"
-        @signal_event="setupModalAndOpen('confirm', undefined, true)" />
-      <ionic-element v-if="action == 'view'" :element="buttons[5]"
-        @signal_event="setupModalAndOpen('confirm', undefined, false)" />
-      <ionic-element :element="action == 'view' ? buttons[6] : buttons[7]"
-        @signal_event="changeModality(action == 'view' ? 'edit' : 'view')" />
+    <!-- ! (3): aggiungere pulsante aggiunta immagini -->
+    <ionic-element
+      :element="buttons[3]"
+      @execute_link="$router.push(store.state.request.url)"
+    />
+    <template v-if="user.type == 'admin' && !allApproed()">
+      <ionic-element
+        v-if="action == 'view'"
+        :element="buttons[4]"
+        @signal_event="setupModalAndOpen('confirm', undefined, true)"
+      />
+      <ionic-element
+        v-if="action == 'view'"
+        :element="buttons[5]"
+        @signal_event="setupModalAndOpen('confirm', undefined, false)"
+      />
+      <ionic-element
+        :element="action == 'view' ? buttons[6] : buttons[7]"
+        @signal_event="changeModality(action == 'view' ? 'edit' : 'view')"
+      />
     </template>
-    <custom-select :key="trigger" v-model="selected_model" :list="models"
-      :label="getCurrentElement('reference_model') + ':'" :aria_label="getCurrentElement('reference_model')"
-      :placeholder="getCurrentElement('possible_models')" :getCompleteName="modelToString"
-      :disabled="action != 'propose'" /> <!-- ! (3): mettere filtro su modelli -->
+    <custom-select
+      :key="trigger"
+      v-model:selected_option="selected_model"
+      :list="models"
+      :label="getCurrentElement('reference_model') + ':'"
+      :aria_label="getCurrentElement('reference_model')"
+      :placeholder="getCurrentElement('possible_models')"
+      :getCompleteName="modelToString"
+      :disabled="action != 'propose'"
+    />
+    <!-- TODO (4): mettere filtro su modelli -->
     <ion-card :key="trigger">
-      <ion-card-header color="primary">
-        <ion-card-title class="ion-text-center">{{
+      <ion-card-header>
+        <ion-card-title class="ion-text-center" color="white">{{
           getCurrentElement(
             ModelProposition.getTitles()[pages[current_page_index]]
           )
@@ -43,19 +68,37 @@
       </ion-card-header>
       <ion-card-content style="overflow-y: auto">
         <ion-grid>
-          <template v-if="pages[current_page_index] == 'title' ||
+          <template
+            v-if="
+              pages[current_page_index] == 'title' ||
               ModelProposition.getProps('editor').findIndex(
                 (a) => a == pages[current_page_index]
               ) != -1
-              ">
+            "
+          >
             <ion-row v-for="language in languages" :key="language">
               <ion-col>
-                <ion-input v-if="pages[current_page_index] == 'title'" type="text" v-model="castToTitles(course_proposition[pages[current_page_index]])[
-                  `${language}_title`
-                ]
-                  " :label="getCurrentElement(language)" :aria-label="getCurrentElement(language)" fill="outline"
+                <ion-input
+                  v-if="pages[current_page_index] == 'title'"
+                  type="text"
+                  v-model="
+                    castToTitles(course_proposition[pages[current_page_index]])[
+                      `${language}_title`
+                    ]
+                  "
+                  :label="getCurrentElement(language)"
+                  :aria-label="getCurrentElement(language)"
+                  fill="outline"
                   class="ion-margin-vertical"
-                  :readonly="action != 'propose'" /> <!-- ! (2): permettere modifica titolo inglese -->
+                  :readonly="
+                    action == 'view' ||
+                    (action == 'edit' && language == 'italian') ||
+                    (approved.course &&
+                      ModelProposition.getPropositionProps('optional').indexOf(
+                        `${language}_title`
+                      ) == -1)
+                  "
+                />
                 <!-- TODO (9): trovare un modo per rendere la chiamata generale -->
                 <!--<ion-textarea
                   v-else
@@ -67,57 +110,175 @@
                   fill="outline"
                   class="ion-margin-vertical"
                 />-->
-                <div v-else-if="pages[current_page_index] == 'description'" class="ion-margin-vertical">
-                  <b><ionic-element :element="getCustomMessage(`${language}_descr`, getCurrentElement(language))" /></b>
-                  <editor-wrapper v-model:value="castToDescription(
-                    course_proposition[pages[current_page_index]]
-                  )[`${language}_descr`]"
-                    :disabled="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_descr`) == -1)"
-                    :options="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_descr`) == -1) ? {
-                      modules: {
-                        toolbar: false
-                      },
-                      placeholder: false,
-                    } : undefined" />
+                <div
+                  v-else-if="pages[current_page_index] == 'description'"
+                  class="ion-margin-vertical"
+                >
+                  <b
+                    ><ionic-element
+                      :element="
+                        getCustomMessage(
+                          `${language}_descr`,
+                          getCurrentElement(language)
+                        )
+                      "
+                  /></b>
+                  <editor-wrapper
+                    v-model:value="
+                      castToDescription(
+                        course_proposition[pages[current_page_index]]
+                      )[`${language}_descr`]
+                    "
+                    :disabled="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_descr`) == -1)
+                    "
+                    :options="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_descr`) == -1)
+                        ? {
+                            modules: {
+                              toolbar: false,
+                            },
+                            placeholder: false,
+                          }
+                        : undefined
+                    "
+                  />
                 </div>
-                <div v-else-if="pages[current_page_index] == 'expected_learning_results'" class="ion-margin-vertical">
-                  <b><ionic-element :element="getCustomMessage(`${language}_exp_l`, getCurrentElement(language))" /></b>
-                  <editor-wrapper v-model:value="castToExpectedLearningResults(
-                    course_proposition[pages[current_page_index]]
-                  )[`${language}_exp_l`]"
-                    :disabled="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_exp_l`) == -1)"
-                    :options="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_exp_l`) == -1) ? {
-                      modules: {
-                        toolbar: false
-                      },
-                      placeholder: false,
-                    } : undefined" />
+                <div
+                  v-else-if="
+                    pages[current_page_index] == 'expected_learning_results'
+                  "
+                  class="ion-margin-vertical"
+                >
+                  <b
+                    ><ionic-element
+                      :element="
+                        getCustomMessage(
+                          `${language}_exp_l`,
+                          getCurrentElement(language)
+                        )
+                      "
+                  /></b>
+                  <editor-wrapper
+                    v-model:value="
+                      castToExpectedLearningResults(
+                        course_proposition[pages[current_page_index]]
+                      )[`${language}_exp_l`]
+                    "
+                    :disabled="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_exp_l`) == -1)
+                    "
+                    :options="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_exp_l`) == -1)
+                        ? {
+                            modules: {
+                              toolbar: false,
+                            },
+                            placeholder: false,
+                          }
+                        : undefined
+                    "
+                  />
                 </div>
-                <div v-else-if="pages[current_page_index] == 'criterions'" class="ion-margin-vertical">
-                  <b><ionic-element :element="getCustomMessage(`${language}_cri`, getCurrentElement(language))" /></b>
-                  <editor-wrapper v-model:value="castToCriterions(
-                    course_proposition[pages[current_page_index]]
-                  )[`${language}_cri`]"
-                    :disabled="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_cri`) == -1)"
-                    :options="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_cri`) == -1) ? {
-                      modules: {
-                        toolbar: false
-                      },
-                      placeholder: false,
-                    } : undefined" />
+                <div
+                  v-else-if="pages[current_page_index] == 'criterions'"
+                  class="ion-margin-vertical"
+                >
+                  <b
+                    ><ionic-element
+                      :element="
+                        getCustomMessage(
+                          `${language}_cri`,
+                          getCurrentElement(language)
+                        )
+                      "
+                  /></b>
+                  <editor-wrapper
+                    v-model:value="
+                      castToCriterions(
+                        course_proposition[pages[current_page_index]]
+                      )[`${language}_cri`]
+                    "
+                    :disabled="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_cri`) == -1)
+                    "
+                    :options="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_cri`) == -1)
+                        ? {
+                            modules: {
+                              toolbar: false,
+                            },
+                            placeholder: false,
+                          }
+                        : undefined
+                    "
+                  />
                 </div>
-                <div v-else-if="pages[current_page_index] == 'activities'" class="ion-margin-vertical">
-                  <b><ionic-element :element="getCustomMessage(`${language}_act`, getCurrentElement(language))" /></b>
-                  <editor-wrapper v-model:value="castToActivities(
-                    course_proposition[pages[current_page_index]]
-                  )[`${language}_act`]"
-                    :disabled="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_act`) == -1)"
-                    :options="action == 'view' || (approved.course && ModelProposition.getPropositionProps('optional').indexOf(`${language}_act`) == -1) ? {
-                      modules: {
-                        toolbar: false
-                      },
-                      placeholder: false,
-                    } : undefined" />
+                <div
+                  v-else-if="pages[current_page_index] == 'activities'"
+                  class="ion-margin-vertical"
+                >
+                  <b
+                    ><ionic-element
+                      :element="
+                        getCustomMessage(
+                          `${language}_act`,
+                          getCurrentElement(language)
+                        )
+                      "
+                  /></b>
+                  <editor-wrapper
+                    v-model:value="
+                      castToActivities(
+                        course_proposition[pages[current_page_index]]
+                      )[`${language}_act`]
+                    "
+                    :disabled="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_act`) == -1)
+                    "
+                    :options="
+                      action == 'view' ||
+                      (approved.course &&
+                        ModelProposition.getPropositionProps(
+                          'optional'
+                        ).indexOf(`${language}_act`) == -1)
+                        ? {
+                            modules: {
+                              toolbar: false,
+                            },
+                            placeholder: false,
+                          }
+                        : undefined
+                    "
+                  />
                 </div>
               </ion-col>
             </ion-row>
@@ -125,52 +286,95 @@
           <template v-else-if="pages[current_page_index] == 'characteristics1'">
             <ion-row>
               <ion-col>
-                <ion-input type="number" v-model="castToCharacteristics1(
-                  course_proposition[pages[current_page_index]]
-                ).credits
-                  " :label="getCurrentElement('credits')" :aria-label="getCurrentElement('credits')" fill="outline"
-                  class="ion-margin-vertical" :readonly="action == 'view' || approved.course" />
+                <ion-input
+                  type="number"
+                  v-model="
+                    castToCharacteristics1(
+                      course_proposition[pages[current_page_index]]
+                    ).credits
+                  "
+                  :label="getCurrentElement('credits')"
+                  :aria-label="getCurrentElement('credits')"
+                  fill="outline"
+                  class="ion-margin-vertical"
+                  :readonly="action == 'view' || approved.course"
+                />
               </ion-col>
               <ion-col>
-                <ion-input type="number" v-model="castToCharacteristics1(
-                  course_proposition[pages[current_page_index]]
-                ).up_hours
-                  " :label="getCurrentElement('up_hours')" :aria-label="getCurrentElement('up_hours')" fill="outline"
-                  class="ion-margin-vertical" :readonly="action == 'view' || approved.course" />
+                <ion-input
+                  type="number"
+                  v-model="
+                    castToCharacteristics1(
+                      course_proposition[pages[current_page_index]]
+                    ).up_hours
+                  "
+                  :label="getCurrentElement('up_hours')"
+                  :aria-label="getCurrentElement('up_hours')"
+                  fill="outline"
+                  class="ion-margin-vertical"
+                  :readonly="action == 'view' || approved.course"
+                />
               </ion-col>
             </ion-row>
             <ion-row>
               <ion-col>
-                <ionic-element :element="getCustomMessage(
-                  'title',
-                  getCurrentElement('students_per_section') + ':'
-                )
-                  " />
-                <ion-input type="number" v-model="castToCharacteristics1(
-                  course_proposition[pages[current_page_index]]
-                ).min_students
-                  " :label="getCurrentElement('min_students')" :aria-label="getCurrentElement('min_students')"
-                  fill="outline" class="ion-margin-vertical" :readonly="action == 'view' || approved.course" /> <!-- ! (2): mettere distanza min-max di 4 durante poposta, togliere durante modifica e catturare errore se corso esiste quando < 4 -->
-                <ion-input type="number" v-model="castToCharacteristics1(
-                  course_proposition[pages[current_page_index]]
-                ).max_students
-                  " :label="getCurrentElement('max_students')" :aria-label="getCurrentElement('max_students')"
-                  fill="outline" class="ion-margin-vertical" :readonly="action == 'view' || approved.course" />
+                <ionic-element
+                  :element="
+                    getCustomMessage(
+                      'title',
+                      getCurrentElement('students_per_section') + ':'
+                    )
+                  "
+                />
+                <ion-input
+                  type="number"
+                  v-model="
+                    castToCharacteristics1(
+                      course_proposition[pages[current_page_index]]
+                    ).min_students
+                  "
+                  :label="getCurrentElement('min_students')"
+                  :aria-label="getCurrentElement('min_students')"
+                  fill="outline"
+                  class="ion-margin-vertical"
+                  :readonly="action == 'view' || approved.course"
+                />
+                <ion-input
+                  type="number"
+                  v-model="
+                    castToCharacteristics1(
+                      course_proposition[pages[current_page_index]]
+                    ).max_students
+                  "
+                  :label="getCurrentElement('max_students')"
+                  :aria-label="getCurrentElement('max_students')"
+                  fill="outline"
+                  class="ion-margin-vertical"
+                  :readonly="action == 'view' || approved.course"
+                />
               </ion-col>
               <ion-col>
-                <custom-select v-model="castToCharacteristics1(
-                  course_proposition[pages[current_page_index]]
-                ).area_id
-                  " :list="learning_areas" :label="getCurrentElement('learning_area') + ':'"
-                  :aria_label="getCurrentElement('learning_area')" :placeholder="getCurrentElement('area_choice')"
-                  :getCompleteName="learningAreaToString" :disabled="action == 'view' || approved.course" :no_padding="true" />
+                <custom-select
+                  v-model:selected_option="
+                    castToCharacteristics1(
+                      course_proposition[pages[current_page_index]]
+                    ).area_id
+                  "
+                  :list="learning_areas"
+                  :label="getCurrentElement('learning_area') + ':'"
+                  :aria_label="getCurrentElement('learning_area')"
+                  :placeholder="getCurrentElement('area_choice')"
+                  :getCompleteName="learningAreaToString"
+                  :disabled="action == 'view' || approved.course"
+                  :no_padding="true"
+                />
               </ion-col>
             </ion-row>
           </template>
           <template v-else-if="pages[current_page_index] == 'characteristics2'">
             <ion-row>
               <!--<custom-select
-                  v-model="
+                  v-model:selected_option="
                     castToCharacteristics2(
                       course_proposition[pages[current_page_index]]
                     ).growth_id
@@ -182,61 +386,110 @@
                   :getCompleteName="growthAreaToString"
                   :disabled="action == 'view' || approved.course"
                 />-->
-              <ion-col v-for="key in Object.keys(course_proposition.characteristics2)" :key="key">
-                <ionic-element :element="getCustomMessage(
-                  'title',
-                  getCurrentElement(
-                    key == 'teaching_list' ? 'teachings' : 'growth_areas'
-                  )
-                )
-                  " />
-                <template v-if="action == 'propose'">
-                  <custom-select v-if="key == 'teaching_list'" :key="trigger + '_teachings_select'"
-                    v-model="selected_teaching" :list="teachings.available" :label="getCurrentElement('teaching') + ':'"
-                    :aria_label="getCurrentElement('teaching')" :placeholder="getCurrentElement('teaching_choices')"
-                    :getCompleteName="getTitle" />
-                  <custom-select v-else :key="trigger + '_growth_areas_select'" v-model="selected_growth_area"
-                    :list="growth_areas.available" :label="getCurrentElement('growth_area') + ':'"
-                    :aria_label="getCurrentElement('growth_area')" :placeholder="getCurrentElement('growth_area_choices')"
-                    :getCompleteName="getTitle" />
+              <ion-col
+                v-for="key in Object.keys(course_proposition.characteristics2)"
+                :key="key"
+              >
+                <ionic-element
+                  :element="
+                    getCustomMessage(
+                      'title',
+                      getCurrentElement(
+                        key == 'teaching_list' ? 'teachings' : 'growth_areas'
+                      )
+                    )
+                  "
+                />
+                <template
+                  v-if="
+                    action == 'propose' ||
+                    (action == 'edit' && !approved.course)
+                  "
+                >
+                  <custom-select
+                    v-if="key == 'teaching_list'"
+                    :key="trigger + '_teachings_select'"
+                    v-model:selected_option="selected_teaching"
+                    :list="teachings.available"
+                    :label="getCurrentElement('teaching') + ':'"
+                    :aria_label="getCurrentElement('teaching')"
+                    :placeholder="getCurrentElement('teaching_choices')"
+                    :getCompleteName="getTitle"
+                  />
+                  <custom-select
+                    v-else
+                    :key="trigger + '_growth_areas_select'"
+                    v-model:selected_option="selected_growth_area"
+                    :list="growth_areas.available"
+                    :label="getCurrentElement('growth_area') + ':'"
+                    :aria_label="getCurrentElement('growth_area')"
+                    :placeholder="getCurrentElement('growth_area_choices')"
+                    :getCompleteName="getTitle"
+                  />
                 </template>
-                <list-card :key="trigger + '_list'" :cards_list="key == 'teaching_list'
-                  ? teachings_cards
-                  : growth_areas_cards
-                  " :emptiness_message="getCustomMessage(
-    'emptiness_message',
-    getCurrentElement(
-      key == 'teaching_list'
-        ? 'no_teachings'
-        : 'no_growth_areas'
-    )
-  )
-    " @signal_event="
-    removeElement(
-      key == 'teaching_list' ? 'teachings' : 'growth_areas'
-    )
-    " />
+                <list-card
+                  :key="trigger + '_list'"
+                  :cards_list="
+                    key == 'teaching_list'
+                      ? teachings_cards
+                      : growth_areas_cards
+                  "
+                  :emptiness_message="
+                    getCustomMessage(
+                      'emptiness_message',
+                      getCurrentElement(
+                        key == 'teaching_list'
+                          ? 'no_teachings'
+                          : 'no_growth_areas'
+                      )
+                    )
+                  "
+                  @signal_event="
+                    removeElement(
+                      key == 'teaching_list' ? 'teachings' : 'growth_areas'
+                    )
+                  "
+                />
               </ion-col>
             </ion-row>
           </template>
-          <template v-else-if="pages[current_page_index] == 'access_object'"> <!-- ! (1): dare possibilità di sistemare liste -->
+          <template v-else-if="pages[current_page_index] == 'access_object'"> <!-- ! (3): si è cancellato l'oggetto sbagliato e non è stato ripristinato -->
             <ion-grid>
-              <template v-if="action == 'propose'">
+              <template
+                v-if="
+                  action == 'propose' || (action == 'edit' && !approved.course)
+                "
+              >
                 <ion-row>
                   <ion-col>
-                    <custom-select v-model="selected_learning_context" :list="learning_contexts.available"
+                    <custom-select
+                      v-model:selected_option="selected_learning_context"
+                      :list="learning_contexts.available"
                       :label="getCurrentElement('learning_context') + ':'"
-                      :aria_label="getCurrentElement('learning_context')" :placeholder="getCurrentElement('learning_context_choice')
-                        " :getCompleteName="learningContextToString" />
+                      :aria_label="getCurrentElement('learning_context')"
+                      :placeholder="
+                        getCurrentElement('learning_context_choice')
+                      "
+                      :getCompleteName="learningContextToString"
+                    />
                   </ion-col>
                   <ion-col>
-                    <custom-select :key="trigger + '_study_address'" v-model="selected_study_address" :list="study_addresses.available[selected_learning_context] ??
-                      []
-                      " :label="getCurrentElement('study_address') + ':'"
-                      :aria_label="getCurrentElement('study_address')" :placeholder="selected_learning_context != ''
-                        ? getCurrentElement('study_address_choice')
-                        : getCurrentElement('learning_context_needed')
-                        " :getCompleteName="studyAddressToString" />
+                    <custom-select
+                      :key="trigger + '_study_address'"
+                      v-model:selected_option="selected_study_address"
+                      :list="
+                        study_addresses.available[selected_learning_context] ??
+                        []
+                      "
+                      :label="getCurrentElement('study_address') + ':'"
+                      :aria_label="getCurrentElement('study_address')"
+                      :placeholder="
+                        selected_learning_context != ''
+                          ? getCurrentElement('study_address_choice')
+                          : getCurrentElement('learning_context_needed')
+                      "
+                      :getCompleteName="studyAddressToString"
+                    />
                     <!--<ion-checkbox
                       v-model="presidium"
                       :aria-label="getCurrentElement('presidium')"
@@ -248,28 +501,43 @@
                 </ion-row>
                 <ion-row>
                   <ion-col>
-                    <custom-select :key="trigger + '_study_year'" v-model="selected_study_year" :list="study_years.available[selected_learning_context] !=
-                      undefined
-                      ? study_years.available[selected_learning_context][
-                      selected_study_address
-                      ] ?? []
-                      : []
-                      " :label="getCurrentElement('study_year') + ':'" :aria_label="getCurrentElement('study_year')"
-                      :placeholder="getCurrentElement(
-                        selected_study_address != undefined
-                          ? 'study_year_choice'
-                          : 'study_address_needed'
-                      )
-                        " />
-                    <ion-checkbox v-model="main_study_year" :aria-label="getCurrentElement('main_study_year')"
-                      class="ion-padding-start" label-placement="start">{{ getCurrentElement("main_study_year")
-                      }}</ion-checkbox>
+                    <custom-select
+                      :key="trigger + '_study_year'"
+                      v-model:selected_option="selected_study_year"
+                      :list="
+                        study_years.available[selected_learning_context] !=
+                        undefined
+                          ? study_years.available[selected_learning_context][
+                              selected_study_address
+                            ] ?? []
+                          : []
+                      "
+                      :label="getCurrentElement('study_year') + ':'"
+                      :aria_label="getCurrentElement('study_year')"
+                      :placeholder="
+                        getCurrentElement(
+                          selected_study_address != undefined
+                            ? 'study_year_choice'
+                            : 'study_address_needed'
+                        )
+                      "
+                    />
+                    <ion-checkbox
+                      v-model="main_study_year"
+                      :aria-label="getCurrentElement('main_study_year')"
+                      class="ion-padding-start"
+                      label-placement="start"
+                      >{{ getCurrentElement("main_study_year") }}</ion-checkbox
+                    >
                   </ion-col>
                 </ion-row>
                 <ion-row>
                   <ion-col>
-                    <ion-button @click="addElement('access')" expand="block" color="primary"
-                      fill="solid">
+                    <ion-button
+                      @click="addElement('access')"
+                      expand="block"
+                      fill="solid"
+                    >
                       {{ getCurrentElement("add") }}
                     </ion-button>
                   </ion-col>
@@ -277,51 +545,202 @@
               </template>
               <ion-row>
                 <ion-col>
-                  <list-card :key="trigger + '_list'" :cards_list="access_propositions_cards" :emptiness_message="getCustomMessage(
-                    'emptiness_message',
-                    getCurrentElement('no_access_proposition')
-                  )
-                    " @signal_event="removeElement('access')" />
+                  <list-card
+                    :key="trigger + '_list'"
+                    :cards_list="access_propositions_cards"
+                    :emptiness_message="
+                      getCustomMessage(
+                        'emptiness_message',
+                        getCurrentElement('no_access_proposition')
+                      )
+                    "
+                    @signal_event="removeElement('access')"
+                  />
                 </ion-col>
               </ion-row>
             </ion-grid>
           </template>
-          <template v-else-if="pages[current_page_index] == 'specific_information'">
+          <template v-else-if="pages[current_page_index] == 'images_list'">
+            <!--
+            <ion-col v-if="grande && (no_reorder)" vuoto>
+            <ion-col v-if="view">
+              <carousel v-if="images != 0">
+              <empty v-else>
+            </ion-col>
+            <ion-col v-else upload>
+            <ion-col reorder v-if="images != 0 && view">
+            -->
+            <ion-grid>
+              <ion-row>
+                <ion-col
+                  v-if="!(action != 'view' && images_list.length > 0)"
+                  size="3"
+                  class="ion-hide-md-down"
+                ></ion-col>
+                <ion-col
+                  v-if="
+                    action == 'view' ||
+                    (action == 'edit' && user.type == 'admin')
+                  "
+                  size="12"
+                  size-lg="6"
+                  class="ion-text-center"
+                >
+                  <image-carousel
+                    :key="carousel_trigger"
+                    v-if="images_list.length > 0"
+                    :images="images_list"
+                    :show_name="!(action == 'view' && user.type == 'teacher')"
+                  />
+                  <ionic-element
+                    v-else
+                    :element="
+                      getCustomMessage(
+                        'no_uploaded_images',
+                        getCurrentElement('no_uploaded_images'),
+                        'string',
+                        undefined,
+                        {
+                          label: {
+                            'ion-padding-vertical': true,
+                          },
+                        }
+                      )
+                    "
+                  />
+                </ion-col>
+                <ion-col v-else size="12" size-lg="6">
+                  <image-uploader
+                    v-model:images_list="images_list"
+                    v-model:progress_infos="progress_infos"
+                    @signal_event="setupModalAndOpen('error')"
+                  />
+                </ion-col>
+                <ion-col
+                  v-if="action != 'view' && images_list.length > 0"
+                  size="12"
+                  size-lg="6"
+                >
+                  <ionic-element
+                    :element="
+                      getCustomMessage(
+                        'image_visualization_order',
+                        getCurrentElement('image_visualization_order') + ':'
+                      )
+                    "
+                  />
+                  <ion-reorder-group
+                    :disabled="approved.project_class || action == 'edit'"
+                    @ionItemReorder="moveImage($event)"
+                  >
+                    <ion-item
+                      v-for="(image, i) in images_list"
+                      :key="'order_item_' + i"
+                    >
+                      <ionic-element
+                        :element="
+                          getReorderLabel(i, image.name, false)
+                        "
+                        @signal_event="removeImage()"
+                      />
+                      <ion-reorder slot="end" class="ion-no-margin" />
+                    </ion-item>
+                  </ion-reorder-group>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </template>
+          <template
+            v-else-if="pages[current_page_index] == 'specific_information'"
+          >
             <ion-grid>
               <ion-row>
                 <ion-col>
-                  <custom-select v-model="selected_session" :list="learning_sessions"
+                  <custom-select
+                    v-model:selected_option="selected_session"
+                    :list="learning_sessions"
                     :label="getCurrentElement('learning_sessions') + ':'"
                     :aria_label="getCurrentElement('learning_sessions')"
                     :placeholder="getCurrentElement('learning_sessions_choice')"
-                    :getCompleteName="learningSessionToString" :disabled="action == 'view' || approved.project_class" />
-                  <custom-select :key="trigger" v-model="castToSpecificInformation(
-                    course_proposition[pages[current_page_index]]
-                  ).class_group
-                    " :list="groups" :label="getCurrentElement('group') + ':'" :aria_label="getCurrentElement('group')"
-                    :placeholder="getCurrentElement(
-                      selected_session == -1
-                        ? 'learning_session_needed'
-                        : 'group_choice'
-                    )
-                      " :disabled="action == 'view' || approved.project_class" />
+                    :getCompleteName="LearningSession.toString"
+                    :disabled="action == 'view' || approved.project_class"
+                  />
+                  <custom-select
+                    :key="trigger"
+                    v-model:selected_option="
+                      castToSpecificInformation(
+                        course_proposition[pages[current_page_index]]
+                      ).class_group
+                    "
+                    :list="groups"
+                    :label="getCurrentElement('group') + ':'"
+                    :aria_label="getCurrentElement('group')"
+                    :placeholder="
+                      getCurrentElement(
+                        selected_session == -1
+                          ? 'learning_session_needed'
+                          : 'group_choice'
+                      )
+                    "
+                    :disabled="action == 'view' || approved.project_class"
+                  />
                   <div v-if="sections_use" class="ion-padding">
-                    <ion-input type="number" v-model="num_section" :label="getCurrentElement('num_section')"
-                      :aria-label="getCurrentElement('num_section')" fill="outline" :readonly="action == 'view' || approved.project_class" />
+                    <ion-input
+                      type="number"
+                      v-model="num_section"
+                      :label="getCurrentElement('num_section')"
+                      :aria-label="getCurrentElement('num_section')"
+                      fill="outline"
+                      :readonly="action == 'view' || approved.project_class"
+                    />
+                  </div>
+                  <div class="ion-padding">
+                    <ion-input
+                      type="text"
+                      v-model="
+                        castToSpecificInformation(
+                          course_proposition[pages[current_page_index]]
+                        ).project_class_code
+                      "
+                      :label="getCurrentElement('project_class_code')"
+                      :aria-label="getCurrentElement('project_class_code')"
+                      fill="outline"
+                      :maxlength="
+                        castAsArray(
+                          ModelProposition.getRequiredInformation()
+                            .project_class_code[0].rule
+                        )[0]
+                      "
+                      :readonly="action == 'view' || approved.project_class"
+                    />
                   </div>
                 </ion-col>
                 <ion-col>
-                  <ionic-element :element="getCustomMessage('teachers_title', getCurrentElement('teachers'))" />
-                  <template v-if="action == 'propose'">
+                  <ionic-element
+                    :element="
+                      getCustomMessage(
+                        'teachers_title',
+                        getCurrentElement('teachers')
+                      )
+                    "
+                  />
+                  <template v-if="action != 'view'">
                     <div>
-                      <custom-select :key="trigger + '_teacher'" v-model="selected_teacher" :list="teachers.available"
-                        :label="getCurrentElement('teacher') + ':'" :aria_label="getCurrentElement('teacher')"
-                        :placeholder="getCurrentElement('teacher_choice')" :getCompleteName="teacherToString" />
+                      <custom-select
+                        :key="trigger + '_teacher'"
+                        v-model:selected_option="selected_teacher"
+                        :list="teachers.available"
+                        :label="getCurrentElement('teacher') + ':'"
+                        :aria_label="getCurrentElement('teacher')"
+                        :placeholder="getCurrentElement('teacher_choice')"
+                        :getCompleteName="teacherToString"
+                      />
                       <!--<ionic-element
                         v-if="selected_teacher != 0"
                         :element="buttons[2]"
                         @signal_event="setupModalAndOpen('teacher_info')"
-                      />--> <!-- TODO (7): decommentare quando ci saranno le info dell'insegnante -->
+                      />-->
+                      <!-- TODO (7): decommentare quando ci saranno le info dell'insegnante -->
                     </div>
                     <!--
                       <ion-checkbox
@@ -333,47 +752,86 @@
                       >
                     -->
                     <template v-if="sections_use">
-                      <ion-text class="ion-padding">{{ getCurrentElement("sections") }}:
+                      <ion-text class="ion-padding"
+                        >{{ getCurrentElement("sections") }}:
                         {{
-                          num_section == '' || parseInt(num_section) <= 0 ? getCurrentElement("num_section_needed") : ""
-                        }}</ion-text>
-                          <ion-list v-if="num_section != '' && parseInt(num_section) > 0">
-                            <ion-item v-for="(value, index) in sections" :key="numberToSection(index)">
-                              <ion-checkbox v-model="sections[index]" :aria-label="numberToSection(index)"
-                                class="ion-padding-start" label-placement="start">{{ numberToSection(index)
-                                }}</ion-checkbox>
-                            </ion-item>
-                          </ion-list>
+                          num_section == "" || parseInt(num_section) <= 0
+                            ? getCurrentElement("num_section_needed")
+                            : ""
+                        }}</ion-text
+                      >
+                      <ion-list
+                        v-if="num_section != '' && parseInt(num_section) > 0"
+                      >
+                        <ion-item
+                          v-for="(value, index) in sections"
+                          :key="numberToSection(index)"
+                        >
+                          <ion-checkbox
+                            v-model="sections[index]"
+                            :aria-label="numberToSection(index)"
+                            class="ion-padding-start"
+                            label-placement="start"
+                            >{{ numberToSection(index) }}</ion-checkbox
+                          >
+                        </ion-item>
+                      </ion-list>
                     </template>
                   </template>
-                  <ion-button v-if="sections_use && action == 'propose'" @click="addElement('teachers')" expand="block" color="primary"
-                    fill="solid">
+                  <ion-button
+                    v-if="sections_use && action == 'propose'"
+                    @click="addElement('teachers')"
+                    expand="block"
+                    fill="solid"
+                  >
                     {{ getCurrentElement("add") }}
                   </ion-button>
-                  <list-card :key="trigger + '_list'" :cards_list="teachers_cards" :emptiness_message="getCustomMessage(
-                    'emptiness_message',
-                    getCurrentElement('no_teacher_proposition')
-                  )
-                    " @signal_event="removeElement('teachers')" />
+                  <list-card
+                    :key="trigger + '_list'"
+                    :cards_list="teachers_cards"
+                    :emptiness_message="
+                      getCustomMessage(
+                        'emptiness_message',
+                        getCurrentElement('no_teacher_proposition')
+                      )
+                    "
+                    @signal_event="removeElement('teachers')"
+                  />
                 </ion-col>
               </ion-row>
             </ion-grid>
           </template>
-          <ion-row class="ion-text-center" style="border-top: 1px solid var(--ion-color-dark)">
+          <ion-row
+            class="ion-text-center"
+            style="border-top: 1px solid var(--ion-color-dark)"
+          >
             <ion-col>
-              <ionic-element :element="buttons[0]" @signal_event="go(false)" :disabled="current_page_index == 0" />
+              <ionic-element
+                :element="buttons[0]"
+                @signal_event="go(false)"
+                :disabled="current_page_index == 0"
+              />
             </ion-col>
             <ion-col>
-              <ionic-element :element="buttons[1]" @signal_event="go(true)"
-                :disabled="current_page_index == pages.length - 1" />
+              <ionic-element
+                :element="buttons[1]"
+                @signal_event="go(true)"
+                :disabled="current_page_index == pages.length - 1"
+              />
             </ion-col>
           </ion-row>
           <!--<template v-if="parameters_remaining">-->
           <ion-row>
             <ion-col>
-              <ion-button v-if="action == 'propose'" @click="checkAndConfirm" expand="block" color="primary" fill="solid">
+              <ion-button
+                v-if="action == 'propose'"
+                @click="checkAndConfirm"
+                expand="block"
+                fill="solid"
+              >
                 {{ getCurrentElement("propose") }}
-              </ion-button> <!-- TODO (5): salvare le cose man mano che vengono messe per visualizzare poi "propose" -->
+              </ion-button>
+              <!-- TODO (5): salvare le cose man mano che vengono messe per visualizzare poi "propose" -->
             </ion-col>
           </ion-row>
           <!--</template>-->
@@ -418,7 +876,9 @@ import {
   GrowthAreaProps,
   AlertInformation,
   AdminProjectClass,
-  PropositionListsKeys
+  PropositionListsKeys,
+  PropositionActions,
+  ImageDescriptor,
 } from "@/types";
 import {
   executeLink,
@@ -429,6 +889,7 @@ import {
   getIcon,
   getLearningContexts,
   numberToSection,
+  uploadMultipleImages,
 } from "@/utils";
 import {
   IonAlert,
@@ -445,14 +906,15 @@ import {
   IonCheckbox,
   IonList,
   IonItem,
+  IonReorderGroup,
+  IonReorder,
 } from "@ionic/vue";
 import { reactive, ref, Ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 
 type AvailableModal = "error" | "teacher_info" | "confirm" | "success";
-type ListTypes = "access" | "teachers" | SimpleListTypes;
-type Action = "view" | "edit" | "propose";
+type CardsListTypes = "access" | "teachers" | SimpleListTypes;
 type SimpleListTypes = "growth_areas" | "teachings";
 type SimpleList<T> = {
   available: T[];
@@ -471,27 +933,53 @@ const go = (direction: boolean) => {
     current_page_index.value -= 1;
   }
 };
-const checkAndConfirm = () => {
-  const missing_information = course_proposition.check();
-  const information_keys = Object.keys(missing_information) as PropositionRequiredKeys[];
+const checkAndWarn = () => {
+  const missing_information = course_proposition.check(action.value);
+  const information_keys = Object.keys(
+    missing_information
+  ) as PropositionRequiredKeys[];
 
-  if (information_keys.length == 0) {
-    setupModalAndOpen("confirm");
-  } else {
+  let outcome = true;
+
+  if (information_keys.length > 0) {
     setupModalAndOpen("error", missing_information[information_keys[0]]);
-    current_page_index.value = course_proposition.getKeyIndex(information_keys[0]);
+    current_page_index.value = course_proposition.getKeyIndex(
+      information_keys[0]
+    );
     //<!-- TODO (5): Cambiare colori a componenti per segnalare errori
+    outcome = false;
   }
-}
+
+  return outcome;
+};
+const checkAndConfirm = () => {
+  if (checkAndWarn()) {
+    setupModalAndOpen("confirm");
+  }
+};
 const propose = () => {
   executeLink(
     "/v1/propositions",
-    () => setTimeout(() => setupModalAndOpen("success", getCurrentElement("successful_proposal")), 300),
-    error => {
+    (response) =>
+      uploadImagesMessages(
+        response.data.course_id,
+        getCurrentElement("successful_proposal")
+      )
+        .then((message) =>
+          setTimeout(() => setupModalAndOpen("success", message), 300)
+        )
+        .catch((message) =>
+          setTimeout(() => setupModalAndOpen("error", message), 300)
+        ),
+    (error) => {
       if (error.response.status == 409) {
-        setTimeout(() => setupModalAndOpen("error", getCurrentElement("duplicate_course")), 300)
+        setTimeout(
+          () =>
+            setupModalAndOpen("error", getCurrentElement("duplicate_course")),
+          300
+        );
       } else {
-        setTimeout(() => setupModalAndOpen("error"), 300)
+        setTimeout(() => setupModalAndOpen("error"), 300);
       }
     },
     "post",
@@ -505,39 +993,53 @@ const closeModal = (alert: boolean) => {
     addition.value = false;
   }
 };
-const setupModalAndOpen = async (window: AvailableModal, message?: string, approval?: boolean) => {
+const setupModalAndOpen = async (
+  window: AvailableModal,
+  message?: string,
+  approval?: boolean
+) => {
   alert_information.inputs = [];
   switch (window) {
     case "confirm":
       alert_information.title = "";
-      alert_information.message = getCurrentElement(approval == undefined
-        ? "proposition_confrimation"
-        : approval
+      alert_information.message = getCurrentElement(
+        approval == undefined
+          ? "proposition_confrimation"
+          : approval
           ? "approval_confirmation"
-          : "rejection_confirmation");
-      alert_information.buttons = [{
-        text: getCurrentElement("yes"),
-        role: 'yes',
-        handler: approval == undefined ? propose : () => approve(approval),
-      }, getCurrentElement("no")];
+          : "rejection_confirmation"
+      );
+      alert_information.buttons = [
+        {
+          text: getCurrentElement("yes"),
+          role: "yes",
+          handler: approval == undefined ? propose : () => approve(approval),
+        },
+        getCurrentElement("no"),
+      ];
       if (approval == true) {
-        alert_information.inputs = [{
-          type: "checkbox",
-          label: getCurrentElement("approve_project_class_too"),
-          checked: true,
-          handler: (input) => {
-            approve_project_class = input.checked ?? true;
-          }
-        }];
+        alert_information.inputs = [
+          {
+            type: "checkbox",
+            label: getCurrentElement("approve_project_class_too"),
+            checked: true,
+            handler: (input) => {
+              approve_project_class = input.checked ?? true;
+            },
+          },
+        ];
       }
       break;
     case "success":
       alert_information.title = "";
-      alert_information.message = message ?? getCurrentElement("successful_operation");
+      alert_information.message =
+        message ?? getCurrentElement("successful_operation");
       alert_information.buttons = [getCurrentElement("ok")];
       break;
     case "error":
-      setAlertError(message)
+      setAlertError(
+        message ?? store.state.event.data?.message ?? getCurrentElement("error")
+      );
       break;
   }
   alert_open.value = true;
@@ -553,8 +1055,6 @@ const learningContextToString = (learning_context: LearningContext) =>
   learning_context[`${language}_title`];
 const studyAddressToString = (study_address: StudyAddress) =>
   study_address[`${language}_title`];
-const learningSessionToString = (session: LearningSession) =>
-  session.number + " - " + session.school_year;
 const teacherToString = (teacher: Teacher) =>
   teacher.name + " " + teacher.surname;
 const castToTitles = (titles: any) => titles as PropositionTitles;
@@ -572,7 +1072,12 @@ const castToActivities = (activities: any) =>
   activities as PropositionActivities;
 const castToSpecificInformation = (specific_information: any) =>
   specific_information as PropositionSpecificInformation;
-const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card = false, change_support_list = true) => {
+const addToSimpleList = (
+  type: SimpleListTypes,
+  id?: string | number,
+  only_card = false,
+  change_support_list = true
+) => {
   let actual_id: string | number;
   let reference: SimpleList<Teaching | GrowthArea>;
   let cards_reference: OrderedCardsList<GeneralCardElements>;
@@ -587,14 +1092,15 @@ const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card 
     actual_id = id ?? selected_growth_area.value;
     reference = growth_areas;
     cards_reference = growth_areas_cards;
-
   }
 
-  const support_list = change_support_list ? reference.available : reference.selected;
+  const support_list = change_support_list
+    ? reference.available
+    : reference.selected;
 
   if (
     actual_id != (type == "teachings" ? "" : 0) &&
-    ((tmp_index = support_list.findIndex((a) => a.id == actual_id)) != -1)
+    (tmp_index = support_list.findIndex((a) => a.id == actual_id)) != -1
   ) {
     to_add = support_list[tmp_index];
     cards_reference.cards[""].push(to_add.toCard(action.value == "view"));
@@ -614,7 +1120,9 @@ const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card 
       }
     } else {
       if (!only_card) {
-        course_proposition.characteristics2.growth_list.push(to_add.id as number);
+        course_proposition.characteristics2.growth_list.push(
+          to_add.id as number
+        );
       }
       if (change_support_list) {
         growth_areas.selected.push(to_add as GrowthArea);
@@ -631,8 +1139,8 @@ const addToSimpleList = (type: SimpleListTypes, id?: string | number, only_card 
 const addAccess = (
   learning_context_id?: string,
   access_object?: AccessObject,
-  only_card = false/*,
-  change_support_list = true*/
+  only_card = false,
+  change_support_list = true
 ) => {
   const actual_learning_context_id =
     learning_context_id ?? selected_learning_context.value;
@@ -661,29 +1169,55 @@ const addAccess = (
     actual_main_study_year = main_study_year.value;
   }
 
-  //const support_list_index = change_support_list ? "available" : "selected";
+  const support_context_list_index = change_support_list
+    ? "available"
+    : study_addresses.available[actual_learning_context_id] != undefined &&
+      Object.keys(study_addresses.available[actual_learning_context_id])
+        .length > 0
+    ? "available"
+    : "selected";
+  const support_address_list_index = change_support_list
+    ? "available"
+    : support_context_list_index != "selected" &&
+      study_years.available[actual_learning_context_id][
+        actual_study_address_id
+      ] != undefined &&
+      Object.keys(
+        study_years.available[actual_learning_context_id][
+          actual_study_address_id
+        ]
+      ).length > 0
+    ? "available"
+    : "selected";
+  const support_year_list_index = change_support_list
+    ? "available"
+    : "selected";
 
   if (
     actual_learning_context_id != "" &&
-    (tmp_learning_context_index = learning_contexts.available.findIndex(
-      (a) => a.id == actual_learning_context_id
-    )) != -1 &&
+    (tmp_learning_context_index = learning_contexts[
+      support_context_list_index
+    ].findIndex((a) => a.id == actual_learning_context_id)) != -1 &&
     actual_study_address_id != "" &&
-    (tmp_study_address_index = study_addresses.available[
+    (tmp_study_address_index = study_addresses[support_address_list_index][
       actual_learning_context_id
     ].findIndex((a) => a.id == actual_study_address_id)) != -1 &&
     actual_study_year != 0 &&
-    (tmp_study_year_index = study_years.available[actual_learning_context_id][
-      actual_study_address_id
-    ].findIndex((a) => a.id == actual_study_year)) != -1
+    (tmp_study_year_index = study_years[support_year_list_index][
+      actual_learning_context_id
+    ][actual_study_address_id].findIndex((a) => a.id == actual_study_year)) !=
+      -1
   ) {
-    learning_context = learning_contexts.available[tmp_learning_context_index];
+    learning_context =
+      learning_contexts[support_context_list_index][tmp_learning_context_index];
     study_address =
-      study_addresses.available[learning_context.id][tmp_study_address_index];
-    study_year =
-      study_years.available[learning_context.id][study_address.id][
-      tmp_study_year_index
+      study_addresses[support_address_list_index][learning_context.id][
+        tmp_study_address_index
       ];
+    study_year =
+      study_years[support_year_list_index][learning_context.id][
+        study_address.id
+      ][tmp_study_year_index];
 
     tmp_access_proposition = new AccessProposition(
       study_year.id,
@@ -722,56 +1256,62 @@ const addAccess = (
       )
     );
 
-    if (study_years.selected[learning_context.id] == undefined) {
-      study_years.selected[learning_context.id] = {};
-    }
-    if (
-      study_years.selected[learning_context.id][study_address.id] == undefined
-    ) {
-      study_years.selected[learning_context.id][study_address.id] = [];
-    }
-    study_years.selected[learning_context.id][study_address.id].push(
-      study_year
-    );
-    study_years.available[learning_context.id][study_address.id].splice(
-      tmp_study_year_index,
-      1
-    );
-    if (access_object == undefined) {
-      selected_study_year.value = 0;
-    }
-
-    if (
-      study_years.available[learning_context.id][study_address.id].length == 0
-    ) {
-      if (study_addresses.selected[learning_context.id] == undefined) {
-        study_addresses.selected[learning_context.id] = [];
+    if (change_support_list) {
+      if (study_years.selected[learning_context.id] == undefined) {
+        study_years.selected[learning_context.id] = {};
       }
-      study_addresses.selected[learning_context.id].push(study_address);
-      study_addresses.available[learning_context.id].splice(
-        tmp_study_address_index,
+      if (
+        study_years.selected[learning_context.id][study_address.id] == undefined
+      ) {
+        study_years.selected[learning_context.id][study_address.id] = [];
+      }
+      study_years.selected[learning_context.id][study_address.id].push(
+        study_year
+      );
+      study_years.available[learning_context.id][study_address.id].splice(
+        tmp_study_year_index,
         1
       );
       if (access_object == undefined) {
-        selected_study_address.value = "";
+        selected_study_year.value = 0;
       }
-    }
-    if (study_addresses.available[learning_context.id].length == 0) {
-      learning_contexts.selected.push(learning_context);
-      learning_contexts.available.splice(tmp_learning_context_index, 1);
-      if (learning_context == undefined) {
-        selected_learning_context.value = "";
-      }
-    }
 
-    if (access_object == undefined) {
-      presidium.value = false;
-      main_study_year.value = false;
+      if (
+        study_years.available[learning_context.id][study_address.id].length == 0
+      ) {
+        if (study_addresses.selected[learning_context.id] == undefined) {
+          study_addresses.selected[learning_context.id] = [];
+        }
+        study_addresses.selected[learning_context.id].push(study_address);
+        study_addresses.available[learning_context.id].splice(
+          tmp_study_address_index,
+          1
+        );
+        if (access_object == undefined) {
+          selected_study_address.value = "";
+        }
+      }
+      if (study_addresses.available[learning_context.id].length == 0) {
+        learning_contexts.selected.push(learning_context);
+        learning_contexts.available.splice(tmp_learning_context_index, 1);
+        if (learning_context == undefined) {
+          selected_learning_context.value = "";
+        }
+      }
+
+      if (access_object == undefined) {
+        presidium.value = false;
+        main_study_year.value = false;
+      }
     }
   }
   trigger.value++;
 };
-const addTeacher = (proposition_teacher?: PropositionTeacher, only_card = false, change_support_list = true) => {
+const addTeacher = (
+  proposition_teacher?: PropositionTeacher,
+  only_card = false,
+  change_support_list = true
+) => {
   let actual_teacher_id: number;
   let actual_main_teacher: boolean;
   let tmp_teacher_index: number;
@@ -786,7 +1326,9 @@ const addTeacher = (proposition_teacher?: PropositionTeacher, only_card = false,
     actual_main_teacher = main_teacher.value;
   }
 
-  const support_list = change_support_list ? teachers.available : teachers.selected;
+  const support_list = change_support_list
+    ? teachers.available
+    : teachers.selected;
   if (
     actual_teacher_id != 0 &&
     (tmp_teacher_index = support_list.findIndex(
@@ -828,7 +1370,7 @@ const addTeacher = (proposition_teacher?: PropositionTeacher, only_card = false,
   }
   trigger.value++;
 };
-const addElement = (type: ListTypes) => {
+const addElement = (type: CardsListTypes) => {
   // TODO (9): trovare pezzi in comune negli switch per semplificare la funzione e la successiva
   switch (type) {
     case "teachings":
@@ -881,7 +1423,7 @@ const removeSimpleElement = (type: SimpleListTypes) => {
   reference.available.sort((a, b) => (a.id == b.id ? 0 : a.id > b.id ? 1 : -1));
   reference.selected.splice(tmp_index, 1);
 };
-const removeElement = (type: ListTypes) => {
+const removeElement = (type: CardsListTypes) => {
   let learning_context_id: string;
   let study_address_id: string;
   let study_year: number;
@@ -913,8 +1455,8 @@ const removeElement = (type: ListTypes) => {
       tmp_study_address_index =
         study_addresses.selected[learning_context_id] != undefined
           ? study_addresses.selected[learning_context_id].findIndex(
-            (a) => a.id == study_address_id
-          )
+              (a) => a.id == study_address_id
+            )
           : -1;
       tmp_study_year_index = study_years.selected[learning_context_id][
         study_address_id
@@ -946,7 +1488,7 @@ const removeElement = (type: ListTypes) => {
 
       study_years.available[learning_context_id][study_address_id].push(
         study_years.selected[learning_context_id][study_address_id][
-        tmp_study_year_index
+          tmp_study_year_index
         ]
       );
       study_years.available[learning_context_id][study_address_id].sort(
@@ -1010,10 +1552,7 @@ const edit_course_proposition = async (course_id?: number) => {
   let learning_area: LearningArea;
   if (course_id != undefined && !Number.isNaN(course_id)) {
     course = await Course.newCourse(
-      await executeLink(
-        "/v1/courses/" + course_id + "?admin_info=true",
-        (response) => response.data.data
-      )
+      "/v1/courses/" + course_id + "?admin_info=true"
     );
     approved.course = course.certifying_admin?.id != null;
     learning_area = await executeLink("/v1/learning_areas", (response) => {
@@ -1025,21 +1564,24 @@ const edit_course_proposition = async (course_id?: number) => {
       return tmp_area != undefined
         ? tmp_area
         : {
-          id: -1,
-          italian_title: "",
-          english_title: "",
-        };
+            id: -1,
+            italian_title: "",
+            english_title: "",
+          };
     });
+    images_list.value = course.images_list;
+    old_images_names = course.images_list.map((a) => a.name);
     if (tmp_session_id != -1) {
       project_class = await executeLink(
         "/v1/project_classes/" + course_id + "/" + tmp_session_id,
-        response => new AdminProjectClass(response.data.data)); //<!-- ! (3): dire a Pietro di mettere num_section sia lì che in quella generale
+        (response) => new AdminProjectClass(response.data.data)
+      ); //<!-- TODO (4): dire a Pietro di mettere num_section sia lì che in quella generale
       approved.project_class = project_class.admin_id != undefined;
       tmp_teachers = await executeLink(
         "/v1/project_classes/" + course_id + "/" + tmp_session_id + "/teachers",
-        response => {
+        (response) => {
           const teachers_summary: {
-            [id: number]: PropositionTeacher
+            [id: number]: PropositionTeacher;
           } = {};
           let tmp_id: number;
 
@@ -1058,7 +1600,7 @@ const edit_course_proposition = async (course_id?: number) => {
 
           return Object.values(teachers_summary);
         },
-        () => [],
+        () => []
       );
     }
     course_proposition = reactive(
@@ -1071,6 +1613,7 @@ const edit_course_proposition = async (course_id?: number) => {
         area_id: learning_area.id,
         growth_list: course.growth_list.map((a) => a.id),
         session_id: tmp_session_id,
+        project_class_code: project_class?.project_class_code ?? "",
         class_group: project_class?.group ?? -1,
         num_section: 1,
         min_students: course.min_students,
@@ -1085,24 +1628,28 @@ const edit_course_proposition = async (course_id?: number) => {
         italian_act: course.italian_activities,
         english_act: course.english_activities,
         access_object: course.access_object,
+        images_list: images_list.value.filter((a) => a instanceof File),
         teacher_list: tmp_teachers,
       })
     );
     selected_session.value = tmp_session_id;
-    fillLists({});
+    fillCardsLists({});
   } else {
     course_proposition = reactive(new ModelProposition());
   }
   trigger.value++;
 };
-const fillLists = (lists_info: { [key in keyof string as PropositionListsKeys]?: {
-  clear?: {
-    cards?: boolean,
-    support_list?: boolean,
-  },
-  only_card?: boolean,
-  change_support_list?: boolean,
-} }) => {
+const fillCardsLists = (lists_info: {
+  [key in keyof string as PropositionListsKeys]?: {
+    //<!-- TODO (6): guardare se si può mettere CardsListTypes
+    clear?: {
+      cards?: boolean;
+      support_list?: boolean;
+    };
+    only_card?: boolean;
+    change_support_list?: boolean;
+  };
+}) => {
   if (lists_info["teaching_list"]?.clear != undefined) {
     if (lists_info["teaching_list"]?.clear.cards == true) {
       teachings_cards.order = [];
@@ -1116,7 +1663,12 @@ const fillLists = (lists_info: { [key in keyof string as PropositionListsKeys]?:
     }
   }
   for (const teaching of course_proposition.characteristics2.teaching_list) {
-    addToSimpleList("teachings", teaching, lists_info["teaching_list"]?.only_card ?? true, lists_info["teaching_list"]?.change_support_list);
+    addToSimpleList(
+      "teachings",
+      teaching,
+      lists_info["teaching_list"]?.only_card ?? true,
+      lists_info["teaching_list"]?.change_support_list
+    );
   }
   if (lists_info["growth_list"]?.clear != undefined) {
     if (lists_info["growth_list"]?.clear.cards == true) {
@@ -1131,19 +1683,39 @@ const fillLists = (lists_info: { [key in keyof string as PropositionListsKeys]?:
     }
   }
   for (const growth_area of course_proposition.characteristics2.growth_list) {
-    addToSimpleList("growth_areas", growth_area, lists_info["growth_list"]?.only_card ?? true, lists_info["growth_list"]?.change_support_list);
+    addToSimpleList(
+      "growth_areas",
+      growth_area,
+      lists_info["growth_list"]?.only_card ?? true,
+      lists_info["growth_list"]?.change_support_list
+    );
   }
   if (lists_info["access_object"]?.clear != undefined) {
     if (lists_info["access_object"]?.clear.cards == true) {
       access_propositions_cards.order = [];
       access_propositions_cards.cards = {};
     }
+    if (lists_info["access_object"]?.clear.support_list == true) {
+      course_proposition.access_object = {};
+      learning_contexts.available = [];
+      learning_contexts.selected = [];
+      study_addresses.available = {};
+      study_addresses.selected = {};
+      study_years.available = {};
+      study_years.selected = {};
+    }
   }
-  for (const learning_context_id in course_proposition.access_object) { //<!-- TODO (9): attenzione, non funziona
+  for (const learning_context_id in course_proposition.access_object) {
+    //<!-- TODO (9): attenzione, non funziona
     for (const access_object of course_proposition.access_object[
       learning_context_id
     ]) {
-      addAccess(learning_context_id, access_object, lists_info["access_object"]?.only_card ?? true);//, lists_info["access_object"]?.change_support_list);
+      addAccess(
+        learning_context_id,
+        access_object,
+        lists_info["access_object"]?.only_card ?? true,
+        lists_info["access_object"]?.change_support_list
+      );
     }
   }
   if (course_proposition.specific_information.session_id != undefined) {
@@ -1160,55 +1732,128 @@ const fillLists = (lists_info: { [key in keyof string as PropositionListsKeys]?:
       }
     }
     selected_session.value = course_proposition.specific_information.session_id;
-    for (const teacher of course_proposition.specific_information.teacher_list) {
-      addTeacher(teacher, lists_info["teacher_list"]?.only_card ?? true, lists_info["teacher_list"]?.change_support_list);
+    for (const teacher of course_proposition.specific_information
+      .teacher_list) {
+      addTeacher(
+        teacher,
+        lists_info["teacher_list"]?.only_card ?? true,
+        lists_info["teacher_list"]?.change_support_list
+      );
     }
   }
-}
-const changeModality = (new_action: Action) => {
-  /*const tmp_lists_info = {
+};
+const changeModality = (new_action: PropositionActions) => {
+  const tmp_lists_info = {
     clear: {
       cards: true,
     },
     change_support_list: false,
-  };*/
+  };
+  const lists_info = {
+    teaching_list: !approved.course ? tmp_lists_info : undefined,
+    growth_list: !approved.course ? tmp_lists_info : undefined,
+    access_object: !approved.course ? tmp_lists_info : undefined,
+    teacher_list: tmp_lists_info,
+  };
+
+  //let changes_error = false;
 
   if (action.value == "edit" && new_action == "view") {
-    executeLink("/v1/courses/" + course_proposition.course_id,
-      undefined, () => {
-        setupModalAndOpen("error", getCurrentElement("changes_not_made"));
-      }, "put", course_proposition.toProposition());
+    if (checkAndWarn()) {
+      executeLink(
+        "/v1/courses/" + course_proposition.course_id,
+        async () => {
+          const remaining_old_images: ImageDescriptor[] =
+            images_list.value.filter(
+              (a) => !(a instanceof File)
+            ) as ImageDescriptor[];
+
+          /*let message = "";
+
+          if (course_proposition.images_list.length > 0) {f
+            message = await uploadImagesMessages(
+              course_proposition.course_id,
+              ""
+            ).then(a => a).catch(a => a);
+            if (message != "") {
+              images_list.value = images_list.value.filter(
+                (a) => !(a instanceof File)
+              );
+            }
+          }*/
+          if (
+            //message == "" &&
+            old_images_names.length > 0 &&
+            remaining_old_images.length != old_images_names.length
+          ) {
+            if (remaining_old_images.length == 0) {
+              executeLink(
+                "/v1/images/course/" + course_proposition.course_id,
+                undefined,
+                () => getCurrentElement("images_upload_error"),
+                "delete"
+              );
+            } else {
+              for (const image_name of old_images_names.filter(
+                (a) => remaining_old_images.findIndex((b) => a == b.name) == -1
+              )) {
+                executeLink(
+                  "/v1/images/course/" +
+                    course_proposition.course_id +
+                    "?name=" +
+                    image_name,
+                  undefined,
+                  () => getCurrentElement("images_upload_error"),
+                  "delete"
+                );
+              }
+            }
+          } /*else if (message != "") {
+            setupModalAndOpen("error", message);
+          }*/
+        },
+        () => {
+          //changes_error = true; //<!-- TODO (6): fare "esci senza salvare"
+          setupModalAndOpen("error", getCurrentElement("changes_not_made"));
+        },
+        "put",
+        course_proposition.toProposition()
+      );
+      action.value = new_action;
+      fillCardsLists(lists_info);
+    }
   } else if (action.value == "view" && new_action == "edit") {
-    /*fillLists({
-      teaching_list: tmp_lists_info,
-      growth_list: tmp_lists_info,
-      access_object: {
-        change_support_list: false,
-      },
-      teacher_list: tmp_lists_info,
-    });*/
+    action.value = new_action;
+    fillCardsLists(lists_info);
   }
-  action.value = new_action;
   trigger.value++;
 };
 const approve = (outcome = true) => {
   if (course_proposition.specific_information.session_id != -1) {
     executeLink(
-      "/v1/propositions/approval?course_id=" + course_proposition.course_id
-      + "&session_id=" + course_proposition.specific_information.session_id
-      + "&approved=" + outcome
-      + (outcome ? "&proj_class=" + approve_project_class : ""),
+      "/v1/propositions/approval?course_id=" +
+        course_proposition.course_id +
+        "&session_id=" +
+        course_proposition.specific_information.session_id +
+        "&approved=" +
+        outcome +
+        (outcome ? "&proj_class=" + approve_project_class : ""),
       () => {
         approve_project_class = true;
         setTimeout(() => {
-          setupModalAndOpen("success", getCurrentElement("successful_" + (outcome ? "confirmation" : "rejection")));
+          setupModalAndOpen(
+            "success",
+            getCurrentElement(
+              "successful_" + (outcome ? "confirmation" : "rejection")
+            )
+          );
           $router.push({ name: "propositions_history" });
         }, 300);
       },
       () => {
         approve_project_class = true;
         setTimeout(() => {
-          setupModalAndOpen("error", getCurrentElement("general_error"))
+          setupModalAndOpen("error", getCurrentElement("general_error"));
         }, 300);
       },
       "put"
@@ -1216,11 +1861,82 @@ const approve = (outcome = true) => {
   } else {
     approve_project_class = true;
     setTimeout(() => {
-      setupModalAndOpen("error", getCurrentElement("general_error"))
+      setupModalAndOpen("error", getCurrentElement("general_error"));
     }, 300);
   }
 };
 const allApproed = () => approved.course && approved.project_class;
+const moveImage = (event: CustomEvent) => {
+  event.detail.complete(images_list.value);
+};
+const removeImage = () => {
+  const image_index = images_list.value.findIndex(
+    (a) => a.name == store.state.event.data.name
+  );
+
+  if (image_index != -1) {
+    images_list.value.splice(image_index, 1);
+    carousel_trigger.value++;
+  }
+};
+const uploadImagesMessages = async (
+  refer_course_id: number | undefined,
+  successful_message: string
+) => {
+  let status = undefined;
+
+  if (course_proposition.images_list.length > 0) {
+    status = await uploadMultipleImages(
+      "/v1/images/course/" + refer_course_id,
+      course_proposition.images_list
+    )
+      .then((a) => a)
+      .catch((a) => a);
+  }
+
+  return new Promise<string>((resolve, reject) =>
+    status == undefined || status == 201
+      ? resolve(successful_message)
+      : reject(
+          (successful_message != "" ? successful_message + ". " : "") +
+            (status == 400
+              ? getCurrentElement("images_upload_error")
+              : status == 401
+              ? getCurrentElement("unauthorized_image_uploading")
+              : getCurrentElement("error"))
+        )
+  );
+};
+const getReorderLabel = (index: number, name: string, disabled: boolean) => {
+  const to_ret: CustomElement = {
+    id: "image_" + index,
+    type: "string",
+    content: name,
+    classes: {
+      item: {
+        w_100: true,
+      },
+    },
+  };
+
+  if (!disabled) {
+    Object.assign(to_ret, {
+      type: "string_icon",
+      linkType: "event",
+      content: {
+        text: name,
+        icon: getIcon("close"),
+        event: "remove",
+        data: {
+          name: name,
+        },
+      },
+    });
+  }
+
+  return to_ret;
+};
+const castAsArray = (e: any) => e as Array<any>;
 /*const parameters_remaining = computed(
   () => course_proposition.remaining.length == 0
 );*/
@@ -1231,16 +1947,11 @@ const language = getCurrentLanguage();
 const languages = getAviableLanguages();
 const $route = useRoute();
 const $router = useRouter();
+const alert_information: AlertInformation = store.state.alert_information;
 
 const trigger = ref(0);
-const selected_model: Ref<number | undefined> = ref(undefined);
+const carousel_trigger = ref(0);
 const alert_open = ref(false);
-const alert_information: AlertInformation = {
-  title: "",
-  message: "",
-  buttons: [],
-  inputs: [],
-};
 const pages = ModelProposition.getProps("pages");
 const current_page_index = ref(0);
 const buttons: CustomElement[] = [
@@ -1402,19 +2113,34 @@ const teachers_cards: OrderedCardsList<GeneralCardElements> = {
     "": [],
   },
 };
-const action: Ref<Action> = ref(
+const action: Ref<PropositionActions> = ref(
   $route.query.view != undefined ? "view" : "propose"
 );
-const tmp_project_class_id = $route.query[action.value] != undefined ? ($route.query[action.value] as string).split("_") : [];
-const tmp_session_id = tmp_project_class_id.length > 1 ? parseInt(tmp_project_class_id[1]) : -1;
+const tmp_project_class_id =
+  $route.query[action.value] != undefined
+    ? ($route.query[action.value] as string).split("_")
+    : [];
+const selected_model: Ref<number | undefined> = ref(
+  tmp_project_class_id.length > 0
+    ? parseInt(tmp_project_class_id[0])
+    : undefined
+);
+const tmp_session_id =
+  tmp_project_class_id.length > 1 ? parseInt(tmp_project_class_id[1]) : -1;
 const approved: {
-  course: boolean,
-  project_class: boolean,
+  course: boolean;
+  project_class: boolean;
 } = {
   course: false,
   project_class: false,
 };
 const sections_use: boolean = store.state.sections_use;
+const images_list: Ref<(ImageDescriptor | File)[]> = ref([]);
+const progress_infos: Ref<
+  {
+    percentage: number;
+  }[]
+> = ref([]);
 /*const correspondences: {
   [key in keyof string as ListTypes]: {
     [key: string]: string
@@ -1440,6 +2166,7 @@ let sections: boolean[] = reactive([true]);
 let project_class: AdminProjectClass;
 let tmp_teachers: PropositionTeacher[] = [];
 let approve_project_class = true;
+let old_images_names: string[] = [];
 
 /*switch (pages[current_page_index.value]) { //<!-- TODO (6): caricare una volta i vari contenuti
   case "teaching_list":
@@ -1470,7 +2197,8 @@ growth_areas.available = await executeLink(
   () => []
 );
 learning_sessions = await executeLink(
-  "/v1/learning_sessions?" + (action.value != "view" ? "future_session=true" : ""), //<!-- TODO (6): aggiungere course_id quando Pietro finisce
+  "/v1/learning_sessions?" +
+    (action.value != "view" ? "future_session=true" : ""), //<!-- TODO (6): aggiungere course_id quando Pietro finisce
   (response) => {
     const tmp_learning_sessions: LearningSession[] = [];
 
@@ -1565,7 +2293,7 @@ watch(selected_study_address, (new_study_address) => {
   }
   trigger.value++;
 });
-watch(num_section, (n,o) => {
+watch(num_section, (n, o) => {
   const actual_n = n != "" ? parseInt(n) : 0;
 
   course_proposition.specific_information.num_section = actual_n;
@@ -1585,16 +2313,15 @@ watch(num_section, (n,o) => {
     num_section.value = o;
   }
 });
+if (selected_model.value != undefined) {
+  edit_course_proposition(selected_model.value);
+}
 watch(selected_model, () => {
   if (selected_model.value != undefined) {
     edit_course_proposition(selected_model.value);
   }
   trigger.value++;
 });
-selected_model.value =
-  tmp_project_class_id.length > 0
-    ? parseInt(tmp_project_class_id[0])
-    : undefined;
 watch(selected_teaching, () => {
   addElement("teachings");
 });
@@ -1602,12 +2329,25 @@ watch(selected_growth_area, () => {
   addElement("growth_areas");
 });
 if (!sections_use) {
-  watch(selected_teacher, n => {
+  watch(selected_teacher, (n) => {
     if (n != 0) {
       addElement("teachers");
     }
-  })
+  });
 }
+watch(
+  () => images_list.value,
+  (value) => {
+    course_proposition.images_list = value.filter((a) => a instanceof File);
+  }
+);
 </script>
 
-<style></style>
+<style scoped>
+ion-card-header {
+  --background: rgba(var(--ion-color-black-rgb), 0.25);
+}
+ion-button {
+  --background: rgba(var(--ion-color-black-rgb), 0.25);
+}
+</style>

@@ -44,7 +44,7 @@
               )
             "
             :cards_list="access_cards"
-            :columns="3"
+            :columns="isSmaller(breakpoint, 'sm') ? 2 : 3"
             :colors="{
               background: {
                 name: 'white',
@@ -71,43 +71,24 @@
               },
             }"
           />
-          <hr style="border-top: 1px solid var(--ion-color-black);" />
-          <swiper
-            v-if="course.images.length > 1"
-            :modules="modules"
-            :slides-per-view="1"
-            navigation
-            :autoplay="{
-              delay: 4000,
-              disableOnInteraction: false,
-            }"
-          >
-            <swiper-slide v-for="(image, index) in course.images" :key="index">
-              <ion-img
-                :src="require('@/assets/' + image.url)"
-                :alt="image.caption"
-                style="height: 150px"
-              /> <!-- TODO (4): finire di sistemare -->
-            </swiper-slide>
-          </swiper>
-          <ion-img
-            v-if="course.images.length == 1"
-            :src="require('@/assets/' + course.images[0].url)"
-            :alt="course.images[0].caption"
-            style="height: 150px"
-          />
-          <b><ionic-element :element="getCustomMessage('context_description',getCurrentElement('context_description').toUpperCase())" /></b>
+          <hr style="border-top: 1px solid var(--ion-color-black)" />
+          <div class="ion-padding-bottom">
+            <image-carousel :images="course.images_list" />
+          </div>
+          <b
+            ><ionic-element
+              :element="
+                getCustomMessage(
+                  'context_description',
+                  getCurrentElement('context_description').toUpperCase()
+                )
+              "
+          /></b>
           <ionic-element
             v-for="element in course_card.content"
             :key="element.id"
             :element="element"
           />
-          <b
-            ><ionic-element
-              :element="
-                getCustomMessage('open_to', getCurrentElement('open_to') + ':')
-              "
-          /></b>
           <b
             ><ionic-element
               :element="
@@ -125,7 +106,7 @@
               )
             "
             :cards_list="teachings_cards"
-            :columns="2"
+            :columns="isSmaller(breakpoint, 'sm') ? 1 : 2"
             :colors="{
               background: {
                 name: 'white',
@@ -145,7 +126,13 @@
                 'ion-no-padding': true,
               },
               item: {
-                'ion-no-padding': true,
+                'ion-no-padding': {
+                  general: true,
+                  sm: false,
+                },
+                'ion-padding-bottom': {
+                  sm: true,
+                },
               },
               row: {
                 'ion-wrap': true,
@@ -169,7 +156,7 @@
               )
             "
             :cards_list="growth_cards"
-            :columns="2"
+            :columns="isSmaller(breakpoint, 'sm') ? 1 : 2"
             :colors="{
               background: {
                 name: 'white',
@@ -189,7 +176,13 @@
                 'ion-no-padding': true,
               },
               item: {
-                'ion-no-padding': true,
+                'ion-no-padding': {
+                  general: true,
+                  sm: false,
+                },
+                'ion-padding-bottom': {
+                  sm: true,
+                },
               },
               row: {
                 'ion-wrap': true,
@@ -222,7 +215,7 @@
               )
             "
             :cards_list="teachers_list"
-            :columns="2"
+            :columns="isSmaller(breakpoint, 'sm') ? 1 : 2"
             :colors="{
               background: {
                 name: 'white',
@@ -242,7 +235,13 @@
                 'ion-no-padding': true,
               },
               item: {
-                'ion-no-padding': true,
+                'ion-no-padding': {
+                  general: true,
+                  sm: false,
+                },
+                'ion-padding-bottom': {
+                  sm: true,
+                },
               },
               row: {
                 'ion-wrap': true,
@@ -271,9 +270,11 @@ import {
 } from "@/types";
 import {
   executeLink,
+  getBreakpoint,
   getCurrentElement,
   getCustomMessage,
   getIcon,
+  isSmaller,
 } from "@/utils";
 import {
   IonContent,
@@ -282,20 +283,19 @@ import {
   IonGrid,
   IonRow,
   IonCol,
-  IonImg,
   IonSegment,
   IonSegmentButton,
 } from "@ionic/vue";
-import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
-import { Navigation, Autoplay } from "swiper/modules";
-import { ref } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 
 const changeMode = (event: CustomEvent) => {
   mode.value = event.detail.value;
 };
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+};
 
-const modules = [Navigation, Autoplay];
 const props = defineProps({
   title: {
     type: String,
@@ -305,7 +305,6 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  learning_block_id: Number,
   learning_session_id: String,
   section: String,
 });
@@ -335,20 +334,9 @@ const elements: {
     content: getCurrentElement("course_information_not_found"),
   },
 };
+const breakpoint = ref(getBreakpoint(window.innerWidth));
+const course = await Course.newCourse("/v1/courses/" + props.course_id);
 
-const course = await Course.newCourse(
-  await executeLink(
-    "/v1/courses/" + props.course_id,
-    (response) => response.data.data,
-    () => null
-  )
-);
-course.images.push(
-  {
-    url: "Logo_LIVO_Campus_POS_RGB.png",
-    caption: "Old logo",
-  }
-);
 const access_cards = course.getAccessCardsList();
 const growth_cards = course.getGrowthCardsList();
 const teachings_cards = course.getTeachingCardsList();
@@ -373,7 +361,7 @@ if (props.learning_session_id != undefined) {
 
       let actual_section: string | undefined;
 
-      if (user.user == "student") {
+      if (user.type == "student") {
         actual_section =
           props.section ??
           (await executeLink(
@@ -404,6 +392,7 @@ if (props.learning_session_id != undefined) {
         actual_section,
         true,
         false,
+        user.type != "student",
         user
       );
     },
@@ -468,16 +457,9 @@ if (props.learning_session_id != undefined) {
         (tmp_card.content as CustomElement[])[0].classes = {
           label: {
             "ion-text-wrap": true,
-            "ion-padding-start": true,
-            "ion-padding-top": true,
-            top_radius: true,
-          },
-        };
-        (tmp_card.content as CustomElement[])[1].classes = {
-          label: {
-            "ion-padding-start": true,
-            "ion-padding-bottom": true,
-            bottom_radius: true,
+            "ion-padding": true,
+            "ion-text-center": true,
+            radius: true,
           },
         };
         tmp_card.classes = {
@@ -490,9 +472,19 @@ if (props.learning_session_id != undefined) {
 
       return teachers;
     },
-    () => undefined
+    () => []
   );
 }
+
+onMounted(() =>
+  nextTick(() => {
+    window.addEventListener("resize", updateBreakpoint);
+  })
+);
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateBreakpoint);
+});
 </script>
 
 <style scoped>

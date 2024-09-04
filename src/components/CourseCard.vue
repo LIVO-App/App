@@ -9,7 +9,7 @@
     <ion-card-content>
       <ion-grid>
         <ion-row class="ion-align-items-center">
-          <ion-col size="auto">
+          <ion-col size-sm="auto" size="6" class="ion-text-center">
             <ionic-element :element="actual_content[0]" />
           </ion-col>
           <ion-col>
@@ -18,7 +18,7 @@
               @signal_event="$emit('signal_event')"
             />
           </ion-col>
-          <ion-col size="auto">
+          <ion-col size-sm="auto" size="6" class="ion-text-center">
             <ionic-element :element="actual_content[2]" />
           </ion-col>
           <ion-col v-if="button" size="auto">
@@ -34,14 +34,23 @@
 </template>
 
 <script setup lang="ts">
-import {
-  CustomElement,
-  Colors,
-  GeneralSubElements,
-} from "@/types";
+import { CustomElement, Colors, GeneralCardSubElements } from "@/types";
 import { Enrollment } from "@/types";
+import { getBreakpoint } from "@/utils";
 import { IonCard, IonCardContent, IonGrid, IonRow, IonCol } from "@ionic/vue";
-import { computed, ComputedRef, PropType } from "vue";
+import {
+  computed,
+  ComputedRef,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  PropType,
+  ref,
+} from "vue";
+
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+};
 
 const props = defineProps({
   credits: {
@@ -56,13 +65,14 @@ const props = defineProps({
     type: Object as PropType<Enrollment>,
     required: true,
   },
-  colors: Object as PropType<Colors<GeneralSubElements>>,
+  colors: Object as PropType<Colors<GeneralCardSubElements>>,
 });
 defineEmits(["execute_link", "signal_event"]);
 const button = props.enrollment.editable && props.content.length > 3;
 const actual_content: ComputedRef<CustomElement[]> = computed(() =>
   JSON.parse(JSON.stringify(props.content))
 );
+const breakpoint = ref(getBreakpoint(window.innerWidth));
 
 if (actual_content.value[0].classes == undefined) {
   actual_content.value[0].classes = {};
@@ -78,7 +88,16 @@ actual_content.value[2].classes.label = {
   "ion-padding": true,
   half_radius: true,
 };
+
+onMounted(() =>
+  nextTick(() => {
+    window.addEventListener("resize", updateBreakpoint);
+  })
+);
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateBreakpoint);
+});
 </script>
 
-<style>
-</style>
+<style></style>

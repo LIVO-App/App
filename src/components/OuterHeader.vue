@@ -1,8 +1,8 @@
 <template>
   <ion-header :translucent="true">
     <ion-toolbar>
-      <ion-buttons>
-        <ion-menu-button color="primary"></ion-menu-button>
+      <ion-buttons slot="start">
+        <ion-menu-button color="white"></ion-menu-button>
       </ion-buttons>
       <ion-title size="large" class="ion-text-center" color="white">{{
         props.title

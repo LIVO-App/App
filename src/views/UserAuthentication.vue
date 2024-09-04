@@ -20,12 +20,13 @@
 import {
   executeLink,
   getCurrentElement,
+  getCurrentSchoolYear,
   getDefautlLink,
   setUser,
 } from "@/utils";
 import { IonPage, IonContent, IonAlert } from "@ionic/vue";
 import { useStore } from "vuex";
-import { LoginInformation, User } from "@/types";
+import { AlertInformation, LoginInformation, User, UserSubType } from "@/types";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -36,6 +37,7 @@ const login = async (payload: LoginInformation) => {
     name: "/",
     index: 0,
   };
+  let subtype: UserSubType | undefined;
 
   try {
     checkParameters(payload, login_parameters);
@@ -44,14 +46,34 @@ const login = async (payload: LoginInformation) => {
       await executeLink(
         "/v1/auth/" + payload.type + "_login",
         async (response) => {
+          const current_school_year = getCurrentSchoolYear();
+          if (payload.type == "teacher") {
+            subtype = await executeLink(
+              "/v1/teachers/" +
+                response.data.id +
+                "/tutor_years?token=" +
+                response.data.token,
+              (response) =>
+                response.data.data.findIndex(
+                  (a: { school_year: number }) =>
+                    a.school_year == current_school_year
+                ) != -1
+                  ? "tutor"
+                  : undefined,
+              () => undefined
+            );
+          }
           await setUser(
-            new User({
-              id: response.data.id,
-              token: response.data.token,
-              username: payload.parameters.username,
-              user: payload.type,
-              expirationDate: response.data.expirationDate,
-            }),
+            new User(
+              {
+                id: response.data.id,
+                token: response.data.token,
+                username: payload.parameters.username,
+                user: payload.type,
+                expirationDate: response.data.expirationDate,
+              },
+              subtype
+            ),
             default_link
           );
 
@@ -107,21 +129,18 @@ const googleAuth = () => {
 const store = useStore();
 const $router = useRouter();
 const $route = useRoute();
+const alert_information: AlertInformation = store.state.alert_information;
+alert_information.title = getCurrentElement("error");
+alert_information.buttons = [getCurrentElement("ok")];
 
 const alert_open = ref(false);
-const alert_information = {
-  title: getCurrentElement("error"),
-  message: "",
-  buttons: [getCurrentElement("ok")],
-};
 
 if ($route.redirectedFrom?.name == "google_redirect") {
   alert_information.message = getCurrentElement("user_not_valid");
   setTimeout(() => {
     alert_open.value = true;
-  },100);
+  }, 100);
 }
 </script>
 
-<style>
-</style>
+<style></style>

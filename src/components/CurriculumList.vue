@@ -1,7 +1,8 @@
 <template>
+  <!-- TODO (5): vedere discorso bocciature e discorso collegamento albero tra corsi con Pietro -->
   <div class="ion-padding-horizontal">
     <ion-modal
-      id="grades_manages"
+      id="grades_manager"
       :is-open="grades_open"
       @didDismiss="closeModal('grades')"
     >
@@ -12,6 +13,7 @@
             :parameters="grades_parameters"
             @close="closeModal('grades')"
           />
+          <!-- ! (3): compare aggiunta valutazioni da professore -->
         </template>
         <template #fallback>
           <loading-component />
@@ -38,47 +40,63 @@
       </suspense>
     </ion-modal>
     <div class="ion-padding-horizontal">
-      <ion-title class="ion-padding-bottom">{{
-        getCurrentElement("progression")
-      }}</ion-title>
-      <template v-if="Array.isArray(credits_progression[selected_context])">
-        <ion-list>
-          <ion-item>
-            <ion-label class="ion-padding-horizontal"
-              >{{ getCurrentElement("context_credits") }}:</ion-label
+      <ionic-element
+        :element="
+          getCustomMessage(
+            'progression',
+            getCurrentElement('progression'),
+            'title'
+          )
+        "
+      />
+      <div class="ion-padding-top">
+        <template v-if="Array.isArray(credits_progression[selected_context])">
+          <ion-list>
+            <ion-item>
+              <ion-label class="ion-padding-horizontal"
+                >{{ getCurrentElement("context_credits") }}:</ion-label
+              >
+              <ion-label>{{
+                castToStringArray(credits_progression[selected_context]).join(
+                  "/"
+                )
+              }}</ion-label>
+            </ion-item>
+          </ion-list>
+        </template>
+        <template v-else>
+          <ionic-element
+            :element="
+              getCustomMessage(
+                'area_credits',
+                getCurrentElement('area_credits'),
+                'title'
+              )
+            "
+          />
+          <ion-list class="ion-margin-top">
+            <ion-item
+              v-for="area_progression in Object.keys(
+                castToTmpList(credits_progression[selected_context])
+              )"
+              :key="area_progression"
             >
-            <ion-label>{{
-              castToStringArray(credits_progression[selected_context]).join("/")
-            }}</ion-label>
-          </ion-item>
-        </ion-list>
-      </template>
-      <template v-else>
-        <ion-title size="small" class="ion-padding-bottom"
-          ><b>{{ getCurrentElement("area_credits") }}</b></ion-title
-        >
-        <ion-list>
-          <ion-item
-            v-for="area_progression in Object.keys(
-              castToTmpList(credits_progression[selected_context])
-            )"
-            :key="area_progression"
-          >
-            <ion-label>{{ getAreaTitle(area_progression) }}:</ion-label>
-            <ion-label>{{
-              castToTmpList(credits_progression[selected_context])[
-                area_progression
-              ].join("/")
-            }}</ion-label>
-          </ion-item>
-        </ion-list>
-      </template>
+              <ion-label>{{ getAreaTitle(area_progression) }}:</ion-label>
+              <ion-label>{{
+                castToTmpList(credits_progression[selected_context])[
+                  area_progression
+                ].join("/")
+              }}</ion-label>
+            </ion-item>
+          </ion-list>
+        </template>
+      </div>
     </div>
     <ion-grid>
       <ion-row>
         <ion-col size="auto">
           <custom-select
-            v-model="selected_year"
+            v-model:selected_option="selected_year"
             :list="school_years"
             :label="getCurrentElement('school_year') + ':'"
             :aria_label="getCurrentElement('school_year')"
@@ -88,7 +106,7 @@
         </ion-col>
         <ion-col size="auto">
           <custom-select
-            v-model="selected_context"
+            v-model:selected_option="selected_context"
             :list="learning_contexts"
             :label="getCurrentElement('learning_context') + ':'"
             :aria_label="getCurrentElement('learning_context')"
@@ -102,11 +120,24 @@
       <template #default>
         <ionic-table
           :key="trigger"
+          :emptiness_message="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement('no_subscriptions'),
+              'string',
+              undefined,
+              {
+                label: {
+                  align_text_middle: true,
+                },
+              }
+            )
+          "
           :data="table_data"
           :first_row="first_row"
-          :column_sizes="column_sizes"
+          :sizes="column_sizes"
           @signal_event="SetupModalAndOpen()"
-        ></ionic-table>
+        />
       </template>
       <template #fallback>
         <loading-component />
@@ -119,21 +150,28 @@
 import {
   CurriculumCourse,
   CustomElement,
-  GradesParameters,
+  SingleGradesParameters,
   LearningArea,
   LearningContext,
   Progression,
   AlternateList,
   TmpList,
   User,
+  OrderedCardsList,
+  GeneralTableCardElements,
 } from "@/types";
-import { executeLink, getCurrentElement, getCurrentLanguage, getLearningContexts } from "@/utils";
+import {
+  executeLink,
+  getCurrentElement,
+  getCurrentLanguage,
+  getCustomMessage,
+  getLearningContexts,
+} from "@/utils";
 import {
   IonModal,
   IonGrid,
   IonRow,
   IonCol,
-  IonTitle,
   IonLabel,
   IonList,
   IonItem,
@@ -149,12 +187,14 @@ const SetupModalAndOpen = () => {
     case "grades":
       grades_title = store.state.event.data.title;
       grades_parameters = store.state.event.data.parameters;
+      grades_parameters.show_editable = false;
       grades_open.value = true;
       break;
     case "course_details":
       description_title = store.state.event.data.title;
       description_course_id = store.state.event.data.course_id;
-      description_learning_session_id = store.state.event.data.learning_session_id;
+      description_learning_session_id =
+        store.state.event.data.learning_session_id;
       description_section = store.state.event.data.section;
       description_open.value = true;
       break;
@@ -201,7 +241,7 @@ const updateTable = (
 ) => {
   for (const course of courses) {
     if (year_correspondences[selected_year.value][course.id].length > 0) {
-      table_data.push(
+      table_data.cards[""].push(
         course.toTableRow(
           year_correspondences[selected_year.value][course.id][
             year_correspondences[selected_year.value][course.id].length - 1
@@ -266,12 +306,18 @@ const grades_open = ref(false);
 const description_open = ref(false);
 const trigger = ref(0);
 const reference_id: string =
-  props.student_id != undefined && user.user != "student"
+  props.student_id != undefined && user.type != "student"
     ? props.student_id
     : "" + user.id;
 const credits_progression: AlternateList<string[]> = {};
 const selected_year = ref(0);
 const selected_context = ref("");
+const table_data: OrderedCardsList<GeneralTableCardElements> = {
+  order: [],
+  cards: {
+    "": [],
+  },
+};
 
 let school_years: any[] = [];
 let year_courses: {
@@ -279,7 +325,7 @@ let year_courses: {
 } = {};
 let courses: CurriculumCourse[] = [];
 let grades_title: string;
-let grades_parameters: GradesParameters;
+let grades_parameters: SingleGradesParameters;
 let description_title: string;
 let description_course_id: number;
 let description_learning_session_id: number;
@@ -287,10 +333,9 @@ let description_section: string;
 let learning_contexts: LearningContext[] = [];
 let learning_areas: LearningArea[] = [];
 let courses_list: CurriculumCourse[] = [];
-let table_data: CustomElement[][] = [];
 
 if (sections_use) {
-  first_row.splice(1,0,{
+  first_row.splice(1, 0, {
     id: "section",
     type: "string",
     content: getCurrentElement("section"),
@@ -298,7 +343,7 @@ if (sections_use) {
 }
 
 school_years =
-  user.user == "student"
+  user.type == "student"
     ? await executeLink(
         "/v1/ordinary_classes?descending=true&student_id=" + user.id,
         (response) => {
@@ -334,13 +379,13 @@ await getYearCourses();
 
 watch(selected_year, () => {
   getYearCourses();
-  table_data = [];
+  table_data.cards[""] = [];
   updateTable(year_correspondences, courses);
   trigger.value++;
 });
 watch(selected_context, (n) => {
   courses = year_courses[n] ?? [];
-  table_data = [];
+  table_data.cards[""] = [];
   updateTable(year_correspondences, courses);
   trigger.value++;
 });
@@ -404,8 +449,8 @@ await executeLink(
 );
 </script>
 
-<style>
-ion-modal#grades_manages {
+<style scoped>
+ion-modal#grades_manager {
   --width: fit-content;
   --height: fit-content;
 }

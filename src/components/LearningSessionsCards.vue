@@ -23,6 +23,11 @@
               name: 'current',
               type: 'var',
             },
+            hover: {
+              name: 'current',
+              alpha: 0.54,
+              type: 'var',
+            },
             text: {
               name: 'white',
               type: 'var',
@@ -47,6 +52,11 @@
           :colors="{
             background: {
               name: 'warning',
+              type: 'var',
+            },
+            hover: {
+              name: 'warning',
+              alpha: 0.54,
               type: 'var',
             },
             dividers_text: {
@@ -83,6 +93,11 @@
               name: 'danger',
               type: 'var',
             },
+            hover: {
+              name: 'danger',
+              alpha: 0.54,
+              type: 'var',
+            },
             text: {
               name: 'white',
               type: 'var',
@@ -116,6 +131,11 @@
             },
             background: {
               name: 'completed',
+              type: 'var',
+            },
+            hover: {
+              name: 'completed',
+              alpha: 0.54,
               type: 'var',
             },
             text: {
@@ -196,7 +216,8 @@ const current_school_year =
 
 let tmp_element: GeneralCardElements | undefined,
   learning_session: LearningSession;
-let open_enrollment = false, first = true;
+let open_enrollment = false,
+  first = true;
 
 if (current_class != undefined) {
   for (const oc of ordinary_classes) {
@@ -224,9 +245,40 @@ if (current_class != undefined) {
     executeLink(
       "/v1/learning_sessions?school_year=" + current_school_year,
       async (response) => {
+        learning_sessions.completed.order.push({
+          key: current_school_year,
+          title: getCustomMessage("title", current_school_year, "title"),
+        });
+        learning_sessions.future.order = learning_sessions.future.order.concat(
+          {
+            key: "open_enrollment",
+            title: getCustomMessage(
+              "title",
+              getCurrentElement("open_enrollment"),
+              "title"
+            ),
+          },
+          {
+            key: "planned",
+            title: getCustomMessage(
+              "title",
+              getCurrentElement("planned"),
+              "title"
+            ),
+          }
+        );
+        learning_sessions.future.cards["open_enrollment"] = [];
+        learning_sessions.future.cards["planned"] = [];
+
         for (const session of response.data.data) {
           learning_session = new LearningSession(session);
-          tmp_element = await learning_session.toCard(undefined);
+          tmp_element = await learning_session.toCard(
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            true
+          );
 
           switch (learning_session.getStatus()) {
             case LearningSessionStatus.FUTURE:
@@ -235,7 +287,10 @@ if (current_class != undefined) {
               }
               if (first) {
                 first = false;
-                if (!open_enrollment && learning_session.open_day <= new Date()) {
+                if (
+                  !open_enrollment &&
+                  learning_session.open_day <= new Date()
+                ) {
                   open_enrollment = true;
                 }
               }
@@ -263,25 +318,12 @@ if (current_class != undefined) {
               break;
           }
         }
-        learning_sessions.completed.order.push({
-          key: current_school_year,
-          title: getCustomMessage("title", current_school_year, "title"),
-        });
-        learning_sessions.future.order = learning_sessions.future.order.concat(
-          {
-            key: "open_enrollment",
-            title: getCustomMessage(
-              "title",
-              getCurrentElement("open_enrollment")
-            ),
-          },
-          {
-            key: "planned",
-            title: getCustomMessage("title", getCurrentElement("planned"), "title"),
-          }
-        );
-        learning_sessions.future.cards["open_enrollment"] = [];
-        if (open_enrollment && (tmp_element = learning_sessions.future.cards["planned"].shift()) != undefined) {
+
+        if (
+          open_enrollment &&
+          (tmp_element = learning_sessions.future.cards["planned"].shift()) !=
+            undefined
+        ) {
           learning_sessions.future.cards["open_enrollment"].push(tmp_element);
         }
       }
@@ -298,5 +340,4 @@ if (current_class != undefined) {
 }
 </script>
 
-<style>
-</style>
+<style></style>

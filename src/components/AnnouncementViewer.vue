@@ -78,5 +78,4 @@ const content: CustomElement = await executeLink(
 );
 </script>
 
-<style>
-</style>
+<style></style>

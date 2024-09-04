@@ -1,12 +1,8 @@
 <template>
   <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large" class="ion-text-center" color="white">{{
-        props.title
-      }}</ion-title>
-      <ion-title size="small" class="ion-text-center" color="white">{{
-        props.subtitle
-      }}</ion-title>
+    <ion-toolbar class="ion-text-center">
+      <ion-title size="large" color="white">{{ props.title }}</ion-title>
+      <ion-title size="small" color="white">{{ props.subtitle }}</ion-title>
     </ion-toolbar>
   </ion-header>
 </template>

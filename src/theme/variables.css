@@ -154,6 +154,14 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-ats-shade: #dc9c00;
   --ion-color-ats-tint: #fbb91a;
 
+  /** announcements **/
+  --ion-color-announcements: #f4f5f8;
+	--ion-color-announcements-rgb: 244,245,248;
+	--ion-color-announcements-contrast: #000000;
+	--ion-color-announcements-contrast-rgb: 0,0,0;
+	--ion-color-announcements-shade: #d7d8da;
+	--ion-color-announcements-tint: #f5f6f9;
+
   /** background **/
   --ion-background-color: #f3f2f7;
   --ion-background-color-rgb: 243, 242, 247;
@@ -182,13 +190,14 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-step-900: #181819;
   --ion-color-step-950: #0c0c0c;
 
-  --ion-item-background: #ffffff;
+  --ion-item-background: var(--ion-color-white);
+  --ion-item-color: var(--ion-text-color);
 
   --ion-tab-bar-background: #1f1f1f;
 
   --ion-card-background: #ffffff;
 
-  --ion-font-family: 'Montserrat';
+  --ion-font-family: "Montserrat";
 }
 
 @media (prefers-color-scheme: light) {
@@ -294,7 +303,8 @@ http://ionicframework.com/docs/theming/ */
     --ion-color-step-900: #181819;
     --ion-color-step-950: #0c0c0c;
 
-    --ion-item-background: #ffffff;
+    --ion-item-background: var(--ion-color-white);
+    --ion-item-color: var(--ion-text-color);
 
     --ion-card-background: #ffffff;
   }
@@ -423,67 +433,11 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-tint: var(--ion-color-ats-tint);
 }
 
-* {
-  font-size: 18px !important;
+.ion-color-announcements {
+	--ion-color-base: var(--ion-color-announcements);
+	--ion-color-base-rgb: var(--ion-color-announcements-rgb);
+	--ion-color-contrast: var(--ion-color-announcements-contrast);
+	--ion-color-contrast-rgb: var(--ion-color-announcements-contrast-rgb);
+	--ion-color-shade: var(--ion-color-announcements-shade);
+	--ion-color-tint: var(--ion-color-announcements-tint);
 }
-
-ion-split-pane {
-  --side-max-width: 250px;
-}
-
-.title_font {
-  font-size: 32px !important;
-}
-
-.no_card_border {
-  box-shadow: none !important;
-}
-
-ion-modal>ion-header::after {
-  display: none;
-}
-
-ion-modal {
-  --background: var(--ion-color-white);
-  --border-color: var(--ion-color-primary);
-  --border-radius: 15px;
-  --border-style: solid;
-  --border-width: 1px;
-}
-
-ion-modal ion-content {
-  height: calc(100% - 120px) !important;
-  /* TODO (6: trovare un'alternativa più dinamica */
-  --background: var(--ion-color-white);
-}
-
-ion-modal ion-header ion-toolbar {
-  --background: var(--ion-color-white);
-}
-
-.radius {
-  border-radius: 10px;
-  --border-radius: 10px;
-}
-
-.bottom_radius {
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-}
-
-.top_radius {
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-}
-
-.half_radius {
-  border-radius: 5px;
-  --border-radius: 5px;
-}
-
-/* TODO (5): sistemare colori. Non funzionano i colori dei giorni */
-/*ion-datetime {
-  --background: var(--ion-color-white);
-}*/
-
-/* ! (3): creare css per classi generali, mettere manina al mouse per label-bottoni */

@@ -20,7 +20,14 @@
         </ion-col>
       </template>
       <ion-col v-else>
-        <ionic-element :element="getCustomMessage('emptiness_message',getCurrentElement('non_existing_session'))" />
+        <ionic-element
+          :element="
+            getCustomMessage(
+              'emptiness_message',
+              getCurrentElement('non_existing_session')
+            )
+          "
+        />
       </ion-col>
     </ion-row>
     <ion-row v-if="head_content != undefined">
@@ -41,8 +48,12 @@ import {
   LearningSession,
   LearningContextSummary,
 } from "@/types";
-import { executeLink, getCurrentElement, getCustomMessage/*, getIcon*/ } from "@/utils";
-import { IonGrid, IonRow, IonCol/*, IonIcon*/ } from "@ionic/vue";
+import {
+  executeLink,
+  getCurrentElement,
+  getCustomMessage /*, getIcon*/,
+} from "@/utils";
+import { IonGrid, IonRow, IonCol /*, IonIcon*/ } from "@ionic/vue";
 import { PropType } from "vue";
 //import { useRouter } from "vue-router";
 
@@ -72,5 +83,4 @@ if (props.learning_context != undefined) {
 }
 </script>
 
-<style>
-</style>
+<style></style>
