@@ -125,7 +125,7 @@ if (props.classes?.select != undefined || props.classes?.option != undefined) {
 }
 </script>
 
-<style>
+<style scoped>
 .alert-wrapper {
   max-width: unset !important;
   width: 350px !important; /*<!-- TODO (6): trovare un metodo dinamico */

@@ -42,6 +42,7 @@ import {
   LayoutElement,
   Layout,
   GeneralCardSubElements,
+  BreakpointScope,
 } from "./types";
 import { $axios } from "./plugins/axios";
 import { store } from "./store";
@@ -984,7 +985,7 @@ function isSmaller(actual: Breakpoint, refer: Breakpoint, equal = true) {
 function updateBreakpointClasses(
   refer_classes:
     | {
-        [key: string]: boolean | BreakpointVisibility;
+        [key: string]: boolean | BreakpointVisibility<BreakpointScope, boolean>;
       }
     | undefined,
   filtered_classes: { [key: string]: boolean },
@@ -1001,18 +1002,18 @@ function updateBreakpointClasses(
       } else {
         tmp_breakpoint = ordered_breakpoints.find(
           (b) =>
-            ((refer_classes[key] as BreakpointVisibility | undefined) ?? {})[
-              b
-            ] != undefined
+            ((refer_classes[key] as
+              | BreakpointVisibility<BreakpointScope, boolean>
+              | undefined) ?? {})[b] != undefined
         );
         if (tmp_breakpoint != undefined) {
-          filtered_classes[key] = (refer_classes[key] as BreakpointVisibility)[
-            tmp_breakpoint
-          ] as boolean;
+          filtered_classes[key] = (
+            refer_classes[key] as BreakpointVisibility<BreakpointScope, boolean>
+          )[tmp_breakpoint] as boolean;
         } else {
-          filtered_classes[key] = (refer_classes[key] as BreakpointVisibility)[
-            "general"
-          ] as boolean;
+          filtered_classes[key] = (
+            refer_classes[key] as BreakpointVisibility<BreakpointScope, boolean>
+          )["general"] as boolean;
         }
       }
     }
@@ -1022,7 +1023,7 @@ function updateBreakpointClasses(
 function getBreakpointClasses(
   classes:
     | {
-        [key: string]: boolean | BreakpointVisibility;
+        [key: string]: boolean | BreakpointVisibility<BreakpointScope, boolean>;
       }
     | undefined,
   breakpoint: Breakpoint
@@ -1077,8 +1078,35 @@ function getLayout(layout: Layout | undefined, breakpoint: Breakpoint) {
 function castLayoutRow(e: any) {
   return e as {
     id: string | number;
-    size?: number;
+    size?: string | BreakpointVisibility<Breakpoint, string>;
   }[];
+}
+
+function getSize(
+  element_size: string | BreakpointVisibility<Breakpoint, string> | undefined,
+  breakpoint: Breakpoint
+) {
+  return element_size != undefined
+    ? breakpoint == "xs" && typeof element_size == "string"
+      ? element_size
+      : typeof element_size == "object" && element_size[breakpoint] != undefined
+      ? element_size[breakpoint]
+      : undefined
+    : undefined;
+}
+
+function getTableCellSize(
+  cell_size: string | BreakpointVisibility<Breakpoint, string> | undefined,
+  sizes: string[] | TmpList<TmpList<(string | undefined)[]>>,
+  i: number,
+  breakpoint: Breakpoint,
+  fr_fc_condition: boolean
+) {
+  return fr_fc_condition
+    ? getSize(cell_size, breakpoint)
+    : Array.isArray(sizes)
+    ? sizes[i]
+    : undefined;
 }
 
 async function downloadCsv(data: Blob, filename: string) {
@@ -1212,6 +1240,8 @@ export {
   isMatrix,
   isLayoutElementMatrix,
   getLayout,
+  getSize,
+  getTableCellSize,
   castLayoutRow,
   downloadCsv,
   uploadMultipleImages,

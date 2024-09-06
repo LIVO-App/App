@@ -524,8 +524,8 @@ const updateStudents = async () => {
               //(user.type == "teacher" && associated_teacher == true) ||
               user.type == "admin" &&
               project_class?.final_confirmation != undefined
-                ? [1, 6, 3, 2]
-                : [1, 4, 2, 1.5, 1.5, 2];
+                ? ["1", "6", "3", "2"]
+                : ["1", "4", "2", "1.5", "1.5", "2"];
             if (first_row.length != column_sizes.length) {
               if (project_class?.final_confirmation == undefined) {
                 first_row.push(
@@ -1176,7 +1176,7 @@ let tmp_student: ProjectClassStudent;
 let edits_to_send: {
   [key in keyof GradeProps]: boolean;
 };
-let column_sizes: number[] = [];
+let column_sizes: string[] = [];
 let student_mover_data: TmpList;
 
 if (user.type == "teacher") {

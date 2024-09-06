@@ -74,7 +74,7 @@
             /></ion-card-subtitle>
           </ion-col>
           <ion-col size="1"></ion-col>
-          <ion-col size="2">
+          <ion-col size-sm="auto" size="12">
             <ionic-element
               v-if="content_ref == undefined && side_element_ref != undefined"
               v-model:element="side_element_ref"
@@ -118,9 +118,11 @@
                 <ion-col
                   v-for="element in castLayoutRow(row)"
                   :key="element.id"
-                  :size="
-                    element.size != undefined ? '' + element.size : undefined
-                  "
+                  :size-xl="getSize(element.size, 'xl')"
+                  :size-lg="getSize(element.size, 'lg')"
+                  :size-md="getSize(element.size, 'md')"
+                  :size-sm="getSize(element.size, 'xs')"
+                  :size="getSize(element.size, 'xs')"
                 >
                   <ionic-element
                     v-model:element="
@@ -170,7 +172,11 @@
             <ion-col
               v-for="element in castLayoutRow(row)"
               :key="element.id"
-              :size="element.size != undefined ? '' + element.size : undefined"
+              :size-xl="getSize(element.size, 'xl')"
+              :size-lg="getSize(element.size, 'lg')"
+              :size-md="getSize(element.size, 'md')"
+              :size-sm="getSize(element.size, 'xs')"
+              :size="getSize(element.size, 'xs')"
             >
               <ionic-element
                 v-model:element="
@@ -205,6 +211,7 @@ import {
   getCssColor,
   getIonicColor,
   getLayout,
+  getSize,
   isMatrix,
 } from "@/utils";
 import { isRequest, isEvent } from "@/utils";

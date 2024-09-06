@@ -77,6 +77,15 @@ ion-split-pane {
   width: 100%;
 }
 
+.max_fit {
+  max-width: fit-content !important;
+}
+
+.nowrap {
+  white-space: nowrap !important;
+  text-wrap: nowrap !important;
+}
+
 /* TODO (5): sistemare colori. Non funzionano i colori dei giorni */
 /*ion-datetime {
     --background: var(--ion-color-white);

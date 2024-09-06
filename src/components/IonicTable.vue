@@ -14,7 +14,10 @@
     />
   </div>
   <template v-else>
-    <div class="ion-margin ion-hide-md-down white_background">
+    <div
+      v-if="!isSmaller(breakpoint, 'sm')"
+      class="ion-margin white_background"
+    >
       <ion-grid class="ion-padding">
         <ion-row
           v-if="first_row_ref != undefined"
@@ -23,14 +26,20 @@
           <ion-col
             v-for="(cell, i) in first_row_ref"
             :key="cell.id"
+            :size-xl="
+              getTableCellSize(cell.size, sizes, i, 'xl', has_fr_custom_sizes)
+            "
+            :size-lg="
+              getTableCellSize(cell.size, sizes, i, 'lg', has_fr_custom_sizes)
+            "
+            :size-md="
+              getTableCellSize(cell.size, sizes, i, 'md', has_fr_custom_sizes)
+            "
+            :size-sm="
+              getTableCellSize(cell.size, sizes, i, 'sm', has_fr_custom_sizes)
+            "
             :size="
-              has_fr_custom_sizes
-                ? cell.size != undefined
-                  ? '' + cell.size
-                  : undefined
-                : Array.isArray(sizes)
-                ? '' + sizes[i]
-                : undefined
+              getTableCellSize(cell.size, sizes, i, 'xs', has_fr_custom_sizes)
             "
           >
             <ionic-element
@@ -72,14 +81,50 @@
           >
             <ion-col
               v-if="first_col_ref != undefined"
+              :size-xl="
+                getTableCellSize(
+                  first_col_ref[row_order.key][i].size,
+                  sizes,
+                  0,
+                  'xl',
+                  has_fc_custom_sizes
+                )
+              "
+              :size-lg="
+                getTableCellSize(
+                  first_col_ref[row_order.key][i].size,
+                  sizes,
+                  0,
+                  'lg',
+                  has_fc_custom_sizes
+                )
+              "
+              :size-md="
+                getTableCellSize(
+                  first_col_ref[row_order.key][i].size,
+                  sizes,
+                  0,
+                  'md',
+                  has_fc_custom_sizes
+                )
+              "
+              :size-sm="
+                getTableCellSize(
+                  first_col_ref[row_order.key][i].size,
+                  sizes,
+                  0,
+                  'sm',
+                  has_fc_custom_sizes
+                )
+              "
               :size="
-                has_fc_custom_sizes
-                  ? first_col_ref[row_order.key][i].size != undefined
-                    ? '' + first_col_ref[row_order.key][i].size
-                    : undefined
-                  : Array.isArray(sizes)
-                  ? '' + sizes[0]
-                  : undefined
+                getTableCellSize(
+                  first_col_ref[row_order.key][i].size,
+                  sizes,
+                  0,
+                  'xs',
+                  has_fc_custom_sizes
+                )
               "
               class="header"
             >
@@ -133,6 +178,7 @@
       </ion-grid>
     </div>
     <list-card
+      v-if="isSmaller(breakpoint, 'sm')"
       :key="trigger"
       @execute_link="$emit('execute_link')"
       @signal_event="$emit('signal_event')"
@@ -140,7 +186,6 @@
       v-model:cards_list="data_ref"
       :colors="colors"
       :classes="classes"
-      class="ion-hide-lg-up"
     />
   </template>
 </template>
@@ -173,8 +218,10 @@ import {
   getCustomMessage,
   getIonicColor,
   getLayout,
+  getTableCellSize,
   hasNoData,
   isMatrix,
+  isSmaller,
 } from "@/utils";
 import { IonGrid, IonRow, IonCol } from "@ionic/vue";
 import {
@@ -264,14 +311,17 @@ const isCellCentered = (
   const elements = Object.keys(classes) as SubElements[];
 
   return elements.every((element) => {
-    const breakpointClasses = getBreakpointClasses(classes[element], actual_breakpoint);
+    const breakpointClasses = getBreakpointClasses(
+      classes[element],
+      actual_breakpoint
+    );
     return !Object.entries(breakpointClasses).some(
       ([className, isActive]) =>
-        (className === "ion-text-start" || className === "ion-text-end") && isActive
+        (className === "ion-text-start" || className === "ion-text-end") &&
+        isActive
     );
   });
 };
-
 
 const props = defineProps({
   emptiness_message: {
@@ -295,14 +345,13 @@ const props = defineProps({
   },
   sizes: {
     type: [Array, Object] as PropType<
-      number[] | TmpList<TmpList<(number | undefined)[]>>
+      string[] | TmpList<TmpList<(string | undefined)[]>>
     >,
     required: true,
   },
   colors: Object as PropType<Colors<GeneralCardSubElements>>, // TODO (5): vedere dove applicare colors e classes alla tabella
   classes: Object as PropType<Classes<CardsListElements | CardsGridElements>>,
 });
-
 const emit = defineEmits([
   "execute_link",
   "signal_event",

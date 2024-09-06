@@ -400,7 +400,7 @@ const setGradesTable = async (empty = true) => {
           final_grade_pubblication
         ) != EditableState.AFTER_7_DAYS))
   ) {
-    column_sizes = [6, 2, 2, 1, 1];
+    column_sizes = ["6", "2", "2", "1", "1"];
     first_row = base_row.concat(
       {
         id: "edit",
@@ -414,7 +414,7 @@ const setGradesTable = async (empty = true) => {
       }
     );
   } else {
-    column_sizes = [6, 3, 3];
+    column_sizes = ["6", "3", "3"];
   }
 };
 const setupEditMode = (empty = false) => {
@@ -515,7 +515,7 @@ let mean = "";
 let date: Date | undefined = undefined;
 let actual_grades: Grade[] = [];
 let actual_final_grade_index: number;
-let column_sizes: number[];
+let column_sizes: string[];
 let final_grade_pubblication: Date | undefined;
 let edit_mode = false;
 let date_value: string | undefined;

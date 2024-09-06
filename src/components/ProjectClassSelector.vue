@@ -469,7 +469,7 @@ const colors: Colors<GeneralSubElements> = {
     type: "var",
   },
 };
-const column_sizes = store.state.sections_use ? [2, 2, 5, 2, 1] : [2, 2, 6, 2];
+const column_sizes = store.state.sections_use ? ["2", "2", "5", "2", "1"] : ["2", "2", "6", "2"];
 const project_class_card =
   props.project_class != undefined
     ? props.project_class.toCard(undefined, props.section, false, true)

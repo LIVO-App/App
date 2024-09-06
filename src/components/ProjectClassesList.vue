@@ -13,7 +13,7 @@
         :element="
           getCustomMessage(
             'export_description',
-            getCurrentElement('students_export') + ':',
+            getCurrentElement('next_session_subscription') + ':',
             'string',
             undefined,
             {
@@ -97,7 +97,13 @@
               )
             )
           "
-          :columns="$route.name == 'ordinary_classes' ? 5 : undefined"
+          :columns="
+            $route.name == 'ordinary_classes'
+              ? isSmaller(breakpoint, 'xs')
+                ? 4
+                : 5
+              : undefined
+          "
           :cards_list="
             $route.name == 'ordinary_classes' ? ordinary_classes : courses
           "
@@ -139,17 +145,20 @@ import {
   IconAlternatives,
   ColorObject,
   AlertInformation,
+  CustomElement,
 } from "@/types";
 import { IonGrid, IonRow, IonCol, IonAlert } from "@ionic/vue";
-import { reactive, ref } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { useStore } from "vuex";
 import {
   downloadCsv,
   executeLink,
+  getBreakpoint,
   getCurrentElement,
   getCustomMessage,
   getIcon,
   getStudyAddressVisualization,
+  isSmaller,
   setupError,
 } from "@/utils";
 import { useRoute } from "vue-router";
@@ -420,13 +429,16 @@ const exportSubscriptions = async () => {
     }
   );
 };
+const updateBreakpoint = () => {
+  breakpoint.value = getBreakpoint(window.innerWidth);
+};
 
 const store = useStore();
 const user = User.getLoggedUser() as User;
 const $route = useRoute();
 const alert_information: AlertInformation = store.state.alert_information;
 
-const buttons = [
+const buttons: CustomElement[] = [
   {
     id: "export",
     type: "string_icon",
@@ -511,6 +523,7 @@ const school_years =
       ); //<!-- ? chiedere se c'è api apposta per anni scolastici passati
 const trigger = ref(0);
 const alert_open = ref(false);
+const breakpoint = ref(getBreakpoint(window.innerWidth));
 
 let selected_element_indexes: Indexes = reactive({
   group: "-1",
@@ -520,6 +533,16 @@ let ordinary_classes: OrderedCardsList<GeneralCardElements> = reactive({
   order: [],
   cards: {},
 });
+
+if (buttons[0].classes == undefined) {
+  buttons[0].classes = {};
+}
+if (buttons[0].classes.button == undefined) {
+  buttons[0].classes.button = {};
+}
+buttons[0].classes.button["ion-padding-start"] = {
+  sm: true,
+};
 
 if ($route.name != "ordinary_classes") {
   for (const year of school_years) {
@@ -543,6 +566,15 @@ if ($route.name != "ordinary_classes") {
   }
   await Promise.all(promises);
 }
+onMounted(() =>
+  nextTick(() => {
+    window.addEventListener("resize", updateBreakpoint);
+  })
+);
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateBreakpoint);
+});
 </script>
 
 <style></style>

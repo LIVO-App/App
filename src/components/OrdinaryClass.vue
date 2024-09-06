@@ -259,10 +259,10 @@ const updateStudents = async (
         content: getCurrentElement("subscribe_to"),
       },
     ]);
-    non_compliant_column_sizes = [1, 6, 2, 2, 1];
+    non_compliant_column_sizes = ["1", "6", "2", "2", "1"];
   } else {
     non_compliant_first_row = base_first_row;
-    non_compliant_column_sizes = [1, 7, 2, 2];
+    non_compliant_column_sizes = ["1", "7", "2", "2"];
   }
   if (new_search) {
     students = await executeLink(
@@ -510,8 +510,8 @@ const $route = useRoute();
 const $router = useRouter();
 const alert_information: AlertInformation = store.state.alert_information;
 
-const students_column_sizes: number[] =
-  user.type == "admin" ? [1, 7, 2, 2] : [1, 11];
+const students_column_sizes =
+  user.type == "admin" ? ["1", "7", "2", "2"] : ["1", "11"];
 const base_first_row: CustomElement[] = [
   {
     id: "index",
@@ -587,7 +587,7 @@ let students: OrdinaryClassStudent[] = [];
 let non_compliant_students_index: number[] = [];
 let student_mover_data: TmpList;
 let non_compliant_first_row: CustomElement[];
-let non_compliant_column_sizes: number[];
+let non_compliant_column_sizes: string[];
 let learning_session: LearningSession | undefined;
 let found = false;
 let count: number;

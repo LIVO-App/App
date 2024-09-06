@@ -416,7 +416,7 @@ const first_row: CustomElement[] = [
     content: "",
   },
 ];
-const column_sizes = [1, 6, 2, 2, 1];
+const column_sizes = ["1", "6", "2", "2", "1"];
 const disabled_grades: TmpList<string> = {};
 const alert_open = ref(false);
 const alert_information: AlertInformation = store.state.alert_information;

@@ -357,12 +357,13 @@ type OptionalCardElements = {
 
 type LayoutElement = {
   id: string | number;
-  size?: number; // ! (3): inventarsi auto (es. 0)
+  size?: string | BreakpointVisibility<Breakpoint, string>;
 };
 
-type Layout = {
-  [key in keyof string as Breakpoint]?: (string | number)[] | LayoutElement[][];
-};
+type Layout = BreakpointVisibility<
+  Breakpoint,
+  (string | number)[] | LayoutElement[][]
+>;
 
 type OptionalContentCard = {
   content?: CustomElement[];
@@ -759,14 +760,18 @@ class CurriculumCourse extends CourseBase {
   ): GeneralTableCardElements {
     // TODO (7): valutare se unire a toCard, visto che il tipo di dato è diventato lo stesso
     const language = getCurrentLanguage();
-    const grade_data_event = {
-      title: this[`${language}_title`],
-      parameters: {
-        course_id: this.id,
-        session_id: session_id,
-        student_id: student_id,
-        teacher_id: teacher_id,
+    const tmp_content: ContentType = {
+      event: "grades",
+      data: {
+        title: this[`${language}_title`],
+        parameters: {
+          course_id: this.id,
+          session_id: session_id,
+          student_id: student_id,
+          teacher_id: teacher_id,
+        },
       },
+      icon: getIcon("document_text"),
     };
     const final_grade = this.final_grade != null ? "" + this.final_grade : "-";
     const row: GeneralTableCardElements = {
@@ -798,7 +803,7 @@ class CurriculumCourse extends CourseBase {
               name: "primary",
               type: "var",
             },
-          }
+          },
         },
         {
           id: "credits",
@@ -825,14 +830,10 @@ class CurriculumCourse extends CourseBase {
           id: "gardes", // TODO (4): mettere il controllo con future_course al passaggio a curriculum_v2
           type: "icon",
           linkType: "event",
-          content: {
-            event: "grades",
-            data: grade_data_event,
-            icon: getIcon("document_text"),
-          },
+          content: tmp_content,
         },
-        {
-          id: "gardes_sm",
+        /*{
+          id: "grades_sm",
           type: "string_icon",
           linkType: "event",
           content: {
@@ -842,7 +843,7 @@ class CurriculumCourse extends CourseBase {
               getCurrentElement("final") +
               ": " +
               final_grade +
-              " ):",
+              "):",
             event: "grades",
             data: grade_data_event,
             icon: getIcon("document_text"),
@@ -851,12 +852,31 @@ class CurriculumCourse extends CourseBase {
             item: {
               "ion-no-padding": true,
             },
+            label: {
+              max_fit: true,
+            },
           },
-        },
+        },*/
         {
           id: "final_grade",
           type: "string",
           content: final_grade,
+        },
+        getCustomMessage(
+          "final_grade_sm",
+          getCurrentElement("final_grade") + ": " + final_grade,
+          "string"
+        ),
+        {
+          id: "grades_sm",
+          type: "string_icon",
+          linkType: "event",
+          content: Object.assign(tmp_content, {
+            // ! (3): Mettere Object assign dentro gli oggetti invece che fuori
+            text: getCurrentElement("grades"),
+            whole_link: true,
+          }),
+          ...store.state.button_css,
         },
       ],
       layout: {
@@ -879,7 +899,14 @@ class CurriculumCourse extends CourseBase {
           ],
           [
             {
-              id: "gardes_sm",
+              id: "final_grade_sm",
+              size: "auto",
+            },
+          ],
+          [
+            {
+              id: "grades_sm",
+              size: "auto",
             },
           ],
         ],
@@ -1826,8 +1853,8 @@ type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl";
 
 type BreakpointScope = Breakpoint | "general";
 
-type BreakpointVisibility = {
-  [key in keyof string as BreakpointScope]?: boolean;
+type BreakpointVisibility<T extends Breakpoint | BreakpointScope, U> = {
+  [key in keyof string as T]?: U;
 };
 
 type Colors<T extends CustomSubElements | GeneralCardSubElements> = {
@@ -1841,7 +1868,9 @@ type Classes<
     | CardsGridElements
     | SelectSubElements
     | EditorSubElements,
-  U extends boolean | BreakpointVisibility = boolean | BreakpointVisibility
+  U extends boolean | BreakpointVisibility<BreakpointScope, boolean> =
+    | boolean
+    | BreakpointVisibility<BreakpointScope, boolean>
 > = {
   [key in keyof string as T]?: {
     [key: string]: U;
@@ -1861,7 +1890,7 @@ type CustomElement = {
 };
 
 type TableElement = CustomElement & {
-  size?: number;
+  size?: string | BreakpointVisibility<Breakpoint, string>;
 };
 
 enum EditableState {
@@ -1976,6 +2005,7 @@ class Grade {
           [
             {
               id: "pubblication",
+              size: "auto",
             },
             {
               id: "value_sm",
@@ -2028,10 +2058,10 @@ class Grade {
         if (row.layout != undefined) {
           (row.layout["xl"] as (string | number)[]).push("edit", "remove");
           (row.layout["sm"] as LayoutElement[][]).push([
-            { id: "empty", size: 3 },
-            { id: "edit", size: 2 },
-            { id: "empty", size: 1 },
-            { id: "remove", size: 2 },
+            { id: "empty", size: "3" },
+            { id: "edit", size: "2" },
+            { id: "empty", size: "1" },
+            { id: "remove", size: "2" },
           ]);
         }
       } else if (editable == EditableState.NOT_EDITABLE) {
@@ -2249,7 +2279,14 @@ class StudentSummary implements StudentSummaryProps {
         ].concat(name_surname),
         layout: {
           xl: ["index", "name_surname"],
-          sm: [[{ id: "index_sm", size: 2 }, { id: "name_surname" }]],
+          sm: [
+            [
+              { id: "index_sm", size: "auto" },
+              {
+                id: "name_surname",
+              },
+            ],
+          ],
         },
       };
     } else {
@@ -2372,7 +2409,7 @@ class OrdinaryClassStudent extends StudentSummary {
         (row_to_return.layout["sm"] as LayoutElement[][]).push([
           {
             id: "student_mover_sm",
-            size: 5,
+            size: "5",
           },
         ]);
       }
@@ -2456,13 +2493,7 @@ class ProjectClassStudent extends StudentSummary {
       },
     };
 
-    let tmp_sub_elements: {
-      [key: string]: {
-        [key: string]: string;
-      }[];
-    };
-    let tmp_index: number;
-    let tmp_content: ContentType;
+    let tmp_content: ContentType, actual_final_grade: string;
 
     if (tmp_row.layout == undefined) {
       tmp_row.layout = {};
@@ -2484,15 +2515,25 @@ class ProjectClassStudent extends StudentSummary {
       row_to_return.layout["sm"] = [];
     }
 
-    row_to_return.content.push({
-      id: "class",
-      type: "string",
-      content: this.ordinary_class.toString(),
-    });
+    row_to_return.content.push(
+      {
+        id: "class",
+        type: "string",
+        content: this.ordinary_class.toString(),
+      },
+      {
+        id: "class_sm",
+        type: "string",
+        content:
+          getCurrentElement("class") + ": " + this.ordinary_class.toString(),
+      }
+    );
     (row_to_return.layout["xl"] as (string | number)[]).push("class");
-    (row_to_return.layout["sm"] as LayoutElement[][])[0].push({
-      id: "class",
-    });
+    (row_to_return.layout["sm"] as LayoutElement[][]).push([
+      {
+        id: "class_sm",
+      },
+    ]);
 
     if (this.learning_context_id != undefined) {
       row_to_return.content.push(
@@ -2521,83 +2562,69 @@ class ProjectClassStudent extends StudentSummary {
       ]);
     }
     if (grades) {
-      tmp_sub_elements = {
-        general: [
-          {
-            id: "grades",
-            type: "icon",
+      tmp_content = {
+        event: "grades",
+        data: {
+          title: this.name + " " + this.surname,
+          parameters: {
+            course_id: this.associated_project_class_id.course_id,
+            session_id: this.associated_project_class_id.session_id,
+            student_id: this.id,
+            teacher_id: teacher_id,
           },
-        ],
-        sm: [
-          {
-            id: "grades_sm",
-            type: "string_icon",
-          },
-        ],
+        },
+        icon: getIcon("document_text"),
       };
-      for (const breakpoint in tmp_sub_elements) {
-        tmp_row.content.push({
-          id: tmp_sub_elements[breakpoint][0].id, // TODO (4): Mettere il controllo con future_course al passaggio a curriculum_v2
-          type: tmp_sub_elements[breakpoint][0].type as ElementType,
+      actual_final_grade =
+        final_grade != undefined ? "" + final_grade.grade : "-";
+
+      tmp_row.content.push(
+        {
+          id: "grades", // TODO (4): Mettere il controllo con future_course al passaggio a curriculum_v2
+          type: "icon",
           linkType: "event",
-          content: {
-            event: "grades",
-            data: {
-              title: this.name + " " + this.surname,
-              parameters: {
-                course_id: this.associated_project_class_id.course_id,
-                session_id: this.associated_project_class_id.session_id,
-                student_id: this.id,
-                teacher_id: teacher_id,
-              },
-            },
-            icon: getIcon("document_text"),
-          },
-        });
-      }
-      tmp_row.content.push({
-        id: "final_grade",
-        type: "string",
-        content: final_grade != undefined ? "" + final_grade.grade : "-",
-      });
-      tmp_index = tmp_row.content.findIndex((x) => x.id == "grades_sm");
-      (tmp_row.content[tmp_index].content as StringIcon).text =
-        getCurrentElement("grades") +
-        " (" +
-        getCurrentElement("final") +
-        ": " +
-        (final_grade != undefined ? "" + final_grade.grade : "-") +
-        " ):";
-      tmp_row.content[tmp_index].classes = {
-        item: {
-          "ion-no-padding": {
-            sm: true,
-          },
+          content: tmp_content,
         },
-        label: {
-          "ion-no-margin": {
-            sm: true,
-          },
-          "ion-no-padding": {
-            sm: true,
-          },
+        {
+          id: "final_grade",
+          type: "string",
+          content: actual_final_grade,
         },
-        button: {
-          "ion-no-margin": {
-            sm: true,
-          },
-        },
-      };
+        getCustomMessage(
+          "final_grade_sm",
+          getCurrentElement("final_grade") + ": " + actual_final_grade,
+          "string"
+        ),
+        {
+          id: "grades_sm",
+          type: "string_icon",
+          linkType: "event",
+          content: Object.assign(tmp_content, {
+            text: getCurrentElement("grades"),
+            whole_link: true,
+          }),
+          ...store.state.button_css,
+        }
+      );
 
       (tmp_row.layout["xl"] as (string | number)[]).push(
         "grades",
         "final_grade"
       );
-      (tmp_row.layout["sm"] as LayoutElement[][]).push([
-        {
-          id: "grades_sm",
-        },
-      ]);
+      (tmp_row.layout["sm"] as LayoutElement[][]).push(
+        [
+          {
+            id: "final_grade_sm",
+            size: "auto",
+          },
+        ],
+        [
+          {
+            id: "grades_sm",
+            size: "auto",
+          },
+        ]
+      );
     } else if (linked_input) {
       tmp_row.content.push(
         {
@@ -2697,15 +2724,15 @@ class ProjectClassStudent extends StudentSummary {
           [
             {
               id: "student_mover_sm",
-              size: 5,
+              size: "5",
             },
             {
               id: "empty",
-              size: 2,
+              size: "2",
             },
             {
               id: "remove_student_sm",
-              size: 5,
+              size: "5",
             },
           ],
         ]
