@@ -202,13 +202,7 @@ import { WatchStopHandle } from "vue";
 
 const setSpecificColors = (
   specific_colors: Colors<CustomSubElements> | undefined
-) => {
-  const colors: Colors<CustomSubElements> = general_card_colors ?? {};
-
-  Object.assign(colors, specific_colors);
-
-  return colors;
-};
+) => Object.assign(general_card_colors ?? {}, specific_colors);
 const onlyLists = () => {
   const groups = Object.keys(props.columns);
 

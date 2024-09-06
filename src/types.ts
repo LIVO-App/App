@@ -872,7 +872,6 @@ class CurriculumCourse extends CourseBase {
           type: "string_icon",
           linkType: "event",
           content: Object.assign(tmp_content, {
-            // ! (3): Mettere Object assign dentro gli oggetti invece che fuori
             text: getCurrentElement("grades"),
             whole_link: true,
           }),
@@ -2384,23 +2383,24 @@ class OrdinaryClassStudent extends StudentSummary {
         },
         icon: getIcon("pencil"),
       };
-      row_to_return.content.push({
-        id: "student_mover",
-        type: "icon",
-        linkType: "event",
-        content: tmp_content,
-      });
-      Object.assign(tmp_content as EventStringIcon, {
-        text: getCurrentElement("subscribe_to"),
-        whole_link: true,
-      });
-      row_to_return.content.push({
-        id: "student_mover_sm",
-        type: "string_icon",
-        linkType: "event",
-        content: tmp_content,
-        ...store.state.button_css,
-      });
+      row_to_return.content.push(
+        {
+          id: "student_mover",
+          type: "icon",
+          linkType: "event",
+          content: tmp_content,
+        },
+        {
+          id: "student_mover_sm",
+          type: "string_icon",
+          linkType: "event",
+          content: Object.assign(tmp_content as EventStringIcon, {
+            text: getCurrentElement("subscribe_to"),
+            whole_link: true,
+          }),
+          ...store.state.button_css,
+        }
+      );
 
       if (row_to_return.layout != undefined) {
         (row_to_return.layout["xl"] as (string | number)[]).push(
@@ -2666,23 +2666,24 @@ class ProjectClassStudent extends StudentSummary {
         },
         icon: getIcon("pencil"),
       };
-      tmp_row.content.push({
-        id: "student_mover",
-        type: "icon",
-        linkType: "event",
-        content: tmp_content,
-      });
-      Object.assign(tmp_content, {
-        text: getCurrentElement("move"),
-        whole_link: true,
-      });
-      tmp_row.content.push({
-        id: "student_mover_sm",
-        type: "string_icon",
-        linkType: "event",
-        content: tmp_content,
-        ...store.state.button_css,
-      });
+      tmp_row.content.push(
+        {
+          id: "student_mover",
+          type: "icon",
+          linkType: "event",
+          content: tmp_content,
+        },
+        {
+          id: "student_mover_sm",
+          type: "string_icon",
+          linkType: "event",
+          content: Object.assign(tmp_content, {
+            text: getCurrentElement("move"),
+            whole_link: true,
+          }),
+          ...store.state.button_css,
+        }
+      );
 
       tmp_content = {
         event: "remove_student",
@@ -2694,22 +2695,21 @@ class ProjectClassStudent extends StudentSummary {
         },
         icon: getIcon("close"),
       };
-      tmp_row.content.push({
-        id: "remove_student",
-        type: "icon",
-        linkType: "event",
-        content: tmp_content,
-      });
-      Object.assign(tmp_content, {
-        text: getCurrentElement("remove"),
-        whole_link: true,
-      });
       tmp_row.content.push(
+        {
+          id: "remove_student",
+          type: "icon",
+          linkType: "event",
+          content: tmp_content,
+        },
         {
           id: "remove_student_sm",
           type: "string_icon",
           linkType: "event",
-          content: tmp_content,
+          content: Object.assign(tmp_content, {
+            text: getCurrentElement("remove"),
+            whole_link: true,
+          }),
           ...store.state.button_css,
         },
         getCustomMessage("empty", "")

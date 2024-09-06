@@ -800,11 +800,10 @@ const yes_handler = async () => {
           await executeLink(
             "/v1/grades/" + store.state.event.data.id,
             () => {
-              Object.assign(
+              tmp_grade = Object.assign(
                 grades[grade_index.student_id][grade_index.index],
                 store.state.event.data.new_grade
               );
-              tmp_grade = grades[grade_index.student_id][grade_index.index];
               setTimeout(
                 () =>
                   setupModalAndOpen(
