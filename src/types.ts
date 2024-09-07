@@ -2779,7 +2779,6 @@ class StudentInformation extends StudentSummary {
 
   toCard(): GeneralCardElements {
     return {
-      // TODO (6): sistemare roba undefined
       id: "" + this.username,
       title: getCustomMessage("title", this.username, "title"),
       group: "",
@@ -2808,14 +2807,14 @@ class StudentInformation extends StudentSummary {
           content:
             getCurrentElement("birth_date") +
             ": " +
-            (this.birth_date != undefined
+            (this.birth_date != undefined && !isNaN(this.birth_date.getTime())
               ? toDateString(this.birth_date)
               : "-"),
         },
         {
           id: this.id + "_address",
           type: "string",
-          content: getCurrentElement("address") + ": " + this.address,
+          content: getCurrentElement("address") + ": " + (this.address ?? "-"),
         },
         {
           id: this.id + "_email",
