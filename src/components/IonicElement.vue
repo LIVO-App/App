@@ -24,7 +24,7 @@
         store.state.event = {
           event: 'ion-input',
           data: {
-            element_id: element.params?.ref ?? element.id,
+            element_ref: element.params?.ref ?? element.id,
           },
         };
         $emit('signal_event');
@@ -34,7 +34,7 @@
       store.state.event = {
         event: 'keydown',
         data: {
-          element_id: element.params?.ref ?? element.id,
+          element_ref: element.params?.ref ?? element.id,
           key_event: $event,
         },
       };

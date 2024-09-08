@@ -126,22 +126,33 @@
               :sizes="column_sizes"
               @signal_event="() => {
                 const signaled_event = store.state.event;
-                const student = table_data_ref.cards[''].find((a) => a.id == signaled_event.data.element_id)?.content;
+                const student = table_data_ref.cards[''].find((a) => a.id == signaled_event.data.element_ref.id)?.content;
                 
-                let has_errors: boolean;
-                let tmp_grade: string;
+                let count = 0;
+                let has_errors: boolean, tmp_grade: string, input_ids: string[];
 
                 if (student != undefined) {
-                  tmp_grade = '' + student[student.length - 1].content
+                  tmp_grade = '' + student[signaled_event.data.element_ref.index].content
                   has_errors = hasGradeTypingErrors(signaled_event.event, tmp_grade, signaled_event.data.key_event?.key);
                   if (has_errors){
                     if (signaled_event.event == 'ion-input') {
-                      student[student.length - 1].content = '';
+                      student[signaled_event.data.element_ref.index].content = '';
                       nextTick(() => {
-                        student[student.length - 1].content = tmp_grade.substring(0, tmp_grade.length - 1);
+                        student[signaled_event.data.element_ref.index].content = tmp_grade.substring(0, tmp_grade.length - 1);
                       });
                     } else if (signaled_event.event == 'keydown' && signaled_event.data.key_event != undefined) {
                       signaled_event.data.key_event.preventDefault();
+                    }
+                  } else {
+                    input_ids = Object.values(grades_input_id);
+                    while (count < input_ids.length) {
+                      a(input_ids[count],count,input_ids.length)
+                      if (input_ids[count] == student[signaled_event.data.element_ref.index].id) {
+                        count++;
+                        continue;
+                      }
+                      student[student.findIndex((a) => a.id == input_ids[count])].content = tmp_grade;
+                      count++;
                     }
                   }
                 }
@@ -158,7 +169,7 @@
                   let actual_grades: StudentGrade<number | undefined>[] | undefined = undefined;
                   
                   table_data.cards[''].map((s) => {
-                    const ref_grade = s.content[s.content.length - 1].content;
+                    const ref_grade = s.content[s.content.findIndex(a => Object.values(grades_input_id)[0] == a.id)].content;
 
                     if (typeof ref_grade == 'string' && ref_grade != '') {
                       tmp_grades.push({
@@ -204,6 +215,7 @@
 </template>
 
 <script setup lang="ts">
+const a = (...b: any[]) => console.log(...b);
 import {
   CustomElement,
   Language,
@@ -217,6 +229,8 @@ import {
   TmpList,
   StudentGrade,
   AlertInformation,
+  Breakpoint,
+  BreakpointVisibility,
 } from "@/types";
 import {
   executeLink,
@@ -420,16 +434,19 @@ const column_sizes = ["1", "6", "2", "2", "1"];
 const disabled_grades: TmpList<string> = {};
 const alert_open = ref(false);
 const alert_information: AlertInformation = store.state.alert_information;
+const grades_input_id: BreakpointVisibility<Breakpoint, string> = {
+  xl: "grade",
+  sm: "grade_sm",
+};
 const end_of_day = new Date();
 end_of_day.setHours(23, 59, 59, 999);
 
-let date: Date | undefined = undefined;
-let date_value: string | undefined;
-let students: ProjectClassStudent[];
+let date: Date | undefined = undefined,
+  date_value: string | undefined,
+  students: ProjectClassStudent[],
+  tmp_grade: string;
 
 updateStudents();
-
-//<!-- ! (3): tabella non collegate
 
 watch(final, (value) => {
   let tmp_input_grade;
@@ -437,15 +454,20 @@ watch(final, (value) => {
 
   if (value) {
     for (const student of table_data_ref.value.cards[""]) {
-      tmp_input_grade = student.content[student.content.length - 1];
       if (props.final_grades_indexes[student.id] != undefined) {
-        disabled_grades[student.id] = tmp_input_grade.content as string;
-        hide_grades = true;
-        tmp_input_grade.content = "";
-        if (tmp_input_grade.params == undefined) {
-          tmp_input_grade.params = {};
+        for (const grade_input_id of Object.values(grades_input_id)) {
+          tmp_input_grade =
+            student.content[
+              student.content.findIndex((a) => a.id == grade_input_id)
+            ];
+          disabled_grades[student.id] = tmp_input_grade.content as string;
+          tmp_input_grade.content = "";
+          if (tmp_input_grade.params == undefined) {
+            tmp_input_grade.params = {};
+          }
+          tmp_input_grade.params.disabled = true;
         }
-        tmp_input_grade.params.disabled = true;
+        hide_grades = true;
       }
     }
     if (hide_grades) {
@@ -454,13 +476,19 @@ watch(final, (value) => {
   } else {
     for (const id in disabled_grades) {
       for (const student of table_data_ref.value.cards[""]) {
-        tmp_input_grade = student.content[student.content.length - 1];
         if (student.id == id) {
-          tmp_input_grade.content = disabled_grades[id];
-          delete disabled_grades[id];
-          if (tmp_input_grade.params != undefined) {
-            tmp_input_grade.params.disabled = false;
+          tmp_grade = disabled_grades[id];
+          for (const grade_input_id of Object.values(grades_input_id)) {
+            tmp_input_grade =
+              student.content[
+                student.content.findIndex((a) => a.id == grade_input_id)
+              ];
+            tmp_input_grade.content = tmp_grade;
+            if (tmp_input_grade.params != undefined) {
+              tmp_input_grade.params.disabled = false;
+            }
           }
+          delete disabled_grades[id];
           break;
         }
       }

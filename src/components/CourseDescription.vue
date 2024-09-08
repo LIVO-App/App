@@ -128,10 +128,10 @@
               item: {
                 'ion-no-padding': {
                   general: true,
-                  sm: false,
+                  md: false,
                 },
                 'ion-padding-bottom': {
-                  sm: true,
+                  md: true,
                 },
               },
               row: {
@@ -178,10 +178,10 @@
               item: {
                 'ion-no-padding': {
                   general: true,
-                  sm: false,
+                  md: false,
                 },
                 'ion-padding-bottom': {
-                  sm: true,
+                  md: true,
                 },
               },
               row: {
@@ -237,10 +237,10 @@
               item: {
                 'ion-no-padding': {
                   general: true,
-                  sm: false,
+                  md: false,
                 },
                 'ion-padding-bottom': {
-                  sm: true,
+                  md: true,
                 },
               },
               row: {

@@ -991,8 +991,7 @@ function updateBreakpointClasses(
   filtered_classes: { [key: string]: boolean },
   breakpoint: Breakpoint
 ) {
-  const ordered_breakpoints = getOrderedBreakpoints(breakpoint);
-  let tmp_breakpoint: Breakpoint | undefined;
+  let tmp_breakpoint: BreakpointScope | undefined;
 
   if (refer_classes != undefined) {
     for (const key in refer_classes) {
@@ -1000,20 +999,15 @@ function updateBreakpointClasses(
       if (typeof refer_classes[key] === "boolean") {
         filtered_classes[key] = refer_classes[key] as boolean;
       } else {
-        tmp_breakpoint = ordered_breakpoints.find(
-          (b) =>
-            ((refer_classes[key] as
-              | BreakpointVisibility<BreakpointScope, boolean>
-              | undefined) ?? {})[b] != undefined
+        tmp_breakpoint = getBreakpointElement<BreakpointScope>(
+          refer_classes[key] as BreakpointVisibility<BreakpointScope, boolean>,
+          breakpoint
         );
+
         if (tmp_breakpoint != undefined) {
           filtered_classes[key] = (
             refer_classes[key] as BreakpointVisibility<BreakpointScope, boolean>
           )[tmp_breakpoint] as boolean;
-        } else {
-          filtered_classes[key] = (
-            refer_classes[key] as BreakpointVisibility<BreakpointScope, boolean>
-          )["general"] as boolean;
         }
       }
     }
@@ -1052,7 +1046,6 @@ function isLayoutElementMatrix(element: any): element is LayoutElement[][] {
 }
 
 function getLayout(layout: Layout | undefined, breakpoint: Breakpoint) {
-  let ordered_breakpoints;
   let to_ret: (string | number)[] | LayoutElement[][] | undefined = undefined;
   let tmp_breakpoint: Breakpoint | undefined = breakpoint;
 
@@ -1060,11 +1053,7 @@ function getLayout(layout: Layout | undefined, breakpoint: Breakpoint) {
     if (layout[tmp_breakpoint] != undefined) {
       to_ret = layout[tmp_breakpoint];
     } else {
-      ordered_breakpoints = getOrderedBreakpoints(breakpoint);
-
-      tmp_breakpoint = ordered_breakpoints.find(
-        (b) => (layout ?? {})[b] != undefined
-      );
+      tmp_breakpoint = getBreakpointElement<Breakpoint>(layout, breakpoint);
 
       if (tmp_breakpoint != undefined) {
         to_ret = layout[tmp_breakpoint];
@@ -1107,6 +1096,33 @@ function getTableCellSize(
     : Array.isArray(sizes)
     ? sizes[i]
     : undefined;
+}
+
+function getBreakpointElement<T extends Breakpoint | BreakpointScope>(
+  elements: BreakpointVisibility<T, any> | undefined,
+  breakpoint: Breakpoint
+): T | undefined {
+  const ordered_breakpoints = getOrderedBreakpoints(breakpoint);
+
+  let tmp_breakpoint: Breakpoint | undefined = undefined;
+  let to_ret: T | undefined = undefined;
+
+  if (elements != undefined) {
+    tmp_breakpoint = ordered_breakpoints.find(
+      (b) => elements[b as T] != undefined
+    ) as Breakpoint | undefined;
+
+    if (tmp_breakpoint != undefined) {
+      to_ret =
+        elements[tmp_breakpoint as T] != undefined
+          ? (tmp_breakpoint as T)
+          : undefined;
+    } else if ("general" in elements) {
+      to_ret = elements["general"] != undefined ? ("general" as T) : undefined;
+    }
+  }
+
+  return to_ret;
 }
 
 async function downloadCsv(data: Blob, filename: string) {

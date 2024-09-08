@@ -1117,6 +1117,12 @@ const buttons: CustomElement[] = [
     ...store.state.button_css,
   },
 ];
+if (buttons[2].classes == undefined) {
+  buttons[2].classes = {};
+}
+buttons[2].classes.label = {
+  "ion-text-wrap": true,
+};
 const selected_section = ref("");
 const handled_buttons: AlertButton[] = [
   {

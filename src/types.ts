@@ -2444,7 +2444,7 @@ class ProjectClassStudent extends StudentSummary {
     };
   }
 
-  private concatLayout(first: Layout, second: Layout) {
+  /*private concatLayout(first: Layout, second: Layout) {
     const to_ret: Layout = {};
 
     let tmp_breakpoint: Breakpoint;
@@ -2471,7 +2471,7 @@ class ProjectClassStudent extends StudentSummary {
     }
 
     return to_ret;
-  }
+  }*/
 
   toTableRow(
     teacher_id?: number,
@@ -2483,27 +2483,8 @@ class ProjectClassStudent extends StudentSummary {
   ): GeneralTableCardElements {
     // TODO (7): usare AdminProjectClassProps quando verrà cambiato nome e sistemato in giro
     const row_to_return = super.toTableRow(index);
-    const tmp_row: GeneralTableCardElements = {
-      id: "" + this.id,
-      group: "",
-      content: [],
-      layout: {
-        xl: [],
-        sm: [],
-      },
-    };
 
-    let tmp_content: ContentType, actual_final_grade: string;
-
-    if (tmp_row.layout == undefined) {
-      tmp_row.layout = {};
-    }
-    if (tmp_row.layout["xl"] == undefined) {
-      tmp_row.layout["xl"] = [];
-    }
-    if (tmp_row.layout["sm"] == undefined) {
-      tmp_row.layout["sm"] = [];
-    }
+    let tmp_content: ContentType, actual_final_grade: string, tmp_len: number;
 
     if (row_to_return.layout == undefined) {
       row_to_return.layout = {};
@@ -2578,7 +2559,7 @@ class ProjectClassStudent extends StudentSummary {
       actual_final_grade =
         final_grade != undefined ? "" + final_grade.grade : "-";
 
-      tmp_row.content.push(
+      row_to_return.content.push(
         {
           id: "grades", // TODO (4): Mettere il controllo con future_course al passaggio a curriculum_v2
           type: "icon",
@@ -2607,11 +2588,11 @@ class ProjectClassStudent extends StudentSummary {
         }
       );
 
-      (tmp_row.layout["xl"] as (string | number)[]).push(
+      (row_to_return.layout["xl"] as (string | number)[]).push(
         "grades",
         "final_grade"
       );
-      (tmp_row.layout["sm"] as LayoutElement[][]).push(
+      (row_to_return.layout["sm"] as LayoutElement[][]).push(
         [
           {
             id: "final_grade_sm",
@@ -2626,13 +2607,17 @@ class ProjectClassStudent extends StudentSummary {
         ]
       );
     } else if (linked_input) {
-      tmp_row.content.push(
+      tmp_len = row_to_return.content.length;
+      row_to_return.content.push(
         {
           id: "grade",
           type: "input",
           content: "",
           params: {
-            ref: this.id,
+            ref: {
+              id: this.id,
+              index: tmp_len,
+            },
             type: "number",
           },
         },
@@ -2641,15 +2626,18 @@ class ProjectClassStudent extends StudentSummary {
           type: "input",
           content: "",
           params: {
-            ref: this.id,
+            ref: {
+              id: this.id,
+              index: tmp_len + 1,
+            },
             type: "number",
             label: getCurrentElement("grade"),
           },
         }
       );
 
-      (tmp_row.layout["xl"] as (string | number)[]).push("grade");
-      (tmp_row.layout["sm"] as LayoutElement[][]).push([
+      (row_to_return.layout["xl"] as (string | number)[]).push("grade");
+      (row_to_return.layout["sm"] as LayoutElement[][]).push([
         {
           id: "grade_sm",
         },
@@ -2666,7 +2654,7 @@ class ProjectClassStudent extends StudentSummary {
         },
         icon: getIcon("pencil"),
       };
-      tmp_row.content.push(
+      row_to_return.content.push(
         {
           id: "student_mover",
           type: "icon",
@@ -2695,7 +2683,7 @@ class ProjectClassStudent extends StudentSummary {
         },
         icon: getIcon("close"),
       };
-      tmp_row.content.push(
+      row_to_return.content.push(
         {
           id: "remove_student",
           type: "icon",
@@ -2715,35 +2703,29 @@ class ProjectClassStudent extends StudentSummary {
         getCustomMessage("empty", "")
       );
 
-      (tmp_row.layout["xl"] as (string | number)[]).push(
+      (row_to_return.layout["xl"] as (string | number)[]).push(
         "student_mover",
         "remove_student"
       );
-      tmp_row.layout["sm"] = (tmp_row.layout["sm"] as LayoutElement[][]).concat(
+      row_to_return.layout["sm"] = (
+        row_to_return.layout["sm"] as LayoutElement[][]
+      ).concat([
         [
-          [
-            {
-              id: "student_mover_sm",
-              size: "5",
-            },
-            {
-              id: "empty",
-              size: "2",
-            },
-            {
-              id: "remove_student_sm",
-              size: "5",
-            },
-          ],
-        ]
-      );
+          {
+            id: "student_mover_sm",
+            size: "5",
+          },
+          {
+            id: "empty",
+            size: "2",
+          },
+          {
+            id: "remove_student_sm",
+            size: "5",
+          },
+        ],
+      ]);
     }
-
-    row_to_return.content = row_to_return.content.concat(tmp_row.content);
-    row_to_return.layout = this.concatLayout(
-      row_to_return.layout,
-      tmp_row.layout
-    );
 
     return row_to_return;
   }

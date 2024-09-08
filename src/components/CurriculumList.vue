@@ -29,7 +29,7 @@
           <course-description
             :title="description_title"
             :course_id="description_course_id"
-            :learning_session_id="description_learning_session_id"
+            :learning_session_id="'' + description_learning_session_id"
             :section="description_section"
             @close="closeModal('course_details')"
           />
@@ -301,7 +301,9 @@ const first_row: CustomElement[] = [
     content: getCurrentElement("final_grade"),
   },
 ];
-const column_sizes = sections_use ? ["4", "1", "1", "2", "2", "2"] : ["5", "1", "2", "2", "2"];
+const column_sizes = sections_use
+  ? ["4", "1", "1", "2", "2", "2"]
+  : ["5", "1", "2", "2", "2"];
 const grades_open = ref(false);
 const description_open = ref(false);
 const trigger = ref(0);
