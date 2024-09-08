@@ -805,7 +805,13 @@ function removeTableIndexedElement(
       table.cards[group].splice(i, 1);
       index = i--;
     } else if (index != -1) {
-      table.cards[group][i].content[0] = getCustomMessage("index", i + 1);
+      for (const index_id of (table.cards[group][i].linked_elements ?? {
+        index: [],
+      })["index"]) {
+        table.cards[group][i].content[
+          table.cards[group][i].content.findIndex((a) => a.id == index_id)
+        ] = getCustomMessage("index", i + 1);
+      }
     }
   }
 

@@ -943,15 +943,23 @@ const updateFinalRefs = (
     if (update_indexes) {
       final_grades_indexes[student_id] = grades[student_id].length - 1;
     }
-    final_grade_pos = table_data.cards[""][student_pos].content.length - 1;
-    if (deleted_grade) {
-      table_data.cards[""][student_pos].content[final_grade_pos].content = "-";
-      grades_parameters.final_grade_index = undefined;
-      delete final_grades_indexes[student_id];
-      store.state.triggers.grades++;
-    } else {
-      table_data.cards[""][student_pos].content[final_grade_pos].content =
-        grade.grade;
+    for (const final_grade_id of (table_data.cards[""][student_pos]
+      .linked_elements ?? {
+      final_grade: [],
+    })["final_grade"]) {
+      final_grade_pos = table_data.cards[""][student_pos].content.findIndex(
+        (a) => a.id == final_grade_id
+      );
+      if (deleted_grade) {
+        table_data.cards[""][student_pos].content[final_grade_pos].content =
+          "-";
+        grades_parameters.final_grade_index = undefined;
+        delete final_grades_indexes[student_id];
+        store.state.triggers.grades++;
+      } else {
+        table_data.cards[""][student_pos].content[final_grade_pos].content =
+          grade.grade;
+      }
     }
     students_trigger.value++;
   }
@@ -1025,7 +1033,15 @@ const moveStudent = async (
 };
 const fix_indexes = () => {
   for (let i = 0; i < table_data.cards[""].length; i++) {
-    table_data.cards[""][i].content[0].content = i + 1;
+    for (const index_id of (
+      table_data.cards[""][i].linked_elements ?? {
+        index: [],
+      }
+    ).index) {
+      table_data.cards[""][i].content[
+        table_data.cards[""][i].content.findIndex((a) => a.id == index_id)
+      ].content = i + 1;
+    }
   }
 };
 

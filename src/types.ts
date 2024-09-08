@@ -369,17 +369,20 @@ type OptionalContentCard = {
   content?: CustomElement[];
 };
 
+type LinkedLayout = {
+  layout?: Layout;
+  linked_elements?: TmpList<(string | number)[]>;
+};
+
 type GeneralCardElements = CardElements &
   OptionalCardElements &
-  OptionalContentCard & {
-    layout?: Layout;
-  };
+  OptionalContentCard &
+  LinkedLayout;
 
 type GeneralTableCardElements = CardElements &
   OptionalCardElements &
-  Required<OptionalContentCard> & {
-    layout?: Layout;
-  };
+  Required<OptionalContentCard> &
+  LinkedLayout;
 
 type EnrollmentCardElements = CardElements &
   Required<OptionalContentCard> & {
@@ -832,31 +835,6 @@ class CurriculumCourse extends CourseBase {
           linkType: "event",
           content: tmp_content,
         },
-        /*{
-          id: "grades_sm",
-          type: "string_icon",
-          linkType: "event",
-          content: {
-            text:
-              getCurrentElement("grades") +
-              " (" +
-              getCurrentElement("final") +
-              ": " +
-              final_grade +
-              "):",
-            event: "grades",
-            data: grade_data_event,
-            icon: getIcon("document_text"),
-          },
-          classes: {
-            item: {
-              "ion-no-padding": true,
-            },
-            label: {
-              max_fit: true,
-            },
-          },
-        },*/
         {
           id: "final_grade",
           type: "string",
@@ -2287,6 +2265,9 @@ class StudentSummary implements StudentSummaryProps {
             ],
           ],
         },
+        linked_elements: {
+          index: ["index", "index_sm"],
+        },
       };
     } else {
       to_ret = {
@@ -2402,16 +2383,19 @@ class OrdinaryClassStudent extends StudentSummary {
         }
       );
 
-      if (row_to_return.layout != undefined) {
-        (row_to_return.layout["xl"] as (string | number)[]).push(
-          "student_mover"
-        );
-        (row_to_return.layout["sm"] as LayoutElement[][]).push([
-          {
-            id: "student_mover_sm",
-            size: "5",
-          },
-        ]);
+      if (row_to_return.layout == undefined) {
+        row_to_return.layout = {};
+      }
+      (row_to_return.layout["xl"] as (string | number)[]).push("student_mover");
+      (row_to_return.layout["sm"] as LayoutElement[][]).push([
+        {
+          id: "student_mover_sm",
+          size: "5",
+        },
+      ]);
+
+      if (row_to_return.linked_elements == undefined) {
+        row_to_return.linked_elements = {};
       }
     }
 
@@ -2494,6 +2478,9 @@ class ProjectClassStudent extends StudentSummary {
     }
     if (row_to_return.layout["sm"] == undefined) {
       row_to_return.layout["sm"] = [];
+    }
+    if (row_to_return.linked_elements == undefined) {
+      row_to_return.linked_elements = {};
     }
 
     row_to_return.content.push(
@@ -2606,6 +2593,13 @@ class ProjectClassStudent extends StudentSummary {
           },
         ]
       );
+
+      row_to_return.linked_elements = Object.assign(
+        row_to_return.linked_elements,
+        {
+          final_grade: ["final_grade", "final_grade_sm"],
+        }
+      );
     } else if (linked_input) {
       tmp_len = row_to_return.content.length;
       row_to_return.content.push(
@@ -2642,6 +2636,13 @@ class ProjectClassStudent extends StudentSummary {
           id: "grade_sm",
         },
       ]);
+
+      row_to_return.linked_elements = Object.assign(
+        row_to_return.linked_elements,
+        {
+          grade: ["grade", "grade_sm"],
+        }
+      );
     } else if (final_confirmation == undefined) {
       tmp_content = {
         event: "student_mover",
@@ -2725,6 +2726,14 @@ class ProjectClassStudent extends StudentSummary {
           },
         ],
       ]);
+
+      row_to_return.linked_elements = Object.assign(
+        row_to_return.linked_elements,
+        {
+          student_mover: ["student_mover", "student_mover_sm"],
+          remove_student: ["remove_student", "remove_student_sm"],
+        }
+      );
     }
 
     return row_to_return;
