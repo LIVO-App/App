@@ -810,7 +810,11 @@ function removeTableIndexedElement(
       })["index"]) {
         table.cards[group][i].content[
           table.cards[group][i].content.findIndex((a) => a.id == index_id)
-        ] = getCustomMessage("index", i + 1);
+        ].content = (
+          table.cards[group][i].content[
+            table.cards[group][i].content.findIndex((a) => a.id == index_id)
+          ].content as string
+        ).replace(/\d+/g, "" + (i + 1));
       }
     }
   }

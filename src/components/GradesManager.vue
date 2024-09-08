@@ -90,7 +90,7 @@
       </ion-col>
       <ion-col
         :key="edit_trigger + '_parameters'"
-        size="5"
+        size="12"
         :size-md="table_data.cards[''].length == 0 ? '12' : '5'"
         v-if="
           (parameters.teacher_id != undefined &&

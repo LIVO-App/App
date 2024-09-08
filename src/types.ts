@@ -1984,6 +1984,8 @@ class Grade {
               id: "pubblication",
               size: "auto",
             },
+          ],
+          [
             {
               id: "value_sm",
             },
@@ -2251,7 +2253,7 @@ class StudentSummary implements StudentSummaryProps {
         id: "" + this.id,
         group: "",
         content: [
-          getCustomMessage("index", index),
+          getCustomMessage("index", index + ""),
           getCustomMessage("index_sm", index + ")"),
         ].concat(name_surname),
         layout: {

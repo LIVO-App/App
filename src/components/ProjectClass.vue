@@ -951,14 +951,18 @@ const updateFinalRefs = (
         (a) => a.id == final_grade_id
       );
       if (deleted_grade) {
-        table_data.cards[""][student_pos].content[final_grade_pos].content =
-          "-";
+        table_data.cards[""][student_pos].content[final_grade_pos].content = (
+          table_data.cards[""][student_pos].content[final_grade_pos]
+            .content as string
+        ).replace(/\d+/g, "-");
         grades_parameters.final_grade_index = undefined;
         delete final_grades_indexes[student_id];
         store.state.triggers.grades++;
       } else {
-        table_data.cards[""][student_pos].content[final_grade_pos].content =
-          grade.grade;
+        table_data.cards[""][student_pos].content[final_grade_pos].content = (
+          table_data.cards[""][student_pos].content[final_grade_pos]
+            .content as string
+        ).replace(/(\d+|-)/g, "" + grade.grade);
       }
     }
     students_trigger.value++;
@@ -1040,7 +1044,11 @@ const fix_indexes = () => {
     ).index) {
       table_data.cards[""][i].content[
         table_data.cards[""][i].content.findIndex((a) => a.id == index_id)
-      ].content = i + 1;
+      ].content = (
+        table_data.cards[""][i].content[
+          table_data.cards[""][i].content.findIndex((a) => a.id == index_id)
+        ].content as string
+      ).replace(/\d+/g, "" + (i + 1));
     }
   }
 };
