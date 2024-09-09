@@ -478,7 +478,7 @@ const school_years =
       )
     : $route.name == "ordinary_classes"
     ? await executeLink(
-        "/v1/ordinary_classes&descending=true",
+        "/v1/ordinary_classes?descending=true",
         (response: any) => {
           const tmp_years = new Set();
 
@@ -515,7 +515,7 @@ const school_years =
         () => []
       )
     : await executeLink(
-        "/v1/ordinary_classes",
+        "/v1/ordinary_classes?descending=true",
         (response: any) => [
           ...new Set(response.data.data.map((a: any) => a.school_year)),
         ],

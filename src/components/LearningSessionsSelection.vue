@@ -261,11 +261,11 @@ const courses: OrderedCardsList<GeneralCardElements> = reactive({
     associated: [],
   },
 });
-const teaching_years = await executeLink(
+const teaching_years: number[] = (await executeLink(
   "/v1/teachers/" + user.id + "/active_years",
   (response: any) => response.data.data.map((a: any) => a.year),
   () => []
-);
+)).reverse();
 const trigger = ref(0);
 
 let selected_session_indexes: Indexes = reactive({

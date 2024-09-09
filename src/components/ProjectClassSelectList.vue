@@ -27,22 +27,24 @@
   <ion-grid
     ><!-- v-if="learning_sessions.loaded">-->
     <ion-row v-if="$route.name != 'open_day_courses'">
-      <ionic-element
-        :element="
-          getCustomMessage(
-            'export_description',
-            getCurrentElement('non_confirmed_export') + ':',
-            'string',
-            undefined,
-            {
-              label: {
-                'ion-padding': true,
-              },
-            }
-          )
-        "
-      />
-      <ionic-element :element="buttons[0]" @execute_link="exportPropositions" />
+      <ion-col>
+        <ionic-element
+          :element="
+            getCustomMessage(
+              'export_description',
+              getCurrentElement('non_confirmed_export') + ':',
+              'string',
+              undefined,
+              {
+                label: {
+                  'ion-padding': true,
+                },
+              }
+            )
+          "
+        />
+        <ionic-element :element="buttons[0]" @execute_link="exportPropositions" />
+      </ion-col>
     </ion-row>
     <ion-row>
       <ion-col size="12" size-md="6">
@@ -492,18 +494,18 @@ const courses: OrderedCardsList<GeneralCardElements> = reactive({
   order: [],
   cards: {},
 });
-const school_years =
+const school_years: number[] =
   $route.name == "open_day_courses"
-    ? await executeLink(
+    ? (await executeLink(
         "/v1/teachers/" + user.id + "/tutor_years",
         (response: any) => response.data.data.map((a: any) => a.school_year),
         () => []
-      )
-    : await executeLink(
+      )).reverse()
+    : (await executeLink(
         "/v1/teachers/" + user.id + "/active_years",
         (response: any) => response.data.data.map((a: any) => a.year),
         () => []
-      );
+      )).reverse();
 const learning_areas: LearningArea[] = await executeLink(
   "/v1/learning_areas",
   (response: any) => response.data.data,
