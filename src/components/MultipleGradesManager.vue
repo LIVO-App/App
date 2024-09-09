@@ -37,179 +37,171 @@
       </ion-grid>
     </ion-toolbar>
   </ion-header>
-  <!--<ion-content fullscreen>-->
-  <!-- ! (3): valutare scroll per mobile, stando attenti a --height: fit-content in ion-modal#grades_manager in ProjectClass.vue -->
   <ion-content>
-    <ion-grid>
-      <ion-row>
-        <ion-col>
-          <div class="ion-padding-bottom">
-            <div class="ion-padding-bottom">
-              <ionic-element
-                :element="
-                  getCustomMessage(
-                    'description',
-                    getCurrentElement('grade_insertion'),
-                    'title',
-                    colors
-                  )
-                "
-              />
-            </div>
-            <div>
-              <ionic-element
-                :element="
-                  getCustomMessage(
-                    'description',
-                    getCurrentElement('description'),
-                    'string',
-                    colors
-                  )
-                "
-              />
-              <!-- TODO (5): mettere EditorWrapper -->
-              <ion-textarea
-                v-for="language in languages"
-                :key="language"
-                :auto-grow="true"
-                v-model="descriptions[`${language}_description`]"
-                :label="getCurrentElement(language)"
-                :aria-label="getCurrentElement(language)"
-                fill="outline"
-                class="ion-margin-vertical"
-              />
-            </div>
-            <hr
-              class="ion-margin-top"
-              style="border-bottom: 1px solid var(--ion-color-medium)"
-            />
-            <div>
-              <ion-item style="width: fit-content" lines="none">
-                <ion-label
-                  :aria-label="getCurrentElement('date')"
-                  color="primary"
-                  style="color: var(--ion-color-primary)"
-                  >{{ getCurrentElement("date") }}</ion-label
-                >
-                <ion-datetime-button
-                  :key="date_trigger"
-                  datetime="datetime"
-                  style="width: fit-content"
-                  class="ion-padding-start"
-                />
-              </ion-item>
-              <div style="width: fit-content">
-                <ion-label
-                  position="floating"
-                  :aria-label="getCurrentElement('final_grade')"
-                  color="primary"
-                  style="color: var(--ion-color-primary)"
-                  class="ion-padding-horizontal"
-                  >{{ getCurrentElement("final_grade") }}</ion-label
-                >
-                <ion-checkbox
-                  v-model="final"
-                  :aria-label="getCurrentElement('final_grade')"
-                />
-              </div>
-            </div>
-            <ionic-table
-              :key="trigger"
-              :emptiness_message="
-                getCustomMessage(
-                  'emptiness_message',
-                  getCurrentElement('no_students')
-                )
-              "
-              v-model:data="table_data_ref"
-              :first_row="first_row"
-              :sizes="column_sizes"
-              @signal_event="() => {
-                const signaled_event = store.state.event;
-                const student = table_data_ref.cards[''].find((a) => a.id == signaled_event.data.element_ref.id);
-                
-                let count = 0;
-                let has_errors: boolean, tmp_grade: string, grades_input_ids: (string | number)[];
+    <div class="ion-padding-bottom">
+      <div class="ion-padding-bottom">
+        <ionic-element
+          :element="
+            getCustomMessage(
+              'description',
+              getCurrentElement('grade_insertion'),
+              'title',
+              colors
+            )
+          "
+        />
+      </div>
+      <div>
+        <ionic-element
+          :element="
+            getCustomMessage(
+              'description',
+              getCurrentElement('description'),
+              'string',
+              colors
+            )
+          "
+        />
+        <!-- TODO (5): mettere EditorWrapper -->
+        <ion-textarea
+          v-for="language in languages"
+          :key="language"
+          :auto-grow="true"
+          v-model="descriptions[`${language}_description`]"
+          :label="getCurrentElement(language)"
+          :aria-label="getCurrentElement(language)"
+          fill="outline"
+          class="ion-margin-vertical"
+        />
+      </div>
+      <hr
+        class="ion-margin-top"
+        style="border-bottom: 1px solid var(--ion-color-medium)"
+      />
+      <div>
+        <ion-item style="width: fit-content" lines="none">
+          <ion-label
+            :aria-label="getCurrentElement('date')"
+            color="primary"
+            style="color: var(--ion-color-primary)"
+            >{{ getCurrentElement("date") }}</ion-label
+          >
+          <ion-datetime-button
+            :key="date_trigger"
+            datetime="datetime"
+            style="width: fit-content"
+            class="ion-padding-start"
+          />
+        </ion-item>
+        <div style="width: fit-content">
+          <ion-label
+            position="floating"
+            :aria-label="getCurrentElement('final_grade')"
+            color="primary"
+            style="color: var(--ion-color-primary)"
+            class="ion-padding-horizontal"
+            >{{ getCurrentElement("final_grade") }}</ion-label
+          >
+          <ion-checkbox
+            v-model="final"
+            :aria-label="getCurrentElement('final_grade')"
+          />
+        </div>
+      </div>
+      <ionic-table
+        :key="trigger"
+        :emptiness_message="
+          getCustomMessage(
+            'emptiness_message',
+            getCurrentElement('no_students')
+          )
+        "
+        v-model:data="table_data_ref"
+        :first_row="first_row"
+        :sizes="column_sizes"
+        @signal_event="() => {
+          const signaled_event = store.state.event;
+          const student = table_data_ref.cards[''].find((a) => a.id == signaled_event.data.element_ref.id);
+          
+          let count = 0;
+          let has_errors: boolean, tmp_grade: string, grades_input_ids: (string | number)[];
 
-                if (student != undefined) {
-                  tmp_grade = '' + student.content[signaled_event.data.element_ref.index].content
-                  has_errors = hasGradeTypingErrors(signaled_event.event, tmp_grade, signaled_event.data.key_event?.key);
-                  if (has_errors){
-                    if (signaled_event.event == 'ion-input') {
-                      student.content[signaled_event.data.element_ref.index].content = '';
-                      nextTick(() => {
-                        student.content[signaled_event.data.element_ref.index].content = tmp_grade.substring(0, tmp_grade.length - 1);
-                      });
-                    } else if (signaled_event.event == 'keydown' && signaled_event.data.key_event != undefined) {
-                      signaled_event.data.key_event.preventDefault();
-                    }
-                  } else {
-                    grades_input_ids = student.linked_elements != undefined ? student.linked_elements['grade'] : [];
-                    while (count < grades_input_ids.length) {
-                      if (grades_input_ids[count] == student.content[signaled_event.data.element_ref.index].id) {
-                        count++;
-                        continue;
-                      }
-                      student.content[student.content.findIndex((a) => a.id == grades_input_ids[count])].content = tmp_grade;
-                      count++;
-                    }
-                  }
+          if (student != undefined) {
+            tmp_grade = '' + student.content[signaled_event.data.element_ref.index].content
+            has_errors = hasGradeTypingErrors(signaled_event.event, tmp_grade, signaled_event.data.key_event?.key);
+            if (has_errors){
+              if (signaled_event.event == 'ion-input') {
+                student.content[signaled_event.data.element_ref.index].content = '';
+                nextTick(() => {
+                  student.content[signaled_event.data.element_ref.index].content = tmp_grade.substring(0, tmp_grade.length - 1);
+                });
+              } else if (signaled_event.event == 'keydown' && signaled_event.data.key_event != undefined) {
+                signaled_event.data.key_event.preventDefault();
+              }
+            } else {
+              grades_input_ids = student.linked_elements != undefined ? student.linked_elements['grade'] : [];
+              while (count < grades_input_ids.length) {
+                if (grades_input_ids[count] == student.content[signaled_event.data.element_ref.index].id) {
+                  count++;
+                  continue;
                 }
-              }"
-            />
+                student.content[student.content.findIndex((a) => a.id == grades_input_ids[count])].content = tmp_grade;
+                count++;
+              }
+            }
+          }
+        }"
+      />
 
-            <!-- TODO (4): mettere popup "Sei sicuro?" -->
-          </div>
-          <div class="ion-text-center">
-            <ion-button
-              @click="
-                () => {
-                  let tmp_grades: StudentGrade<string>[] = [];
-                  let actual_grades: StudentGrade<number | undefined>[] | undefined = undefined;
-                  
-                  table_data.cards[''].map((s) => {
-                    const ref_grade = s.content[s.content.findIndex(a => (s.linked_elements != undefined ? s.linked_elements['grade'] : [])[0] == a.id)].content;
+      <!-- TODO (4): mettere popup "Sei sicuro?" -->
+    </div>
+    <div class="ion-text-center">
+      <ion-button
+        @click="
+          () => {
+            let tmp_grades: StudentGrade<string>[] = [];
+            let actual_grades: StudentGrade<number | undefined>[] | undefined = undefined;
+            
+            table_data.cards[''].map((s) => {
+              const ref_grade = s.content[s.content.findIndex(a => (s.linked_elements != undefined ? s.linked_elements['grade'] : [])[0] == a.id)].content;
 
-                    if (typeof ref_grade == 'string' && ref_grade != '') {
-                      tmp_grades.push({
-                        student_id: parseInt(s.id),
-                        grade_value: ref_grade,
-                      });
-                    }
-                  });
-                  actual_grades = checkMultiGradesParameters(
-                      descriptions,
-                      date,
-                      tmp_grades
-                    );
+              if (typeof ref_grade == 'string' && ref_grade != '') {
+                tmp_grades.push({
+                  student_id: parseInt(s.id),
+                  grade_value: ref_grade,
+                });
+              }
+            });
+            actual_grades = checkMultiGradesParameters(
+                descriptions,
+                date,
+                tmp_grades
+              );
 
-                  if (actual_grades != undefined && Object.values(actual_grades ?? {}).every((a) => a.grade_value != undefined)) {
-                    store.state.event = {
-                      event: 'add_grades',
-                      data: {
-                        ...parameters,
-                        ...descriptions,
-                        publication_date:
-                          date != undefined ? date.toISOString() : undefined,
-                        grades_list: actual_grades,
-                        final: final,
-                      },
-                      method: 'post',
-                    };
-                    $emit('signal_event');
-                    $emit('close');
-                  } else {
-                    $emit('signal_event');
-                  }
-                }
-              "
-            >
-              {{ getCurrentElement("insert_grade") }}
-            </ion-button>
-          </div>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+            if (actual_grades != undefined && Object.values(actual_grades ?? {}).every((a) => a.grade_value != undefined)) {
+              store.state.event = {
+                event: 'add_grades',
+                data: {
+                  ...parameters,
+                  ...descriptions,
+                  publication_date:
+                    date != undefined ? date.toISOString() : undefined,
+                  grades_list: actual_grades,
+                  final: final,
+                },
+                method: 'post',
+              };
+              $emit('signal_event');
+              $emit('close');
+            } else {
+              $emit('signal_event');
+            }
+          }
+        "
+      >
+        {{ getCurrentElement("insert_grade") }}
+      </ion-button>
+    </div>
   </ion-content>
 </template>
 
@@ -245,9 +237,6 @@ import {
 import {
   IonHeader,
   IonToolbar,
-  IonGrid,
-  IonRow,
-  IonCol,
   IonLabel,
   IonButton,
   IonTextarea,

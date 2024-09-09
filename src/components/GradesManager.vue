@@ -30,239 +30,242 @@
       </ion-grid>
     </ion-toolbar>
   </ion-header>
-  <!--<ion-content fullscreen>-->
-  <!-- ! (3): valutare scroll per mobile, stando attenti a --height: fit-content in ion-modal#grades_manager in ProjectClass.vue -->
-  <ion-grid class="ion-no-margin">
-    <ion-row>
-      <ion-col
-        :key="
-          actual_final_grade_index !== -1 ? edit_trigger + '_grades' : undefined
-        "
-        size="12"
-        :size-md="
-          (parameters.teacher_id != undefined &&
-            table_data.cards[''].length != 0 &&
-            actual_final_grade_index === -1) ||
-          edit_mode
-            ? '7'
-            : '12'
-        "
-      >
-        <ionic-table
-          :key="store.state.triggers.grades"
-          :emptiness_message="
-            getCustomMessage(
-              'emptiness_message',
-              getCurrentElement('no_grades'),
-              'string',
-              colors,
-              {
-                label: {
-                  align_text_middle: true,
-                  'ion-padding-bottom': true,
-                },
-              }
-            )
+  <ion-content>
+    <ion-grid class="ion-no-margin">
+      <ion-row>
+        <ion-col
+          :key="
+            actual_final_grade_index !== -1
+              ? edit_trigger + '_grades'
+              : undefined
           "
-          :data="table_data"
-          :first_row="first_row"
-          :sizes="column_sizes"
-          @signal_event="
-            () => {
-              if (store.state.event.event == 'edit_grade') {
-                setupEditMode();
-              } else {
-                $emit('signal_event');
-              }
-            }
+          size="12"
+          :size-md="
+            (parameters.teacher_id != undefined &&
+              table_data.cards[''].length != 0 &&
+              actual_final_grade_index === -1) ||
+            edit_mode
+              ? '7'
+              : '12'
           "
-        />
-        <div class="ion-text-center ion-padding-bottom">
-          <ion-text
-            >{{ getCurrentElement("intermediate_arithmetic_mean")
-            }}{{
-              actual_final_grade_index != -1
-                ? " (" + getCurrentElement("no_final_grade").toLowerCase() + ")"
-                : ""
-            }}: {{ mean }}</ion-text
-          >
-        </div>
-      </ion-col>
-      <ion-col
-        :key="edit_trigger + '_parameters'"
-        size="12"
-        :size-md="table_data.cards[''].length == 0 ? '12' : '5'"
-        v-if="
-          (parameters.teacher_id != undefined &&
-            parameters.associated_teacher === false &&
-            actual_final_grade_index === -1) ||
-          edit_mode
-        "
-      >
-        <div class="ion-padding-bottom">
-          <div class="ion-padding-bottom">
-            <ionic-element
-              :element="
-                getCustomMessage(
-                  'description',
-                  getCurrentElement(
-                    'grade_' + (edit_mode ? 'edit' : 'insertion')
-                  ),
-                  'title',
-                  colors
-                )
-              "
-            />
-          </div>
-          <div>
-            <ionic-element
-              :element="
-                getCustomMessage(
-                  'description',
-                  getCurrentElement('description'),
-                  'string',
-                  colors
-                )
-              "
-            />
-            <!-- TODO (5): mettere EditorWrapper -->
-            <ion-textarea
-              v-for="language in languages"
-              :key="language"
-              :auto-grow="true"
-              v-model="descriptions[`${language}_description`]"
-              :label="getCurrentElement(language)"
-              :aria-label="getCurrentElement(language)"
-              fill="outline"
-              class="ion-margin-vertical"
-            />
-          </div>
-          <hr
-            class="ion-margin-top"
-            style="border-bottom: 1px solid var(--ion-color-medium)"
-          />
-          <div>
-            <ion-item style="width: fit-content" lines="none">
-              <ion-label
-                :aria-label="getCurrentElement('date')"
-                color="primary"
-                style="color: var(--ion-color-primary)"
-                >{{ getCurrentElement("date") }}</ion-label
-              >
-              <ion-datetime-button
-                datetime="datetime"
-                style="width: fit-content"
-                class="ion-padding-start"
-              />
-            </ion-item>
-            <ion-input
-              type="number"
-              v-model="grade"
-              :label="getCurrentElement('grade')"
-              :aria-label="getCurrentElement('grade')"
-              color="black"
-              style="color: var(--ion-color-primary)"
-              fill="outline"
-              class="ion-margin-vertical"
-              @ion-input="
-                () => {
-                  if (hasGradeTypingErrors('ion-input', grade)) {
-                    grade = grade.substring(0, grade.length - 1);
-                  }
+        >
+          <ionic-table
+            :key="store.state.triggers.grades"
+            :emptiness_message="
+              getCustomMessage(
+                'emptiness_message',
+                getCurrentElement('no_grades'),
+                'string',
+                colors,
+                {
+                  label: {
+                    align_text_middle: true,
+                    'ion-padding-bottom': true,
+                  },
                 }
-              "
-              @keydown="
-                ($event) => {
-                  if (hasGradeTypingErrors('keydown', grade, $event.key)) {
-                    $event.preventDefault();
-                  }
-                }
-              "
-            />
-            <div style="width: fit-content">
-              <ion-label
-                position="floating"
-                :aria-label="getCurrentElement('final_grade')"
-                color="primary"
-                style="color: var(--ion-color-primary)"
-                class="ion-padding-horizontal"
-                >{{ getCurrentElement("final_grade") }}</ion-label
-              >
-              <ion-checkbox
-                :disabled="edit_mode"
-                v-model="final"
-                :aria-label="getCurrentElement('final_grade')"
-              />
-            </div>
-          </div>
-          <!-- TODO (4): controllare perchè non funziona nella tabella e mettere popup "Sei sicuro?" -->
-        </div>
-        <div class="ion-text-center">
-          <template v-if="edit_mode">
-            <ion-button
-              @click="() => {
-                let actual_grade = checkGradeParameters(descriptions, date, grade);
-                let grade_props: GradeProps;
-  
-                if (actual_grade != undefined) {
-                  grade_props = {
-                    id: store.state.event.data.id,
-                    publication: date != undefined ? date.toISOString() : (date_value ?? to_edit.publication.toISOString()),
-                    italian_description: '',
-                    english_description: '',
-                    grade: actual_grade,
-                    final: final ? 1 : 0,
-                  };
-                  languages.forEach(a => grade_props[`${a}_description`] = descriptions[`${a}_description`]);
-                  store.state.event.data.new_grade = new Grade(grade_props);
-                }
-                $emit('signal_event');
-              }"
-            >
-              {{ getCurrentElement("edit") }}
-            </ion-button>
-            <ion-button @click="setupEditMode(true)">
-              {{ getCurrentElement("cancel") }}
-            </ion-button>
-          </template>
-          <ion-button
-            v-else
-            @click="
+              )
+            "
+            :data="table_data"
+            :first_row="first_row"
+            :sizes="column_sizes"
+            @signal_event="
               () => {
-                let actual_grade = checkGradeParameters(
-                  descriptions,
-                  date,
-                  grade
-                );
-
-                if (actual_grade != undefined) {
-                  store.state.event = {
-                    event: 'add_grade',
-                    data: {
-                      ...parameters,
-                      ...descriptions,
-                      publication_date:
-                        date != undefined ? date.toISOString() : undefined,
-                      grade: actual_grade,
-                      final: final,
-                    },
-                    method: 'post',
-                  };
-                  $emit('signal_event');
-                  $emit('close');
+                if (store.state.event.event == 'edit_grade') {
+                  setupEditMode();
                 } else {
                   $emit('signal_event');
                 }
               }
             "
-          >
-            {{ getCurrentElement("insert_grade") }}
-          </ion-button>
-        </div>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-  <!--</ion-content>-->
+          />
+          <div class="ion-text-center ion-padding-bottom">
+            <ion-text
+              >{{ getCurrentElement("intermediate_arithmetic_mean")
+              }}{{
+                actual_final_grade_index != -1
+                  ? " (" +
+                    getCurrentElement("no_final_grade").toLowerCase() +
+                    ")"
+                  : ""
+              }}: {{ mean }}</ion-text
+            >
+          </div>
+        </ion-col>
+        <ion-col
+          :key="edit_trigger + '_parameters'"
+          size="12"
+          :size-md="table_data.cards[''].length == 0 ? '12' : '5'"
+          v-if="
+            (parameters.teacher_id != undefined &&
+              parameters.associated_teacher === false &&
+              actual_final_grade_index === -1) ||
+            edit_mode
+          "
+        >
+          <div class="ion-padding-bottom">
+            <div class="ion-padding-bottom">
+              <ionic-element
+                :element="
+                  getCustomMessage(
+                    'description',
+                    getCurrentElement(
+                      'grade_' + (edit_mode ? 'edit' : 'insertion')
+                    ),
+                    'title',
+                    colors
+                  )
+                "
+              />
+            </div>
+            <div>
+              <ionic-element
+                :element="
+                  getCustomMessage(
+                    'description',
+                    getCurrentElement('description'),
+                    'string',
+                    colors
+                  )
+                "
+              />
+              <!-- TODO (5): mettere EditorWrapper -->
+              <ion-textarea
+                v-for="language in languages"
+                :key="language"
+                :auto-grow="true"
+                v-model="descriptions[`${language}_description`]"
+                :label="getCurrentElement(language)"
+                :aria-label="getCurrentElement(language)"
+                fill="outline"
+                class="ion-margin-vertical"
+              />
+            </div>
+            <hr
+              class="ion-margin-top"
+              style="border-bottom: 1px solid var(--ion-color-medium)"
+            />
+            <div>
+              <ion-item style="width: fit-content" lines="none">
+                <ion-label
+                  :aria-label="getCurrentElement('date')"
+                  color="primary"
+                  style="color: var(--ion-color-primary)"
+                  >{{ getCurrentElement("date") }}</ion-label
+                >
+                <ion-datetime-button
+                  datetime="datetime"
+                  style="width: fit-content"
+                  class="ion-padding-start"
+                />
+              </ion-item>
+              <ion-input
+                type="number"
+                v-model="grade"
+                :label="getCurrentElement('grade')"
+                :aria-label="getCurrentElement('grade')"
+                color="black"
+                style="color: var(--ion-color-primary)"
+                fill="outline"
+                class="ion-margin-vertical"
+                @ion-input="
+                  () => {
+                    if (hasGradeTypingErrors('ion-input', grade)) {
+                      grade = grade.substring(0, grade.length - 1);
+                    }
+                  }
+                "
+                @keydown="
+                  ($event) => {
+                    if (hasGradeTypingErrors('keydown', grade, $event.key)) {
+                      $event.preventDefault();
+                    }
+                  }
+                "
+              />
+              <div style="width: fit-content">
+                <ion-label
+                  position="floating"
+                  :aria-label="getCurrentElement('final_grade')"
+                  color="primary"
+                  style="color: var(--ion-color-primary)"
+                  class="ion-padding-horizontal"
+                  >{{ getCurrentElement("final_grade") }}</ion-label
+                >
+                <ion-checkbox
+                  :disabled="edit_mode"
+                  v-model="final"
+                  :aria-label="getCurrentElement('final_grade')"
+                />
+              </div>
+            </div>
+            <!-- TODO (4): controllare perchè non funziona nella tabella e mettere popup "Sei sicuro?" -->
+          </div>
+          <div class="ion-text-center">
+            <template v-if="edit_mode">
+              <ion-button
+                @click="() => {
+                  let actual_grade = checkGradeParameters(descriptions, date, grade);
+                  let grade_props: GradeProps;
+    
+                  if (actual_grade != undefined) {
+                    grade_props = {
+                      id: store.state.event.data.id,
+                      publication: date != undefined ? date.toISOString() : (date_value ?? to_edit.publication.toISOString()),
+                      italian_description: '',
+                      english_description: '',
+                      grade: actual_grade,
+                      final: final ? 1 : 0,
+                    };
+                    languages.forEach(a => grade_props[`${a}_description`] = descriptions[`${a}_description`]);
+                    store.state.event.data.new_grade = new Grade(grade_props);
+                  }
+                  $emit('signal_event');
+                }"
+              >
+                {{ getCurrentElement("edit") }}
+              </ion-button>
+              <ion-button @click="setupEditMode(true)">
+                {{ getCurrentElement("cancel") }}
+              </ion-button>
+            </template>
+            <ion-button
+              v-else
+              @click="
+                () => {
+                  let actual_grade = checkGradeParameters(
+                    descriptions,
+                    date,
+                    grade
+                  );
+
+                  if (actual_grade != undefined) {
+                    store.state.event = {
+                      event: 'add_grade',
+                      data: {
+                        ...parameters,
+                        ...descriptions,
+                        publication_date:
+                          date != undefined ? date.toISOString() : undefined,
+                        grade: actual_grade,
+                        final: final,
+                      },
+                      method: 'post',
+                    };
+                    $emit('signal_event');
+                    $emit('close');
+                  } else {
+                    $emit('signal_event');
+                  }
+                }
+              "
+            >
+              {{ getCurrentElement("insert_grade") }}
+            </ion-button>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-content>
 </template>
 
 <script setup lang="ts">
@@ -306,6 +309,7 @@ import {
   IonModal,
   DatetimeCustomEvent,
   IonItem,
+  IonContent,
 } from "@ionic/vue";
 import { PropType, reactive, Ref, ref, watch } from "vue";
 import { useStore } from "vuex";

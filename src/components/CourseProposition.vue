@@ -453,7 +453,8 @@
               </ion-col>
             </ion-row>
           </template>
-          <template v-else-if="pages[current_page_index] == 'access_object'"> <!-- ! (3): si è cancellato l'oggetto sbagliato e non è stato ripristinato -->
+          <template v-else-if="pages[current_page_index] == 'access_object'">
+            <!-- TODO (4): si è cancellato l'oggetto sbagliato e non è stato ripristinato -->
             <ion-grid>
               <template
                 v-if="
@@ -638,9 +639,7 @@
                       :key="'order_item_' + i"
                     >
                       <ionic-element
-                        :element="
-                          getReorderLabel(i, image.name, false)
-                        "
+                        :element="getReorderLabel(i, image.name, false)"
                         @signal_event="removeImage()"
                       />
                       <ion-reorder slot="end" class="ion-no-margin" />

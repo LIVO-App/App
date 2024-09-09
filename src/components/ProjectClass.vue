@@ -1288,7 +1288,7 @@ watch(students_update, async () => {
 <style>
 ion-modal#grades_manager {
   --width: 90%;
-  --height: fit-content;
+  --height: 60%; /* <!-- TODO (4): auto fa collassare ion-content */
 }
 
 ion-modal#multiple_grades_manager {
