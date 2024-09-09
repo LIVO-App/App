@@ -861,7 +861,7 @@ class CurriculumCourse extends CourseBase {
         this.intermediate_grades = this.intermediate_grades.concat(grades);
     }*/
 
-  toTableRow(
+  toTableCard(
     session_id: number,
     student_id: number,
     teacher_id?: number
@@ -2029,7 +2029,7 @@ class Grade {
       : EditableState.NOT_EDITABLE;
   }
 
-  toTableRow(
+  toTableCard(
     associated_teacher?: boolean,
     teacher_id?: number,
     student_id?: number,
@@ -2333,7 +2333,7 @@ class StudentSummary implements StudentSummaryProps {
     };
   }
 
-  toTableRow(index?: number): GeneralTableCardElements {
+  toTableCard(index?: number): GeneralTableCardElements {
     const name_surname: CustomElement = {
       id: "name_surname",
       type: "string",
@@ -2407,8 +2407,8 @@ class OrdinaryClassStudent extends StudentSummary {
     this.clil_credits = props.clil_credits;
   }
 
-  toTableRow(index?: number, movable = false): GeneralTableCardElements {
-    const row_to_return = super.toTableRow(index);
+  toTableCard(index?: number, movable = false): GeneralTableCardElements {
+    const row_to_return = super.toTableCard(index);
 
     let tmp_content: ContentType;
 
@@ -2564,7 +2564,7 @@ class ProjectClassStudent extends StudentSummary {
     return to_ret;
   }*/
 
-  toTableRow(
+  toTableCard(
     teacher_id?: number,
     grades?: boolean,
     final_grade?: Grade,
@@ -2573,7 +2573,7 @@ class ProjectClassStudent extends StudentSummary {
     index?: number
   ): GeneralTableCardElements {
     // TODO (7): usare AdminProjectClassProps quando verrà cambiato nome e sistemato in giro
-    const row_to_return = super.toTableRow(index);
+    const row_to_return = super.toTableCard(index);
 
     let tmp_content: ContentType, actual_final_grade: string, tmp_len: number;
 

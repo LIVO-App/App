@@ -304,7 +304,7 @@ const updateStudents = async (
     non_compliant_table.cards[""] = [];
     for (const index in non_compliant_students_index) {
       non_compliant_table.cards[""].push(
-        students[non_compliant_students_index[index]].toTableRow(
+        students[non_compliant_students_index[index]].toTableCard(
           parseInt(index) + 1,
           learning_session?.getStatus() == LearningSessionStatus.FUTURE ||
             learning_session?.getStatus() == LearningSessionStatus.UPCOMING
@@ -317,7 +317,7 @@ const updateStudents = async (
     count = 1;
     for (const i in students) {
       if (non_compliant_students_index.find((a) => "" + a == i) == undefined) {
-        students_table.cards[""].push(students[i].toTableRow(count++));
+        students_table.cards[""].push(students[i].toTableCard(count++));
       }
     }
   }
@@ -379,7 +379,7 @@ const yes_handler = async () => {
                 students_table.cards[""].splice(
                   tmp_target_index,
                   0,
-                  students[non_compliant_students_index[tmp_index]].toTableRow(
+                  students[non_compliant_students_index[tmp_index]].toTableCard(
                     tmp_target_index + 1
                   )
                 );

@@ -584,7 +584,7 @@ const updateStudents = async () => {
     }
 
     table_data.cards[""].push(
-      tmp_student.toTableRow(
+      tmp_student.toTableCard(
         user.type == "teacher" ? user.id : undefined,
         user.type == "teacher",
         user.type == "teacher"

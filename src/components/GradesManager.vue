@@ -363,14 +363,14 @@ const setGradesTable = async (empty = true) => {
 
     table_data.cards[""].push(
       user.type == "teacher"
-        ? actual_grades[grade_index].toTableRow(
+        ? actual_grades[grade_index].toTableCard(
             props.parameters.associated_teacher ?? false,
             user.id,
             props.parameters.student_id,
             final_grade_pubblication,
             props.parameters.show_editable
           )
-        : actual_grades[grade_index].toTableRow()
+        : actual_grades[grade_index].toTableCard()
     );
 
     if (!actual_grades[grade_index].final) {

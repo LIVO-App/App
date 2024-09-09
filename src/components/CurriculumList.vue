@@ -242,7 +242,7 @@ const updateTable = (
   for (const course of courses) {
     if (year_correspondences[selected_year.value][course.id].length > 0) {
       table_data.cards[""].push(
-        course.toTableRow(
+        course.toTableCard(
           year_correspondences[selected_year.value][course.id][
             year_correspondences[selected_year.value][course.id].length - 1
           ],

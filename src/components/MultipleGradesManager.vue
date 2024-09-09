@@ -313,7 +313,7 @@ const updateStudents = async () => {
   for (const student_index in students) {
     if (!(students[student_index].id in props.final_grades_indexes)) {
       table_data.cards[""].push(
-        students[student_index].toTableRow(
+        students[student_index].toTableCard(
           user.id,
           false,
           undefined,
