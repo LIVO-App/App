@@ -48,6 +48,23 @@
         </template>
       </suspense>
     </ion-modal>
+    <div class="ion-margin-bottom ion-margin-start">
+      <ionic-element
+        :element="
+          getCustomMessage(
+            'title',
+            course != undefined ? course[`${language}_title`] : '',
+            'title',
+            undefined,
+            {
+              label: {
+                title_font: true,
+              },
+            }
+          )
+        "
+      />
+    </div>
     <div v-if="user.type == 'teacher'" class="ion-margin-top ion-margin-start">
       <ionic-element
         v-for="button in buttons"
@@ -106,6 +123,7 @@ import {
   AlertInformation,
   AnnouncementSummary,
   AnnouncementSummaryProps,
+  Course,
   CustomElement,
   OrderedCardsList,
   User,
@@ -114,6 +132,7 @@ import {
   executeLink,
   getBreakpoint,
   getCurrentElement,
+  getCurrentLanguage,
   getCustomMessage,
   getIcon,
   isSmaller,
@@ -217,6 +236,7 @@ const updateBreakpoint = () => {
 const store = useStore();
 const user = User.getLoggedUser() as User;
 const sections_use: boolean = store.state.sections_use;
+const language = getCurrentLanguage();
 const alert_information: AlertInformation = store.state.alert_information;
 alert_information.title = getCurrentElement("error");
 alert_information.buttons = [getCurrentElement("ok")];
@@ -251,6 +271,11 @@ const messages: OrderedCardsList = {
   },
 };
 const breakpoint = ref(getBreakpoint(window.innerWidth));
+const course: Course | undefined = await executeLink(
+  "/v1/courses/" + course_id,
+  (response) => new Course(response.data.data),
+  () => undefined
+);
 
 let selected_section: Ref<string>;
 let announcement_title: string;

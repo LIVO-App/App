@@ -90,6 +90,23 @@
       </suspense>
     </ion-modal>
     <div class="ion-margin-top ion-margin-start">
+      <div class="ion-margin-bottom ion-margin-start">
+        <ionic-element
+          :element="
+            getCustomMessage(
+              'title',
+              course != undefined ? course[`${language}_title`] : '',
+              'title',
+              undefined,
+              {
+                label: {
+                  title_font: true,
+                },
+              }
+            )
+          "
+        />
+      </div>
       <ionic-element
         v-for="button in buttons.slice(0, 2)"
         :key="button.id"
@@ -251,6 +268,7 @@ import {
   executeLink,
   getAviableLanguages,
   getCurrentElement,
+  getCurrentLanguage,
   getCustomMessage,
   getIcon,
   removeTableIndexedElement,
@@ -1085,6 +1103,7 @@ const $router = useRouter();
 const user = User.getLoggedUser() as User;
 const sections_use: boolean = store.state.sections_use;
 const languages = getAviableLanguages();
+const language = getCurrentLanguage();
 const $route = useRoute();
 const alert_information: AlertInformation = store.state.alert_information;
 

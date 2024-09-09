@@ -32,6 +32,23 @@
         </template>
       </suspense>
     </ion-modal>
+    <div class="ion-margin-start">
+      <ionic-element
+        :element="
+          getCustomMessage(
+            'title',
+            ordinary_class.study_year + ' ' + ordinary_class.address,
+            'title',
+            undefined,
+            {
+              label: {
+                title_font: true,
+              },
+            }
+          )
+        "
+      />
+    </div>
     <custom-select
       v-if="sections_use"
       v-model:selected_option="selected_section"
