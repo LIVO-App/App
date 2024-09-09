@@ -25,15 +25,28 @@
       }
     "
   >
-    <course-card
-      v-if="isCourse(card)"
-      @execute_link="$emit('execute_link')"
-      @signal_event="$emit('signal_event')"
-      :content="card.content"
-      :credits="card.credits"
-      :enrollment="card.enrollment"
-      :colors="card.colors"
-    />
+    <template v-if="isCourse(card_ref)">
+      <general-card
+        v-if="'layout' in card_ref"
+        @execute_link="$emit('execute_link')"
+        @signal_event="$emit('signal_event')"
+        :id="card_ref.id"
+        v-model:content="card_ref.content"
+        :layout="card_ref.layout"
+        :hovered="local_hovered"
+        :colors="card_ref.colors"
+        :classes="card_ref.classes"
+      />
+      <course-card
+        v-else
+        @execute_link="$emit('execute_link')"
+        @signal_event="$emit('signal_event')"
+        :content="card_ref.content"
+        :credits="card_ref.credits"
+        :enrollment="card_ref.enrollment"
+        :colors="card.colors"
+      />
+    </template>
     <general-card
       v-else-if="isGeneral(card_ref)"
       @execute_link="$emit('execute_link')"

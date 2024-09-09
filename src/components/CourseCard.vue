@@ -6,13 +6,13 @@
     }"
     class="ion-no-padding ion-no-margin"
   >
-    <ion-card-content>
+    <ion-card-content class="ion-no-padding ion-padding-vertical">
       <ion-grid>
         <ion-row class="ion-align-items-center">
           <ion-col size-sm="auto" size="6" class="ion-text-center">
             <ionic-element :element="actual_content[0]" />
           </ion-col>
-          <ion-col>
+          <ion-col :size="isSmaller(breakpoint, 'sm') ? '6' : undefined">
             <ionic-element
               :element="content[1]"
               @signal_event="$emit('signal_event')"
@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import { CustomElement, Colors, GeneralCardSubElements } from "@/types";
 import { Enrollment } from "@/types";
-import { getBreakpoint } from "@/utils";
+import { getBreakpoint, isSmaller } from "@/utils";
 import { IonCard, IonCardContent, IonGrid, IonRow, IonCol } from "@ionic/vue";
 import {
   computed,

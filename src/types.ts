@@ -385,8 +385,8 @@ type GeneralTableCardElements = CardElements &
   LinkedLayout;
 
 type EnrollmentCardElements = CardElements &
-  Required<OptionalContentCard> & {
-    layout?: Layout;
+  Required<OptionalContentCard> &
+  LinkedLayout & {
     credits: number;
     enrollment: Enrollment;
   };
@@ -594,7 +594,6 @@ class EnrollmentCourse extends CourseSummary {
   }
 
   toEnrollmentCard(
-    // ! (3): Fare in modo che CardItem prenda EnrollmentCardElements con general-card e poi modificare metodi correlati. Modificare tutti toTableRow e toCard per rendere unico
     learning_session: LearningSession,
     path?: string,
     method?: Method,
@@ -617,20 +616,52 @@ class EnrollmentCourse extends CourseSummary {
       content: [],
     };
 
+    let tmp_content: ContentType;
+
     if (data != undefined) {
+      if (card.layout == undefined) {
+        card.layout = {};
+      }
+      if (card.layout["xl"] == undefined) {
+        card.layout["xl"] = [];
+      }
+      if (card.layout["sm"] == undefined) {
+        card.layout["sm"] = [];
+      }
       card.content = [
         {
-          id: this.id + "_group",
+          id: "group",
           type: "string",
           content: this.group,
         },
         {
-          id: this.id + "_credits",
+          id: "group_sm",
+          type: "string",
+          content: getCurrentElement("group") + ": " + this.group,
+          classes: {
+            label: {
+              "ion-text-center": true,
+            },
+          },
+        },
+        getCustomMessage("empty", ""),
+        {
+          id: "credits",
           type: "string",
           content: this.credits,
         },
         {
-          id: this.id + "_title",
+          id: "credits_sm",
+          type: "string",
+          content: getCurrentElement("credits") + ": " + this.credits,
+          classes: {
+            label: {
+              "ion-text-center": true,
+            },
+          },
+        },
+        {
+          id: "title",
           type: "string",
           linkType: "event",
           content: {
@@ -642,30 +673,104 @@ class EnrollmentCourse extends CourseSummary {
             },
             text: this[`${language}_title`],
           },
+          colors: {
+            text: {
+              name: "primary",
+              type: "var",
+            },
+          },
         },
       ];
+      (card.layout["xl"] as (string | number)[]).push(
+        "group",
+        "credits",
+        "title"
+      );
+      (card.layout["sm"] as LayoutElement[][]).push(
+        [
+          {
+            id: "title",
+          },
+        ],
+        [
+          {
+            id: "group_sm",
+            size: "5",
+          },
+          {
+            id: "empty",
+            size: "2",
+          },
+          {
+            id: "credits_sm",
+            size: "5",
+          },
+        ]
+      );
 
       if (store.state.sections_use) {
-        card.content.push({
-          id: this.id + "_section",
-          type: "string",
-          content: this.section ?? "",
-        });
+        card.content.push(
+          {
+            id: "section",
+            type: "string",
+            content: this.section ?? "",
+          },
+          {
+            id: "section_sm",
+            type: "string",
+            content: getCurrentElement("section") + ": " + this.section ?? "",
+            classes: {
+              label: {
+                "ion-text-center": true,
+              },
+            },
+          }
+        );
+        (card.layout["xl"] as (string | number)[]).push("section");
+        (card.layout["sm"] as LayoutElement[][]).push([
+          {
+            id: "empty",
+            size: "3",
+          },
+          {
+            id: "section_sm",
+            size: "6",
+          },
+        ]);
       }
-      card.content.push({
-        id: this.id + "_move_student",
-        type: "icon",
-        linkType: "event",
-        content: {
-          event: "move_student",
-          data: data,
-          icon: getIcon("checkmark"),
+      tmp_content = {
+        event: "move_student",
+        data: data,
+        icon: getIcon("checkmark"),
+      };
+      card.content.push(
+        {
+          id: "move_student",
+          type: "icon",
+          linkType: "event",
+          content: tmp_content,
         },
-      });
+        {
+          id: "move_student_sm",
+          type: "string_icon",
+          linkType: "event",
+          content: Object.assign(tmp_content, {
+            text: getCurrentElement("subscribe_to"),
+            whole_link: true,
+          }),
+          ...store.state.button_css,
+        }
+      );
+      (card.layout["xl"] as (string | number)[]).push("move_student");
+      (card.layout["sm"] as LayoutElement[][]).push([
+        {
+          id: "move_student_sm",
+        },
+      ]);
     } else {
       card.content = [
         {
-          id: this.id + "_credits",
+          id: "credits",
           type: "string",
           content: getCurrentElement("credits") + ": " + this.credits,
           colors: {
@@ -680,7 +785,7 @@ class EnrollmentCourse extends CourseSummary {
           },
         },
         {
-          id: this.id + "_title",
+          id: "title",
           type: "string",
           linkType: "event",
           content: {
@@ -698,29 +803,29 @@ class EnrollmentCourse extends CourseSummary {
           },
         },
         {
-          id: this.id + "_enrollment",
+          id: "enrollment",
           type: "string",
           content: tmp_enrollment.toString(),
           colors: tmp_enrollment.getStatusColors(),
         },
       ];
-    }
 
-    if (
-      (!store.state.static_subscription ||
-        tmp_enrollment.enrollment === false) &&
-      path != undefined
-    ) {
-      card.content.push({
-        id: this.id + "_change_enrollment",
-        type: "icon",
-        linkType: "request",
-        content: tmp_enrollment.getEnrollmentIcon(path, method),
-        colors: tmp_enrollment.getChangeButtonColors(),
-        params: {
-          border_radius: "10px",
-        },
-      });
+      if (
+        (!store.state.static_subscription ||
+          tmp_enrollment.enrollment === false) &&
+        path != undefined
+      ) {
+        card.content.push({
+          id: this.id + "_change_enrollment",
+          type: "icon",
+          linkType: "request",
+          content: tmp_enrollment.getEnrollmentIcon(path, method),
+          colors: tmp_enrollment.getChangeButtonColors(),
+          params: {
+            border_radius: "10px",
+          },
+        });
+      }
     }
 
     return card;
