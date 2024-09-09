@@ -1253,6 +1253,11 @@ const multiple_grades_parameters: MultipleGradesParameters = {
   teacher_id: user.id,
   section: selected_section.value,
 };
+const course: Course = await executeLink(
+    "/v1/courses/" + course_id,
+    (response) => new Course(response.data.data),
+    () => undefined
+  );
 
 let grades_title: string;
 let grades_parameters: SingleGradesParameters;
@@ -1260,7 +1265,6 @@ let student_grades: Grade[] | undefined;
 let description_title: string;
 let description_course_id: number;
 let associated_teacher: boolean | undefined;
-let course: Course | undefined;
 let project_class: AdminProjectClass | undefined;
 let students: ProjectClassStudent[] = [];
 let tmp_student: ProjectClassStudent;
@@ -1317,11 +1321,6 @@ if (user.type == "teacher") {
           id: a.section,
         })
       )
-  );
-  course = await executeLink(
-    "/v1/courses/" + course_id,
-    (response) => new Course(response.data.data),
-    () => undefined
   );
   project_class = await executeLink(
     "/v1/project_classes/" + course_id + "/" + session_id,
