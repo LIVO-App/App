@@ -205,7 +205,7 @@ const no_session: CustomElement = getCustomMessage(
   getCurrentElement("no_sessions")
 );
 const ordinary_classes: OrdinaryClassProps[] = await executeLink(
-  "/v1/ordinary_classes?student_id=" + user.id,
+  "/v1/ordinary_classes?student_id=" + user.id + "&descending=true",
   (response) => response.data.data
 );
 const current_class = ordinary_classes.shift();
@@ -332,6 +332,7 @@ if (current_class != undefined) {
   await Promise.all(promises); /*.then(() => {
       learning_sessions.loaded = true;
     });*/
+  learning_sessions.completed.order.reverse();
   if (learning_sessions.completed.cards[current_school_year] == undefined) {
     learning_sessions.completed.cards[current_school_year] = [];
   }

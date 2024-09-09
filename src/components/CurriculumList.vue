@@ -234,6 +234,39 @@ const getYearCourses = async () => {
 
   courses = year_courses[selected_context.value] ?? [];
 };
+const updateCorrespondences = async () => {
+  await getYearCourses();
+
+  for (const context_courses of Object.values(year_courses)) {
+    courses_list = courses_list.concat(context_courses);
+  }
+
+  await executeLink(
+    "/v1/learning_sessions/correspondence?student_id=" + reference_id,
+    (response) => {
+      for (const correspondence of response.data.data) {
+        if (year_correspondences[selected_year.value] == undefined) {
+          year_correspondences[selected_year.value] = {};
+        }
+        if (
+          year_correspondences[selected_year.value][correspondence.course_id] ==
+          undefined
+        ) {
+          year_correspondences[selected_year.value][correspondence.course_id] =
+            [];
+        }
+        year_correspondences[selected_year.value][
+          correspondence.course_id
+        ].push(correspondence.session_id);
+      }
+    },
+    () => [],
+    "post",
+    {
+      courses: courses_list.map((a: any) => a.id),
+    }
+  );
+};
 const updateTable = (
   year_correspondences: any,
   courses: CurriculumCourse[]
@@ -376,51 +409,6 @@ learning_areas = await executeLink(
 
 selected_year.value = school_years[0].id;
 selected_context.value = learning_contexts[0].id;
-await getYearCourses();
-
-watch(selected_year, () => {
-  getYearCourses();
-  table_data.cards[""] = [];
-  updateTable(year_correspondences, courses);
-  trigger.value++;
-});
-watch(selected_context, (n) => {
-  courses = year_courses[n] ?? [];
-  table_data.cards[""] = [];
-  updateTable(year_correspondences, courses);
-  trigger.value++;
-});
-
-for (const context_courses of Object.values(year_courses)) {
-  courses_list = courses_list.concat(context_courses);
-}
-
-await executeLink(
-  "/v1/learning_sessions/correspondence?student_id=" + reference_id,
-  (response) => {
-    for (const correspondence of response.data.data) {
-      if (year_correspondences[selected_year.value] == undefined) {
-        year_correspondences[selected_year.value] = {};
-      }
-      if (
-        year_correspondences[selected_year.value][correspondence.course_id] ==
-        undefined
-      ) {
-        year_correspondences[selected_year.value][correspondence.course_id] =
-          [];
-      }
-      year_correspondences[selected_year.value][correspondence.course_id].push(
-        correspondence.session_id
-      );
-    }
-  },
-  () => [],
-  "post",
-  {
-    courses: courses_list.map((a: any) => a.id),
-  }
-);
-updateTable(year_correspondences, courses);
 
 await executeLink(
   "/v1/students/" +
@@ -448,6 +436,21 @@ await executeLink(
     }
   }
 );
+
+await updateCorrespondences();
+updateTable(year_correspondences, courses);
+watch(selected_year, async () => {
+  await updateCorrespondences();
+  table_data.cards[""] = [];
+  updateTable(year_correspondences, courses);
+  trigger.value++;
+});
+watch(selected_context, (n) => {
+  courses = year_courses[n] ?? [];
+  table_data.cards[""] = [];
+  updateTable(year_correspondences, courses);
+  trigger.value++;
+});
 </script>
 
 <style scoped>

@@ -1654,7 +1654,7 @@ class LearningSession extends LearningSessionSummary {
     learning_context_id: string,
     user = User.getLoggedUser() as UserSummary
   ): Promise<{ credits: number; courses_presence: boolean }> {
-    return await executeLink(
+    return executeLink(
       "/v1/courses?student_id=" +
         user.id +
         "&session_id=" +
@@ -1667,7 +1667,12 @@ class LearningSession extends LearningSessionSummary {
           courses_presence: response.data.data.length > 0,
         };
       },
-      () => 0
+      () => {
+        return {
+          credits: 0,
+          courses_presence: false,
+        };
+      }
     );
   }
 
@@ -1713,7 +1718,7 @@ class LearningSession extends LearningSessionSummary {
           courses_list != undefined)
           ? [
               {
-                id: this.id + "_open_day",
+                id: "open_day",
                 type: "string",
                 content:
                   getCurrentElement("open_day") +
@@ -1721,7 +1726,7 @@ class LearningSession extends LearningSessionSummary {
                   toDateString(this.open_day), // TODO (4): sistemare titoli che appaiono più piccoli, cambiando il tipo in "title"
               },
               {
-                id: this.id + "_description",
+                id: "description",
                 type: "html",
                 content:
                   (put_credits

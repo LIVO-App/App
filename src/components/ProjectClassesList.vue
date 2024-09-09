@@ -472,13 +472,13 @@ const school_year_cards: OrderedCardsList<GeneralCardElements> = reactive({
 const school_years =
   $route.name == "announcements"
     ? await executeLink(
-        "/v1/ordinary_classes?student_id=" + user.id,
+        "/v1/ordinary_classes?student_id=" + user.id + "&descending=true",
         (response: any) => response.data.data.map((a: any) => a.school_year),
         () => []
       )
     : $route.name == "ordinary_classes"
     ? await executeLink(
-        "/v1/ordinary_classes",
+        "/v1/ordinary_classes&descending=true",
         (response: any) => {
           const tmp_years = new Set();
 
