@@ -89,7 +89,7 @@
         </template>
       </suspense>
     </ion-modal>
-    <div>
+    <div class="ion-margin-top ion-margin-start">
       <ionic-element
         v-for="button in buttons.slice(0, 2)"
         :key="button.id"
@@ -97,80 +97,103 @@
         @signal_event="setupModalAndOpen()"
         @execute_link="$router.push(store.state.request.url)"
       />
-    </div>
-    <ionic-element
-      v-if="
-        user.type == 'teacher' &&
-        !associated_teacher &&
-        (learning_session_status == LearningSessionStatus.CURRENT ||
-          learning_session_status == LearningSessionStatus.COMPLETED) &&
-        !areAllFinals()
-      "
-      :element="buttons[2]"
-      @signal_event="manageEvent()"
-    />
-    <template
-      v-if="
-        user.type == 'admin' &&
-        learning_session != undefined &&
-        project_class != undefined &&
-        (learning_session_status == LearningSessionStatus.UPCOMING ||
-          learning_session_status == LearningSessionStatus.FUTURE)
-      "
-    >
-      <template v-if="project_class.final_confirmation == undefined">
-        <ionic-element
-          :element="
-            getCustomMessage(
-              'project_class_status',
-              getCurrentElement('project_class_status') +
-                ':' +
-                (learning_session_status != LearningSessionStatus.UPCOMING
-                  ? ' ' + getCurrentElement('not_confirmed')
-                  : ''),
-              'string',
-              undefined,
-              {
-                label: {
-                  'ion-padding-end': true,
-                },
+      <ionic-element
+        v-if="
+          user.type == 'teacher' &&
+          !associated_teacher &&
+          (learning_session_status == LearningSessionStatus.CURRENT ||
+            learning_session_status == LearningSessionStatus.COMPLETED) &&
+          !areAllFinals()
+        "
+        :element="buttons[2]"
+        @signal_event="manageEvent()"
+      />
+      <div
+        v-if="
+          user.type == 'admin' &&
+          learning_session != undefined &&
+          project_class != undefined &&
+          (learning_session_status == LearningSessionStatus.UPCOMING ||
+            learning_session_status == LearningSessionStatus.FUTURE)
+        "
+        class="ion-margin-top"
+      >
+        <template v-if="project_class.final_confirmation == undefined">
+          <ionic-element
+            :element="
+              getCustomMessage(
+                'project_class_status',
+                getCurrentElement('project_class_status') +
+                  ':' +
+                  (learning_session_status != LearningSessionStatus.UPCOMING
+                    ? ' ' + getCurrentElement('not_confirmed')
+                    : ''),
+                'string',
+                undefined,
+                {
+                  label: {
+                    'ion-padding-end': true,
+                    'ion-margin-start': {
+                      general: true,
+                      sm: false,
+                    },
+                  },
+                }
+              )
+            "
+          />
+          <ion-button
+            v-if="learning_session_status == LearningSessionStatus.UPCOMING"
+            @click="
+              () => {
+                store.state.event.event = 'confirmation';
+                setupModalAndOpen();
               }
-            )
-          "
-        />
-        <ion-button
-          v-if="learning_session_status == LearningSessionStatus.UPCOMING"
-          @click="
-            () => {
-              store.state.event.event = 'confirmation';
-              setupModalAndOpen();
-            }
-          "
-        >
-          {{ getCurrentElement("confirm") }}
-        </ion-button>
-      </template>
-      <template v-else>
-        <ionic-element
-          :element="
-            getCustomMessage(
-              'project_class_confirmation_date',
-              getCurrentElement('project_class_confirmation_date') +
-                ': ' +
-                toDateString(project_class.final_confirmation)
-            )
-          "
-        />
-      </template>
-    </template>
-    <custom-select
-      v-if="sections_use"
-      v-model:selected_option="selected_section"
-      :list="sections"
-      :label="getCurrentElement('section') + ':'"
-      :aria_label="getCurrentElement('section')"
-      :placeholder="getCurrentElement('section_choice')"
-    />
+            "
+          >
+            {{ getCurrentElement("confirm") }}
+          </ion-button>
+        </template>
+        <template v-else>
+          <ionic-element
+            :element="
+              getCustomMessage(
+                'project_class_confirmation_date',
+                getCurrentElement('project_class_confirmation_date') +
+                  ': ' +
+                  toDateString(project_class.final_confirmation),
+                'string',
+                undefined,
+                {
+                  label: {
+                    'ion-margin-start': {
+                      general: true,
+                      sm: false,
+                    },
+                  },
+                }
+              )
+            "
+          />
+        </template>
+      </div>
+      <custom-select
+        v-if="sections_use"
+        v-model:selected_option="selected_section"
+        :list="sections"
+        :label="getCurrentElement('section') + ':'"
+        :aria_label="getCurrentElement('section')"
+        :placeholder="getCurrentElement('section_choice')"
+        :classes="{
+          label: {
+            'ion-margin-start': {
+              general: true,
+              sm: false,
+            },
+          },
+        }"
+      />
+    </div>
     <suspense>
       <template #default>
         <div class="ion-padding-top">
@@ -1104,20 +1127,37 @@ const final_grades_indexes: {
 const alert_open = ref(false);
 const sections: { id: string }[] = [];
 const tmp_sections: Set<string> = new Set();
+const button_css = Object.assign(
+  JSON.parse(JSON.stringify(store.state.button_css)),
+  {
+    classes: {
+      button: {
+        radius: true,
+        "ion-margin-start": {
+          general: true,
+          sm: false,
+        },
+      },
+    },
+  }
+);
 const buttons: CustomElement[] = [
   {
     id: "announcements",
-    type: "icon",
+    type: "string_icon",
     linkType: "request",
     content: {
       url: "/announcements/" + course_id + "/" + session_id, //<!-- ? vedere se anche admin può vedere e/o mandare messaggi
       method: "get",
       icon: getIcon("mail"),
+      text: getCurrentElement("announcements"),
+      whole_link: true,
     },
+    ...button_css,
   },
   {
     id: "course_details",
-    type: "icon",
+    type: "string_icon",
     linkType: "event",
     content: {
       event: "course_details",
@@ -1126,7 +1166,10 @@ const buttons: CustomElement[] = [
         course_id: parseInt(course_id),
       },
       icon: getIcon("information_circle"),
+      text: getCurrentElement("course_details"),
+      whole_link: true,
     },
+    ...button_css,
   },
   {
     id: "register_grades_series",
@@ -1138,7 +1181,7 @@ const buttons: CustomElement[] = [
       event: "multiple_grades",
       whole_link: true,
     },
-    ...store.state.button_css,
+    ...button_css,
   },
 ];
 if (buttons[2].classes == undefined) {

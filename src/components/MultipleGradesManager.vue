@@ -206,7 +206,6 @@
 </template>
 
 <script setup lang="ts">
-const a = (...b: any[]) => console.log(...b);
 import {
   CustomElement,
   Language,

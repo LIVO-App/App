@@ -17,7 +17,6 @@ import {
   getStatusString,
   getStudyAddressVisualization,
   getSubscribedCredits,
-  isLayoutElementMatrix,
   isLinkedToAreas,
   numberToSection,
   toDateString,

@@ -48,22 +48,30 @@
         </template>
       </suspense>
     </ion-modal>
-    <div v-if="user.type == 'teacher'">
+    <div v-if="user.type == 'teacher'" class="ion-margin-top ion-margin-start">
       <ionic-element
         v-for="button in buttons"
         :key="button.id"
         :element="button"
         @signal_event="setupModalAndOpen()"
       />
+      <custom-select
+        v-if="sections_use && user.type == 'teacher'"
+        v-model:selected_option="selected_section"
+        :list="sections"
+        :label="getCurrentElement('section') + ':'"
+        :aria_label="getCurrentElement('section')"
+        :placeholder="getCurrentElement('section_choice')"
+        :classes="{
+          label: {
+            'ion-margin-start': {
+              general: true,
+              sm: false,
+            },
+          },
+        }"
+      />
     </div>
-    <custom-select
-      v-if="sections_use && user.type == 'teacher'"
-      v-model:selected_option="selected_section"
-      :list="sections"
-      :label="getCurrentElement('section') + ':'"
-      :aria_label="getCurrentElement('section')"
-      :placeholder="getCurrentElement('section_choice')"
-    />
     <suspense>
       <template #default>
         <list-card
@@ -224,12 +232,15 @@ const tmp_sections: Set<string> = new Set();
 const buttons: CustomElement[] = [
   {
     id: "new_announcement",
-    type: "icon",
+    type: "string_icon",
     linkType: "event",
     content: {
       event: "publish_announcement",
       icon: getIcon("add"),
+      text: getCurrentElement("new_announcement"),
+      whole_link: true,
     },
+    ...store.state.button_css,
   },
 ];
 const alert_open = ref(false);

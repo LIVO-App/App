@@ -25,28 +25,29 @@
         </template>
       </suspense>
     </ion-modal>-->
-    <!-- ! (3): spostare pulsanti in alto -->
-    <!-- ! (3): aggiungere pulsante aggiunta immagini -->
-    <ionic-element
-      :element="buttons[3]"
-      @execute_link="$router.push(store.state.request.url)"
-    />
-    <template v-if="user.type == 'admin' && !allApproed()">
+    <!-- TODO (4): aggiungere pulsante aggiunta immagini -->
+    <div class="ion-margin-top ion-margin-start">
       <ionic-element
-        v-if="action == 'view'"
-        :element="buttons[4]"
-        @signal_event="setupModalAndOpen('confirm', undefined, true)"
+        :element="buttons[3]"
+        @execute_link="$router.push(store.state.request.url)"
       />
-      <ionic-element
-        v-if="action == 'view'"
-        :element="buttons[5]"
-        @signal_event="setupModalAndOpen('confirm', undefined, false)"
-      />
-      <ionic-element
-        :element="action == 'view' ? buttons[6] : buttons[7]"
-        @signal_event="changeModality(action == 'view' ? 'edit' : 'view')"
-      />
-    </template>
+      <div v-if="user.type == 'admin' && !allApproed()" class="ion-padding-top">
+        <ionic-element
+          v-if="action == 'view'"
+          :element="buttons[4]"
+          @signal_event="setupModalAndOpen('confirm', undefined, true)"
+        />
+        <ionic-element
+          v-if="action == 'view'"
+          :element="buttons[5]"
+          @signal_event="setupModalAndOpen('confirm', undefined, false)"
+        />
+        <ionic-element
+          :element="action == 'view' ? buttons[6] : buttons[7]"
+          @signal_event="changeModality(action == 'view' ? 'edit' : 'view')"
+        />
+      </div>
+    </div>
     <custom-select
       :key="trigger"
       v-model:selected_option="selected_model"
@@ -1953,6 +1954,20 @@ const carousel_trigger = ref(0);
 const alert_open = ref(false);
 const pages = ModelProposition.getProps("pages");
 const current_page_index = ref(0);
+const button_css = Object.assign(
+  JSON.parse(JSON.stringify(store.state.button_css)),
+  {
+    classes: {
+      button: {
+        radius: true,
+        "ion-margin-start": {
+          general: true,
+          sm: false,
+        },
+      },
+    },
+  }
+);
 const buttons: CustomElement[] = [
   {
     id: "back",
@@ -1983,49 +1998,64 @@ const buttons: CustomElement[] = [
   },
   {
     id: "history",
-    type: "icon",
+    type: "string_icon",
     linkType: "request",
     content: {
       url: "/propositions_history",
       method: "get",
       icon: getIcon("archive"),
+      text: getCurrentElement("history"),
+      whole_link: true,
     },
+    ...button_css,
   },
   {
     id: "approve",
-    type: "icon",
+    type: "string_icon",
     linkType: "event",
     content: {
       event: "approve",
       icon: getIcon("checkmark"),
+      text: getCurrentElement("approve"),
+      whole_link: true,
     },
+    ...button_css,
   },
   {
     id: "reject",
-    type: "icon",
+    type: "string_icon",
     linkType: "event",
     content: {
       event: "reject",
       icon: getIcon("close"),
+      text: getCurrentElement("reject"),
+      whole_link: true,
     },
+    ...button_css,
   },
   {
     id: "edit",
-    type: "icon",
+    type: "string_icon",
     linkType: "event",
     content: {
       event: "edit",
       icon: getIcon("pencil"),
+      text: getCurrentElement("edit"),
+      whole_link: true,
     },
+    ...button_css,
   },
   {
     id: "view",
-    type: "icon",
+    type: "string_icon",
     linkType: "event",
     content: {
       event: "view",
       icon: getIcon("eye"),
+      text: getCurrentElement("view"),
+      whole_link: true,
     },
+    ...button_css,
   },
 ];
 const selected_session = ref(-1);
