@@ -1135,17 +1135,18 @@ function getBreakpointElement<T extends Breakpoint | BreakpointScope>(
   return to_ret;
 }
 
-async function downloadCsv(data: Blob, filename: string) {
+async function downloadCsv(data: string | Blob, filename: string) {
   let url: string, link: HTMLAnchorElement, reader: FileReader;
 
   try {
     // Check for empty data
-    if (data.size == 0 || data.size == undefined) {
+    if ((typeof data == "string" && data == "") || (typeof data == "object" && (data.size == 0 || data.size == undefined))) {
       return 0;
     }
+    const actual_data: Blob = typeof data == "string" ? new Blob([data], { type: "text/csv" }) : data;
 
     if (Capacitor.getPlatform() == "web") {
-      url = window.URL.createObjectURL(data);
+      url = window.URL.createObjectURL(actual_data);
       link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", filename);
@@ -1165,7 +1166,7 @@ async function downloadCsv(data: Blob, filename: string) {
           encoding: Encoding.UTF8,
         });
 
-      reader.readAsText(data);
+      reader.readAsText(actual_data);
       return 1;
     }
   } catch {
