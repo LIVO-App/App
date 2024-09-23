@@ -461,7 +461,7 @@ const exportPropositions = () => {
         } else if (outcom_code == 0) {
           setupModalAndOpen(
             "success",
-            getCurrentElement("all_courses_confirmed") +
+            getCurrentElement("no_propositions") +
               ". " +
               getCurrentElement("no_file_exported")
           );
