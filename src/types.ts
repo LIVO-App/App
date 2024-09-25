@@ -4973,7 +4973,7 @@ class SubscriptionsManager {
                   learning_session,
                   this.mode == SubscriptionsManagerMode.SELF_SUBSCRIPTION &&
                     open_enrollment
-                    ? "/v1/students/" +
+                    ? "/v2/students/" + // ! (3): controllare se vengono gestiti tutti gli errori, dato cambio v1->v2 senza aver controllato tutto
                         student.id +
                         "/" +
                         (actual_course.pending !== false
