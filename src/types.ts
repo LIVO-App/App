@@ -717,7 +717,7 @@ class EnrollmentCourse extends CourseSummary {
           {
             id: "section_sm",
             type: "string",
-            content: getCurrentElement("section") + ": " + this.section ?? "",
+            content: getCurrentElement("section") + ": " + (this.section ?? "-"),
             classes: {
               label: {
                 "ion-text-center": true,

@@ -546,14 +546,14 @@ buttons[0].classes.button["ion-padding-start"] = {
 
 if ($route.name != "ordinary_classes") {
   for (const year of school_years) {
+    learning_sessions.order.push({
+      key: year,
+      title: getCustomMessage("title", year, "title"),
+    });
     promises.push(
       executeLink(
         "/v1/learning_sessions?school_year=" + year,
         async (response) => {
-          learning_sessions.order.push({
-            key: year,
-            title: getCustomMessage("title", year, "title"),
-          });
           learning_sessions.cards[year] = [];
           for (const learning_session of response.data.data) {
             learning_sessions.cards[year].push(

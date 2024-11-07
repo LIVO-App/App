@@ -377,24 +377,12 @@ if (sections_use) {
 }
 
 school_years =
-  user.type == "student"
-    ? await executeLink(
+  await executeLink(
         "/v1/ordinary_classes?descending=true&student_id=" + user.id,
         (response) => {
           return response.data.data.map((a: any) => {
             return {
               id: a.school_year,
-            };
-          });
-        },
-        () => []
-      )
-    : await executeLink(
-        "/v1/teachers/" + user.id + "/active_years",
-        (response) => {
-          return response.data.data.map((a: any) => {
-            return {
-              id: a.year,
             };
           });
         },
